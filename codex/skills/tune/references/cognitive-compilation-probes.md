@@ -182,7 +182,7 @@ and decision, not whether the answer repeats a doctrine word or the example's fi
 | A new representation preserves behavior and improves the relevant end-to-end objective under comparable measurements | Evaluate that evidence rather than treating the historical regression as a permanent ban on consolidation |
 | Only line count, unmatched workloads, or recalled historical numbers favor a candidate | Do not claim a performance or causal win; identify the missing comparison |
 
-## Opt-in independent reconstruction
+## Discretionary independent reconstruction
 
 Validate the conditional link in Actuating's `architecture.md` and its
 [independent-reconstruction reference](../../actuating/references/independent-reconstruction.md).
@@ -192,7 +192,14 @@ cannot establish that rationale isolation occurred.
 | Case | Expected behavior |
 |---|---|
 | User explicitly requests independent reconstruction; an authorized read-only new-context facility is available | Brief one worker with the accepted Goal, exact subject, source evidence, counterexamples, limits, and question, initially without the parent's design-defense narrative; retain its initial conclusion before revealing that narrative and reconciling |
-| Ordinary architecture work, a generic fresh-eyes request, or explicit `$glaze` / `$metanoetic` alone | Preserve the existing route and canonical invocation; do not silently add the opt-in worker or gate either skill through it |
+| No explicit reconstruction request; repeated repairs retain a disputed explanation and an independent derivation could change the next investigation | Actuating may select one read-only reconstruction within existing authority and budget; do not require the user to name it or seek redundant approval |
+| An unresolved consequential representation choice rests on an unsupported assumption; no alternative or earlier failed pass exists | Permit independent reconstruction without proof of anchoring, an advance challenger, or exhaustion of ordinary reasoning; judge plausible task value, not demonstrated success in advance |
+| A fresh-eyes request follows rejection of the incumbent framing | Actuating may choose a separate reasoning context when useful; the phrase neither forbids nor mandates delegation |
+| Ordinary architecture work is already settled, a source lookup answers the question, or only conversation length is offered as a reason | Continue directly without routine reconstruction or a selection receipt |
+| Explicit `$glaze` / `$metanoetic` or a native Universalist trigger | Preserve the canonical invocation and independent entry point; reconstruction is an optional receiving-workflow technique, never a prerequisite or automatic extra worker |
+| Reconstruction seems useful, but the caller prohibits delegation or it needs unapproved spending, disclosure, or a higher resource ceiling | Respect the limit; do not delegate or expand authority, and continue independent authorized work rather than treating technique selection as permission |
+| An applicable reconstruction already exists and only a reviewer, label, or commit changed | Reuse it and refresh subject applicability where necessary; do not start another context without a new task-relevant reason |
+| Materially changed evidence or a new task-relevant question makes an independent account useful | Permit a new proportionate reconstruction within existing limits; the earlier activation is not a permanent veto |
 | Only full-history forking is available, or rationale-bearing memory cannot be excluded | Report rationale independence as unavailable or unestablished; do not relabel a fork, worktree, or "forget the above" instruction as isolation |
 | An earlier rejected route has a factual counterexample favoring the incumbent | Supply that evidence before reconstruction; withhold only the persuasion, not inconvenient facts |
 | A source-fixed architectural choice is embedded in the parent's narrative | Preserve the choice as a binding requirement in the brief, not a revisable model preference |
