@@ -34,6 +34,12 @@ For each finding, name the independently maintained truth, code and enforcement
 roles, accepted obligation, decisive evidence/countercase, and any distinct role
 that must survive. Do not validate a proposed deletion or repair by reporting it.
 
+This search priority does not exclude other concrete in-scope defects. Do not
+minimize raw line count, remove independent oracles, select repairs, or launch a
+separate reduction audit.
+
+## Native output (Actuating only)
+
 Return the native structured review object with `findings`, `overall_correctness`,
 `overall_explanation`, and `overall_confidence_score`, never a bare status word.
 Supported findings retain native `title`, `body`, `confidence_score`, `priority`,
@@ -46,8 +52,5 @@ In `overall_explanation`, state inspected scope and material evidence limitation
 the missing observation, attempted check/mode, actual blocker (or unknown cause),
 and affected conclusion. Do not fabricate a code finding for unavailable validation
 or report a blocked/skipped check as passed. Actuating owns evidence adequacy and
-credit; confidence does not supply missing evidence.
-This search priority does not
-exclude other concrete in-scope defects. Review Fold owns admission and Actuating
-owns selection. Do not minimize raw line count, remove independent oracles, select
-repairs, or launch a separate reduction audit.
+credit; confidence does not supply missing evidence. Review Fold owns admission.
+Actuating owns selection.
