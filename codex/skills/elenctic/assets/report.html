@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'none'; base-uri 'none'; form-action 'none'">
+<title>__REPORT_TITLE__ · Elenctic</title>
+<style>
+:root{color-scheme:light;--paper:#f6f7f8;--panel:#fff;--ink:#18242d;--muted:#586670;--line:#d9e0e5;--accent:#116c62;--accent-soft:#e6f3ef;--block:#9c3c31;--risk:#8b5a16;--focus:#1571a3}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}button,input,select,textarea{font:inherit}button,a,input,select,textarea,summary{outline-offset:4px}button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible{outline:3px solid var(--focus)}button{cursor:pointer;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--ink);padding:7px 12px}button:hover{border-color:var(--accent)}button.primary{background:var(--accent);color:white;border-color:var(--accent)}a{color:var(--accent);text-underline-offset:3px;overflow-wrap:anywhere}h1,h2,h3,p{margin-top:0}h1{font-size:28px;line-height:1.25;letter-spacing:-.6px;margin-bottom:12px}h2{font-size:17px}h3{font-size:17px;line-height:1.4;margin:0}small,.muted{color:var(--muted)}code,.mono,pre{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}code{font-size:12px;overflow-wrap:anywhere}pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:13px;line-height:1.65}.skip{position:absolute;left:12px;top:-60px;padding:8px;background:white;z-index:5}.skip:focus{top:12px}.layout{max-width:1440px;margin:auto;display:grid;grid-template-columns:270px minmax(0,1fr);min-height:100vh}.sidebar{padding:32px 24px;border-right:1px solid var(--line);background:#edf1f3}.sidebar-inner{position:sticky;top:24px;max-height:calc(100vh - 48px);overflow:auto;scrollbar-width:thin;padding-right:2px}.wordmark{font-size:13px;font-weight:750;letter-spacing:2px;color:var(--accent);margin-bottom:28px}.eyebrow{font-size:11px;letter-spacing:1.5px;font-weight:750;text-transform:uppercase;color:var(--muted);margin-bottom:6px}.verdict{font-size:18px;font-weight:750}.sidebar section{margin-top:26px}.sidebar dl{font-size:13px;margin:0}.sidebar dt{color:var(--muted);margin-top:8px}.sidebar dd{margin:0;overflow-wrap:anywhere}.count{font-size:28px;font-weight:700;letter-spacing:-1px}.track{height:5px;background:#d4dee0;border-radius:5px;overflow:hidden;margin:8px 0}.track span{height:100%;display:block;background:var(--accent);width:0}.sidebar nav{display:grid;gap:5px}.sidebar nav button{text-align:left;display:flex;justify-content:space-between;border-color:transparent;background:transparent}.sidebar nav button[aria-pressed=true]{background:var(--panel);border-color:var(--line);font-weight:650}.side-actions{display:grid;gap:8px}.storage{font-size:12px;line-height:1.5;margin-top:12px}.warning{color:var(--block);font-weight:600}main{min-width:0;padding:32px 38px 60px}.intro{margin-bottom:22px}.intro p{max-width:80ch}.notice{font-size:13px;border-left:3px solid var(--accent);padding:8px 12px;background:var(--accent-soft)}.toolbar{position:sticky;top:0;z-index:2;display:flex;gap:12px;align-items:end;flex-wrap:wrap;padding:14px 0;background:var(--paper);border-bottom:1px solid var(--line);margin-bottom:18px}.toolbar label{display:grid;gap:3px;color:var(--muted);font-size:12px}.toolbar .search{flex:1;min-width:180px}.toolbar input,.toolbar select{padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--ink)}.results{font-size:12px;margin-bottom:16px}.finding{border:1px solid var(--line);border-radius:8px;background:var(--panel);margin-bottom:16px;padding:22px}.finding.handled{border-left:4px solid var(--accent);padding-left:19px}.finding-head{display:flex;gap:14px;align-items:flex-start}.finding-head input{width:20px;height:20px;accent-color:var(--accent);flex-shrink:0;margin:5px 0}.finding-heading{flex:1;min-width:0}.tag{font-size:11px;font-weight:750;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:5px}.tag.merge-blocker{color:var(--block)}.tag.risk{color:var(--risk)}.location{margin:8px 0 12px;color:var(--muted);font:12px/1.6 ui-monospace,SFMono-Regular,Consolas,monospace;overflow-wrap:anywhere}.body{white-space:pre-wrap;overflow-wrap:anywhere}.outcome{padding:12px 14px;background:var(--paper);border-radius:5px;font-size:14px;margin:16px 0}.outcome strong{display:block;font-size:12px;margin-bottom:3px}.links{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;margin:10px 0}summary{cursor:pointer;color:var(--muted);font-size:13px}.draft{border:1px solid var(--line);border-radius:5px;padding:14px}.draft pre{margin:0 0 10px}.notes{display:grid;gap:5px;margin-top:15px;color:var(--muted);font-size:12px}.notes textarea{width:100%;min-height:68px;resize:vertical;padding:9px 11px;border:1px solid var(--line);border-radius:5px;background:var(--panel);color:var(--ink);font-size:14px}.handled-label{font-size:12px;color:var(--accent);margin-top:8px}.changed{color:var(--risk);font-size:12px;margin-top:8px}.empty{padding:30px;border:1px dashed var(--line);border-radius:8px;color:var(--muted)}.full-report{margin-top:28px;padding-top:20px;border-top:1px solid var(--line)}.full-report summary{font-weight:600}footer{font-size:12px;color:var(--muted);margin-top:28px}[hidden]{display:none!important}.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
+@media(max-width:800px){.layout{grid-template-columns:1fr}.sidebar{border-right:0;border-bottom:1px solid var(--line);padding:22px}.sidebar-inner{position:static;max-height:none;overflow:visible}.sidebar section{margin-top:18px}.wordmark{margin-bottom:14px}.sidebar nav{grid-template-columns:repeat(2,1fr)}.side-actions{display:flex;flex-wrap:wrap}main{padding:24px 18px}.finding{padding:18px}.finding.handled{padding-left:15px}h1{font-size:25px}.toolbar{position:static}}
+@media print{body{background:white;font-size:11pt}.layout{display:block}.sidebar{padding:0 0 15px;background:white;border:0}.sidebar-inner{position:static;max-height:none;overflow:visible}.sidebar nav,.side-actions,.toolbar,.storage,.skip,button,.results{display:none}.sidebar section{display:inline-block;vertical-align:top;margin:10px 30px 0 0}main{padding:15px 0}.finding{break-inside:avoid}.notes textarea{border:0;min-height:0}.full-report{display:none}.finding[hidden]{display:block!important}}
+</style>
+</head>
+<body>
+<a class="skip" href="#findings">Skip to findings</a>
+<div class="layout">
+<aside class="sidebar" aria-label="Review navigation"><div class="sidebar-inner">
+<div class="wordmark">ELENCTIC</div>
+<div class="eyebrow">Review decision</div><div id="verdict" class="verdict"></div>
+<a id="pr-link" target="_blank" rel="noopener noreferrer"></a>
+<section aria-label="Handling progress"><div class="eyebrow">Your handling progress</div><div id="progress" class="count"></div><div class="track" aria-hidden="true"><span id="progress-bar"></span></div><small>Checked means handled by you, not verified fixed.</small></section>
+<section><div class="eyebrow">Findings</div><nav id="categories" aria-label="Filter by disposition"></nav></section>
+<section><div class="eyebrow">Bound review</div><dl id="metadata"></dl></section>
+<section class="side-actions"><button id="portable" class="primary" type="button">Save portable copy</button><button id="export" type="button">Export progress</button><button id="import" type="button">Import progress</button><input id="import-file" type="file" accept="application/json,.json" hidden><button id="print" type="button">Print</button></section>
+<p id="storage" class="storage" role="status" aria-live="polite"></p>
+<small>Storage belongs to this browser and file location. Moving the file, clearing browser data, or ending private browsing can lose progress. Temporary files may be removed by your system; keep a portable copy for longer retention.</small>
+</div></aside>
+<main>
+<header class="intro"><div class="eyebrow">PR review · findings workspace</div><h1 id="title">__REPORT_TITLE__</h1><p id="summary"></p><p id="coverage-note" class="muted"></p><p class="notice">This is a local handling checklist. Checks and notes never change the review verdict, establish coverage, resolve GitHub threads, or publish comments.</p></header>
+<div class="toolbar"><label class="search">Search findings<input id="search" type="search" placeholder="Title, file, evidence, or notes" autocomplete="off"></label><label>Handling status<select id="status"><option value="all">All findings</option><option value="open">To handle</option><option value="done">Handled</option></select></label><button id="clear" type="button">Clear filters</button></div>
+<p id="results" class="results muted" aria-live="polite"></p>
+<div id="findings" tabindex="-1"></div>
+<noscript><p class="notice">JavaScript is disabled. The complete report remains readable below; interactive tracking requires JavaScript.</p></noscript>
+<details class="full-report" id="full-report"><summary>Complete original report and provenance</summary><pre>__REPORT_TEXT__</pre></details>
+<footer id="footer"></footer><div id="message" role="status" aria-live="polite" class="muted"></div>
+</main></div>
+<script id="report-data" type="application/json">__REPORT_DATA__</script>
+<script id="initial-state" type="application/json">null</script>
+<script>
+"use strict";
+(() => {
+  const report = JSON.parse(document.getElementById("report-data").textContent);
+  const $ = id => document.getElementById(id);
+  const version = "elenctic-handling/v1";
+  const storageKey = report.report_key + ":handling";
+  const names = {all:"All findings", "merge-blocker":"Merge blockers", risk:"Risks", concern:"Concerns"};
+  let category = "all";
+  let mode = "memory";
+  let store = null;
+  const stores = [];
+  let savedWarning = "";
+  let state = {schema:version, report_key:report.report_key, entries:{}};
+  const rows = new Map();
+  const changed = new Set();
+  const message = text => { $("message").textContent = text; };
+  function element(tag, text, className) {
+    const node = document.createElement(tag);
+    if (text !== undefined) node.textContent = text;
+    if (className) node.className = className;
+    return node;
+  }
+  function validate(value) {
+    if (!value || value.schema !== version || value.report_key !== report.report_key ||
+        !value.entries || typeof value.entries !== "object" || Array.isArray(value.entries)) {
+      throw new Error("This progress file belongs to another campaign or has an unsupported format.");
+    }
+    const clean = {schema:version, report_key:report.report_key, entries:{}};
+    for (const finding of report.findings) {
+      const item = Object.hasOwn(value.entries, finding.id) ? value.entries[finding.id] : undefined;
+      if (item === undefined) continue;
+      if (!item || typeof item.checked !== "boolean" || typeof item.note !== "string" ||
+          item.note.length > 8000 || typeof item.fingerprint !== "string" ||
+          typeof item.updated !== "number" || !Number.isFinite(item.updated)) {
+        throw new Error("Progress contains an invalid finding entry; no data was imported.");
+      }
+      clean.entries[finding.id] = {checked:item.checked, note:item.note,
+        fingerprint:item.fingerprint, updated:item.updated};
+    }
+    return clean;
+  }
+  function merge(value) {
+    const clean = validate(value);
+    for (const [id, incoming] of Object.entries(clean.entries)) {
+      const prior = Object.hasOwn(state.entries, id) ? state.entries[id] : undefined;
+      if (!prior || incoming.updated > prior.updated) state.entries[id] = incoming;
+    }
+  }
+  function status() {
+    const labels = {
+      local:"Autosaved in this browser. Refresh or reopen this same file to continue.",
+      session:"Session storage only: refresh in this tab is supported; closing it may lose progress.",
+      memory:"Not saved: browser storage is unavailable. Save a portable copy before refresh or closing."
+    };
+    $("storage").textContent = [labels[mode], savedWarning].filter(Boolean).join(" ");
+    $("storage").classList.toggle("warning", mode !== "local" || Boolean(savedWarning));
+  }
+  function chooseStorage() {
+    for (const [name, property] of [["local","localStorage"],["session","sessionStorage"]]) {
+      try {
+        const candidate = window[property];
+        const probe = storageKey + ":probe";
+        candidate.setItem(probe, "1");
+        if (candidate.getItem(probe) !== "1") throw new Error("Storage readback failed");
+        candidate.removeItem(probe);
+        const prior = candidate.getItem(storageKey);
+        if (prior !== null) {
+          try { merge(JSON.parse(prior)); }
+          catch (_) { savedWarning = "Unreadable saved progress was left untouched; using a separate fallback."; continue; }
+        }
+        stores.push({name, value:candidate});
+      } catch (_) { /* A blocked file origin is not a successful save. */ }
+    }
+    if (stores.length) { store = stores[0].value; mode = stores[0].name; }
+  }
+  const embedded = JSON.parse($("initial-state").textContent);
+  if (embedded) {
+    try { merge(embedded); }
+    catch (_) { savedWarning = "Embedded progress is invalid; the original report is unchanged."; }
+  }
+  chooseStorage();
+  function entry(finding) {
+    const prior = Object.hasOwn(state.entries, finding.id) ? state.entries[finding.id] : undefined;
+    if (prior && prior.fingerprint !== finding.fingerprint) {
+      changed.add(finding.id);
+      return {checked:false, note:prior.note, fingerprint:finding.fingerprint, updated:prior.updated};
+    }
+    return prior || {checked:false, note:"", fingerprint:finding.fingerprint, updated:0};
+  }
+  function persist() {
+    const content = JSON.stringify(state);
+    for (const candidate of stores) {
+      try {
+        candidate.value.setItem(storageKey, content);
+        if (candidate.value.getItem(storageKey) !== content) throw new Error("Save readback failed");
+        store = candidate.value; mode = candidate.name; status(); return;
+      } catch (_) { /* Try a session-only fallback before claiming the change was saved. */ }
+    }
+    store = null; mode = "memory";
+    savedWarning = "The last change could not be saved.";
+    status();
+  }
+  function update(finding, changes) {
+    // Merge observed other-tab edits first; Web Storage is not a transaction.
+    for (const candidate of stores) {
+      try { const latest = candidate.value.getItem(storageKey); if (latest) merge(JSON.parse(latest)); }
+      catch (_) { savedWarning = "Could not read the latest saved progress."; }
+    }
+    const prior = entry(finding);
+    state.entries[finding.id] = {...prior, ...changes, updated:Math.max(Date.now(), prior.updated + 1)};
+    changed.delete(finding.id);
+    persist(); filter();
+  }
+  function filter() {
+    const query = $("search").value.trim().toLocaleLowerCase();
+    const handling = $("status").value;
+    let visible = 0, done = 0;
+    for (const finding of report.findings) {
+      const current = entry(finding), row = rows.get(finding.id);
+      if (current.checked) done++;
+      const matches = (category === "all" || finding.disposition === category) &&
+        (handling === "all" || (handling === "done") === current.checked) &&
+        (!query || [finding.title,finding.location,finding.detail,finding.required_outcome,current.note]
+          .join("\n").toLocaleLowerCase().includes(query));
+      row.article.hidden = !matches;
+      row.article.classList.toggle("handled", current.checked);
+      row.check.checked = current.checked;
+      row.handled.textContent = current.checked ? "Handled by you · not verified fixed" : "To handle";
+      row.changed.hidden = !changed.has(finding.id);
+      if (document.activeElement !== row.note) row.note.value = current.note;
+      if (matches) visible++;
+    }
+    $("progress").textContent = `${done} / ${report.findings.length}`;
+    $("progress-bar").style.width = `${report.findings.length ? done / report.findings.length * 100 : 0}%`;
+    $("results").textContent = `${visible} shown · ${report.findings.length - done} to handle · ${done} handled`;
+    $("empty").hidden = visible !== 0;
+    $("empty").textContent = report.findings.length ? "No findings match these filters." :
+      report.identity.verdict === "INCOMPLETE" ? "No supported findings reported. Review coverage is incomplete; this is not approval." :
+      "No findings in the reviewed scope. Consult the coverage note before interpreting this result.";
+    for (const button of $("categories").children) button.setAttribute("aria-pressed", String(button.dataset.kind === category));
+  }
+  $("title").textContent = report.title;
+  $("summary").textContent = report.summary;
+  $("coverage-note").textContent = report.coverage_note;
+  $("verdict").textContent = report.identity.verdict;
+  $("pr-link").textContent = `${report.identity.repo} #${report.identity.pr}`;
+  $("pr-link").href = report.pr_url;
+  for (const [label,value] of [
+    ["Head",report.identity.candidate], ["Merge base",report.identity.base],
+    ["Selected scope",report.identity.selected_scope_coverage], ["Whole PR",report.identity.whole_pr_coverage]
+  ]) { $("metadata").append(element("dt",label),element("dd",value,"mono")); }
+  $("footer").textContent = `Report generated ${report.generated_at}. Local handling state is separate from the immutable review evidence.`;
+  for (const [kind,label] of Object.entries(names)) {
+    const count = kind === "all" ? report.findings.length : report.findings.filter(f => f.disposition === kind).length;
+    const button = element("button"); button.type = "button"; button.dataset.kind = kind;
+    button.append(element("span",label),element("span",String(count)));
+    button.addEventListener("click",() => { category = kind; filter(); });
+    $("categories").append(button);
+  }
+  // Never interpret repository text, comments, notes, or imported data as HTML.
+  $("findings").replaceChildren();
+  for (const finding of report.findings) {
+    const article = element("article",undefined,"finding"); article.id = "finding-" + finding.id;
+    const head = element("div",undefined,"finding-head");
+    const check = element("input"); check.type = "checkbox";
+    check.setAttribute("aria-label",`Mark handled: ${finding.title}`);
+    check.addEventListener("change",() => update(finding,{checked:check.checked}));
+    const heading = element("div",undefined,"finding-heading");
+    heading.append(element("div",names[finding.disposition],"tag " + finding.disposition),element("h3",finding.title));
+    head.append(check,heading); article.append(head,element("div",finding.location,"location"),element("p",finding.detail,"body"));
+    const outcome = element("div",undefined,"outcome"); outcome.append(element("strong","Required outcome / follow-up"),element("div",finding.required_outcome,"body"));
+    article.append(outcome);
+    const links = element("div",undefined,"links");
+    for (const source of finding.sources) {
+      const a = element("a",source.label); a.href = source.url; a.target = "_blank"; a.rel = "noopener noreferrer"; links.append(a);
+    }
+    article.append(links);
+    if (finding.draft) {
+      const details = element("details"), draft = element("div",undefined,"draft");
+      details.append(element("summary","Proposed comment · draft only")); draft.append(element("pre",finding.draft));
+      const copy = element("button","Copy draft"); copy.type = "button";
+      copy.addEventListener("click",async () => {
+        try { await navigator.clipboard.writeText(finding.draft); message("Draft copied. Nothing was posted."); }
+        catch (_) { message("Clipboard access unavailable. Select and copy the draft text above."); }
+      });
+      draft.append(copy); details.append(draft); article.append(details);
+    }
+    const notes = element("label",undefined,"notes"); notes.append(element("span","Your handling notes"));
+    const note = element("textarea"); note.maxLength = 8000; note.placeholder = "Decision, fix reference, or next step…";
+    note.setAttribute("aria-label",`Handling notes: ${finding.title}`);
+    note.addEventListener("input",() => update(finding,{note:note.value})); notes.append(note); article.append(notes);
+    const handled = element("div",undefined,"handled-label");
+    const changedNote = element("div","Finding changed since your saved check. Notes retained; check again after handling.","changed");
+    article.append(handled,changedNote);
+    rows.set(finding.id,{article,check,note,handled,changed:changedNote}); $("findings").append(article);
+  }
+  const empty = element("div",undefined,"empty"); empty.id = "empty"; $("findings").append(empty);
+  $("search").addEventListener("input",filter); $("status").addEventListener("change",filter);
+  $("clear").addEventListener("click",() => { category="all"; $("search").value=""; $("status").value="all"; filter(); });
+  function currentState() {
+    return {schema:version,report_key:report.report_key,entries:Object.fromEntries(report.findings.map(f => [f.id,entry(f)]))};
+  }
+  function download(content, type, filename) {
+    const url = URL.createObjectURL(new Blob([content],{type}));
+    const a = element("a"); a.href = url; a.download = filename;
+    document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url),1000);
+  }
+  $("export").addEventListener("click",() => download(JSON.stringify(currentState(),null,2),"application/json","elenctic-progress.json"));
+  $("portable").addEventListener("click",() => {
+    const root = document.documentElement.cloneNode(true);
+    root.querySelector("#initial-state").textContent = JSON.stringify(currentState()).replace(/</g,"\\u003c").replace(/&/g,"\\u0026");
+    // The script rebuilds these on reopening; do not duplicate saved UI nodes.
+    root.querySelector("#categories").replaceChildren(); root.querySelector("#metadata").replaceChildren();
+    root.querySelector("#findings").replaceChildren(); root.querySelector("#message").textContent="";
+    download("<!doctype html>\n"+root.outerHTML,"text/html","elenctic-report.html");
+    message("Portable copy saved with the report, checks, and notes. Keep it outside temporary storage for long-term use.");
+  });
+  $("import").addEventListener("click",() => $("import-file").click());
+  $("import-file").addEventListener("change",async event => {
+    const file = event.target.files[0]; if (!file) return;
+    try {
+      if (file.size > 10 * 1024 * 1024) throw new Error("Progress file exceeds 10 MB.");
+      const incoming = validate(JSON.parse(await file.text()));
+      merge(incoming); persist(); filter(); message("Progress merged for this campaign; newer handling entries were preserved.");
+    } catch (error) { message(error.message || "Progress could not be imported; current state was preserved."); }
+    event.target.value="";
+  });
+  $("print").addEventListener("click",() => window.print());
+  window.addEventListener("storage",event => {
+    if (event.key !== storageKey || !event.newValue) return;
+    try { merge(JSON.parse(event.newValue)); filter(); } catch (_) { message("Another tab supplied unreadable progress; current state retained."); }
+  });
+  status(); filter();
+})();
+</script>
+</body>
+</html>

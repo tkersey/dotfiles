@@ -36,6 +36,11 @@ admission, feasible operation/trace, first loss of guarantee, affected observati
 and decisive evidence/countercase. Source evidence may suffice; an unreproduced
 race is not thereby refuted. Respect the frozen subject and effect authority.
 
+This search priority does not exclude other concrete in-scope defects. Do not select
+repairs, propose member-specific guards, launch authority fanout, or grant mutation.
+
+## Native output (Actuating only)
+
 Return the native structured review object with `findings`, `overall_correctness`,
 `overall_explanation`, and `overall_confidence_score`, never a bare status word.
 Supported findings retain native `title`, `body`, `confidence_score`, `priority`,
@@ -48,7 +53,4 @@ In `overall_explanation`, state inspected scope and material evidence limitation
 the missing observation, attempted check/mode, actual blocker (or unknown cause),
 and affected conclusion. Do not fabricate a code finding for unavailable validation
 or report a blocked/skipped check as passed. Actuating owns evidence adequacy and
-credit; confidence does not supply missing evidence.
-This search priority does not
-exclude other concrete in-scope defects. Review Fold owns admission. Do not select
-repairs, propose member-specific guards, launch authority fanout, or grant mutation.
+credit; confidence does not supply missing evidence. Review Fold owns admission.

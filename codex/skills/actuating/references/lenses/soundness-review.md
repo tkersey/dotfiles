@@ -37,6 +37,11 @@ source-topology, carrier-or-invariant, producer-factorization, bypass-closure,
 required-valid-preservation, realization, proof-coverage, artifact-binding, and
 claim-strength. A minimal witness is not a one-finding limit.
 
+This search priority does not exclude other concrete in-scope defects. Do not select
+or implement repairs, grant mutation, or treat a clean review as proof of soundness.
+
+## Native output (Actuating only)
+
 Return the native structured review object with `findings`, `overall_correctness`,
 `overall_explanation`, and `overall_confidence_score`, never a bare status word.
 Supported findings retain native `title`, `body`, `confidence_score`, `priority`,
@@ -49,7 +54,4 @@ In `overall_explanation`, state inspected scope and material evidence limitation
 the missing observation, attempted check/mode, actual blocker (or unknown cause),
 and affected conclusion. Do not fabricate a code finding for unavailable validation
 or report a blocked/skipped check as passed. Actuating owns evidence adequacy and
-credit; confidence does not supply missing evidence.
-This search priority does not
-exclude other concrete in-scope defects. Review Fold owns admission. Do not select
-or implement repairs, grant mutation, or treat a clean review as proof of soundness.
+credit; confidence does not supply missing evidence. Review Fold owns admission.
