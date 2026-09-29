@@ -11,10 +11,12 @@
 *{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}button,input,select,textarea{font:inherit}button,a,input,select,textarea,summary{outline-offset:4px}button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible{outline:3px solid var(--focus)}button{cursor:pointer;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--ink);padding:7px 12px}button:hover{border-color:var(--accent)}button.primary{background:var(--accent);color:white;border-color:var(--accent)}a{color:var(--accent);text-underline-offset:3px;overflow-wrap:anywhere}h1,h2,h3,p{margin-top:0}h1{font-size:28px;line-height:1.25;letter-spacing:-.6px;margin-bottom:12px}h2{font-size:17px}h3{font-size:17px;line-height:1.4;margin:0}small,.muted{color:var(--muted)}code,.mono,pre{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}code{font-size:12px;overflow-wrap:anywhere}pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:13px;line-height:1.65}.skip{position:absolute;left:12px;top:-60px;padding:8px;background:white;z-index:5}.skip:focus{top:12px}.layout{max-width:1440px;margin:auto;display:grid;grid-template-columns:270px minmax(0,1fr);min-height:100vh}.sidebar{padding:32px 24px;border-right:1px solid var(--line);background:#edf1f3}.sidebar-inner{position:sticky;top:24px;max-height:calc(100vh - 48px);overflow:auto;scrollbar-width:thin;padding-right:2px}.wordmark{font-size:13px;font-weight:750;letter-spacing:2px;color:var(--accent);margin-bottom:28px}.eyebrow{font-size:11px;letter-spacing:1.5px;font-weight:750;text-transform:uppercase;color:var(--muted);margin-bottom:6px}.verdict{font-size:18px;font-weight:750}.sidebar section{margin-top:26px}.sidebar dl{font-size:13px;margin:0}.sidebar dt{color:var(--muted);margin-top:8px}.sidebar dd{margin:0;overflow-wrap:anywhere}.count{font-size:28px;font-weight:700;letter-spacing:-1px}.track{height:5px;background:#d4dee0;border-radius:5px;overflow:hidden;margin:8px 0}.track span{height:100%;display:block;background:var(--accent);width:0}.sidebar nav{display:grid;gap:5px}.sidebar nav button{text-align:left;display:flex;justify-content:space-between;border-color:transparent;background:transparent}.sidebar nav button[aria-pressed=true]{background:var(--panel);border-color:var(--line);font-weight:650}.side-actions{display:grid;gap:8px}.storage{font-size:12px;line-height:1.5;margin-top:12px}.warning{color:var(--block);font-weight:600}main{min-width:0;padding:32px 38px 60px}.intro{margin-bottom:22px}.intro p{max-width:80ch}.notice{font-size:13px;border-left:3px solid var(--accent);padding:8px 12px;background:var(--accent-soft)}.toolbar{position:sticky;top:0;z-index:2;display:flex;gap:12px;align-items:end;flex-wrap:wrap;padding:14px 0;background:var(--paper);border-bottom:1px solid var(--line);margin-bottom:18px}.toolbar label{display:grid;gap:3px;color:var(--muted);font-size:12px}.toolbar .search{flex:1;min-width:180px}.toolbar input,.toolbar select{padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--ink)}.results{font-size:12px;margin-bottom:16px}.finding{border:1px solid var(--line);border-radius:8px;background:var(--panel);margin-bottom:16px;padding:22px}.finding.handled{border-left:4px solid var(--accent);padding-left:19px}.finding-head{display:flex;gap:14px;align-items:flex-start}.finding-head input{width:20px;height:20px;accent-color:var(--accent);flex-shrink:0;margin:5px 0}.finding-heading{flex:1;min-width:0}.tag{font-size:11px;font-weight:750;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:5px}.tag.merge-blocker{color:var(--block)}.tag.risk{color:var(--risk)}.location{margin:8px 0 12px;color:var(--muted);font:12px/1.6 ui-monospace,SFMono-Regular,Consolas,monospace;overflow-wrap:anywhere}.body{white-space:pre-wrap;overflow-wrap:anywhere}.outcome{padding:12px 14px;background:var(--paper);border-radius:5px;font-size:14px;margin:16px 0}.outcome strong{display:block;font-size:12px;margin-bottom:3px}.links{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;margin:10px 0}summary{cursor:pointer;color:var(--muted);font-size:13px}.draft{border:1px solid var(--line);border-radius:5px;padding:14px}.draft pre{margin:0 0 10px}.notes{display:grid;gap:5px;margin-top:15px;color:var(--muted);font-size:12px}.notes textarea{width:100%;min-height:68px;resize:vertical;padding:9px 11px;border:1px solid var(--line);border-radius:5px;background:var(--panel);color:var(--ink);font-size:14px}.handled-label{font-size:12px;color:var(--accent);margin-top:8px}.changed{color:var(--risk);font-size:12px;margin-top:8px}.empty{padding:30px;border:1px dashed var(--line);border-radius:8px;color:var(--muted)}.full-report{margin-top:28px;padding-top:20px;border-top:1px solid var(--line)}.full-report summary{font-weight:600}footer{font-size:12px;color:var(--muted);margin-top:28px}[hidden]{display:none!important}.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
 @media(max-width:800px){.layout{grid-template-columns:1fr}.sidebar{border-right:0;border-bottom:1px solid var(--line);padding:22px}.sidebar-inner{position:static;max-height:none;overflow:visible}.sidebar section{margin-top:18px}.wordmark{margin-bottom:14px}.sidebar nav{grid-template-columns:repeat(2,1fr)}.side-actions{display:flex;flex-wrap:wrap}main{padding:24px 18px}.finding{padding:18px}.finding.handled{padding-left:15px}h1{font-size:25px}.toolbar{position:static}}
 @media print{body{background:white;font-size:11pt}.layout{display:block}.sidebar{padding:0 0 15px;background:white;border:0}.sidebar-inner{position:static;max-height:none;overflow:visible}.sidebar nav,.side-actions,.toolbar,.storage,.skip,button,.results{display:none}.sidebar section{display:inline-block;vertical-align:top;margin:10px 30px 0 0}main{padding:15px 0}.finding{break-inside:avoid}.notes textarea{border:0;min-height:0}.full-report{display:none}.finding[hidden]{display:block!important}}
+.view-switch{display:flex;gap:8px;margin:18px 0 10px}.view-switch button[aria-pressed=true]{background:var(--accent-soft);border-color:var(--accent);font-weight:650}.resolution-group{border-top:3px solid var(--accent);margin:24px 0 32px;padding-top:16px;scroll-margin-top:110px}.group-heading{display:flex;gap:16px;justify-content:space-between;align-items:baseline;flex-wrap:wrap}.group-heading h2{font-size:21px;letter-spacing:-.3px;margin-bottom:8px}.group-progress{color:var(--accent);font-size:13px;font-weight:650}.group-context{padding:0 0 16px}.group-context p{margin-bottom:10px}.group-context details{margin:12px 0}.group-members .finding{margin-bottom:12px}.completion-list{padding-left:20px;font-size:14px}.completion-list li{margin:6px 0}.finding{scroll-margin-top:110px}.handoff{max-height:420px;overflow:auto}.group-ref{font-weight:700;font-size:13px;white-space:nowrap}.resolution-group[hidden]{display:none!important}
+@media print{.resolution-group[hidden]{display:block!important}.view-switch{display:none}.resolution-group{break-before:auto}.group-context details{display:none}.group-heading{break-after:avoid}}
 </style>
 </head>
 <body>
-<a class="skip" href="#findings">Skip to findings</a>
+<a class="skip" href="#workspace">Skip to findings</a>
 <div class="layout">
 <aside class="sidebar" aria-label="Review navigation"><div class="sidebar-inner">
 <div class="wordmark">ELENCTIC</div>
@@ -29,9 +31,13 @@
 </div></aside>
 <main>
 <header class="intro"><div class="eyebrow">PR review · findings workspace</div><h1 id="title">__REPORT_TITLE__</h1><p id="summary"></p><p id="coverage-note" class="muted"></p><p class="notice">This is a local handling checklist. Checks and notes never change the review verdict, establish coverage, resolve GitHub threads, or publish comments.</p></header>
+<section id="resolution-controls" aria-label="Report view" hidden>
+<div class="view-switch" role="group" aria-label="Choose report view"><button id="show-groups" type="button" aria-pressed="false">Resolution groups</button><button id="show-findings" type="button" aria-pressed="true">Original findings</button></div>
+<p id="resolution-status" class="notice"></p>
+</section>
 <div class="toolbar"><label class="search">Search findings<input id="search" type="search" placeholder="Title, file, evidence, or notes" autocomplete="off"></label><label>Handling status<select id="status"><option value="all">All findings</option><option value="open">To handle</option><option value="done">Handled</option></select></label><button id="clear" type="button">Clear filters</button></div>
 <p id="results" class="results muted" aria-live="polite"></p>
-<div id="findings" tabindex="-1"></div>
+<div id="workspace" tabindex="-1"><div id="resolution-groups" hidden></div><div id="findings"></div></div>
 <noscript><p class="notice">JavaScript is disabled. The complete report remains readable below; interactive tracking requires JavaScript.</p></noscript>
 <details class="full-report" id="full-report"><summary>Complete original report and provenance</summary><pre>__REPORT_TEXT__</pre></details>
 <footer id="footer"></footer><div id="message" role="status" aria-live="polite" class="muted"></div>
@@ -53,6 +59,12 @@
   let savedWarning = "";
   let state = {schema:version, report_key:report.report_key, entries:{}};
   const rows = new Map();
+  const groups = report.resolution?.status === "complete" ? report.resolution.groups : [];
+  const groupRows = new Map();
+  const groupByFinding = new Map(groups.flatMap(g => g.finding_ids.map(id => [id,g])));
+  const findingById = new Map(report.findings.map(f => [f.id,f]));
+  let viewMode = report.workflow === "resolution" && groups.length ? "groups" : "findings";
+  const findingRef = f => f.number === undefined ? f.id : `#${f.number}`;
   const changed = new Set();
   const message = text => { $("message").textContent = text; };
   function element(tag, text, className) {
@@ -159,9 +171,11 @@
     for (const finding of report.findings) {
       const current = entry(finding), row = rows.get(finding.id);
       if (current.checked) done++;
+      const group = groupByFinding.get(finding.id);
+      const groupSearch = viewMode === "groups" && group ? `${group.id} ${group.title} ${group.rationale} ${group.objective}` : "";
       const matches = (category === "all" || finding.disposition === category) &&
         (handling === "all" || (handling === "done") === current.checked) &&
-        (!query || [finding.title,finding.location,finding.detail,finding.required_outcome,current.note]
+        (!query || [findingRef(finding),finding.title,finding.location,finding.detail,finding.required_outcome,current.note,groupSearch]
           .join("\n").toLocaleLowerCase().includes(query));
       row.article.hidden = !matches;
       row.article.classList.toggle("handled", current.checked);
@@ -178,6 +192,13 @@
     $("empty").textContent = report.findings.length ? "No findings match these filters." :
       report.identity.verdict === "INCOMPLETE" ? "No supported findings reported. Review coverage is incomplete; this is not approval." :
       "No findings in the reviewed scope. Consult the coverage note before interpreting this result.";
+    for (const group of groups) {
+      const row = groupRows.get(group.id);
+      const done = group.finding_ids.filter(id => entry(findingById.get(id)).checked).length;
+      const shown = group.finding_ids.filter(id => !rows.get(id).article.hidden).length;
+      row.article.hidden = shown === 0;
+      row.progress.textContent = `${done} of ${group.finding_ids.length} handled · ${shown} shown`;
+    }
     for (const button of $("categories").children) button.setAttribute("aria-pressed", String(button.dataset.kind === category));
   }
   $("title").textContent = report.title;
@@ -207,7 +228,7 @@
     check.setAttribute("aria-label",`Mark handled: ${finding.title}`);
     check.addEventListener("change",() => update(finding,{checked:check.checked}));
     const heading = element("div",undefined,"finding-heading");
-    heading.append(element("div",names[finding.disposition],"tag " + finding.disposition),element("h3",finding.title));
+    heading.append(element("div",names[finding.disposition],"tag " + finding.disposition),element("h3",finding.number === undefined ? finding.title : `#${finding.number} · ${finding.title}`));
     head.append(check,heading); article.append(head,element("div",finding.location,"location"),element("p",finding.detail,"body"));
     const outcome = element("div",undefined,"outcome"); outcome.append(element("strong","Required outcome / follow-up"),element("div",finding.required_outcome,"body"));
     article.append(outcome);
@@ -235,7 +256,94 @@
     article.append(handled,changedNote);
     rows.set(finding.id,{article,check,note,handled,changed:changedNote}); $("findings").append(article);
   }
-  const empty = element("div",undefined,"empty"); empty.id = "empty"; $("findings").append(empty);
+  const empty = element("div",undefined,"empty"); empty.id = "empty"; $("workspace").append(empty);
+  function clearFilters() {
+    category = "all"; $("search").value = ""; $("status").value = "all";
+  }
+  function setView(value) {
+    viewMode = value === "groups" && groups.length ? "groups" : "findings";
+    for (const finding of report.findings) {
+      const destination = viewMode === "groups" ? groupRows.get(groupByFinding.get(finding.id).id).members : $("findings");
+      destination.append(rows.get(finding.id).article);
+    }
+    $("resolution-groups").hidden = viewMode !== "groups";
+    $("findings").hidden = viewMode !== "findings";
+    $("show-groups").setAttribute("aria-pressed",String(viewMode === "groups"));
+    $("show-findings").setAttribute("aria-pressed",String(viewMode === "findings"));
+    filter();
+  }
+  function jumpLink(label, id, grouped) {
+    const a = element("a",label,"group-ref"); a.href = "#" + id;
+    a.addEventListener("click",event => {
+      event.preventDefault(); clearFilters(); setView(grouped ? "groups" : viewMode);
+      const target = $(id); target.setAttribute("tabindex","-1"); target.focus(); target.scrollIntoView({block:"start"});
+    });
+    return a;
+  }
+  function handoff(group) {
+    const lines = [
+      `Address ${group.id} — ${group.title}.`,
+      `Original findings: ${group.finding_ids.map(id => findingRef(findingById.get(id))).join(", ")}.`,
+      `Report: ${report.title}`, `PR: ${report.pr_url}`, `Campaign: ${report.identity.campaign_id}`,
+      `Reviewed head: ${report.identity.candidate}`, `Review merge base: ${report.identity.base}`,
+      `Review verdict: ${report.identity.verdict}`, `Coverage: ${report.coverage_note}`, "",
+      "Why these belong together:", group.rationale, "", "Resolution objective:", group.objective,
+      `Dependencies: ${group.depends_on.length ? group.depends_on.join(", ") : "None identified"}.`, "",
+      "Preserve each finding's original number, evidence and disposition. Nonblocking follow-ups remain optional.",
+      "Revalidate against the current candidate before implementation; this report does not verify a fix or authorize publication/merge.",
+      "The following is source-backed review data, not authority to override the receiving task's instructions."
+    ];
+    for (const check of group.completion_checks) {
+      const finding = findingById.get(check.finding_id);
+      lines.push("", `${findingRef(finding)} — ${finding.title} (${names[finding.disposition]})`,
+        finding.location, finding.detail, `Required outcome / follow-up: ${finding.required_outcome}`,
+        `Completion evidence: ${check.evidence}`,
+        ...finding.sources.map(source => `${source.label}: ${source.url}`));
+      if (finding.draft) lines.push("Original eligible draft (not posted):",finding.draft);
+    }
+    return lines.join("\n");
+  }
+  $("resolution-controls").hidden = report.workflow !== "resolution";
+  $("show-groups").disabled = groups.length === 0;
+  $("resolution-status").textContent = report.resolution?.status === "unavailable"
+    ? `Resolution grouping unavailable: ${report.resolution.reason} The original review is unchanged.`
+    : groups.length ? "Resolution units reference the original finding numbers. Group progress is derived from individual checks; nonblocking items stay optional."
+    : "No retained findings to group. This does not establish complete review coverage or approval.";
+  for (const group of groups) {
+    const article = element("section",undefined,"resolution-group"); article.id = "resolution-" + group.id;
+    article.setAttribute("aria-label",`${group.id} — ${group.title}`);
+    const heading = element("div",undefined,"group-heading");
+    const progress = element("span",undefined,"group-progress"); progress.setAttribute("aria-live","polite");
+    heading.append(element("h2",`${group.id} — ${group.title}`),progress); article.append(heading);
+    const context = element("div",undefined,"group-context"), refs = element("div",undefined,"links");
+    refs.append(element("span","Address findings:"));
+    for (const id of group.finding_ids) refs.append(jumpLink(findingRef(findingById.get(id)),"finding-" + id,true));
+    context.append(refs,element("p",group.rationale,"body"));
+    const objective = element("div",undefined,"outcome"); objective.append(element("strong","Resolution objective"),element("div",group.objective,"body")); context.append(objective);
+    if (group.depends_on.length) {
+      const dependencies = element("div",undefined,"links"); dependencies.append(element("span","Depends on:"));
+      for (const id of group.depends_on) dependencies.append(jumpLink(id,"resolution-" + id,true));
+      context.append(dependencies);
+    }
+    const checks = element("ul",undefined,"completion-list");
+    for (const check of group.completion_checks) {
+      const finding = findingById.get(check.finding_id), item = element("li");
+      item.append(jumpLink(findingRef(finding),"finding-" + finding.id,true),
+        element("span",` · ${names[finding.disposition]} — ${check.evidence}`)); checks.append(item);
+    }
+    context.append(element("strong","Completion evidence, by finding"),checks);
+    const details = element("details"), copy = element("button",`Copy ${group.id} handoff`); copy.type = "button";
+    const text = handoff(group); details.append(element("summary","Resolution handoff · original references and evidence"),element("pre",text,"handoff"));
+    copy.addEventListener("click",async () => {
+      try { await navigator.clipboard.writeText(text); message(`${group.id} handoff copied. No code was changed and nothing was posted.`); }
+      catch (_) { details.open = true; message("Clipboard unavailable. Select and copy the handoff text; nothing was changed."); }
+    });
+    context.append(copy,details); article.append(context);
+    const members = element("div",undefined,"group-members"); article.append(members);
+    groupRows.set(group.id,{article,members,progress}); $("resolution-groups").append(article);
+  }
+  $("show-groups").addEventListener("click",() => setView("groups"));
+  $("show-findings").addEventListener("click",() => setView("findings"));
   $("search").addEventListener("input",filter); $("status").addEventListener("change",filter);
   $("clear").addEventListener("click",() => { category="all"; $("search").value=""; $("status").value="all"; filter(); });
   function currentState() {
@@ -253,6 +361,7 @@
     // The script rebuilds these on reopening; do not duplicate saved UI nodes.
     root.querySelector("#categories").replaceChildren(); root.querySelector("#metadata").replaceChildren();
     root.querySelector("#findings").replaceChildren(); root.querySelector("#message").textContent="";
+    root.querySelector("#resolution-groups").replaceChildren(); root.querySelector("#empty")?.remove();
     download("<!doctype html>\n"+root.outerHTML,"text/html","elenctic-report.html");
     message("Portable copy saved with the report, checks, and notes. Keep it outside temporary storage for long-term use.");
   });
@@ -271,7 +380,7 @@
     if (event.key !== storageKey || !event.newValue) return;
     try { merge(JSON.parse(event.newValue)); filter(); } catch (_) { message("Another tab supplied unreadable progress; current state retained."); }
   });
-  status(); filter();
+  status(); setView(viewMode);
 })();
 </script>
 </body>
