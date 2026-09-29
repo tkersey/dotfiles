@@ -1,4 +1,4 @@
-# Native Fish prompt. No Tide, Starship, Fisher, or background renderer required.
+# Native Fish prompt. No plugin manager or background renderer required.
 status is-interactive; or return
 
 # config.fish already enables fish_vi_key_bindings. Fish owns editing modes;
