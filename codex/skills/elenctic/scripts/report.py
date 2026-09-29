@@ -41,6 +41,127 @@ def link(value: Any, name: str) -> str:
     return value
 
 
+def number_map(value: Any) -> dict[str, int]:
+    """Human references are supplied, never manufactured from list positions."""
+    if not isinstance(value, dict):
+        raise ValueError("finding_numbers must be an object")
+    numbers = {}
+    for key, number in value.items():
+        if not isinstance(key, str) or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]{0,95}", key):
+            raise ValueError("invalid finding-number identity")
+        if type(number) is not int or not 1 <= number <= 2**53 - 1:
+            raise ValueError("finding numbers must be positive safe integers")
+        if number in numbers.values():
+            raise ValueError("a finding number cannot identify two findings")
+        numbers[key] = number
+    return numbers
+
+
+def bind_number_history(report: dict[str, Any], previous: dict[str, Any]) -> None:
+    """Retain retired references and reject renumbering on same-path regeneration."""
+    history = number_map(previous.get("finding_numbers", {}))
+    for source in previous.get("findings", []):
+        if "number" in source:
+            old = number_map({source["id"]: source["number"]})
+            if source["id"] in history and history[source["id"]] != source["number"]:
+                raise ValueError("previous finding-number history is inconsistent")
+            history.update(old)
+    for key, number in report["finding_numbers"].items():
+        if key in history and history[key] != number:
+            raise ValueError(f"cannot renumber finding {key}")
+        history[key] = number
+    report["finding_numbers"] = number_map(history)
+    for finding in report["findings"]:
+        if finding["id"] in history:
+            finding["number"] = history[finding["id"]]
+
+
+def prepare_resolution(raw: dict[str, Any], report: dict[str, Any]) -> None:
+    """Validate grouping as a lossless presentation, never as review adjudication."""
+    workflow = raw.get("workflow", "comments")
+    if workflow not in ("comments", "resolution"):
+        raise ValueError("workflow must be comments or resolution")
+    report["workflow"] = workflow
+    numbers = number_map(raw.get("finding_numbers", {}))
+    originals = {f["id"]: f for f in raw["findings"]}
+    for finding in report["findings"]:
+        source = originals[finding["id"]]
+        if "number" in source:
+            number = number_map({finding["id"]: source["number"]})[finding["id"]]
+            if finding["id"] in numbers and numbers[finding["id"]] != number:
+                raise ValueError("finding number disagrees with its recorded identity")
+            numbers[finding["id"]] = number
+        if finding["id"] in numbers:
+            # Numbering and grouping do not change the evidence fingerprint.
+            finding["number"] = numbers[finding["id"]]
+        elif workflow == "resolution":
+            raise ValueError("resolution requires the original number of every finding")
+    report["finding_numbers"] = number_map(numbers)
+    resolution = raw.get("resolution")
+    if workflow == "comments":
+        if resolution is not None:
+            raise ValueError("resolution groups require explicit resolution workflow")
+        return
+    if not isinstance(resolution, dict):
+        raise ValueError("resolution workflow requires a synthesis result")
+    if resolution.get("status") == "unavailable":
+        if resolution.get("groups"):
+            raise ValueError("unavailable synthesis cannot advertise complete groups")
+        report["resolution"] = {"status": "unavailable", "reason": text(resolution.get("reason"), "resolution.reason")}
+        return
+    if resolution.get("status") != "complete" or not isinstance(resolution.get("groups"), list):
+        raise ValueError("resolution must be complete with groups, or unavailable with a reason")
+    known = {f["id"] for f in report["findings"]}
+    assigned: set[str] = set()
+    groups: dict[str, dict[str, Any]] = {}
+    for source in resolution["groups"]:
+        if not isinstance(source, dict):
+            raise ValueError("each resolution group must be an object")
+        group = {key: text(source.get(key), f"group.{key}")
+                 for key in ("id", "title", "rationale", "objective")}
+        if not re.fullmatch(r"R[1-9][0-9]{0,7}", group["id"]) or group["id"] in groups:
+            raise ValueError("group IDs must be unique R1-style references")
+        members = source.get("finding_ids")
+        if not isinstance(members, list) or not members or any(not isinstance(k, str) for k in members):
+            raise ValueError("each group needs a nonempty finding_ids array")
+        if len(set(members)) != len(members) or not set(members) <= known or set(members) & assigned:
+            raise ValueError("groups must reference each retained finding exactly once")
+        group["finding_ids"] = members[:]
+        checks = source.get("completion_checks")
+        if not isinstance(checks, list):
+            raise ValueError("each group needs per-finding completion_checks")
+        outcomes = {}
+        for check in checks:
+            if not isinstance(check, dict):
+                raise ValueError("completion checks must be objects")
+            key = text(check.get("finding_id"), "completion.finding_id")
+            if key in outcomes:
+                raise ValueError("duplicate completion check")
+            outcomes[key] = text(check.get("evidence"), "completion.evidence")
+        if set(outcomes) != set(members):
+            raise ValueError("completion checks must cover exactly this group's members")
+        group["completion_checks"] = [{"finding_id": k, "evidence": outcomes[k]} for k in members]
+        dependencies = source.get("depends_on", [])
+        if not isinstance(dependencies, list) or any(not isinstance(k, str) for k in dependencies):
+            raise ValueError("depends_on must be an array of group IDs")
+        if len(set(dependencies)) != len(dependencies):
+            raise ValueError("duplicate group dependency")
+        group["depends_on"] = dependencies[:]
+        assigned.update(members)
+        groups[group["id"]] = group
+    if assigned != known:
+        raise ValueError("resolution groups must cover every retained finding")
+    remaining = {key: set(g["depends_on"]) for key, g in groups.items()}
+    if any(not dependencies <= groups.keys() for dependencies in remaining.values()):
+        raise ValueError("unknown resolution-group dependency")
+    while remaining:
+        ready = {key for key, dependencies in remaining.items() if not dependencies}
+        if not ready:
+            raise ValueError("resolution-group dependencies must be acyclic")
+        remaining = {key: dependencies - ready for key, dependencies in remaining.items() if key not in ready}
+    report["resolution"] = {"status": "complete", "groups": list(groups.values())}
+
+
 def prepare(raw: Any) -> dict[str, Any]:
     """Validate the presentation boundary, not the truth/admission of a review."""
     if not isinstance(raw, dict) or raw.get("schema") != SCHEMA:
@@ -125,6 +246,7 @@ def prepare(raw: Any) -> dict[str, Any]:
     result["report_key"] = "elenctic:" + digest({
         k: identity[k] for k in ("repo", "pr", "campaign_id", "base", "candidate", "view")
     })
+    prepare_resolution(raw, result)
     return result
 
 
@@ -133,8 +255,12 @@ def script_data(value: Any) -> str:
             .replace(">", "\\u003e").replace("\u2028", "\\u2028").replace("\u2029", "\\u2029"))
 
 
-def render(raw: Any) -> tuple[str, dict[str, Any]]:
+def render(raw: Any, *, previous: dict[str, Any] | None = None) -> tuple[str, dict[str, Any]]:
     report = prepare(raw)
+    if previous is not None:
+        if previous.get("report_key") != report["report_key"]:
+            raise ValueError("cannot reuse finding numbers from another campaign")
+        bind_number_history(report, previous)
     template = (Path(__file__).resolve().parents[1] / "assets" / "report.html").read_text(encoding="utf-8")
     replacements = {"__REPORT_DATA__": script_data(report),
                     "__REPORT_TEXT__": html.escape(report["report_text"]),
@@ -161,6 +287,7 @@ def write_report(raw: Any, output: Path | None = None) -> Path:
         match = re.search(r'<script id="report-data" type="application/json">(.*?)</script>', old, re.S)
         if not match or json.loads(match[1]).get("report_key") != report["report_key"]:
             raise ValueError("output belongs to another report; choose a new private directory")
+        document, report = render(raw, previous=json.loads(match[1]))
     fd, temporary = tempfile.mkstemp(prefix=".elenctic-", dir=output.parent)
     try:
         with os.fdopen(fd, "w", encoding="utf-8") as stream:
