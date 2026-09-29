@@ -36,7 +36,3 @@ live in `home/codex/config.toml`. User values override system defaults.
 Because the live files link into this checkout, edits and repository updates
 are reflected through those links. Keep the checkout at a revision containing
 both files.
-
-### iCloud directory backups
-
-Local directories that cannot be symlinked can be copied into iCloud Drive by the repository-managed rclone LaunchAgent. Configure [`backups/targets.conf`](backups/targets.conf), then follow [`backups/README.md`](backups/README.md).
