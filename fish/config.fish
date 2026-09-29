@@ -19,6 +19,8 @@ end
 fzf --fish | source
 zoxide init fish | source
 
+# macOS manages ssh-agent; inherit SSH_AUTH_SOCK instead of starting another agent.
+# Load keys at login so local Git signing need not wait for an SSH connection.
 if status is-login
     ssh-add >/dev/null 2>&1
 end
