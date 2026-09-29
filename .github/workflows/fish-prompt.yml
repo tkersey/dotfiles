@@ -21,11 +21,11 @@ jobs:
     runs-on: macos-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
       - name: Install test tools
-        run: brew install fish uv
+        run: brew install fish hub uv
       - name: Check native prompt behavior in isolated shells
         run: |
           fish --version

@@ -2,7 +2,8 @@
 """Behavioral checks in isolated Fish sessions; never read/write the live Fish config.
 
 Run from the repository root: uv run --no-project scripts/test_native_fish_prompt.py
-Requires Fish 4.x and Git. No third-party Python packages are needed.
+Requires Fish 4.x, Git, and the existing git-wrapper dependency hub.
+No third-party Python packages are needed.
 """
 
 from __future__ import annotations
@@ -209,9 +210,14 @@ class NativePromptTests(unittest.TestCase):
     def test_control_characters_in_directory_names_are_not_emitted(self) -> None:
         directory = self.home / "bad\x1b[31m\nname"
         directory.mkdir()
-        output = plain(self.run_fish("__native_prompt_pwd 1000", directory))
-        self.assertIn("bad?[31m?name", output)
-        self.assertNotIn("\n", output)
+        raw = self.run_fish("__native_prompt_pwd 1000", directory)
+        # prompt_pwd may already sanitize the name before our final escaping.
+        # Check the safety contract, not a particular replacement character.
+        self.assertNotIn("\x1b[31m", raw)
+        output = plain(raw)
+        self.assertIn("bad", output)
+        self.assertIn("name", output)
+        self.assertNotRegex(output, r"[\x00-\x1f\x7f-\x9f]")
 
     def test_noninteractive_configuration_is_silent(self) -> None:
         result = subprocess.run(

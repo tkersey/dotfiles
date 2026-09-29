@@ -136,7 +136,8 @@ From the repository root:
 uv run --no-project scripts/test_native_fish_prompt.py
 ```
 
-The standard-library test suite requires Fish and Git and uses temporary HOME,
+The standard-library test suite requires Fish, Git, and `hub` (already in the
+Brewfile for the existing `git` wrapper). It uses temporary HOME,
 XDG directories, repositories, worktrees, and runtime fixtures. It never
 sources your live `config.fish` or edits your actual universal variables. It
 checks syntax, status colors, fixed mode-independent chevrons, pipeline
