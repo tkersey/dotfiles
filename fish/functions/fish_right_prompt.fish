@@ -1,8 +1,7 @@
 function fish_right_prompt --description 'Status, duration, context, and clock'
-    # Capture both simultaneously: subsequent commands can change $status.
-    set -l previous $status $pipestatus
-    set -l last_status $previous[1]
-    set -l pipeline_status $previous[2..-1]
+    # fish_prompt runs first and its rendering commands replace status values.
+    set -l last_status $__native_prompt_last_status
+    set -l pipeline_status $__native_prompt_last_pipestatus
     set -q pipeline_status[1]; or set pipeline_status $last_status
 
     # Like the saved prompt, simple exit 1 is represented by the red chevron.

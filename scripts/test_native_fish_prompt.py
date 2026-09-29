@@ -131,11 +131,19 @@ class NativePromptTests(unittest.TestCase):
             self.assertEqual(plain(output), plain(success))
 
     def test_right_prompt_retains_pipeline_failure(self) -> None:
-        self.assertIn("✔ 1|0", plain(self.run_fish("false | true; fish_right_prompt")))
-        self.assertIn("✘ 0|1", plain(self.run_fish("true | false; fish_right_prompt")))
-        output = plain(self.run_fish(f"command {quote(FISH)} --no-config -c 'exit 2'; fish_right_prompt"))
+        self.assertIn("✔ 1|0", plain(self.run_fish("false | true; fish_prompt; fish_right_prompt")))
+        self.assertIn("✘ 0|1", plain(self.run_fish("true | false; fish_prompt; fish_right_prompt")))
+        output = plain(self.run_fish(
+            f"command {quote(FISH)} --no-config -c 'exit 2'; fish_prompt; fish_right_prompt"
+        ))
         self.assertIn("✘ 2", output)
-        self.assertEqual(plain(self.run_fish("false; fish_right_prompt")), " 09:30:00 AM")
+        self.assertTrue(plain(self.run_fish("false; fish_prompt; fish_right_prompt")).endswith(" 09:30:00 AM"))
+
+    def test_normal_prompt_order_preserves_pipeline_failure(self) -> None:
+        output = plain(self.run_fish("false | true; fish_prompt; fish_right_prompt"))
+        self.assertIn("✔ 1|0", output)
+        output = plain(self.run_fish("true | false; fish_prompt; fish_right_prompt"))
+        self.assertIn("✘ 0|1", output)
 
     def test_duration_threshold_and_hour_format(self) -> None:
         for duration, expected in ((3000, ""), (3001, "3s"), (65000, "1m 5s"), (3605000, "1h 0m 5s")):
@@ -178,10 +186,15 @@ class NativePromptTests(unittest.TestCase):
     def test_virtualenv_activation_does_not_wrap_the_left_prompt(self) -> None:
         environment = self.home / "python-project" / ".venv"
         venv.EnvBuilder(with_pip=False).create(environment)
+        python = environment / "bin/python3"
+        python.unlink(missing_ok=True)
+        python.write_text("#!/bin/sh\nprintf 'Python 3.12.0\\n'\n")
+        python.chmod(0o755)
         output = plain(self.run_fish(
             f"source {quote(environment / 'bin/activate.fish')}; "
             "set -g native_prompt_context_items python; true; fish_prompt; "
-            "printf '\\n'; true; fish_right_prompt"
+            "printf '\\n'; fish_right_prompt",
+            cwd=environment.parent,
         ))
         left, right = output.splitlines()
         self.assertNotIn("(.venv)", left)

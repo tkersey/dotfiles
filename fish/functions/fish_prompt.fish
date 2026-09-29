@@ -1,6 +1,9 @@
 function fish_prompt --description 'Single-line native Fish prompt'
-    # Capture status before any rendering command can overwrite it.
+    # Fish renders the right prompt after this function, so preserve the
+    # command result before any left-prompt rendering command changes it.
     set -l last_status $status
+    set -g __native_prompt_last_status $last_status
+    set -g __native_prompt_last_pipestatus $pipestatus
     set -l git_prompt (fish_git_prompt '%s' | string collect)
     set -l columns 80
     set -q COLUMNS[1]; and set columns $COLUMNS
