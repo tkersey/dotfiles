@@ -1,0 +1,32 @@
+name: Native Fish prompt
+
+on:
+  pull_request:
+    paths:
+      - 'fish/**'
+      - 'scripts/test_native_fish_prompt.py'
+      - '.github/workflows/fish-prompt.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'fish/**'
+      - 'scripts/test_native_fish_prompt.py'
+      - '.github/workflows/fish-prompt.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  native-prompt:
+    runs-on: macos-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Install test tools
+        run: brew install fish hub uv
+      - name: Check native prompt behavior in isolated shells
+        run: |
+          fish --version
+          uv run --no-project scripts/test_native_fish_prompt.py
