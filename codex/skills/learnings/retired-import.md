@@ -69,7 +69,7 @@ record. Original bytes never change; retained fragments remain base64-encoded
 in the receipt as well as in the original and migration archive. Unknown damage
 requires owner investigation, not broader repair permissions.
 
-## Qualification and existing local recovery work
+## Qualification and existing recovered stores
 
 Run `uv run python -m unittest discover -s codex/skills/learnings/tests -p
  'test_retired_import.py' -v` (on one shell line). Set `LEDGER_BIN` to a released
@@ -77,10 +77,15 @@ native binary to run conformance as well as constructor tests. The focused CI
 workflow verifies the Ledger 1.3.0 release checksum before executing native tests.
 Mock tests alone do not qualify this protocol for production custody.
 
-The October 1 Boundary report describes additional locally installed, uncommitted
-recovery artifacts. Their exact source is not part of that report. This change
-is independently implemented against published code, not a reproduction of that
-unpublished patch. Reconcile overlapping local protocol/importer changes before
-installation; never replace an existing recovered store or its definition
-archives to make a newer protocol pass. Test its actual version-0 events and
-archived closures before declaring compatibility with that local recovery.
+The earlier local recovery emitted version-0 `learning.capture` events with
+`legacy_source`; this importer emits version-0 `learning.import` events with
+`import_source`. Ledger replays existing events through their archived owner
+definitions. Keep those archives with the event history; do not rewrite old
+envelopes or re-import records to make them match the new constructor.
+
+The native compatibility regression uses the exact earlier recovery protocol
+in `tests/fixtures/local-recovery-protocol.json`. It checks full-record reads,
+an unchanged idempotent import, new imports and current captures in the same
+store, and preservation of the earlier event bytes and definition archives.
+For an existing recovered store, use read-only doctor and full-record projections
+to qualify installation. Registration does not require repeating adoption.

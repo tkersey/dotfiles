@@ -102,7 +102,9 @@ become invented records. Global memory admission remains a separate owner action
 Merge the owner historical-import change before this orchestration change. Run
 both new test modules with `LEDGER_BIN` set, plus the existing Ledger context
 suite. Native tests must pass; mocked native results are not custody evidence.
-Before installing over the October 1 Boundary recovery, reconcile the uncommitted
-local helper/protocol/importer changes and qualify its existing version-0 event
-bytes and definition archives. Never migrate an already-recovered live store
-merely to exercise these changes.
+The Learnings native compatibility test covers the earlier local recovery
+protocol and its archived definitions alongside new imports and captures.
+Qualify an existing recovered store with read-only doctor and full-record
+projections. Normal context resolution continues to use its existing
+registration, including stores adopted by the earlier scoped helper. Never
+migrate an already-recovered live store merely to exercise these changes.

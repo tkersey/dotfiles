@@ -24,6 +24,10 @@ Use `ledger transact --operation capture` for writes; use definition-bound
 projections for reads. The definition's `events` logical slot is canonical;
 `lrn-*` returned by Ledger is the canonical record identity.
 
+Retired-source recovery uses the explicit [historical import](retired-import.md)
+maintenance route. It preserves original identities and record fields through
+`import-record`; ordinary new writes continue to use `capture`.
+
 Normal context resolution is read-only. A first capture can initialize only with
 authority and the Ledger skill's legacy-coverage checks. Existing unbound/stale
 custody requires that skill's exact authorized maintenance, not binding each new
