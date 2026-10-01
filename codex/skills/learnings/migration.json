@@ -1,0 +1,1 @@
+{"schema":"ledger-owner-migration/v1","definition":"definitions/ledger/learnings-protocol.json","retired_sources":[".learnings.jsonl",".ledger/learnings/learnings.jsonl"],"importer":"scripts/import_retired_learnings.py"}

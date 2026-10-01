@@ -1,6 +1,6 @@
 ---
 name: ledger
-description: "Ensure Ledger 1.3.0 or newer within major version 1 is available; resolve durable repository/worktree-family custody; and use the passive-definition runtime to validate, canonicalize, materialize, transact, replay, project, doctor, bind, rebind, and recover owner-defined artifacts and stores. This skill owns storage-location policy. The semantic owner selects the definition and operation; Ledger enforces it without acquiring workflow authority."
+description: "Ensure Ledger 1.3.0 or newer within major version 1 is available; resolve durable repository/worktree-family custody; automate supported lossless legacy migration; and use the passive-definition runtime to validate, canonicalize, materialize, transact, replay, project, doctor, bind, rebind, and recover owner-defined artifacts and stores. This skill owns storage-location policy. The semantic owner selects the definition and operation; Ledger enforces it without acquiring workflow authority."
 ---
 
 # Ledger
@@ -102,9 +102,9 @@ initialization requires `--initialize --confirm-no-writers`; the flag is an
 operator's quiescence assertion, not a lock on old executables. The helper checks
 all registered worktrees for legacy history twice before publishing a fresh
 registration. Existing registration always wins over changed environment defaults.
-A missing established root is a continuity error, not first use. Legacy adoption
-is separate, explicit maintenance described in the context reference. Do not
-initialize simply to make a recall succeed.
+A missing established root is a continuity error, not first use. For supported
+legacy history, prefer the automated procedure below over manual cold-adoption
+choreography. Do not initialize simply to make a recall succeed.
 
 Use workspace/branch/path and immutable artifact facts as provenance. New
 repository-scoped records should carry the returned stable `repository_id`
@@ -112,6 +112,31 @@ where their owner schema supports it. Do not substitute the custody directory
 for the code workspace, rewrite old provenance, or broaden applicability because
 history is shared. Definition-relative source locators are resolved through this
 context, not by assuming they name files beneath a disposable checkout.
+
+## Ensure usable custody
+
+At the first canonical use of this integration for a repository family, or when
+unregistered custody, unaccounted legacy sources, or interrupted migration is
+encountered, read [automatic-migration.md](references/automatic-migration.md) and
+inspect with `scripts/ensure_custody.py --repo "<workspace-root>"` through `uv run`.
+Do this even for a pre-existing registration that has not been qualified by the
+migration helper: registration alone is not evidence of historical recovery.
+Cache a verified result for the unchanged context during the session; subsequent
+native operations use the normal resolver, not repeated migration scans.
+
+For an authorized migration, the helper's `--apply --confirm-no-writers` bundles
+supported discovery, source selection, cold transport, native binding maintenance,
+owner historical import, verification, and final registration. Do not ask the user
+to perform each routine substep or stop at archiving identifiable Learnings.
+The quiescence assertion must be established, never inferred from a process scan.
+Read-only recall produces a plan, not mutation. Divergent histories, unavailable
+worktrees, unknown damage, or missing authority remain precise blockers.
+
+Retain the returned context and receipt, then resume and verify the original
+owner operation. Report imported history separately from archived-only artifacts.
+Do not delete sources, silently rewrite provenance, or bulk-admit recovered rows
+to global memory. Native definitions remain passive; installed owners opt into
+migration through separate declarations, not repository-provided executable hooks.
 
 ## Baseline native surface
 
@@ -184,10 +209,10 @@ replacement. Diagnose missing binding separately from malformed/stale custody;
 `InvalidStoreBinding` alone is not proof that initial binding is appropriate.
 
 Normal writes use owner-selected `ledger transact` operations. Never hand-edit,
-compact, reinterpret, or skip records. The context reference permits only its
-explicit cold-adoption transport; that is not an alternate reader or writer.
-Fail closed on unknown closure, ABI, operator, binding, integrity, replay,
-projection, or recovery state.
+compact, reinterpret, or skip records. The context reference and automated
+migration reference permit only their explicit cold transport; neither is an
+alternate semantic reader or writer. Fail closed on unknown closure, ABI,
+operator, binding, integrity, replay, projection, or recovery state.
 
 Lease expiry does not transfer authority. Recovery is explicitly authorized and
 bound to one transaction's resource, lock identity, fencing token, owner, and
@@ -199,8 +224,8 @@ before recovery or version-dependent migration. No broad reclaim/repair mode.
 Use for explicit `$ledger`/`$ledger ensure`, a consumer's first native command,
 runtime/ABI availability, managed storage context, worktree continuity, definition
 authoring, validation/materialization, durable transactions/projections, binding,
-and exact recovery. Do not trigger merely because work creates history or a
-receipt; the semantic owner selects the protocol.
+legacy migration, and exact recovery. Do not trigger merely because work creates
+history or a receipt; the semantic owner selects the protocol.
 
 Report the actual operation, selected definition/closure/ABI, result schema and
 verdict, storage mutation, exact addressed source/transaction when relevant, and
