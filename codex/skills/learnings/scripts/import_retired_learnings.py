@@ -176,6 +176,16 @@ class Native:
             raise ImportErrorDetail('Projection omitted witnessed store revision')
         if revision is None and index:
             raise ImportErrorDetail('Nonempty projection omitted witnessed revision')
+        if not index:
+            doctor = self.run('doctor')
+            if (doctor.get('schema') != 'ledger-doctor-result/v1' or doctor.get('healthy') is not True
+                    or doctor.get('pending_transactions') != 0 or doctor.get('storage_mutated') is not False):
+                raise ImportErrorDetail('Cannot distinguish absent from empty custody')
+            slots = [slot for slot in doctor.get('slots', []) if slot.get('name') == 'events']
+            if len(slots) != 1:
+                raise ImportErrorDetail('Missing events-slot existence witness')
+            if slots[0].get('status') == 'missing' and slots[0].get('revision') is None:
+                revision = None
         return index, revision
 
 

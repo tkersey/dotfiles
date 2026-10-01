@@ -245,7 +245,7 @@ class ProtocolTests(unittest.TestCase):
         self.definition = json.loads(module.DEFINITION.read_text())
 
     def test_current_event_remains_version_one_and_strict(self):
-        current = self.definition['shape']['documents']['event']['one_of'][0]
+        current = self.definition['shape']['documents']['event']['tagged']['variants'][0]['node']
         self.assertEqual(current['fields']['v'], {'enum': [1]})
         self.assertIn('regex', current['fields']['record']['fields']['id'])
         self.assertNotIn('optional', current['fields']['record']['fields']['context'])
@@ -308,11 +308,11 @@ class NativeConformance(unittest.TestCase):
             with self.assertRaises(module.ImportErrorDetail):
                 native.run('transact', '--operation', 'import-record', '--param', 'import_key=stale-probe',
                     '--param', 'import_revision=sha256:' + '0'*64, packet=extra_packet)
-            original_packet = module.frame(source.read_bytes())[0][0]
+            original_packet = module.frame(source.read_bytes())[0][1]
             original_packet['record']['learning'] = 'conflicting input'
             with self.assertRaises(module.ImportErrorDetail):
                 native.run('transact', '--operation', 'import-record', '--param',
-                    'import_key=retired-' + hashlib.sha256(rows[0]['id'].encode()).hexdigest(),
+                    'import_key=retired-' + hashlib.sha256(rows[1]['id'].encode()).hexdigest(),
                     '--param', 'import_revision=' + revision, packet=original_packet)
             self.assertEqual(native.records()[0], stored)
 
