@@ -1,8 +1,14 @@
 ---
 name: synesthesia
-description: "Reversible cross-modal diagnostic lens for software. Use when the user asks what code, architecture, behavior, logs, APIs, or alternatives feel, sound, look, or move like; for compare-by-feel analysis; when literal analysis leaves multiple plausible structural, temporal, interaction, or boundary interpretations that cross-modal recoding could distinguish; or after an owning technical workflow documents such an ambiguity. Start from literal evidence and translate every sensory statement into a technical hypothesis, uncertainty, falsifier, and next move. Not for ordinary architecture, performance, readability, or UX audits; exact syntax; legal/compliance or security sign-off; or code mutation by itself."
+description: >-
+  Translate software and architecture into sensory models and back into precise
+  engineering meaning. Use for explicit sensory explanations or renditions,
+  compare-by-feel requests, concrete representational ambiguity, and reuse or
+  revision of established sensory mappings and durable mapping/boundary events.
+  Not an automatic architecture, performance, or UX audit; literal requests for
+  syntax or appearance alone do not imply sensory intent.
 metadata:
-  version: "4.1.0"
+  version: "4.2.0"
   activation_cost: low
   default_depth: adaptive
 ---
@@ -11,249 +17,135 @@ metadata:
 
 ## Mission
 
-Use reversible sensory representations to expose software structure that a literal description has not made easy to see, compare, or communicate.
+Make software structure perceptible: let architecture become space, interaction
+become texture, execution become rhythm, and load become pressure when those
+representations illuminate the subject. Translate the resulting insight back
+into precise engineering meaning without flattening away the sensory experience.
 
-The sensory layer is a diagnostic instrument. It is not evidence, proof, a mandatory output style, or an implementation owner.
+**Explore representations freely; make claims literally.**
 
-## Governing invariant
+Sensory models are instruments for discovery, explanation, and comparison—not
+evidence, proof, or implementation authority. Vividness and rigor are compatible.
+An explicit architecture-to-senses request deserves an actual sensory rendition,
+not merely a technical paraphrase with a metaphor attached.
 
-```text
-literal evidence
--> minimum sufficient sensory representation
--> engineering translation
--> uncertainty and falsifier
--> decision, explanation, or investigation delta
-```
+## Activation and ownership
 
-A sensory statement that cannot be translated, falsified, or used to change the next move is decoration and should be omitted.
+Activate for explicit sensory intent, including a rendition of an already
+understood architecture; compare-by-feel requests; or a concrete structural,
+temporal, interaction, or boundary ambiguity that recoding may illuminate.
+The root or an owning workflow may identify that ambiguity. Name the competing
+interpretations and the distinction or discriminating observation being sought;
+generic uncertainty alone is not enough. No unresolved defect is required for
+explicit explanation or rendition.
 
-## Activation boundary
+Also activate to reuse, correct, reject, retract, reopen, or remember an
+established sensory mapping or activation boundary. A durable event may accompany
+any representational mode; it is not a competing primary mode.
 
-Use this skill when at least one of these is true:
+Do not activate merely because work concerns architecture, performance,
+readability, flakiness, onboarding, UX, refactoring, handoff, or closeout. Interpret
+intent, not keyword matches: “what does valid JSON look like?” ordinarily asks for
+literal syntax. Respect literal-only requests. Do not use this lens for exact
+syntax, legal/compliance interpretation, or security sign-off.
 
-1. the user explicitly asks what software feels, sounds, looks, moves, weighs, or resembles;
-2. the user asks for a compare-by-feel analysis;
-3. literal analysis leaves multiple plausible structural, temporal, interaction, or boundary interpretations and a reversible cross-modal representation is expected to distinguish them;
-4. an owning workflow has produced a concrete representational ambiguity and documents why cross-modal recoding may distinguish the alternatives;
-5. the user asks to reuse, correct, reject, retract, or remember an established sensory mapping.
+The owning workflow retains selection, implementation, measurement, proof, and
+closure. Return useful insight to the relevant owner: measured performance to
+the active optimization workflow, structural architecture to `$universalist`,
+local comprehension/refactoring to `$complexity-mitigator`, and accepted memory
+transport to `$memory-source-notes`. Do not create a dedicated Synesthesia
+subagent or activate sibling skills merely to complete this pass. In explicitly
+requested team mode, a read-only lane needs exact artifact state, evidence, a
+representational question, and an accountable engineering translation.
 
-The root-discovered ambiguity route requires the competing interpretations, the evidence each explains, and the distinction the sensory representation is expected to expose. General uncertainty, novelty, or a desire for colorful prose is not sufficient.
-
-Do not activate merely because a task concerns:
-
-- architecture;
-- performance;
-- readability or maintainability;
-- flaky behavior;
-- onboarding;
-- API or UX quality;
-- refactoring;
-- a strange bug;
-- delivery, handoff, or terminal closeout.
-
-Those domains have their own technical owners. Synesthesia participates only when the representational lens is itself useful.
-
-Do not use for exact syntax, legal or compliance interpretation, security sign-off, rote edits, or literal-only tasks.
-
-## Ownership and handoffs
-
-Synesthesia may shape diagnosis or explanation, but it does not displace the owning workflow:
-
-- measured performance work -> `$lift`;
-- structural or categorical architecture -> `$universalist`;
-- local comprehension and refactoring preflight -> `$complexity-mitigator`;
-- security, UX, API, CLI, copy, or performance audit -> the relevant direct audit or available specialist;
-- code mutation -> the implementation owner selected by the root workflow;
-- durable source-note writing -> `$memory-source-notes`.
-
-When another skill owns the task, Synesthesia returns one route-shaping insight or explanatory model and then hands control back.
-
-Do not create a dedicated Synesthesia custom subagent. In explicitly requested team mode, use a read-only lane only when it receives exact artifact state, literal evidence, a specific representational question, and a required engineering translation plus falsifier.
-
-## Modes
-
-Choose exactly one primary mode.
-
-### Diagnose
-
-Use a sensory model to generate or rank technical hypotheses.
-
-Return:
-
-- literal observations;
-- the smallest useful sensory model;
-- engineering translations;
-- uncertainty;
-- falsifiers;
-- investigation order.
-
-### Explain
-
-Use a reversible model to teach a system, flow, or boundary.
-
-Return:
-
-- the literal model;
-- one coherent sensory representation;
-- the correspondence between the two;
-- important limits or misconceptions.
-
-Do not force an action list when explanation is the goal.
-
-### Compare
-
-Apply stable axes to two or more alternatives.
-
-Return:
-
-- common evidence;
-- shared mapping axes;
-- differences and trade-offs;
-- the decision implication;
-- uncertainty or missing evidence.
-
-Do not change mappings between alternatives merely to make one sound better.
-
-### Implementation lens
-
-Use one sensory representation to select or clarify a technical move, then return to literal implementation.
-
-Return only:
-
-- the route-shaping observation;
-- its engineering translation;
-- the owning workflow and next move.
-
-Do not narrate the entire implementation in metaphor.
-
-## Core contract
-
-Always:
-
-1. start from literal evidence: code, tests, logs, traces, architecture, runtime behavior, user flow, or repository structure;
-2. separate observations from hypotheses;
-3. choose the minimum sufficient and non-redundant modalities, usually one or two;
-4. keep mappings internally consistent within the analysis;
-5. translate every useful sensory statement into concrete engineering meaning;
-6. mark uncertainty when the translation is inferential;
-7. give every material diagnostic mapping a falsifier;
-8. identify the explanation, investigation, or route delta;
-9. execute code changes literally even when the lens informed them.
-
-Never:
-
-- treat metaphor as evidence;
-- invent unseen runtime behavior;
-- hide uncertainty in aesthetic language;
-- use several modalities to restate the same claim;
-- overwrite exact facts with feel;
-- force this lens onto a task that is already clear literally;
-- infer a durable user mapping from assistant-authored prose alone.
-
-## Modality selection
-
-Use [modality-selection.md](references/modality-selection.md) when selection is not obvious.
-
-Default principle:
+## Reasoning contract
 
 ```text
-one modality if one independent dimension is enough
-second modality only for a genuinely independent dimension
-more than two only with an explicit reason
+literal evidence and question
+-> sensory exploration and rendition
+-> relationships, dissonances, or candidate mechanisms
+-> engineering translation and challenge
+-> clearer understanding, comparison, discriminator, or next move
 ```
 
-Do not use a fixed universal mapping table. Treat all mappings as task-indexed hypotheses until accepted by the user or repeatedly operationalized.
+Start from inspected code, architecture, tests, traces, logs, behavior, or an
+explicitly supplied system description. Distinguish observed facts, stipulated
+example facts, unknowns, and hypotheses; do not invent unseen runtime behavior.
 
-## Procedure
+Let the representation help discover the technical hypothesis. Do not require
+a finished diagnosis before exploration or restrict the search to recoloring
+an existing explanation. A representation can suggest a possibility without
+establishing it. Recoding cannot manufacture missing evidence: identifying the
+measurement that would distinguish two hypotheses is a useful result.
 
-### 1. Literal read
+**Reversible means task-relative accountability, not lossless reconstruction.**
+Every material sensory claim must have recoverable engineering meaning grounded
+in evidence or marked assumptions. Preserve the relation that matters; expose
+what the analogy omits and which conclusions must not be imported from it.
 
-Identify:
+Choose modalities for their structural affordances. Explore alternatives as
+useful; present a coherent selection, usually one or two. This is not a search
+cap or a reason to suppress requested richness. Additional modalities earn their
+place through independent dimensions or consequential interactions—even when
+they answer the same question. Do not stack synonyms or impose a universal
+color/sound/texture dictionary. Use [modality-selection.md](references/modality-selection.md)
+when selection or combination needs care; use its linked examples for an
+architecture-to-senses rendition.
 
-- observed components and boundaries;
-- control, data, state, or user flow;
-- timing, load, or ordering evidence;
-- failures and constraints;
-- unknowns;
-- the specific question the literal model has not resolved.
+Keep mappings consistent within the analysis. Compare alternatives on the same
+axes without making one sound better by changing the vocabulary. Endorsed
+vocabulary is a scoped correspondence, not evidence that its technical referent
+is present in a new system. Verify applicability on each use.
 
-### 2. Select the representation
+## Modes and accountability
 
-Choose a modality because its structure matches the evidence:
+Choose the primary mode from the user's goal; a useful explanation may accompany
+a diagnosis or comparison without another invocation.
 
-- spatial for topology, dependency, ownership, or boundary shape;
-- rhythmic or auditory for timing, concurrency, retries, or sequencing;
-- tactile for interaction friction, brittleness, or rollback difficulty;
-- thermal or pressure for saturation, allocation, contention, or concentrated load;
-- visual for contrast, visibility, state distribution, or change over time.
+| Mode | Deliver | Challenge |
+|---|---|---|
+| Explain / render | A genuine sensory model, its literal correspondences, and a clearer mental model | Name omitted properties and likely misconceptions; do not demand a new bug, experiment, or action list |
+| Diagnose | A sensory model that suggests or distinguishes technical hypotheses and improves investigation order | Separate observations from hypotheses; give material diagnostic claims a falsifier or discriminating test |
+| Compare | Shared axes, grounded differences, trade-offs, and decision implications | Hold evidence and mappings stable; expose missing evidence and misleading aesthetic associations |
+| Implementation lens | The route-shaping sensory observation and literal engineering move | Preserve contracts and uncertainty, then return control to the implementation owner |
 
-### 3. Render conservatively
+A well-chosen sensory representation can be valuable because it makes existing
+structure easier to understand or remember. It need not discover a defect or
+change code to justify an explicit explanatory request.
 
-State only what the literal evidence supports. Use a compact representation rather than decorative prose.
+## Output and stopping
 
-### 4. Translate and challenge
+Match the requested richness. For sensory requests, show the architecture's
+space, motion, rhythm, texture, contrast, or pressure—not just the translation
+back out of them. Keep engineering correspondences near enough to recover and
+important limits visible. Directness excludes empty ornament, not vividness.
 
-For every material mapping, produce:
+Use prose, a diagram, a comparison, or an optional compact mapping card as the
+task warrants. A card can connect evidence, sensory representation, translation,
+limits/uncertainty, diagnostic falsifier, and explanation/decision delta; it is
+not mandatory headings or a demand to expose exploratory reasoning.
 
-```text
-Mapping Card:
-- evidence:
-- sensory representation:
-- engineering translation:
-- uncertainty:
-- falsifier:
-- decision or explanation delta:
-```
+Stop when the requested representation and its correspondences are complete,
+further recoding adds no useful distinction, or a technical owner has the next
+move. Literal sufficiency is a reason to skip an unsolicited sensory pass, not
+to refuse an explicit rendition. If evidence is insufficient, bound the model
+or name the missing artifact rather than asserting a diagnosis. Implement code
+literally; do not narrate an entire implementation in metaphor.
 
-### 5. Stop or hand off
+## Durable memory
 
-Stop the sensory pass when:
+Ordinary sensory output is not persisted. Explicit durable endorsement,
+correction, rejection, retraction, reopening, or a reusable mapping/boundary
+request can qualify without repetition. Otherwise require accepted operational
+use in at least two independent contexts that changed diagnosis or explanation.
+Assistant novelty and task-local approval alone are not durable user authority.
 
-- the model adds no new distinction;
-- the literal explanation is already sufficient;
-- a technical owner has a dominant next move;
-- further metaphor would only restate the diagnosis;
-- evidence is too weak to support a reversible translation.
+When this gate is live, read [memory-admission.md](references/memory-admission.md)
+before capture or admission. Synesthesia owns canonical capture and semantic
+eligibility; `$ledger` owns custody; `$memory-source-notes` owns derived transport.
+Preserve scope, source evidence, identities, engineering meaning, and verification.
+Canonical success, admission success, and digest status remain separate: a later
+failure never rolls back an earlier successful write. Keep routine no-ops internal.
 
-Hand control to the technical owner for implementation, proof, publication, or lifecycle work.
-
-## Output policy
-
-Do not force fixed headings into every response.
-
-Use the smallest output that preserves reversibility. A full diagnostic response may use:
-
-```text
-Literal evidence
-Sensory model
-Engineering translation
-Falsifiers
-Next move
-```
-
-For implementation-lens mode, one short mapping card is usually enough.
-
-## Durable memory events
-
-Ordinary sensory output is not persisted. A durable event requires explicit user
-endorsement, correction, rejection, or a reusable mapping/boundary request; without
-explicit durability, require accepted use in at least two independent contexts
-that changed diagnosis or explanation. Assistant novelty does not qualify.
-
-When that gate is live, read [memory-admission.md](references/memory-admission.md)
-before any canonical write or admission. Synesthesia owns canonical Ledger capture;
-`$memory-source-notes` transports an accepted projection. Preserve prior identities,
-engineering translation, activation/non-activation scope, and a verification rule.
-A note or digest failure never rolls back a successful canonical write. Keep no-op
-persistence evaluations out of ordinary diagnostic output.
-
-## Guardrails
-
-- Literal correctness outranks vividness.
-- Metaphor never substitutes for tests, profiling, logs, traces, or proof.
-- Repo-local vocabulary remains repo-local until broader evidence exists.
-- Stable mappings are preferred over novelty.
-- Never directly edit compiled memory.
-- Never hand-write source notes as a fallback.
-- Never use symlinks for live memory-extension instructions; synchronize them by copy through the documented adapter command.
-- Never activate solely because another source or a terminal workflow reached closeout.
+Never hand-write source notes, edit compiled memory, or symlink live memory
+extension instructions. Do not globalize repository vocabulary without authority.

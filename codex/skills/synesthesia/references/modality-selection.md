@@ -1,56 +1,59 @@
-# Synesthesia Modality Selection
+# Synesthesia modality selection
 
-## Purpose
+Choose a representation whose relations illuminate the evidence—not a phrase
+that merely sounds favorable. Sensory richness is welcome when it carries
+structure. For worked renditions, read [architecture-renditions.md](architecture-renditions.md).
 
-Choose a representation because its structure matches the available evidence, not because a phrase sounds vivid.
+## Selection and combination
 
-## Minimum-sufficient rule
+Start with the artifact, the user's representational goal, and any unresolved
+question. Explore useful representations before requiring a finished technical
+translation; the exploration may expose the hypothesis. Validate the resulting
+claim, not the mere act of imagining a model.
 
-```text
-one modality if one independent dimension is enough
-second modality only when it exposes a different technical dimension
-more than two only with an explicit reason
-```
+Usually present one or two coherent modalities. Add another for an independent
+dimension or an interaction between dimensions, including two views of the same
+question. Search breadth need not become output breadth. A user's request for a
+rich multisensory rendition is not a request for redundant synonyms.
 
-A modality is redundant when removing it leaves the same technical translation, uncertainty, falsifier, and next move.
-
-## Evidence-shape guide
-
-| Evidence shape | Primary representation | Technical dimensions it may expose |
+| Evidence or explanatory relation | Useful sensory affordances | What must not be imported automatically |
 |---|---|---|
-| dependencies, ownership, boundaries, layering | spatial | topology, direction, bottlenecks, boundary leakage, centrality |
-| timing, retries, sequencing, concurrency | rhythmic or auditory | cadence, jitter, phase conflict, serialization, feedback |
-| API or workflow interaction | tactile | friction, brittleness, hidden state, rollback cost, affordance |
-| CPU, allocation, contention, saturation | thermal or pressure | concentration, accumulation, pressure transfer, cooling paths |
-| state visibility, contrast, distribution, change | visual | hidden state, unstable contrast, spread, clustering, transitions |
+| Dependencies, ownership, boundaries, layering | Rooms, distance, doors, membranes, shape, load-bearing structure | Physical distance is not measured latency; a drawn wall is not enforced isolation |
+| Sequencing, retries, concurrency, feedback | Rhythm, tempo, phase, echoes, counterpoint, silence | Periodicity does not establish synchronization, causality, or a race |
+| API/workflow interaction and state transitions | Texture, grip, detents, drag, elasticity, brittleness | Smoothness is not correctness; an apparent detent need not be atomic or reversible |
+| Allocation, saturation, contention, concentrated work | Heat, pressure, reservoirs, flow, cooling paths | Pressure is not a measured queue, CPU load, or limiting resource without evidence |
+| Visibility, distribution, change, distinction | Color, light, contrast, transparency, motion, clustering | A chosen color is not an observed property or a universal valuation |
 
-This table maps evidence shapes to representational affordances. It is not a fixed metaphor ontology.
+These are affordances, not an ontology. Derive each correspondence from the
+artifact and accepted vocabulary. A different artifact can warrant a different
+mapping; do not change axes midway through a comparison.
 
-## Selection procedure
+Two modalities may expose an interaction. A dependency graph can appear spatially
+separated while traces show a shared rhythm: structural separation and temporal
+coordination are different dimensions of the same failure question. Neither
+view proves why the coordination occurs.
 
-1. Name the literal evidence and unresolved question.
-2. Choose the representation whose structure is most nearly isomorphic to that evidence.
-3. State the engineering translation before elaborating the sensory language.
-4. Add a second modality only when it answers a different question.
-5. Remove any modality that does not change the diagnosis, explanation, comparison, or next move.
+## Accountability by use
 
-## Common mistakes
+For explanation or rendition, make the important correspondences recoverable and
+name the analogy's limits. An experimental falsifier is not mandatory for every
+image used to teach an established mechanism.
 
-- **Synonym stacking:** several modalities restate “complex” without exposing independent dimensions.
-- **Ontology substitution:** a canned phrase is treated as if it were an observed system property.
-- **Unfalsifiable texture:** a description cannot be contradicted by code, traces, tests, or user behavior.
-- **Aesthetic ranking:** one alternative is made to sound better without a stable comparison axis.
-- **Narrative overrun:** implementation is narrated metaphorically after the route is already selected.
+For diagnosis, translate sensory discoveries into testable hypotheses. Name the
+evidence, uncertainty, and observation or intervention that would distinguish or
+falsify each material claim. A representation may reveal the need for new data;
+it cannot resolve genuine observational equivalence by itself.
 
-## Verification
+For comparison, hold mappings and technical axes stable. Separate descriptive
+properties from aesthetic preference: “heavier” may mean more coordination, not
+“worse.” Explain the relevant cost or benefit.
 
-For each material modality, answer:
+## Remove distortion, not the senses
 
-```text
-What literal evidence selected it?
-What independent technical dimension does it expose?
-What would falsify the translation?
-What decision or explanation changes because of it?
-```
+Compress a modality when removing it loses no distinct relationship, explanatory
+value, or useful interaction. Do not collapse a requested sensory rendition into
+literal prose merely because the underlying system is already understood.
 
-If any answer is missing, omit or compress the modality.
+Challenge synonym stacking, canned property-to-color tables, invented runtime
+facts, aesthetically rigged comparisons, and implications the source does not
+support. Stop metaphorical narration when returning to literal implementation.

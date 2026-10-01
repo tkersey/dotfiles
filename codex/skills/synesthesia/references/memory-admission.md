@@ -1,437 +1,163 @@
-# Synesthesia Memory Admission
+# Synesthesia memory admission
 
-## Boundary
+Synesthesia owns durable sensory semantics and canonical capture. `$ledger` owns
+custody and the definition runtime. `$memory-source-notes` owns validated note
+transport, installed adapter paths, synchronization, digest generation, and
+reconciliation. Ordinary sensory output is not persisted.
 
-Synesthesia owns the decision that a sensory mapping or activation boundary is durable enough to admit. `$memory-source-notes` owns validation, canonicalization, safe transport, copy-based adapter synchronization, diagnostics, and proof lines.
+## Admission gate
 
-Ordinary sensory output is not persisted.
+Explicit durable endorsement, correction, rejection, retraction, reopening, or a
+reusable mapping/boundary instruction is sufficient without repetition. A
+current-task compliment is not necessarily durable authority. Without explicit
+durability, require accepted operational use in at least two independent contexts
+and evidence that it changed diagnosis or explanation. Assistant novelty never
+qualifies on its own.
 
-Throughout this reference, `<synesthesia-definition>` means:
+Retain the narrowest reusable scope, source references, concrete engineering
+meaning, activation/non-activation boundaries, and a verification rule. Endorsing
+a correspondence does not verify its applicability to every future architecture.
+Do not globalize repository vocabulary without broader authority.
 
-```text
-<synesthesia-skill-root>/definitions/ledger/synesthesia-protocol.json
-```
+Do not capture transient incidents, one-off poetry, ambient colors, ordinary
+technical facts owned by `$learnings`, or failed-route exclusions owned by
+`$negative-ledger`. Do not evaluate persistence merely at handoff or closeout.
 
-## Durable event classes
+When already active, an actionable non-durable mapping may be proposed with its
+evidence, translation, boundaries, and missing endorsement. It is not a ledger
+row, source note, or future authority; no candidate protocol is mandatory.
 
-| Event | Logical kind | Stored kind | Operation | Prior note required |
+## Events and identities
+
+| Event | Logical kind | Stored kind | Operation | Prior identity |
 |---|---|---|---|---|
-| first explicit endorsement | `mapping-endorsement` | `mapping-endorsement` | `assert` | no |
-| repeated explicit acceptance | `mapping-confirmation` | `mapping-endorsement` | `confirm` | yes, in `related_ids` |
-| correction | `mapping-correction` | `mapping-correction` | `supersede` | yes |
-| rejection | `mapping-rejection` | `mapping-rejection` | `reject` | yes |
-| boundary assertion | `activation-boundary` | `activation-boundary` | `assert` | no |
-| boundary confirmation | `activation-boundary` | `activation-boundary` | `confirm` | yes |
-| boundary correction | `activation-boundary` | `activation-boundary` | `supersede` | yes |
-| boundary reopening | `activation-boundary` | `activation-boundary` | `reopen` | yes |
-| boundary withdrawal | `boundary-retraction` | `boundary-retraction` | `retract` | yes |
-| mapping reopening | `mapping-endorsement` | `mapping-endorsement` | `reopen` | yes |
+| Endorsement | `mapping-endorsement` | same | `assert` | None |
+| Confirmation | `mapping-confirmation` | `mapping-endorsement` | `confirm` | Required in `related_ids` |
+| Correction | `mapping-correction` | same | `supersede` | Required |
+| Rejection | `mapping-rejection` | same | `reject` | Required |
+| Boundary assertion/confirmation/correction/reopening | `activation-boundary` | same | `assert` / `confirm` / `supersede` / `reopen` | Required except for `assert` |
+| Withdrawal | `boundary-retraction` | same | `retract` | Required |
+| Mapping reopening | `mapping-endorsement` | same | `reopen` | Required |
 
-`mapping-confirmation` is a logical convenience. The current `memory-note` binary stores it as `kind=mapping-endorsement` plus `operation=confirm`.
+Use the passive definition's operation/authority matrix: endorsements and
+confirmations use explicit endorsement or repeated accepted use; mapping
+corrections use explicit correction; mapping rejections use explicit rejection;
+boundary withdrawal uses explicit correction or rejection. Preserve the prior
+relationship rather than asserting a replacement as an unrelated new mapping.
 
-## Authority matrix
+`SYN-*` identifies a canonical event. `MSN-*` identifies an immutable admission.
+They are not interchangeable. Canonical relationships may retain either supported
+identity; the transport adapter resolves canonical relationships to exact admitted
+note identities, preserves canonical provenance, and leaves canonical rows alone.
+A missing or ambiguous prior admission blocks the dependent admission—not the
+already successful canonical capture. Never guess a note ID or bulk-admit history.
 
-Use the narrowest matching authority:
+## Canonical submission
 
-```text
-mapping endorsement       explicit-user-endorsement | repeated-accepted-use
-mapping confirmation      explicit-user-endorsement | repeated-accepted-use
-mapping correction        explicit-user-correction
-mapping rejection         explicit-user-rejection
-activation boundary       explicit-user-endorsement | explicit-user-correction | repeated-accepted-use
-boundary retraction       explicit-user-correction | explicit-user-rejection
-```
-
-Assistant inference is never sufficient.
-
-## Non-durable candidates
-
-When Synesthesia is already active and no durable authority exists, a useful
-mapping may be presented as an explicit proposal rather than silently treated
-as reusable authority:
-
-```text
-synesthesia: candidate: phrase="<sensory phrase>" translation="<engineering meaning>" needs=user-endorsement
-```
-
-Nearby context must include evidence, activation boundary, non-activation
-boundary, verification or falsifier, and the missing authority. If the user
-later endorses, corrects, or rejects the candidate, convert that later event
-into the appropriate durable operation.
-
-Candidates are not adapter payloads and must not be written to
-`.ledger/synesthesia/events.jsonl`. Do not generate candidates merely because a
-technical workflow reached handoff or closeout; the Synesthesia activation
-boundary must already be met.
-
-## Canonical payload
-
-Envelope fields own authority, scope, source references, and prior-note relationships. The payload owns only the sensory contract.
-
-The `record` in the structural submission is the writer envelope. The outer
-fields declare the logical kind and its current physical writer kind exactly
-once:
+Resolve `<synesthesia-definition>` to this skill's
+`definitions/ledger/synesthesia-protocol.json`. Its passive schema is authoritative;
+do not duplicate validation in prose or hand-write a canonical row.
 
 ```json
 {
   "logical_kind": "mapping-endorsement",
   "physical_kind": "mapping-endorsement",
-  "record": {}
-}
-```
-
-For endorsement, confirmation, or correction, replace that empty `record`
-with:
-
-```json
-{
-  "operation": "assert",
-  "authority": "explicit-user-endorsement",
-  "summary": "Endorse long corridor as serialized-wait vocabulary.",
-  "scope": {
-    "kind": "task-family",
-    "repo": null,
-    "paths": []
-  },
-  "source_refs": [
-    {
+  "record": {
+    "operation": "assert",
+    "authority": "explicit-user-endorsement",
+    "summary": "Endorse long corridor as serialized-wait vocabulary.",
+    "scope": {"kind": "task-family", "repo": null, "paths": []},
+    "source_refs": [{
       "kind": "user-endorsement",
-      "ref": "rollout:019...",
-      "summary": "User explicitly accepted the mapping as reusable"
+      "ref": "<actual source reference>",
+      "summary": "User explicitly accepted the correspondence as reusable."
+    }],
+    "related_ids": [],
+    "supersedes_id": null,
+    "payload": {
+      "sensory_phrase": "long corridor",
+      "engineering_translation": "A chain of serialized waits.",
+      "activation_boundary": "Explicit sensory explanation of evidenced serial waits.",
+      "non_activation_boundary": "Do not infer measured latency from dependency depth alone.",
+      "verification": "Name the waits and distinguish observed duration from topology."
     }
-  ],
-  "related_ids": [],
-  "supersedes_id": null,
-  "payload": {
-    "sensory_phrase": "long corridor",
-    "engineering_translation": "serialized waits, chatty calls, or amplified dependency latency",
-    "activation_boundary": "performance and dependency-chain diagnosis",
-    "non_activation_boundary": "exact syntax or literal-only requests",
-    "verification": "Every use names the concrete wait or latency mechanism and evidence"
   }
 }
 ```
 
-The adapter generates deterministic transport fields required by the current
-writer. Do not manually make payload scope or endorsement type a second
-authority.
+Corrections and confirmations retain the mapping payload. Rejection uses
+`sensory_phrase`, boundaries, `rejection_reason`, and `verification`; engineering
+translation is optional. A pure boundary has both boundaries and `verification`.
+Withdrawal has `retracted_boundary`, `reason`, and `verification`. Use real source
+references, not the example placeholder. Transport-only provenance kinds
+`synesthesia-canonical-event` and `synesthesia-canonical-relationship` belong to
+the adapter, not canonical submission authors.
 
-For rejection, replace `engineering_translation` with:
+## Custody and capture
 
-```json
-"rejection_reason": "The phrase repeatedly implied the wrong failure family"
-```
+Load `$ledger` and complete `$ledger ensure` before the first native command.
+This revision retains Synesthesia's existing explicitly selected **unmanaged
+custody**, rather than silently opting its history into managed storage. In the
+commands below, `<canonical-custody-root>` is that exact selected root—not
+whichever worktree happens to be the current directory.
 
-For a pure activation boundary, the payload contains:
-
-```json
-{
-  "activation_boundary": "Use for explicit compare-by-feel requests",
-  "non_activation_boundary": "Do not activate for ordinary architecture review",
-  "verification": "Future use must name the representational ambiguity or explicit sensory request"
-}
-```
-
-For boundary retraction:
-
-```json
-{
-  "retracted_boundary": "Implicitly use for every performance task",
-  "reason": "Performance alone does not establish representational need",
-  "verification": "Future activation requires explicit sensory language or a documented handoff"
-}
-```
-
-## Canonical append
-
-After the gate passes, write the repo-local canonical event first:
+Use the same selection for capture, recall, admission, doctor, and reconciliation.
+Changing worktrees does not authorize a new parallel history, fallback, implicit
+binding, or automatic migration. When the established custody cannot be selected,
+report the continuity problem; do not initialize an empty replacement. A future
+repository-family adoption must use Ledger-owned maintenance and update every
+reader and writer together. This reference defines semantic scope, not physical
+storage paths or a competing context resolver.
 
 ```bash
-ledger transact \
-  --definition <synesthesia-definition> \
-  --operation capture \
-  --repo <repo> \
-  --input submission=<file|-> \
-  --format json
+ledger doctor --definition "<synesthesia-definition>" \
+  --repo "<canonical-custody-root>" --format json
+ledger transact --definition "<synesthesia-definition>" \
+  --operation capture --repo "<canonical-custody-root>" \
+  --input submission="<file|->" --format json
 ```
 
-The compiled definition validates the operation-kind matrix, prior
-relationship, scope, authority, payload, and source references before
-appending. The returned `ledger-transaction-result/v1` supplies the canonical
-row and exact `SYN-*` identity.
+Retain the canonical transaction result and exact returned `SYN-*` ID. Capture
+once; reuse a successful identity instead of capturing again during handoff.
+Existing stores require explicit, separately authorized `bind-existing` only
+where appropriate under `$ledger`; normal operations never bind implicitly.
+Existing immutable notes remain valid source evidence and are not imported into
+or rewritten as canonical events.
 
-An existing current-format event store is admitted only by the explicit,
-one-shot `bind-existing` transaction after full replay under the selected
-definition digest. Normal reads and writes never bind or fall back
-implicitly. Existing immutable `MSN-*` notes are not rewritten or imported
-into this store.
+## Same-turn derived admission
 
-## Same-turn memory-source admission
+When global memory admission is warranted, load `$memory-source-notes` and use
+its source-bound `synesthesia_memory_note.py admit` command with the exact
+canonical custody and returned `SYN-*` ID. It derives the logical kind from the
+canonical event, validates the source and note envelopes, resolves relationships,
+and invokes the sole immutable writer. Do not pipe unresolved `SYN-*`
+relationships directly to the low-level `append` command.
 
-After the canonical append succeeds, load `$memory-source-notes` only when
-global memory admission is warranted. Project the memory-note adapter envelope:
+The adapter reuses an existing exact validated snapshot, including compatible
+older snapshots, without rewriting it. It does not infer correspondence from a
+phrase, substring, timestamp alone, or aesthetic similarity. Historical admission
+requires the source owner's independent eligibility decision. A read-only
+`inspect-admission` command exposes the prepared transport and any identity gap.
 
-```bash
-ledger project \
-  --definition <synesthesia-definition> \
-  --projection memory-note \
-  --repo <repo> \
-  --param id=SYN-... \
-  --payload-only \
-  --format json
-```
+## Results and promotion
 
-Then pass that envelope to the Synesthesia source-note adapter:
-
-```bash
-uv run \
-  codex/skills/memory-source-notes/scripts/synesthesia_memory_note.py \
-  append \
-  --kind <logical-kind> \
-  --json -
-```
-
-The adapter injects writer-required transport fields, canonicalizes JSON before
-fingerprinting, invokes `memory-note`, and emits the writer result. A failed
-memory admission must never roll back a successful ledger append.
-
-## Copy-based adapter synchronization
-
-Memory extension instructions must be regular copied files, not symlinks.
-
-From the dotfiles repository root:
-
-```bash
-uv run \
-  codex/skills/memory-source-notes/scripts/synesthesia_memory_note.py \
-  sync-instructions
-```
-
-This copies:
+Report canonical and derived outcomes separately when persistence matters:
 
 ```text
-codex/memories/extensions/synesthesia/instructions.md
+canonical capture: created | duplicate | failed
+memory admission: not warranted | created | duplicate | failed
+digest: unchanged | refreshed | degraded
 ```
 
-into:
+These are distinctions, not mandatory headings. Preserve the real canonical
+receipt and the writer's real proof line. A note or digest failure never rolls
+back canonical success; digest failure never invalidates an admitted note. Do
+not report ordinary diagnostic no-ops as persistence failures.
 
-```text
-${CODEX_HOME:-$HOME/.codex}/memories/extensions/synesthesia/instructions.md
-```
-
-It refuses a symlinked destination or symlinked destination component.
-
-## Doctor workflow
-
-```bash
-uv run \
-  codex/skills/memory-source-notes/scripts/synesthesia_memory_note.py \
-  doctor \
-  --repo <repo> \
-  --format text
-```
-
-The doctor distinguishes:
-
-```text
-source Ledger missing, current, invalid, or unavailable
-no source notes
-adapter missing, stale, or symlinked
-digest missing, stale, invalid, or current
-source notes and digest present but not compiled
-compiled memory mentions present
-writer unavailable or writer doctor failure
-```
-
-## Generated current-state digest
-
-Every successful non-dry-run Synesthesia append refreshes:
-
-```text
-${CODEX_HOME:-$HOME/.codex}/memories/extensions/synesthesia/resources/latest_synesthesia_digest.md
-```
-
-Manual refresh:
-
-```bash
-uv run \
-  codex/skills/memory-source-notes/scripts/synesthesia_memory_note.py \
-  memory-digest
-```
-
-The generator reads the complete immutable note history, validates stored envelopes, and folds event chains in captured-time and note-ID order:
-
-```text
-assert     -> create an active mapping or boundary
-confirm    -> add support to the referenced active lineage
-supersede  -> replace the referenced current rule
-reject     -> make the referenced mapping inactive
-retract    -> make the referenced mapping or boundary inactive
-reopen     -> restore an inactive referenced lineage with new evidence
-```
-
-Dangling, forward, cross-lineage, category-mismatched, or content-mismatched events remain under `Unresolved event chains` and never become active implicitly. Invalid source notes remain visible under `Invalid source notes`.
-
-The default digest is always complete: active mappings, active boundaries, rejected/retracted entries, unresolved chains, and invalid notes. Partial human reports require an explicit `--output`; they must not overwrite the default `latest_synesthesia_digest.md`.
-
-The digest embeds a deterministic source fingerprint over note IDs, note fingerprints, kinds, operations, and source-file hashes. Re-running without source changes returns `current` and does not rewrite the file. Digest failure is reported as a warning and never rolls back a successful source-note append.
-
-## Phase 2 promotion
-
-Explicit durable user endorsement, correction, rejection, retraction, or boundary instruction is sufficient evidence of intended persistence when the mapping is concrete, scoped, reversible, and future behavior would change.
-
-Do not impose a repetition requirement on explicit durable authority.
-
-Without explicit durability, require repeated accepted operational use across at least two independent contexts.
-
-Resource digests are only staging artifacts. Every promotable resource entry must cite one or more immutable `source_note_ids`. Resource-only prose is not admitted evidence.
-
-## Proof lines
-
-Emit a proof line only when persistence was requested or the admission gate passed:
-
-```text
-memory-note: id=MSN-... extension=synesthesia kind=<kind> status=created
-memory-note: duplicate-skip: extension=synesthesia fingerprint=<fingerprint>
-memory-note: not-attempted: cli unavailable
-memory-note: failed: <concise reason>
-```
-
-Do not emit routine `not-attempted` lines for ordinary diagnostic use.
-
-## Durable memory events
-
-Most sensory output must not become memory.
-
-When this workflow reaches a native Ledger command, load `$ledger` and complete
-`$ledger ensure` once. After readiness, invoke `ledger` directly.
-
-Resolve `<synesthesia-definition>` once to:
-
-```text
-<this-skill-root>/definitions/ledger/synesthesia-protocol.json
-```
-
-A durable memory event exists when the user explicitly:
-
-- says `remember this`, `save this`, `from now on`, or equivalent;
-- defines `when I say <phrase>, it means <technical pattern>`;
-- endorses a mapping as correct and reusable;
-- reuses an existing mapping in a new context and explicitly accepts it again;
-- corrects or rejects a prior mapping;
-- defines, changes, retracts, or reopens a durable activation or non-activation boundary.
-
-Repeated accepted operational use without an explicit durability phrase may qualify only across at least two independent contexts and with evidence that the mapping changed diagnosis or explanation.
-
-When a durable memory event exists:
-
-1. classify it as endorsement, confirmation, correction, rejection, activation boundary, boundary retraction, or reopening;
-2. identify the narrowest reusable scope;
-3. require an engineering translation and verification rule;
-4. identify the prior `SYN-*` ledger ID or `MSN-*` source-note ID for confirmation, correction, rejection, retraction, or reopening when one exists;
-5. run `ledger doctor --definition <synesthesia-definition> --repo <repo> --format json`;
-6. execute [Canonical append](#canonical-append) once for this event; if that step already returned its `SYN-*` ID, reuse it without another capture;
-7. when global memory admission is warranted, follow [Same-turn memory-source admission](#same-turn-memory-source-admission) with that exact returned `SYN-*` ID;
-8. emit separate canonical and admission proof lines.
-
-Do not merely describe a qualifying memory event without attempting the handoff.
-
-When Synesthesia is legitimately active but durable authority is absent, a
-compact non-durable proposal may be useful:
-
-```text
-synesthesia: candidate: phrase="<sensory phrase>" translation="<engineering meaning>" needs=user-endorsement
-```
-
-State the evidence, activation boundary, non-activation boundary, and
-verification or falsifier nearby. A candidate is not a ledger row, memory note,
-or future authority. Do not run a candidate pass when the activation boundary
-is not already met.
-
-Do not emit a `memory-note: not-attempted` line during ordinary Synesthesia use. Emit a proof line only when the user requested persistence, supplied a durable event, or the admission gate was materially evaluated.
-
-## Memory admission gate
-
-Explicit durable user authority is sufficient for intended persistence. It does not also require repetition.
-
-Without explicit durable authority, require repeated accepted use across at least two independent contexts.
-
-Every admitted mapping or boundary must contain:
-
-- sensory phrase when a phrase is being mapped;
-- concrete engineering translation;
-- activation boundary;
-- non-activation boundary;
-- narrow envelope scope;
-- explicit or repeated-accepted authority;
-- source references;
-- reversible verification rule;
-- prior note relationship when changing an existing mapping.
-
-Do not capture:
-
-- one-off poetic phrases;
-- assistant novelty;
-- transient incidents;
-- ambient UI colors or passive screen context;
-- mappings with no engineering translation;
-- ordinary technical facts better owned by learnings;
-- failed-route exclusions better owned by negative ledger;
-- general operating corrections are outside Synesthesia scope unless they establish a sensory mapping or activation boundary.
-
-## Canonical Store
-
-```text
-<this-skill-root>/definitions/ledger/synesthesia-protocol.json
-```
-
-The passive definition owns the structural submission contract, `capture` and
-one-shot `bind-existing` transactions, and `record`, `memory-note`, `recent`,
-`query`, and `recall` projections. Invoke them only through generic
-`ledger doctor`, `ledger transact`, and `ledger project`.
-
-`.ledger/synesthesia/events.jsonl` is the current persistent adapter location,
-not a caller contract; do not open or hand-edit it in normal operation.
-Existing immutable Synesthesia memory-source notes remain byte-identical
-current data and require no migration. An existing event store must be bound
-once through the explicit `bind-existing` transaction before normal reads or
-writes; there is no implicit reader, note import, or fallback path.
-
-## Generated current-state digest
-
-A successful Synesthesia memory-source admission refreshes this regular-file materialized view automatically:
-
-```text
-${CODEX_HOME:-$HOME/.codex}/memories/extensions/synesthesia/resources/latest_synesthesia_digest.md
-```
-
-The digest folds immutable `assert`, `confirm`, `supersede`, `reject`, `retract`, and `reopen` events into the current active mappings and activation boundaries. It also preserves inactive entries, invalid notes, and unresolved event chains.
-
-The digest is disposable and non-canonical. Every promotable entry must retain resolvable `source_note_ids`; immutable notes remain authoritative. A digest-generation failure must never invalidate or roll back a successful source-note append.
-
-Manual refresh:
-
-```bash
-memory_source_notes_root="$(realpath "${CODEX_HOME:-$HOME/.codex}/skills/memory-source-notes")"
-uv run \
-  "$memory_source_notes_root/scripts/synesthesia_memory_note.py" \
-  memory-digest
-```
-
-Run the doctor after copy-deploying the Phase 2 adapter or when promotion appears stale:
-
-```bash
-memory_source_notes_root="$(realpath "${CODEX_HOME:-$HOME/.codex}/skills/memory-source-notes")"
-uv run \
-  "$memory_source_notes_root/scripts/synesthesia_memory_note.py" \
-  doctor \
-  --repo <repo> \
-  --format text
-```
-
-## Cross-extension ownership
-
-- evidence-backed execution learning -> `$learnings`;
-- failed-hypothesis exclusion or reopening -> `$negative-ledger`;
-- endorsed sensory mapping or sensory activation boundary -> `$synesthesia`;
-- immutable source-note transport and cross-source reconciliation -> `$memory-source-notes`.
+The generated current-state digest is disposable and non-canonical. It folds
+assert/confirm/supersede/reject/retract/reopen histories, preserving inactive,
+invalid, and unresolved entries. Every promotable entry must retain resolvable
+`source_note_ids`; the digest's fingerprint must match the current immutable
+notes. Phase 2 owns promotion and compiled memory. Use `$memory-source-notes` for
+refresh, copy-based instruction synchronization, doctor, and reconciliation;
+never hand-author notes or edit compiled memory as a fallback.
