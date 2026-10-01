@@ -4,12 +4,12 @@
     "skill": {
       "name": "synesthesia",
       "kind": "decision",
-      "source_fingerprint": "synesthesia-v4.1.0-astra-compat-v2"
+      "source_fingerprint": "synesthesia-v4.2.0-sensory-preservation-admission-v1"
     },
     "triggers": [
       {
         "trigger_id": "SYN-EXPLICIT-SENSORY",
-        "description": "The user explicitly asks what software feels, sounds, looks, moves, weighs, or resembles.",
+        "description": "Explicit sensory explanation or rendition of software or architecture, including an already understood system.",
         "cue_literals": [
           "feels like",
           "sound like",
@@ -17,16 +17,21 @@
           "texture",
           "rhythm",
           "weight",
-          "sensory map"
+          "sensory map",
+          "architecture into senses"
         ],
         "cue_regexes": [
           "(?i)what (does|do) .+ (feel|sound|look) like"
         ],
-        "exclusions": []
+        "exclusions": [
+          "literal syntax or output-shape request without sensory intent",
+          "literal appearance description without cross-modal intent",
+          "literal-only task"
+        ]
       },
       {
         "trigger_id": "SYN-COMPARE-FEEL",
-        "description": "The user asks to compare alternatives by feel or another stable sensory axis.",
+        "description": "Compare alternatives using stable sensory correspondences grounded in common technical axes.",
         "cue_literals": [
           "compare by feel",
           "which feels",
@@ -35,11 +40,13 @@
           "quieter"
         ],
         "cue_regexes": [],
-        "exclusions": []
+        "exclusions": [
+          "ordinary optimization wording without sensory intent or representational ambiguity"
+        ]
       },
       {
         "trigger_id": "SYN-ROOT-AMBIGUITY",
-        "description": "Literal analysis leaves multiple plausible structural, temporal, interaction, or boundary interpretations and a reversible cross-modal representation is expected to distinguish them.",
+        "description": "Concrete competing structural, temporal, interaction, or boundary interpretations may benefit from sensory recoding or a better discriminator.",
         "cue_literals": [
           "multiple plausible interpretations",
           "literal model does not distinguish",
@@ -48,13 +55,12 @@
         "cue_regexes": [],
         "exclusions": [
           "generic uncertainty with no competing interpretations",
-          "request for colorful prose without a technical distinction",
-          "ordinary domain task already clear literally"
+          "ordinary domain work already clear literally and no explicit sensory request"
         ]
       },
       {
         "trigger_id": "SYN-HANDOFF-AMBIGUITY",
-        "description": "An owning workflow documents a concrete representational ambiguity that cross-modal recoding may clarify.",
+        "description": "An owning workflow identifies a concrete representational ambiguity that cross-modal recoding may clarify.",
         "cue_literals": [
           "synesthesia handoff",
           "representational ambiguity"
@@ -68,25 +74,28 @@
       },
       {
         "trigger_id": "SYN-DURABLE-MEMORY-EVENT",
-        "description": "The user explicitly endorses, confirms, corrects, rejects, retracts, reopens, or asks to remember a sensory mapping or boundary.",
+        "description": "Explicit durable endorsement, correction, rejection, retraction, reopening, or mapping/boundary instruction; alternatively accepted operational use in two independent contexts with demonstrated utility.",
         "cue_literals": [
           "remember this mapping",
           "save this mapping",
           "from now on",
           "when I say",
           "reject that mapping",
-          "retract that boundary"
+          "retract that boundary",
+          "accepted use across independent contexts"
         ],
         "cue_regexes": [],
         "exclusions": [
-          "assistant-authored novelty without user authority"
+          "assistant-authored novelty without user authority",
+          "task-local approval without durability",
+          "mere repetition without accepted operational use"
         ]
       }
     ],
     "routes": [
       {
         "route_id": "SYN-ROUTE-DIAGNOSE",
-        "description": "Use a reversible sensory representation to generate or rank technical hypotheses.",
+        "description": "Explore sensory representations to generate or distinguish technical hypotheses and discriminating tests.",
         "aliases": [
           "diagnose"
         ],
@@ -94,16 +103,17 @@
       },
       {
         "route_id": "SYN-ROUTE-EXPLAIN",
-        "description": "Build a reversible mental model without forcing implementation advice.",
+        "description": "Render a coherent sensory experience with recoverable engineering correspondences and limits; no unresolved defect is required.",
         "aliases": [
           "explain",
-          "teach"
+          "teach",
+          "render"
         ],
         "terminal": false
       },
       {
         "route_id": "SYN-ROUTE-COMPARE",
-        "description": "Compare alternatives on stable mapping axes and state the decision implication.",
+        "description": "Compare alternatives on stable sensory and technical axes without aesthetic rigging.",
         "aliases": [
           "compare"
         ],
@@ -111,7 +121,7 @@
       },
       {
         "route_id": "SYN-ROUTE-IMPLEMENTATION-LENS",
-        "description": "Return one route-shaping insight and hand control back to the implementation owner.",
+        "description": "Return route-shaping sensory insight and a literal next move to the implementation owner.",
         "aliases": [
           "implementation-lens"
         ],
@@ -119,7 +129,7 @@
       },
       {
         "route_id": "SYN-ROUTE-MEMORY-ADMISSION",
-        "description": "Classify and append one durable Synesthesia source note through memory-source-notes.",
+        "description": "Capture one qualifying canonical event, then transport its accepted derived admission when warranted; retain separate outcomes.",
         "aliases": [
           "memory-admission"
         ],
@@ -127,7 +137,7 @@
       },
       {
         "route_id": "SYN-ROUTE-DIRECT-LITERAL",
-        "description": "Decline the sensory lens because literal handling or another governing skill is sufficient.",
+        "description": "Use literal handling when there is no sensory intent or useful representational ambiguity; not a veto on explicit rendition.",
         "aliases": [
           "direct",
           "handoff"
@@ -136,7 +146,7 @@
       },
       {
         "route_id": "SYN-ROUTE-BLOCKED",
-        "description": "Stop when literal evidence, scope, authority, prior-note relationship, or reversibility is insufficient.",
+        "description": "Report missing evidence, custody, authority, or prior identity without invalidating independent completed work.",
         "aliases": [
           "blocked"
         ],
@@ -160,23 +170,24 @@
           "SYN-ROUTE-DIRECT-LITERAL",
           "SYN-ROUTE-BLOCKED"
         ],
-        "prohibited_routes": [
-          "SYN-ROUTE-MEMORY-ADMISSION"
-        ],
+        "prohibited_routes": [],
         "required_artifacts": [
-          "literal evidence or explicit not-inspected boundary",
-          "selected mode",
-          "minimum-sufficient modality rationale"
+          "literal evidence, supplied architecture, or explicit not-inspected boundary",
+          "mode appropriate to user intent",
+          "coherent modality selection"
         ],
         "success_signals": [
-          "activation is based on representational need or explicit sensory language",
-          "ordinary domain work remains owned by its technical workflow"
+          "explicit sensory architecture requests do not require a bug or competing diagnosis",
+          "ordinary technical work retains its owner",
+          "a concurrent durable event is handled under SYN-MEMORY-003 without rerunning the sensory pass"
         ],
         "failure_signals": [
-          "activation solely because the task mentions architecture, performance, readability, flakiness, onboarding, UX, handoff, or closeout",
-          "sensory prose with no technical delta"
+          "activation solely because ordinary work mentions architecture, performance, readability, flakiness, UX, handoff, or closeout",
+          "keyword matching overrides a literal syntax request",
+          "explicit rendition is declined merely because literal explanation is sufficient",
+          "memory admission without its independent gate"
         ],
-        "rationale": "Synesthesia is a representational lens, not a broad domain or lifecycle owner."
+        "rationale": "Sensory intent and concrete representational need govern activation, not broad domain ownership."
       },
       {
         "clause_id": "SYN-REVERSIBILITY-002",
@@ -195,22 +206,26 @@
         ],
         "prohibited_routes": [],
         "required_artifacts": [
-          "evidence",
-          "engineering translation",
-          "uncertainty for inferential claims",
-          "falsifier for material diagnostic claims",
-          "decision or explanation delta"
+          "recoverable engineering meaning for material sensory claims",
+          "evidence or marked assumptions",
+          "limits and omitted relations for explanation",
+          "uncertainty and falsifier or discriminating test for material diagnostic claims",
+          "explanation, comparison, investigation, or route delta"
         ],
         "success_signals": [
-          "every material mapping is reversible and falsifiable",
-          "redundant modalities are omitted"
+          "representations may discover hypotheses before a finished technical translation",
+          "task-relative accountability does not demand lossless isomorphism",
+          "independent modalities may jointly answer one question",
+          "a missing measurement is identified rather than fabricated"
         ],
         "failure_signals": [
           "metaphor treated as evidence",
+          "invented runtime facts",
           "several modalities restate the same claim",
-          "invented runtime facts"
+          "explanatory imagery requires an irrelevant experimental falsifier",
+          "minimum output becomes a cap on useful exploration"
         ],
-        "rationale": "The lens is useful only when it preserves literal accountability."
+        "rationale": "Explore representations freely; validate claims according to their use."
       },
       {
         "clause_id": "SYN-MEMORY-003",
@@ -225,32 +240,66 @@
           "SYN-ROUTE-DIRECT-LITERAL"
         ],
         "required_artifacts": [
-          "durable authority",
-          "narrow scope",
-          "source references",
-          "canonical sensory payload",
-          "prior note relationship when changing existing state",
-          "memory-note proof line",
-          "refreshed current-state digest or an explicit non-rollback digest warning"
+          "durable authority, narrow scope, and actual source references",
+          "canonical sensory payload and prior relationship when required",
+          "canonical transaction receipt and exact SYN identity on success",
+          "derived admission disposition and actual MSN proof when admitted",
+          "resolved note relationships with preserved canonical provenance",
+          "digest status or explicit non-rollback warning when applicable"
         ],
         "success_signals": [
-          "explicit durable authority is persisted in the same turn",
-          "unendorsed assistant novelty is not persisted",
-          "confirmation, correction, rejection, retraction, and reopening reference prior notes",
-          "successful source-note appends refresh a digest whose entries retain source note IDs"
+          "explicit durable authority needs no repetition",
+          "two-context accepted operational use can qualify without an explicit durability phrase",
+          "canonical capture happens once and its returned identity is reused",
+          "local-only canonical success does not require a global note or digest",
+          "canonical and note identities are not substituted without exact correspondence",
+          "mixed explanatory and durable requests complete both eligible parts",
+          "successful admissions retain source note IDs and refresh their digest"
         ],
         "failure_signals": [
-          "qualifying explicit durable event described but not appended",
-          "routine diagnostic output appended without authority",
-          "resource digest promoted without source note IDs",
-          "digest failure treated as failure of an otherwise successful source-note append"
+          "assistant novelty is persisted",
+          "qualifying capture is only described, not attempted",
+          "SYN relationships are passed as if they were MSN relationships",
+          "missing prior admissions cause guessed IDs or automatic backfill",
+          "canonical success is rolled back or reported failed because admission or digest failed",
+          "source notes or canonical history are silently rewritten or relocated"
         ],
-        "rationale": "Explicit durable user authority should reliably reach the source-note pipeline without weakening admission hygiene."
+        "rationale": "Canonical capture, derived admission, and materialized views have distinct identities, authority, and success conditions."
+      },
+      {
+        "clause_id": "SYN-RENDITION-004",
+        "trigger_refs": [
+          "SYN-EXPLICIT-SENSORY",
+          "SYN-COMPARE-FEEL"
+        ],
+        "expected_routes": [
+          "SYN-ROUTE-EXPLAIN",
+          "SYN-ROUTE-COMPARE",
+          "SYN-ROUTE-DIAGNOSE",
+          "SYN-ROUTE-IMPLEMENTATION-LENS",
+          "SYN-ROUTE-BLOCKED"
+        ],
+        "prohibited_routes": [],
+        "required_artifacts": [
+          "actual sensory representation when supported by the artifact",
+          "nearby engineering correspondences and important limits"
+        ],
+        "success_signals": [
+          "architecture remains perceptible through space, sound, rhythm, motion, texture, contrast, or pressure",
+          "requested richness is preserved without redundant modalities",
+          "existing structure can justify an explanation without an action list"
+        ],
+        "failure_signals": [
+          "the requested sensory experience is replaced by technical paraphrase",
+          "sensory richness is treated as inherently unrigorous",
+          "examples become a fixed universal property-to-sensation dictionary"
+        ],
+        "rationale": "Preserve architecture-to-senses translation as a first-class capability, not decorative output or a diagnosis-only permission."
       }
     ],
     "instrumentation": {
       "decision_receipt": "optional",
-      "rationale": "Routing evals and immutable memory-source notes provide decision and persistence evidence."
+      "rationale": "Use relevant routing probes, canonical receipts, and immutable source-note evidence; do not introduce a runtime reporting ritual."
     }
   }
 }

@@ -2,7 +2,7 @@
 name: memory-source-notes
 description: "Transport source-approved Learnings, Negative Ledger, and Synesthesia admissions through validated adapters to the `memory-note` CLI; inspect, reconcile, and diagnose immutable-note, digest, and Phase 2 visibility gaps. Never decides source eligibility or edits compiled memory."
 metadata:
-  version: "2.1.1"
+  version: "2.1.2"
 ---
 
 # Memory Source Notes
@@ -121,15 +121,42 @@ memory_source_notes_root="$(realpath "$HOME/.agents/skills/memory-source-notes")
 
 ## Synesthesia validated adapter
 
-Synesthesia uses:
+After Synesthesia accepts a canonical event for global memory admission, use
+its exact canonical identity and the same explicit custody root used for capture:
 
 ```bash
 uv run \
   "$memory_source_notes_root/scripts/synesthesia_memory_note.py" \
-  append \
-  --kind <logical-kind> \
-  --json -
+  admit \
+  --repo "<canonical-custody-root>" \
+  --id SYN-...
 ```
+
+Use `inspect-admission` with the same arguments for a read-only projection.
+The adapter derives the kind from the canonical event, checks the selected
+Ledger definition and immutable note inventory, and resolves canonical `SYN-*`
+relationships to exact already-admitted `MSN-*` identities. It preserves the
+canonical identities in derived source references; it never edits canonical
+rows or invents note IDs. Missing, ambiguous, or unresolved prior admissions
+block this admission without rolling back capture or automatically backfilling
+history. Existing exact snapshots retain their bytes and fingerprints.
+
+Transport reserves source-reference kinds `synesthesia-canonical-event` for the
+snapshot's own canonical ID and `synesthesia-canonical-relationship` for its
+canonical predecessors. These are provenance, not new user authority. Canonical
+source submissions must not prepopulate them. Read-only reconciliation uses the
+same resolver and fingerprint construction, rather than comparing canonical and
+transport envelopes as though their identities were interchangeable.
+
+Synesthesia retains explicit unmanaged custody in this revision. This adapter
+does not discover or migrate another worktree's history. Use the source owner's
+selected root consistently; storage-location or migration changes remain owned
+by `$ledger` and require a separate custody decision.
+
+The lower-level `append --kind <logical-kind> --json -` path remains for
+source-approved note envelopes whose relationships are already `MSN-*` IDs.
+It rejects canonical relationship IDs; use `admit` for canonical events instead
+of hand-editing projected relationships.
 
 Logical kinds:
 

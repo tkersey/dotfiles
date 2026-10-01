@@ -276,8 +276,10 @@ def _require_synesthesia_validator(
     return binary
 
 
-def _inspect_source_ledger(repo: Path) -> dict[str, Any]:
-    binary = find_ledger_binary()
+def _inspect_source_ledger(
+    repo: Path, *, ledger_bin: str | Path | None = None,
+) -> dict[str, Any]:
+    binary = find_ledger_binary(ledger_bin)
     definition = synesthesia_source_definition_path()
     report: dict[str, Any] = {
         "available": binary is not None and definition.is_file(),
@@ -1674,11 +1676,197 @@ def print_doctor_text(report: dict[str, Any]) -> None:
             )
 
 
+class AdmissionResolver:
+    """Read-only, definition-bound bridge from canonical SYN IDs to MSN IDs.
+
+    No identity table or historical backfill is written. Correspondence requires
+    an exact validated admission fingerprint, not a phrase or ID substring.
+    """
+
+    def __init__(
+        self, repo: Path, home: Path, *, ledger_bin: str | Path | None = None,
+    ) -> None:
+        self.repo = repo.expanduser().resolve()
+        self.home = home
+        self.ledger = find_ledger_binary(ledger_bin)
+        self.doctor = _inspect_source_ledger(self.repo, ledger_bin=ledger_bin)
+        if not self.doctor["healthy"]:
+            raise ValidationError(f"canonical source: {self.doctor['status']}")
+        self.definition = self.doctor["result"]["definition"]
+        if not isinstance(self.definition.get("digest"), str):
+            raise ValidationError("canonical source: missing definition digest")
+        projection = build_digest_projection(home, ledger_bin=ledger_bin)
+        if projection["invalid_notes"]:
+            raise ValidationError("admission identity: invalid immutable note inventory")
+        self.notes = {note.id: note for note in projection["notes"]}
+        self.resolved_ids = {
+            note.id for lineage in projection["lineages"].values()
+            for note in lineage["events"]
+        }
+        self.cache: dict[str, dict[str, Any]] = {}
+        self.visiting: set[str] = set()
+        self.read_count = 0
+
+    def _record(self, source_id: str) -> dict[str, Any]:
+        proc = subprocess.run(
+            [str(self.ledger), "project", "--definition",
+             str(synesthesia_source_definition_path()), "--projection", "record",
+             "--repo", str(self.repo), "--param", f"id={source_id}",
+             "--format", "json"],
+            capture_output=True, check=False,
+        )
+        try:
+            result = json.loads(proc.stdout)
+        except (UnicodeError, json.JSONDecodeError) as exc:
+            raise ValidationError("canonical record: invalid projection JSON") from exc
+        if (
+            proc.returncode != 0 or not isinstance(result, dict)
+            or result.get("schema") != "ledger-projection-result/v1"
+            or result.get("projection") != "record"
+            or not isinstance(result.get("definition"), dict)
+            or any(result["definition"].get(key) != self.definition.get(key)
+                   for key in ("id", "abi", "digest"))
+            or result.get("authority_granted") is not False
+            or result.get("storage_mutated") is not False
+        ):
+            raise ValidationError(f"canonical record: invalid projection for {source_id}")
+        event = result.get("data")
+        record = event.get("record") if isinstance(event, dict) else None
+        if (
+            not isinstance(record, dict) or event.get("source") != "synesthesia"
+            or event.get("syn_id") != source_id or record.get("id") != source_id
+            or event.get("logical_kind") != record.get("logical_kind")
+            or event.get("kind") != record.get("kind")
+            or event.get("operation") != record.get("operation")
+            or record.get("logical_kind") not in LOGICAL_TO_PHYSICAL_KIND
+            or LOGICAL_TO_PHYSICAL_KIND[record["logical_kind"]] != record.get("kind")
+        ):
+            raise ValidationError(f"canonical record: identity mismatch for {source_id}")
+        return record
+
+    def _matching_note(self, kind: str, normalized: dict[str, Any]) -> StoredNote | None:
+        fingerprint = canonical_fingerprint(kind, normalized)
+        matches = [note for note in self.notes.values() if note.fingerprint == fingerprint]
+        if len(matches) > 1:
+            raise ValidationError(f"admission identity: ambiguous fingerprint {fingerprint}")
+        if matches and matches[0].id not in self.resolved_ids:
+            raise ValidationError(f"admission identity: unresolved note {matches[0].id}")
+        return matches[0] if matches else None
+
+    def prepare(self, source_id: str) -> dict[str, Any]:
+        if not re.fullmatch(r"SYN-[0-9]{8}T[0-9]{6}Z-[a-f0-9]{16}", source_id):
+            raise ValidationError("canonical id: expected an exact SYN-* identity")
+        if source_id in self.cache:
+            return copy.deepcopy(self.cache[source_id])
+        if source_id in self.visiting:
+            raise ValidationError(f"canonical relationship cycle: {source_id}")
+        if not self.visiting:
+            self.read_count = 0
+        if self.read_count >= 256 or len(self.visiting) >= 128:
+            raise ValidationError("canonical relationship resolution exceeded its read/depth bound")
+        self.read_count += 1
+        self.visiting.add(source_id)
+        try:
+            record = self._record(source_id)
+            logical = record["logical_kind"]
+            physical = LOGICAL_TO_PHYSICAL_KIND[logical]
+            raw = {field: copy.deepcopy(record.get(field)) for field in (
+                "operation", "authority", "summary", "scope", "source_refs",
+                "related_ids", "supersedes_id", "payload",
+            )}
+            raw["related_ids"] = copy.deepcopy(record.get("related_ids", []))
+            # Existing exact snapshots keep their bytes, fingerprint, and identity.
+            legacy = _normalize_writer_input(raw)
+            existing = self._matching_note(physical, legacy)
+            if existing is None:
+                references = raw["source_refs"]
+                if any(ref.get("kind") in {
+                    "synesthesia-canonical-event", "synesthesia-canonical-relationship"
+                } for ref in references):
+                    raise ValidationError("canonical source uses reserved admission provenance kind")
+                references.append({
+                    "kind": "synesthesia-canonical-event", "ref": source_id,
+                    "summary": "Canonical source of this immutable admission snapshot.",
+                })
+
+                def resolve(prior: str) -> str:
+                    if prior.startswith("SYN-"):
+                        prepared = self.prepare(prior)
+                        note_id = prepared["existing_note_id"]
+                        if note_id is None:
+                            raise ValidationError(
+                                f"prior canonical event is not admitted: {prior}; "
+                                "source-authorized prior admission is required; no automatic backfill"
+                            )
+                        reference = {
+                            "kind": "synesthesia-canonical-relationship", "ref": prior,
+                            "summary": f"Derived relationship resolves to {note_id}.",
+                        }
+                        if reference not in references:
+                            references.append(reference)
+                        return note_id
+                    if prior not in self.notes or prior not in self.resolved_ids:
+                        raise ValidationError(f"prior admission is missing or unresolved: {prior}")
+                    return prior
+
+                raw["related_ids"] = list(dict.fromkeys(resolve(prior) for prior in raw["related_ids"]))
+                if raw["supersedes_id"] is not None:
+                    raw["supersedes_id"] = resolve(raw["supersedes_id"])
+                _, normalized, _ = validate_and_normalize(logical, raw, ledger_bin=self.ledger)
+                existing = self._matching_note(physical, normalized)
+            else:
+                normalized = legacy
+            result = {
+                "canonical_id": source_id, "logical_kind": logical,
+                "physical_kind": physical, "normalized": normalized,
+                "writer_fingerprint": canonical_fingerprint(physical, normalized),
+                "existing_note_id": existing.id if existing else None,
+                "authority_granted": False, "storage_mutated": False,
+            }
+            self.cache[source_id] = result
+            return copy.deepcopy(result)
+        finally:
+            self.visiting.remove(source_id)
+
+
+def _require_note_relationships(normalized: dict[str, Any]) -> None:
+    relationships = [*normalized.get("related_ids", [])]
+    if normalized.get("supersedes_id") is not None:
+        relationships.append(normalized["supersedes_id"])
+    if any(not re.fullmatch(r"MSN-[0-9]{8}T[0-9]{6}Z-[a-f0-9]{16}", value)
+           for value in relationships):
+        raise ValidationError(
+            "note relationships must be MSN-* identities; use admit --repo <custody-root> "
+            "--id SYN-... for canonical relationships"
+        )
+
+
+def cmd_admission(args: argparse.Namespace) -> int:
+    resolver = AdmissionResolver(Path(args.repo), codex_home(args.codex_home))
+    prepared = resolver.prepare(args.id)
+    if args.command == "inspect-admission":
+        print(json.dumps({"synesthesia_admission": prepared}, indent=2, sort_keys=True))
+        return 0
+    if prepared["existing_note_id"] is not None:
+        print(
+            "memory-note: duplicate-skip: extension=synesthesia "
+            f"fingerprint={prepared['writer_fingerprint']} id={prepared['existing_note_id']}"
+        )
+        if not args.dry_run:
+            try:
+                generate_memory_digest(resolver.home)
+            except Exception as exc:  # An existing immutable admission remains successful.
+                print(f"memory-digest warning: {exc}", file=sys.stderr)
+        return 0
+    return _append_normalized(prepared["physical_kind"], prepared["normalized"], args)
+
+
 def cmd_validate(args: argparse.Namespace) -> int:
     raw = read_json_input(args.json)
     physical_kind, normalized, structural_result = validate_and_normalize(
         args.kind, raw
     )
+    _require_note_relationships(normalized)
     result = {
         "valid": True,
         "logical_kind": args.kind,
@@ -1694,6 +1882,13 @@ def cmd_validate(args: argparse.Namespace) -> int:
 def cmd_append(args: argparse.Namespace) -> int:
     raw = read_json_input(args.json)
     physical_kind, normalized, _ = validate_and_normalize(args.kind, raw)
+    return _append_normalized(physical_kind, normalized, args)
+
+
+def _append_normalized(
+    physical_kind: str, normalized: dict[str, Any], args: argparse.Namespace,
+) -> int:
+    _require_note_relationships(normalized)
     binary = find_memory_note_binary()
     if binary is None:
         print("memory-note: not-attempted: cli unavailable", file=sys.stderr)
@@ -1802,6 +1997,17 @@ def build_parser() -> argparse.ArgumentParser:
     append_parser.add_argument("--codex-home")
     append_parser.add_argument("--dry-run", action="store_true")
     append_parser.set_defaults(func=cmd_append)
+
+    for name in ("admit", "inspect-admission"):
+        admission_parser = sub.add_parser(
+            name, help="Resolve one source-authorized canonical event into note identities"
+        )
+        admission_parser.add_argument("--repo", required=True, help="Exact canonical custody root")
+        admission_parser.add_argument("--id", required=True, help="Canonical SYN-* event identity")
+        admission_parser.add_argument("--codex-home")
+        if name == "admit":
+            admission_parser.add_argument("--dry-run", action="store_true")
+        admission_parser.set_defaults(func=cmd_admission)
 
     digest_parser = sub.add_parser(
         "memory-digest", help="Fold Synesthesia events into a current-state digest"

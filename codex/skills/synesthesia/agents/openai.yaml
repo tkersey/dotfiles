@@ -2,12 +2,11 @@ policy:
   allow_implicit_invocation: true
 interface:
   display_name: "Synesthesia"
-  short_description: "Turn software evidence into reversible sensory diagnostics"
+  short_description: "Make architecture perceptible through accountable sensory models"
   default_prompt: >-
-    Use $synesthesia to build a reversible sensory model from literal software
-    evidence. Apply the activation, engineering-translation, and falsifier rules
-    in SKILL.md; return the smallest useful explanation or diagnostic insight.
-    Follow its canonical durable-event procedure only when a mapping or
-    activation boundary qualifies for persistence, then use $memory-source-notes
-    for accepted transport. Do not activate sibling sources or an aggregate
-    checkpoint.
+    Use $synesthesia to translate software or architecture into a coherent sensory
+    experience and recover precise engineering meaning from it. Preserve requested
+    richness; explicit explanation needs no unresolved defect. Explore useful
+    representations, distinguish evidence from hypotheses, and apply mode-appropriate
+    accountability. Follow the durable-event procedure only when a mapping or
+    boundary qualifies; the owning workflow retains implementation and proof.

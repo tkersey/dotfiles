@@ -393,6 +393,16 @@ def partition_notes(
 
 
 def note_source_id(source: str, note: dict[str, Any]) -> str | None:
+    if source == "synesthesia":
+        refs = note.get("source_refs")
+        ids = {
+            ref.get("ref") for ref in refs
+            if isinstance(ref, dict)
+            and ref.get("kind") == "synesthesia-canonical-event"
+            and isinstance(ref.get("ref"), str)
+            and re.fullmatch(r"SYN-[0-9]{8}T[0-9]{6}Z-[a-f0-9]{16}", ref["ref"])
+        } if isinstance(refs, list) else set()
+        return next(iter(ids)) if len(ids) == 1 else None
     payload = note.get("payload")
     if not isinstance(payload, dict):
         return None
@@ -575,6 +585,7 @@ def source_report(
     repository_identity: str | None,
     standalone_note_ids: set[str],
     fallback_show_count: int,
+    codex_home: Path,
 ) -> dict[str, Any]:
     local_notes, foreign_notes, unresolved_notes, unscoped_notes = partition_notes(
         notes, repository_identity
@@ -589,6 +600,13 @@ def source_report(
         for note in local_notes
         if isinstance(note.get("fingerprint"), str)
     }
+
+    resolver = None
+    if source == "synesthesia" and records:
+        try:
+            resolver = synesthesia_adapter.AdmissionResolver(cwd, codex_home, ledger_bin=ledger)
+        except Exception as exc:
+            raise ReconcileError(f"synesthesia admission resolver: {exc}") from exc
 
     rows: list[dict[str, Any]] = []
     canonical_ids: set[str] = set()
@@ -606,19 +624,15 @@ def source_report(
         should_export = source != "learnings" or bool(candidates) or record_id in eligibility
         raw, export_error = (
             native_export(ledger, source, record_id, cwd=cwd)
-            if should_export
+            if should_export and source != "synesthesia"
             else (None, None)
         )
         expected = None
         note = candidates[0] if candidates else None
-        if raw is not None and source == "synesthesia":
+        if source == "synesthesia":
             try:
-                physical, normalized, _ = synesthesia_adapter.validate_and_normalize(
-                    logical_kind, parse_json(raw, record_id), ledger_bin=ledger
-                )
-                expected = synesthesia_adapter.canonical_fingerprint(
-                    physical, normalized
-                )
+                prepared = resolver.prepare(record_id)
+                expected = prepared["writer_fingerprint"]
                 note = notes_by_fingerprint.get(expected)
             except Exception as exc:
                 export_error = f"synesthesia adapter: {exc}"
@@ -791,6 +805,7 @@ def reconcile(args: argparse.Namespace) -> dict[str, Any]:
                 standalone_synesthesia if source == "synesthesia" else set()
             ),
             fallback_show_count=show_counts[source],
+            codex_home=codex_home,
         )
         for source in SOURCES
     }
