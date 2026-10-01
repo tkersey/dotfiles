@@ -16,6 +16,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v6
+        with:
+          version: '0.12.21'
+          enable-cache: false
       - name: Fetch checksum-pinned native Ledger
         shell: bash
         run: |
@@ -30,8 +33,14 @@ jobs:
           mapfile -t binaries < <(find "$RUNNER_TEMP/native-ledger" -type f -name ledger)
           test "${#binaries[@]}" -eq 1
           chmod +x "${binaries[0]}"
-          "${binaries[0]}" version --format json
+          "${binaries[0]}" version
           echo "LEDGER_BIN=${binaries[0]}" >> "$GITHUB_ENV"
+      - name: Retain pinned runtime for reproducible native probes
+        uses: actions/upload-artifact@v4
+        with:
+          name: ledger-1.3.0-test-runtime
+          path: ${{ runner.temp }}/ledger-v1.3.0-linux-x86_64.tar.gz
+          retention-days: 1
       - name: Historical import and native protocol conformance
         run: uv run python -m unittest discover -s codex/skills/learnings/tests -p 'test_retired_import.py' -v
       - name: Context and migration orchestration regressions
