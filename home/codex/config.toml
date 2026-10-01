@@ -113,7 +113,6 @@ source_type = "local"
 source = "/Users/tk/.codex/.tmp/bundled-marketplaces/openai-bundled"
 
 [marketplaces.openai-primary-runtime]
-last_updated = "2026-08-01T14:21:29Z"
 source_type = "local"
 source = "/Users/tk/.cache/codex-runtimes/codex-primary-runtime/plugins/openai-primary-runtime"
 
@@ -197,6 +196,7 @@ followUpQueueMode = "queue"
 dock-icon-preference = "codex-system"
 realtimeVoiceScreenContextEnabled = true
 conversationDetailMode = "STEPS_COMMANDS"
+confirm-before-close = "never"
 
 [desktop.appearanceLightChromeTheme]
 accent = "#d7827e"
