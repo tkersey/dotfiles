@@ -147,7 +147,7 @@ class FramingTests(unittest.TestCase):
 class ImportTests(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory(); self.addCleanup(self.temp.cleanup)
-        self.source = Path(self.temp.name) / 'retired.jsonl'
+        self.source = Path(self.temp.name).resolve() / 'retired.jsonl'
         self.source.write_text(json.dumps(record())+'\n')
         self.native = FakeNative()
 
@@ -266,6 +266,78 @@ class ProtocolTests(unittest.TestCase):
 
 @unittest.skipUnless(os.environ.get('LEDGER_BIN'), 'Set LEDGER_BIN for native conformance; mocks do not qualify native custody')
 class NativeConformance(unittest.TestCase):
+    def test_local_recovery_archives_survive_pr_reads_and_new_writes(self):
+        """Exercise the installed recovery protocol, not a guessed v0 envelope."""
+        import subprocess
+        legacy = Path(__file__).with_name('fixtures') / 'local-recovery-protocol.json'
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory).resolve(); (root / '.ledger').mkdir()
+            identity = 'b' * 32
+            (root / '.ledger-root.json').write_text(json.dumps({
+                'schema': 'ledger-storage-root/v1', 'store_id': identity}))
+            selector = ['--store-root', str(root), '--store-id', identity]
+
+            def transaction(definition, operation, input_name, value, *parameters):
+                proc = subprocess.run([os.environ['LEDGER_BIN'], 'transact',
+                    '--definition', str(definition), *selector, '--operation', operation,
+                    '--input', input_name + '=-', *parameters, '--format', 'json'],
+                    input=json.dumps(value).encode(), capture_output=True)
+                self.assertEqual(proc.returncode, 0, proc.stdout.decode(errors='replace'))
+                return json.loads(proc.stdout)['effects'][0]['revision_after']
+
+            submission = record()
+            for key in ('id', 'fingerprint', 'captured_at'):
+                del submission[key]
+            revision = transaction(legacy, 'capture', 'submission', {'record': submission})
+            rows = [record('lrn-20260101T000000Z-descriptive'),
+                    record('lrn-20260101T000000Z-long-paths'),
+                    record('lrn-20260101T000000Z-no-context')]
+            rows[1]['context']['paths'] = [f'path-{n}' for n in range(179)]
+            del rows[2]['context']
+            for index, row in enumerate(rows):
+                packet = {'record': row, 'provenance': {'sha256': 'sha256:' + 'a' * 64,
+                    'record_index': index, 'start_byte': index * 100,
+                    'end_byte': (index + 1) * 100, 'repairs': []}}
+                revision = transaction(legacy, 'import-record', 'historical', packet,
+                    '--param', f'import_key=legacy-{index}',
+                    '--param', 'expected_revision=' + revision)
+            # Hash custody files to prove reads and the no-op rerun preserve all
+            # existing event bytes and archived definition/revision material.
+            def snapshot():
+                return {str(p.relative_to(root)): p.read_bytes()
+                        for p in (root / '.ledger').rglob('*') if p.is_file()}
+
+            before = snapshot()
+            native = module.Native(os.environ['LEDGER_BIN'], module.DEFINITION, selector)
+            stored, witnessed = native.records()
+            self.assertEqual(witnessed, revision)
+            self.assertEqual(len(stored), 4)
+            for row in rows:
+                self.assertEqual(stored[row['id']], row)
+            self.assertTrue(native.run('doctor')['healthy'])
+            source = root / 'retired.jsonl'
+            source.write_text('\n'.join(json.dumps(row) for row in rows) + '\n')
+            rerun = module.import_sources(native, [source], apply=True)
+            self.assertEqual(rerun['appended'], 0)
+            self.assertEqual(rerun['already_present'], 3)
+            self.assertEqual(snapshot(), before)
+            extra = record('new-pr-import')
+            source.write_text(json.dumps(extra))
+            self.assertEqual(module.import_sources(native, [source], apply=True)['appended'], 1)
+            submission['learning'] = 'A new capture after upgrading the owner definition.'
+            transaction(module.DEFINITION, 'capture', 'submission', {'record': submission})
+            after, _ = native.records()
+            self.assertEqual(len(after), 6)
+            for key, row in stored.items():
+                self.assertEqual(after[key], row)
+            self.assertEqual(after[extra['id']], extra)
+            self.assertTrue(native.run('doctor')['healthy'])
+            self.assertTrue((root / '.ledger/learnings/events.jsonl').read_bytes().startswith(
+                before['.ledger/learnings/events.jsonl']))
+            for name, contents in before.items():
+                if name.startswith('.ledger/.definitions/'):
+                    self.assertEqual((root / name).read_bytes(), contents)
+
     def test_historical_import_current_capture_and_rerun(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory).resolve(); (root / '.ledger').mkdir()

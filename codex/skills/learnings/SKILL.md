@@ -2,7 +2,7 @@
 name: learnings
 description: "Capture or recall evidence-backed execution learnings; evaluate capture at validation transitions, strategy pivots, footguns, retry loops, and material delivery or handoff. Also handle explicit learning-memory admission and supersession."
 metadata:
-  version: "8.3.0"
+  version: "8.3.1"
 ---
 
 # Learnings
@@ -60,6 +60,7 @@ bootstrapping Ledger. Delivery-time evaluation is mandatory; append is condition
 |---|---|
 | Canonical browse, query, or recall | [store.md](store.md) and [recall.md](recall.md) |
 | Accepted capture or canonical supersession | [store.md](store.md) and [capture.md](capture.md) |
+| Authorized recovery of retired Learnings | [retired-import.md](retired-import.md); storage context remains owned by `$ledger`. |
 | Evaluate or perform memory admission, supersession, or withdrawal | [memory-admission.md](memory-admission.md); canonical operations also require store/capture guidance as applicable. |
 | Generated digest | `$memory-source-notes`; no new canonical writer |
 
