@@ -76,11 +76,89 @@ def bind_number_history(report: dict[str, Any], previous: dict[str, Any]) -> Non
             finding["number"] = history[finding["id"]]
 
 
+def prepare_proposal(source: Any, *, blocking: bool) -> dict[str, Any]:
+    """A proposal describes future work; its shape cannot certify an elimination."""
+    if not isinstance(source, dict):
+        raise ValueError("each construction group needs a proposal")
+    status = source.get("status")
+    if status not in ("proposed", "preserve-incumbent", "unresolved", "obstructed"):
+        raise ValueError("invalid proposal status")
+    if status != "proposed":
+        if source.get("changes"):
+            raise ValueError("an unselected construction cannot advertise code changes")
+        if status == "preserve-incumbent" and blocking:
+            raise ValueError("preserving the incumbent cannot discharge a retained blocker")
+        return {"status": status, "reason": text(source.get("reason"), "proposal.reason")}
+    proposal = {key: text(source.get(key), f"proposal.{key}") for key in (
+        "mechanism", "exclusion_argument", "preserve", "migration", "retirements",
+        "verification", "limits")}
+    changes = source.get("changes")
+    if not isinstance(changes, list) or not changes:
+        raise ValueError("a proposed construction needs concrete code changes")
+    proposal["status"] = status
+    proposal["changes"] = []
+    for change in changes:
+        if not isinstance(change, dict):
+            raise ValueError("each code change must be an object")
+        item = {key: text(change.get(key), f"change.{key}") for key in ("path", "symbol", "change")}
+        path = item["path"]
+        if (path.startswith("/") or re.match(r"^[A-Za-z]:", path) or "\\" in path or ".." in path.split("/")
+                or any(ord(c) < 32 for c in path)):
+            raise ValueError("change.path must be a repository-relative path")
+        proposal["changes"].append(item)
+    return proposal
+
+
+def prepare_adjudications(source: Any, report: dict[str, Any], *, complete: bool) -> list[dict[str, Any]]:
+    """Keep rejected/unknown feedback without laundering it into a code finding."""
+    if not isinstance(source, list):
+        raise ValueError("construction needs an adjudications array")
+    known = {f["id"]: f for f in report["findings"]}
+    seen, covered = set(), set()
+    judgments = []
+    for row in source:
+        if not isinstance(row, dict):
+            raise ValueError("each adjudication must be an object")
+        item = {key: text(row.get(key), f"adjudication.{key}") for key in (
+            "id", "source", "claim", "basis", "disposition", "law_authority")}
+        if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]{0,95}", item["id"]) or item["id"] in seen:
+            raise ValueError("adjudication IDs must be unique opaque references")
+        seen.add(item["id"])
+        disposition, law = item["disposition"], item["law_authority"]
+        if disposition not in ("accepted", "rejected", "follow-up", "blocked"):
+            raise ValueError("invalid adjudication disposition")
+        if law not in ("entailed", "strengthening", "preference", "new-requirement", "underdetermined"):
+            raise ValueError("invalid law authority")
+        refs = row.get("finding_ids")
+        if (not isinstance(refs, list) or any(not isinstance(k, str) for k in refs)
+                or len(set(refs)) != len(refs) or not set(refs) <= known.keys()):
+            raise ValueError("adjudication finding_ids must reference retained findings without duplicates")
+        if disposition == "accepted" and (law != "entailed" or not refs):
+            raise ValueError("accepted feedback needs an entailed law and a retained finding")
+        if disposition == "rejected" and refs:
+            raise ValueError("rejected feedback cannot create construction pressure")
+        expected = {"strengthening": "follow-up", "new-requirement": "follow-up",
+                    "preference": "rejected", "underdetermined": "blocked"}.get(law)
+        if expected is not None and disposition not in (expected, "rejected"):
+            raise ValueError("adjudication disposition contradicts law authority")
+        if (law != "entailed" or disposition in ("follow-up", "blocked")) and any(
+                known[k]["disposition"] == "merge-blocker" for k in refs):
+            raise ValueError("optional or unresolved feedback cannot become a merge blocker")
+        item["finding_ids"] = refs[:]
+        if "url" in row:
+            item["url"] = link(row["url"], "adjudication.url")
+        covered.update(refs)
+        judgments.append(item)
+    if complete and covered != known.keys():
+        raise ValueError("construction adjudications must account for every retained finding")
+    return judgments
+
+
 def prepare_resolution(raw: dict[str, Any], report: dict[str, Any]) -> None:
     """Validate grouping as a lossless presentation, never as review adjudication."""
     workflow = raw.get("workflow", "comments")
-    if workflow not in ("comments", "resolution"):
-        raise ValueError("workflow must be comments or resolution")
+    if workflow not in ("comments", "resolution", "construction"):
+        raise ValueError("workflow must be comments, resolution or construction")
     report["workflow"] = workflow
     numbers = number_map(raw.get("finding_numbers", {}))
     originals = {f["id"]: f for f in raw["findings"]}
@@ -94,20 +172,25 @@ def prepare_resolution(raw: dict[str, Any], report: dict[str, Any]) -> None:
         if finding["id"] in numbers:
             # Numbering and grouping do not change the evidence fingerprint.
             finding["number"] = numbers[finding["id"]]
-        elif workflow == "resolution":
-            raise ValueError("resolution requires the original number of every finding")
+        elif workflow != "comments":
+            raise ValueError(f"{workflow} requires the original number of every finding")
     report["finding_numbers"] = number_map(numbers)
-    resolution = raw.get("resolution")
+    for key in ("resolution", "construction"):
+        if key != workflow and raw.get(key) is not None:
+            raise ValueError(f"{key} data requires explicit {key} workflow")
     if workflow == "comments":
-        if resolution is not None:
-            raise ValueError("resolution groups require explicit resolution workflow")
         return
+    resolution = raw.get(workflow)
     if not isinstance(resolution, dict):
-        raise ValueError("resolution workflow requires a synthesis result")
+        raise ValueError(f"{workflow} workflow requires a synthesis result")
+    extra = {}
+    if workflow == "construction":
+        extra["adjudications"] = prepare_adjudications(
+            resolution.get("adjudications"), report, complete=resolution.get("status") == "complete")
     if resolution.get("status") == "unavailable":
         if resolution.get("groups"):
             raise ValueError("unavailable synthesis cannot advertise complete groups")
-        report["resolution"] = {"status": "unavailable", "reason": text(resolution.get("reason"), "resolution.reason")}
+        report[workflow] = {"status": "unavailable", "reason": text(resolution.get("reason"), f"{workflow}.reason"), **extra}
         return
     if resolution.get("status") != "complete" or not isinstance(resolution.get("groups"), list):
         raise ValueError("resolution must be complete with groups, or unavailable with a reason")
@@ -147,6 +230,9 @@ def prepare_resolution(raw: dict[str, Any], report: dict[str, Any]) -> None:
         if len(set(dependencies)) != len(dependencies):
             raise ValueError("duplicate group dependency")
         group["depends_on"] = dependencies[:]
+        if workflow == "construction":
+            blocking = any(f["id"] in members and f["disposition"] == "merge-blocker" for f in report["findings"])
+            group["proposal"] = prepare_proposal(source.get("proposal"), blocking=blocking)
         assigned.update(members)
         groups[group["id"]] = group
     if assigned != known:
@@ -159,7 +245,9 @@ def prepare_resolution(raw: dict[str, Any], report: dict[str, Any]) -> None:
         if not ready:
             raise ValueError("resolution-group dependencies must be acyclic")
         remaining = {key: dependencies - ready for key, dependencies in remaining.items() if key not in ready}
-    report["resolution"] = {"status": "complete", "groups": list(groups.values())}
+    if workflow == "construction":
+        extra["compatibility"] = text(resolution.get("compatibility"), "construction.compatibility")
+    report[workflow] = {"status": "complete", "groups": list(groups.values()), **extra}
 
 
 def prepare(raw: Any) -> dict[str, Any]:
@@ -170,33 +258,44 @@ def prepare(raw: Any) -> dict[str, Any]:
     if not isinstance(identity, dict):
         raise ValueError("identity must be the actual campaign identity object")
     identity = dict(identity)
-    if identity.get("schema") != "elenctic-review-identity/v1" or identity.get("mode") != "campaign":
-        raise ValueError("identity must be an Elenctic v1 campaign identity")
-    for field in ("repo", "campaign_id", "base", "candidate", "view"):
+    analysis = identity.get("schema") == "elenctic-construction-identity/v1"
+    if analysis:
+        if identity.get("mode") != "analysis" or raw.get("workflow") != "construction":
+            raise ValueError("construction analysis identities require construction workflow")
+        text(identity.get("analysis_id"), "identity.analysis_id")
+        for field in ("verdict", "coverage", "selected_scope_coverage", "whole_pr_coverage",
+                      "campaign_id", "campaign_context_id", "campaign_seed_thread_id", "campaign_policy_id"):
+            if field in identity:
+                raise ValueError("comment analysis cannot claim campaign provenance, review coverage or a verdict")
+    elif identity.get("schema") != "elenctic-review-identity/v1" or identity.get("mode") != "campaign":
+        raise ValueError("identity must be an Elenctic v1 campaign or construction analysis identity")
+    for field in ("repo", "base", "candidate", "view"):
         text(identity.get(field), f"identity.{field}")
     if type(identity.get("pr")) is not int or identity["pr"] <= 0:
         raise ValueError("identity.pr must be a positive integer")
     if identity["view"] != "pr-head":
         raise ValueError("identity.view must be pr-head")
-    if identity.get("verdict") not in {"BLOCKED", "APPROVE", "INCOMPLETE"}:
-        raise ValueError("invalid identity.verdict")
-    for field in ("coverage", "selected_scope_coverage"):
-        if identity.get(field) not in {"complete", "partial"}:
-            raise ValueError(f"invalid identity.{field}")
-    if identity.get("whole_pr_coverage") not in {"complete", "partial", "not-established"}:
-        raise ValueError("invalid identity.whole_pr_coverage")
-    expected = "complete" if identity["whole_pr_coverage"] == "complete" else "partial"
-    if identity["coverage"] != expected:
-        raise ValueError("coverage must conservatively represent whole-PR coverage")
-    # Null is a legitimate absence, never an invented provenance identifier.
-    for field in ("campaign_context_id", "campaign_seed_thread_id", "campaign_policy_id"):
-        if field not in identity:
-            raise ValueError(f"identity.{field} is required; use null only when never created")
-        if identity[field] is not None:
-            text(identity[field], f"identity.{field}")
-    if identity["campaign_seed_thread_id"] is not None and (
-            identity["campaign_context_id"] is None or identity["campaign_policy_id"] is None):
-        raise ValueError("a seed requires both prepared context and policy identity")
+    if not analysis:
+        text(identity.get("campaign_id"), "identity.campaign_id")
+        if identity.get("verdict") not in {"BLOCKED", "APPROVE", "INCOMPLETE"}:
+            raise ValueError("invalid identity.verdict")
+        for field in ("coverage", "selected_scope_coverage"):
+            if identity.get(field) not in {"complete", "partial"}:
+                raise ValueError(f"invalid identity.{field}")
+        if identity.get("whole_pr_coverage") not in {"complete", "partial", "not-established"}:
+            raise ValueError("invalid identity.whole_pr_coverage")
+        expected = "complete" if identity["whole_pr_coverage"] == "complete" else "partial"
+        if identity["coverage"] != expected:
+            raise ValueError("coverage must conservatively represent whole-PR coverage")
+        # Null is a legitimate absence, never an invented provenance identifier.
+        for field in ("campaign_context_id", "campaign_seed_thread_id", "campaign_policy_id"):
+            if field not in identity:
+                raise ValueError(f"identity.{field} is required; use null only when never created")
+            if identity[field] is not None:
+                text(identity[field], f"identity.{field}")
+        if identity["campaign_seed_thread_id"] is not None and (
+                identity["campaign_context_id"] is None or identity["campaign_policy_id"] is None):
+            raise ValueError("a seed requires both prepared context and policy identity")
 
     result: dict[str, Any] = {"schema": SCHEMA, "identity": identity}
     for field in ("title", "generated_at", "summary", "coverage_note", "report_text"):
@@ -237,14 +336,15 @@ def prepare(raw: Any) -> dict[str, Any]:
         finding["fingerprint"] = digest(finding)
         result["findings"].append(finding)
     blockers = any(f["disposition"] == "merge-blocker" for f in result["findings"])
-    if blockers != (identity["verdict"] == "BLOCKED"):
+    if not analysis and blockers != (identity["verdict"] == "BLOCKED"):
         raise ValueError("BLOCKED requires a retained blocker; blockers require BLOCKED")
-    if identity["verdict"] == "APPROVE" and identity["selected_scope_coverage"] != "complete":
+    if not analysis and identity["verdict"] == "APPROVE" and identity["selected_scope_coverage"] != "complete":
         raise ValueError("APPROVE requires complete selected-scope coverage")
     result["findings"].sort(key=lambda f: ["merge-blocker", "risk", "concern"].index(f["disposition"]))
     # Stable across regenerations of this campaign; never silently carry checks to a new epoch.
-    result["report_key"] = "elenctic:" + digest({
-        k: identity[k] for k in ("repo", "pr", "campaign_id", "base", "candidate", "view")
+    instance = "analysis_id" if analysis else "campaign_id"
+    result["report_key"] = ("elenctic-analysis:" if analysis else "elenctic:") + digest({
+        k: identity[k] for k in ("repo", "pr", instance, "base", "candidate", "view")
     })
     prepare_resolution(raw, result)
     return result
