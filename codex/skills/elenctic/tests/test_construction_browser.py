@@ -65,6 +65,10 @@ class ConstructionBrowserTests(unittest.TestCase):
         self.assertIn('not implemented or verified', self.page.locator('#resolution-status').inner_text())
         self.assertNotIn('undefined', self.page.locator('body').inner_text())
         self.assertEqual(self.page.locator('#adjudication-entries > section').count(), 5)
+        self.assertFalse(self.page.locator('#construction-adjudications').evaluate('(node) => node.open'))
+        self.page.emulate_media(media='print')
+        self.assertEqual(self.page.locator('#adjudication-entries').evaluate('(node) => getComputedStyle(node).display'), 'block')
+        self.page.emulate_media(media='screen')
         self.page.locator('#search').fill('commitTerminal')
         self.assertEqual(self.page.locator('.finding:visible').count(), 3)
 
