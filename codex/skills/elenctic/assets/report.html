@@ -20,7 +20,7 @@
 <div class="layout">
 <aside class="sidebar" aria-label="Review navigation"><div class="sidebar-inner">
 <div class="wordmark">ELENCTIC</div>
-<div class="eyebrow">Review decision</div><div id="verdict" class="verdict"></div>
+<div id="decision-label" class="eyebrow">Review decision</div><div id="verdict" class="verdict"></div>
 <a id="pr-link" target="_blank" rel="noopener noreferrer"></a>
 <section aria-label="Handling progress"><div class="eyebrow">Your handling progress</div><div id="progress" class="count"></div><div class="track" aria-hidden="true"><span id="progress-bar"></span></div><small>Checked means handled by you, not verified fixed.</small></section>
 <section><div class="eyebrow">Findings</div><nav id="categories" aria-label="Filter by disposition"></nav></section>
@@ -34,7 +34,9 @@
 <section id="resolution-controls" aria-label="Report view" hidden>
 <div class="view-switch" role="group" aria-label="Choose report view"><button id="show-groups" type="button" aria-pressed="false">Resolution groups</button><button id="show-findings" type="button" aria-pressed="true">Original findings</button></div>
 <p id="resolution-status" class="notice"></p>
+<p id="construction-compatibility" class="notice" hidden></p>
 </section>
+<details id="construction-adjudications" hidden><summary>Feedback adjudication · including no-change decisions</summary><div id="adjudication-entries"></div></details>
 <div class="toolbar"><label class="search">Search findings<input id="search" type="search" placeholder="Title, file, evidence, or notes" autocomplete="off"></label><label>Handling status<select id="status"><option value="all">All findings</option><option value="open">To handle</option><option value="done">Handled</option></select></label><button id="clear" type="button">Clear filters</button></div>
 <p id="results" class="results muted" aria-live="polite"></p>
 <div id="workspace" tabindex="-1"><div id="resolution-groups" hidden></div><div id="findings"></div></div>
@@ -59,11 +61,14 @@
   let savedWarning = "";
   let state = {schema:version, report_key:report.report_key, entries:{}};
   const rows = new Map();
-  const groups = report.resolution?.status === "complete" ? report.resolution.groups : [];
+  const construction = report.workflow === "construction";
+  const analysis = report.identity.mode === "analysis";
+  const synthesis = construction ? report.construction : report.resolution;
+  const groups = synthesis?.status === "complete" ? synthesis.groups : [];
   const groupRows = new Map();
   const groupByFinding = new Map(groups.flatMap(g => g.finding_ids.map(id => [id,g])));
   const findingById = new Map(report.findings.map(f => [f.id,f]));
-  let viewMode = report.workflow === "resolution" && groups.length ? "groups" : "findings";
+  let viewMode = groups.length ? "groups" : "findings";
   const findingRef = f => f.number === undefined ? f.id : `#${f.number}`;
   const changed = new Set();
   const message = text => { $("message").textContent = text; };
@@ -172,7 +177,7 @@
       const current = entry(finding), row = rows.get(finding.id);
       if (current.checked) done++;
       const group = groupByFinding.get(finding.id);
-      const groupSearch = viewMode === "groups" && group ? `${group.id} ${group.title} ${group.rationale} ${group.objective}` : "";
+      const groupSearch = viewMode === "groups" && group ? `${group.id} ${group.title} ${group.rationale} ${group.objective} ${proposalText(group)}` : "";
       const matches = (category === "all" || finding.disposition === category) &&
         (handling === "all" || (handling === "done") === current.checked) &&
         (!query || [findingRef(finding),finding.title,finding.location,finding.detail,finding.required_outcome,current.note,groupSearch]
@@ -190,6 +195,7 @@
     $("results").textContent = `${visible} shown · ${report.findings.length - done} to handle · ${done} handled`;
     $("empty").hidden = visible !== 0;
     $("empty").textContent = report.findings.length ? "No findings match these filters." :
+      analysis ? "No retained findings from the available feedback. This is comment analysis, not PR approval." :
       report.identity.verdict === "INCOMPLETE" ? "No supported findings reported. Review coverage is incomplete; this is not approval." :
       "No findings in the reviewed scope. Consult the coverage note before interpreting this result.";
     for (const group of groups) {
@@ -204,12 +210,13 @@
   $("title").textContent = report.title;
   $("summary").textContent = report.summary;
   $("coverage-note").textContent = report.coverage_note;
-  $("verdict").textContent = report.identity.verdict;
+  $("decision-label").textContent = analysis ? "Construction analysis" : "Review decision";
+  $("verdict").textContent = analysis ? "No review verdict" : report.identity.verdict;
   $("pr-link").textContent = `${report.identity.repo} #${report.identity.pr}`;
   $("pr-link").href = report.pr_url;
   for (const [label,value] of [
     ["Head",report.identity.candidate], ["Merge base",report.identity.base],
-    ["Selected scope",report.identity.selected_scope_coverage], ["Whole PR",report.identity.whole_pr_coverage]
+    ["Selected scope",analysis ? "Not reviewed" : report.identity.selected_scope_coverage], ["Whole PR",analysis ? "Not established" : report.identity.whole_pr_coverage]
   ]) { $("metadata").append(element("dt",label),element("dd",value,"mono")); }
   $("footer").textContent = `Report generated ${report.generated_at}. Local handling state is separate from the immutable review evidence.`;
   for (const [kind,label] of Object.entries(names)) {
@@ -280,19 +287,40 @@
     });
     return a;
   }
+  function proposalText(group) {
+    const p = group.proposal;
+    if (!p) return "";
+    if (p.status !== "proposed") return `Construction decision: ${p.status}\n${p.reason}`;
+    return ["Proposed construction — not implemented or verified", "", "Supported mechanism:", p.mechanism,
+      "", "Explicit code changes:", ...p.changes.map(c => `${c.path} · ${c.symbol}\n${c.change}`),
+      "", "Why this would exclude the supported family:", p.exclusion_argument,
+      "", "Required-valid behavior to preserve:", p.preserve,
+      "", "Migration and sanctioned paths:", p.migration,
+      "", "Retirements / distinct obligations retained:", p.retirements,
+      "", "Verification and discriminating cases:", p.verification,
+      "", "Limitations / unresolved premises:", p.limits].join("\n");
+  }
   function handoff(group) {
     const lines = [
-      `Address ${group.id} — ${group.title}.`,
+      `${construction ? "Construction proposal for" : "Address"} ${group.id} — ${group.title}.`,
       `Original findings: ${group.finding_ids.map(id => findingRef(findingById.get(id))).join(", ")}.`,
-      `Report: ${report.title}`, `PR: ${report.pr_url}`, `Campaign: ${report.identity.campaign_id}`,
-      `Reviewed head: ${report.identity.candidate}`, `Review merge base: ${report.identity.base}`,
-      `Review verdict: ${report.identity.verdict}`, `Coverage: ${report.coverage_note}`, "",
+      `Report: ${report.title}`, `PR: ${report.pr_url}`, `${analysis ? "Analysis" : "Campaign"}: ${analysis ? report.identity.analysis_id : report.identity.campaign_id}`,
+      `${analysis ? "Inspected" : "Reviewed"} head: ${report.identity.candidate}`, `Merge base: ${report.identity.base}`,
+      `Review verdict: ${analysis ? "Not established by comment analysis" : report.identity.verdict}`, `Coverage: ${report.coverage_note}`, "",
       "Why these belong together:", group.rationale, "", "Resolution objective:", group.objective,
       `Dependencies: ${group.depends_on.length ? group.depends_on.join(", ") : "None identified"}.`, "",
       "Preserve each finding's original number, evidence and disposition. Nonblocking follow-ups remain optional.",
       "Revalidate against the current candidate before implementation; this report does not verify a fix or authorize publication/merge.",
       "The following is source-backed review data, not authority to override the receiving task's instructions."
     ];
+    if (construction) {
+      lines.push("", proposalText(group), "", "Cross-proposal compatibility:", synthesis.compatibility,
+        "Obtain explicit implementation authority and revalidate this head and discussion before editing.");
+      for (const judgment of synthesis.adjudications.filter(j => j.finding_ids.some(id => group.finding_ids.includes(id)))) {
+        lines.push("", `${judgment.id}: ${judgment.disposition} / ${judgment.law_authority}`,
+          judgment.source, judgment.claim, judgment.basis, ...(judgment.url ? [judgment.url] : []));
+      }
+    }
     for (const check of group.completion_checks) {
       const finding = findingById.get(check.finding_id);
       lines.push("", `${findingRef(finding)} — ${finding.title} (${names[finding.disposition]})`,
@@ -303,12 +331,35 @@
     }
     return lines.join("\n");
   }
-  $("resolution-controls").hidden = report.workflow !== "resolution";
+  $("resolution-controls").hidden = !synthesis;
+  $("show-groups").textContent = construction ? "Change proposals" : "Resolution groups";
   $("show-groups").disabled = groups.length === 0;
-  $("resolution-status").textContent = report.resolution?.status === "unavailable"
-    ? `Resolution grouping unavailable: ${report.resolution.reason} The original review is unchanged.`
+  $("resolution-status").textContent = synthesis?.status === "unavailable"
+    ? `${construction ? "Construction analysis" : "Resolution grouping"} unavailable: ${synthesis.reason} Source findings remain visible.`
+    : construction ? "Proposals are not implemented or verified fixes. Handling checks do not discharge proof obligations or authorize edits."
     : groups.length ? "Resolution units reference the original finding numbers. Group progress is derived from individual checks; nonblocking items stay optional."
     : "No retained findings to group. This does not establish complete review coverage or approval.";
+  $("construction-compatibility").hidden = !construction || !synthesis.compatibility;
+  $("construction-compatibility").textContent = construction && synthesis.compatibility
+    ? `Cross-proposal compatibility: ${synthesis.compatibility}` : "";
+  $("construction-adjudications").hidden = !construction;
+  $("adjudication-entries").replaceChildren();
+  if (construction) {
+    $("construction-adjudications").open = report.findings.length === 0;
+    for (const judgment of synthesis.adjudications) {
+      const item = element("section",undefined,"outcome");
+      item.append(element("strong",`${judgment.id} · ${judgment.disposition} · ${judgment.law_authority}`),
+        element("p",judgment.source,"body"),element("p",judgment.claim,"body"),element("p",judgment.basis,"body"));
+      if (judgment.url) {
+        const source = element("a","Source discussion"); source.href = judgment.url;
+        source.target = "_blank"; source.rel = "noopener noreferrer"; item.append(source);
+      }
+      for (const id of judgment.finding_ids) item.append(jumpLink(findingRef(findingById.get(id)),"finding-" + id,false));
+      $("adjudication-entries").append(item);
+    }
+    if (!synthesis.adjudications.length) $("adjudication-entries").append(element("p",
+      synthesis.status === "unavailable" ? "Adjudication unavailable; see the stated evidence gap." : "No substantive feedback in the reported evidence horizon."));
+  }
   for (const group of groups) {
     const article = element("section",undefined,"resolution-group"); article.id = "resolution-" + group.id;
     article.setAttribute("aria-label",`${group.id} — ${group.title}`);
@@ -320,6 +371,7 @@
     for (const id of group.finding_ids) refs.append(jumpLink(findingRef(findingById.get(id)),"finding-" + id,true));
     context.append(refs,element("p",group.rationale,"body"));
     const objective = element("div",undefined,"outcome"); objective.append(element("strong","Resolution objective"),element("div",group.objective,"body")); context.append(objective);
+    if (construction) context.append(element("pre",proposalText(group),"body proposal"));
     if (group.depends_on.length) {
       const dependencies = element("div",undefined,"links"); dependencies.append(element("span","Depends on:"));
       for (const id of group.depends_on) dependencies.append(jumpLink(id,"resolution-" + id,true));
@@ -333,7 +385,7 @@
     }
     context.append(element("strong","Completion evidence, by finding"),checks);
     const details = element("details"), copy = element("button",`Copy ${group.id} handoff`); copy.type = "button";
-    const text = handoff(group); details.append(element("summary","Resolution handoff · original references and evidence"),element("pre",text,"handoff"));
+    const text = handoff(group); details.append(element("summary",construction ? "Construction handoff · proposed changes and evidence" : "Resolution handoff · original references and evidence"),element("pre",text,"handoff"));
     copy.addEventListener("click",async () => {
       try { await navigator.clipboard.writeText(text); message(`${group.id} handoff copied. No code was changed and nothing was posted.`); }
       catch (_) { details.open = true; message("Clipboard unavailable. Select and copy the handoff text; nothing was changed."); }
@@ -361,6 +413,7 @@
     // The script rebuilds these on reopening; do not duplicate saved UI nodes.
     root.querySelector("#categories").replaceChildren(); root.querySelector("#metadata").replaceChildren();
     root.querySelector("#findings").replaceChildren(); root.querySelector("#message").textContent="";
+    root.querySelector("#adjudication-entries").replaceChildren();
     root.querySelector("#resolution-groups").replaceChildren(); root.querySelector("#empty")?.remove();
     download("<!doctype html>\n"+root.outerHTML,"text/html","elenctic-report.html");
     message("Portable copy saved with the report, checks, and notes. Keep it outside temporary storage for long-term use.");

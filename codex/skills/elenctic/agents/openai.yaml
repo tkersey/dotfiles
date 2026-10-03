@@ -2,5 +2,5 @@ policy:
   allow_implicit_invocation: false
 interface:
   display_name: "elenctic"
-  short_description: "Review a PR and track its findings locally"
-  default_prompt: "Use $elenctic to review the requested PR under SKILL.md and generate its local interactive findings report."
+  short_description: "Review PRs or propose code changes from their feedback"
+  default_prompt: "Use $elenctic under SKILL.md for the requested PR. Preserve the selected comments, resolution, or proposal-only construction workflow and generate its local interactive report."
