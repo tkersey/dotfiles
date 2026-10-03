@@ -1,113 +1,68 @@
-# Zig Profiling Playbook
+# Zig profiling tools
 
-Use this when the task is about speed, latency, throughput, allocator churn, memory growth, leaks, lock contention, or unexplained regressions.
+Use for runtime latency, throughput, allocation churn, leaks, contention or an
+unexplained regression. Choose evidence for the question rather than traversing
+a fixed tool sequence. [Performance engineering](performance_engineering_playbook.md)
+owns benchmark interpretation and the distinction between cold compilation,
+configuration-cache hits, persistent incremental rebuilds and program runtime.
 
-## Decision tree
+## Select a measurement
 
-- Need to prove a user-visible performance delta: run or add a benchmark/perf harness first.
-- Need to explain allocations, frees, live bytes, or leaks: use `zprof`.
-- Need to localize CPU time, cache behavior, branchy code, or lock contention: use a system CPU sampler.
-- Need long-running timeline telemetry, frame views, locks, context switches, or causality across tasks: consider Tracy after simpler lanes justify instrumentation.
+| Question | Candidate |
+| --- | --- |
+| User-visible latency/throughput or size delta | A representative benchmark or artifact comparison with a correctness guard. |
+| Allocation count, live bytes, leak or waste | Repository-compatible allocator instrumentation such as zprof. |
+| CPU time, branches, cache or lock contention | A supported system profiler and appropriate counters. |
+| Cross-task timing/causality | Existing timeline telemetry, or justified instrumentation such as Tracy. |
 
-## Benchmark protocol
+Keep baseline/variant workload, mode, target/CPU, allocator, warmup and sampling
+conditions comparable. Small differences need enough samples and process isolation
+to distinguish signal from noise. Record relevant variance/confounders; profiling
+overhead can change the behavior being measured.
 
-Keep constant across baseline and variant:
+## Allocator instrumentation
 
-- dataset,
-- optimize mode,
-- target and CPU flags,
-- allocator,
-- warmup count,
-- sample count,
-- process isolation,
-- checksum/output validation.
+Use the project's pinned [zprof](https://github.com/ANDRVV/zprof) or an existing
+allocator wrapper. Inspect compatibility with the selected compiler and its actual
+module/options/accessors. The older v4.0.0 recipe was researched for 0.16-era code;
+it is not a verified 0.17 default and should not drive an automatic installation.
 
-Small deltas need repeated fresh-process runs. Report effect size or interval when noise can exceed the observed delta.
+Measure the quantities needed: allocation/free counts, allocated/freed bytes,
+live and peak requested bytes, leaks and contention. Do not mistake requested
+bytes for process RSS or allocator counters for wall-clock evidence. Instrument
+the allocator boundary closest to the suspected waste, keeping allocator lifetime
+and ownership unchanged. Use the wrapper's synchronization when it is shared
+across threads; that does not synchronize arbitrary user data. Reset between
+phases only after respecting live-allocation semantics of the actual tool.
+Disable irrelevant counters when overhead obscures the question.
 
-## `zprof` lane
+## CPU sampling
 
-Current researched default for Zig 0.16.0-era allocator profiling: `zprof` v4.0.0.
-
-Install:
-
-```bash
-zig fetch --save https://github.com/ANDRVV/zprof/archive/v4.0.0.zip
-```
-
-Build wiring:
-
-```zig
-const zprof_dep = b.dependency("zprof", .{
-    .target = target,
-    .optimize = optimize,
-});
-exe.root_module.addImport("zprof", zprof_dep.module("zprof"));
-```
-
-Metrics exposed by upstream v4 docs include:
-
-- `allocated`
-- `freed`
-- `alloc_count`
-- `free_count`
-- `live_requested`
-- `peak_requested`
-- `hasLeaks()`
-- `reset()`
-
-Minimal test harness:
-
-```zig
-const std = @import("std");
-const Zprof = @import("zprof").Zprof;
-
-fn runWorkload(allocator: std.mem.Allocator) !void {
-    const data = try allocator.alloc(u8, 1024);
-    defer allocator.free(data);
-}
-
-test "profile allocator pressure" {
-    var prof: Zprof(.{}) = .init(std.testing.allocator, undefined);
-    try runWorkload(prof.allocator());
-
-    try std.testing.expect(!prof.profiler.hasLeaks());
-    try std.testing.expectEqual(@as(usize, 0), prof.profiler.live_requested.get());
-}
-```
-
-Operating rules:
-
-- Wrap the allocator boundary closest to the suspected waste.
-- Do not use allocator counters as a substitute for wall-clock proof.
-- Enable `.thread_safe = true` only when multiple threads share the wrapped allocator.
-- Reset between phases when one process captures more than one workload.
-- Disable unneeded counters when chasing a narrow question.
-
-## CPU sampling lane
-
-Linux:
+Build through the repository's real release/profiling configuration. For Zig 0.17
+use supported lower-case mode names such as `fast` or `safe`; do not assume the
+project exposes custom CPU/LTO options. Keep sufficient debug information for the
+sampling method. A Linux sampling command, when supported, is:
 
 ```bash
-zig build -Doptimize=ReleaseFast -Dtarget=native -Dcpu=native
 perf record --call-graph dwarf -- ./zig-out/bin/app
 perf report
 ```
 
-macOS: use Instruments Time Profiler on the optimized binary.
+On macOS, Instruments Time Profiler is an alternative for the actual optimized
+binary. When stacks are unusable, investigate debug info, stripping, frame-pointer,
+backend and linker choices before attributing the issue to application code.
+Check the selected toolchain's current target support rather than carrying a
+blanket ban on a new linker from an older release. Keep the shipping and profiling
+configurations distinct when their needs conflict.
 
-If call stacks are unusable, revisit debug info, frame-pointer, strip, and linker choices before changing source code. Avoid the new ELF linker for DWARF-dependent profiling until the release-note limitation is no longer relevant to the target toolchain.
+## Timeline and decomposition
 
-## Tracy lane
+Use Tracy or comparable telemetry when pipelines, frames, locks or cross-thread
+causality are the real question. Prefer existing repository support. A one-off
+allocation question rarely justifies a new heavy telemetry integration.
 
-Use Tracy when timeline causality matters: pipelines, frame loops, lock contention, cross-thread context switches, or long-running concurrent systems. Prefer existing repo support. Do not add a heavy telemetry integration for a one-shot allocator question.
-
-## Decomposition rule
-
-When one aggregate benchmark regresses across abstraction layers, add lanes in the same harness:
-
-1. substrate/reference only,
-2. wrapper/shell only,
-3. full path,
-4. optional scalar/reference path.
-
-Keep the same dataset, checksum, warmups, samples, allocator, optimize mode, and target. Optimize from the decomposed result.
+When an aggregate regression spans layers, split substrate, wrapper and full-path
+measurements where that isolates the cause. Keep comparable input and independent
+correctness checks. A reference/scalar lane can separate algorithmic from wrapper
+cost, but do not add empty lanes or infer that every regression needs this exact
+decomposition. Optimize from observed mechanisms and recheck the affected contract.
