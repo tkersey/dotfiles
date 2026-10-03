@@ -8,7 +8,7 @@ pub fn Partial(comptime S: type) type {
     const n = comptime blk: {
         var count: usize = 0;
         for (s.field_attrs) |attrs| {
-            if (!attrs.is_comptime) count += 1;
+            if (!attrs.@"comptime") count += 1;
         }
         break :blk count;
     };
@@ -19,7 +19,7 @@ pub fn Partial(comptime S: type) type {
 
     var i: usize = 0;
     inline for (s.field_names, s.field_types, s.field_attrs) |name, FT, attributes| {
-        if (attributes.is_comptime) continue;
+        if (attributes.@"comptime") continue;
 
         const default_value: ?FT = null;
 

@@ -39,14 +39,3 @@ jobs:
         run: zig test codex/skills/zig/references/zig_0_17_regressions.zig -O safe -target aarch64_be-linux-musl --test-no-exec
       - name: Format reference and negative examples
         run: zig fmt --check codex/skills/zig/references codex/skills/zig/tests/compile_fail
-      - name: Inspect migration failure against the selected standard library
-        if: failure()
-        shell: bash
-        run: |
-          sed -n '730,850p' "$RUNNER_TEMP/zig-x86_64-linux-0.17.0/lib/std/lang.zig"
-          for source in codex/skills/zig/references/*.zig; do
-            echo "== $source =="
-            zig test "$source" -O debug || true
-          done
-          zig fmt codex/skills/zig/references codex/skills/zig/tests/compile_fail
-          git diff -- codex/skills/zig/references codex/skills/zig/tests/compile_fail

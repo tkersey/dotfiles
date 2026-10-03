@@ -36,7 +36,7 @@ fn walkImpl(comptime T: type, value: T, policy: anytype, comptime opts: WalkOpti
             try policy.begin(.braces);
             var first = true;
             inline for (info.field_names, info.field_types, info.field_attrs) |name, Field, attrs| {
-                if (attrs.is_comptime) continue;
+                if (attrs.@"comptime") continue;
                 try consume(budget);
                 if (!first) try policy.sep();
                 first = false;

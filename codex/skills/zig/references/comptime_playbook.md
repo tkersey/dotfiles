@@ -74,12 +74,13 @@ not obsolete `.fields` records; consume only the columns needed by the operation
 ```zig
 const info = @typeInfo(T).@"struct";
 inline for (info.field_names, info.field_types, info.field_attrs) |name, Field, attrs| {
-    if (attrs.is_comptime) continue; // Policy choice, not universal reflection semantics.
+    if (attrs.@"comptime") continue; // Policy choice, not universal reflection semantics.
     try visit(Field, @field(value, name));
 }
 ```
 
 Keep field order, defaults, alignment and comptime-field policy paired correctly.
+The attribute is `@"comptime"`, not the old field record's `is_comptime`.
 A name-only plan can read `field_names` without reconstructing rich descriptors.
 This avoids unnecessary source-level work; it is not a measured compiler speedup.
 Do not build a multi-version shim when only one compiler version is supported.
