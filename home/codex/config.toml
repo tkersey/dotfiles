@@ -4,7 +4,7 @@ notify = ["/Users/tk/.codex/computer-use/Codex Computer Use.app/Contents/SharedS
 
 [tui]
 screen_reader_detection_done = true
-status_line = ["codex-version", "model-with-reasoning", "current-dir", "pull-request-number", "git-branch", "branch-changes", "weekly-limit"]
+status_line = ["codex-version", "model-with-reasoning", "current-dir", "pull-request-number", "git-branch", "branch-changes", "thread-name", "weekly-limit"]
 status_line_use_colors = true
 
 [tui.model_availability_nux]
