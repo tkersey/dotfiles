@@ -1,71 +1,52 @@
-# Zig Linting Playbook
+# Zig formatting and repository-pinned lint
+
+Use for formatting, syntax checks and the project's lint integration. Select the
+check that answers the task. A formatting-only change does not automatically
+require a build/test cycle; honor repository-required checks and investigate any
+semantic uncertainty introduced by the diff.
 
 ## Built-in checks
 
+For a focused edit, target the authorized files:
+
 ```bash
-zig fmt --check .
-find . -name '*.zig' \
-  -not -path './zig-pkg/*' \
-  -not -path './.zig-cache/*' \
-  -not -path './zig-out/*' \
-  -print0 | xargs -0 zig ast-check
+zig fmt --check path/to/file.zig
+zig ast-check path/to/file.zig
 ```
 
-Use `zig fmt` for canonical formatting and review the diff. Use `zig ast-check` only for `.zig` files; do not point it at `build.zig.zon`.
-
-`zig fmt` has no style configuration, but it is still steerable through syntax-level layout cues. Before formatting, make the desired grouping explicit in the source; after formatting, review the diff to verify the formatter preserved the intended structure.
-
-`zig ast-check` catches simple compile errors, but it is not a full semantic build. Follow with `zig build` and `zig build test`.
+Use `zig fmt` to apply canonical formatting and inspect its diff. Match the selected
+compiler; its formatter can migrate syntax as well as layout. `zig ast-check`
+accepts Zig source, not `build.zig.zon`, and does not replace full semantic analysis
+or integration tests. Use project build/test checks when those are the question,
+not simply because a formatter ran. Whole-tree checks and scans are appropriate
+when the requested scope or project policy calls for them. Exclude generated,
+vendor, cache and custom package locations where they are outside that scope.
 
 ## Steering `zig fmt`
 
-Use formatter steering when the desired layout communicates review or maintenance intent.
+The formatter is not configurable like a style engine, but source syntax can
+communicate useful grouping. Preserve meaning rather than adding layout-only
+noise.
 
-Durable controls:
-
-- A trailing comma on a comma-separated construct, where Zig accepts an optional final comma, requests expanded multi-line layout after `zig fmt`.
-- Removing the optional trailing comma permits `zig fmt` to collapse the construct when it fits. It does not guarantee one line if the content is too long or comments anchor the layout.
-- For arrays and array literals, a trailing comma plus the first intentional line break can request columnar layout. `zig fmt` uses the first row width as the column shape and aligns later rows.
-- Array concatenation with `++` can compose differently shaped chunks, such as a compact command prefix followed by aligned option/value rows.
-- Line comments, doc comments, and block comments are layout anchors. Use real comments for meaning, not dummy comments just to pin a shape.
-- Generated Zig should emit trailing commas for lists that should remain one-item-per-line as items are added, removed, or reordered.
-
-### Trailing commas select compact vs expanded layout
+A trailing comma where the grammar permits an optional final comma requests
+expanded layout. Removing it permits collapsing when the construct fits; comments
+and line length can still prevent a single line. Arrays can use a trailing comma
+and an intentional first-row break to request columnar layout. Compose separately
+shaped chunks with `++` where that improves readability. Emit trailing commas in
+generated lists intended to stay one-item-per-line.
 
 ```zig
-// No trailing comma: `zig fmt` can collapse to one line.
+// Without a trailing comma, formatting can collapse this call.
 f(1, 2,
     3);
 
-// zig fmt:
-f(1, 2, 3);
-
-// Trailing comma: `zig fmt` expands one item per line.
+// With a trailing comma, formatting expands the arguments.
 f(1, 2,
     3,
 );
-
-// zig fmt:
-f(
-    1,
-    2,
-    3,
-);
 ```
 
-Use this to communicate whether the call is conceptually compact or whether each argument deserves its own row.
-
-### Arrays can be shaped as columns
-
-For arrays and array literals, a trailing comma plus the first intentional line break can request columnar layout. `zig fmt` uses the first row width as the column shape and aligns later rows.
-
-```zig
-const ids = .{ 1, 2, 3,
-    4, 5, 6, 7, 8, 9, 10, 11,
-};
-```
-
-For arrays whose prefix and suffix have different structure, compose chunks with `++` so each chunk gets an appropriate layout:
+For differently shaped array chunks:
 
 ```zig
 try run(&(.{ "aws", "s3", "sync", path, url } ++ .{
@@ -76,56 +57,39 @@ try run(&(.{ "aws", "s3", "sync", path, url } ++ .{
 }));
 ```
 
-Review protocol:
+These are layout examples, not instructions to run the depicted command. Use real
+line/doc comments for meaning rather than dummy anchors. Inspect whether the
+selected formatter preserved the intended grouping:
 
 ```bash
 zig fmt path/to/file.zig
 git diff -- path/to/file.zig
-zig fmt --check .
+zig fmt --check path/to/file.zig
 ```
 
-When a diff is formatting-only, identify the actual steering token, usually a trailing-comma add/remove, an intentional first-row array break, `++` chunking, or a real comment. Do not claim `zig fmt` proves semantics; follow with the repo's build/test lanes.
+Formatting acceptance proves neither program behavior nor every version-migration
+contract. See [testing](testing_failure_discovery_playbook.md) when semantic
+validation is needed.
 
-## `zlinter` for Zig 0.16.x
+## Repository lint integration
 
-Install:
+Use the existing pinned [zlinter](https://github.com/kurtwagner/zlinter) integration
+when the repository has one. Inspect its compatible revision, build wiring and
+supported arguments. Do not install the historical `0.16.x` branch into a 0.17
+project or assume `master` is a compatible stable release. A compiler upgrade does
+not authorize an unrelated dependency upgrade or a new lint framework.
 
-```bash
-zig fetch --save git+https://github.com/kurtwagner/zlinter#0.16.x
-```
-
-Use `#master` only for 0.17.x-dev or when intentionally tracking unstable upstream.
-
-Build step:
-
-```zig
-const zlinter = @import("zlinter");
-
-const lint_step = b.step("lint", "Lint Zig source code.");
-lint_step.dependOn(step: {
-    var builder = zlinter.builder(b, .{});
-    builder.addPaths(.{
-        .include = &.{ b.path("src/"), b.path("build.zig") },
-        .exclude = &.{ b.path("zig-pkg/"), b.path(".zig-cache/"), b.path("zig-out/") },
-    });
-    builder.addRule(.{ .builtin = .no_deprecated }, .{});
-    builder.addRule(.{ .builtin = .no_unused }, .{});
-    builder.addRule(.{ .builtin = .no_swallow_error }, .{});
-    builder.addRule(.{ .builtin = .require_errdefer_dealloc }, .{});
-    builder.addRule(.{ .builtin = .require_exhaustive_enum_switch }, .{});
-    break :step builder.build();
-});
-```
-
-Avoid enabling every built-in rule permanently without review. Upstream documents all-rules mode as useful for testing/exploration and warns that many rules are pedantic.
-
-## Commands
+Read the actual rule semantics, especially deprecated APIs, swallowed errors,
+cleanup and exhaustive switching. Enabling every rule can create pedantry and
+conflict with deliberate designs; select rules for the project's requirements.
+An existing project may expose commands such as:
 
 ```bash
 zig build lint
-zig build lint -- --max-warnings 0
-zig build lint -- --rule no_unused --rule no_deprecated
-zig build lint -- --rule no_unused --fix
 ```
 
-Before `--fix`, require a clean working tree or a backup. Review the diff afterwards.
+Pass warning limits, rule selectors or fix flags only when the pinned tool and
+build step expose them. Preserve unrelated working-tree changes. For an authorized
+fix, scope it to intended files and inspect the resulting diff; a dirty working
+tree alone is not a blocker. Re-read overlapping changes rather than assuming a
+clean tree or backup authorizes overwriting them.

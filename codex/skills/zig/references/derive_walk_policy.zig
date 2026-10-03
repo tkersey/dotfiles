@@ -35,14 +35,14 @@ fn walkImpl(comptime T: type, value: T, policy: anytype, comptime opts: WalkOpti
         .@"struct" => |info| {
             try policy.begin(.braces);
             var first = true;
-            inline for (info.fields) |f| {
-                if (f.is_comptime) continue;
+            inline for (info.field_names, info.field_types, info.field_attrs) |name, Field, attrs| {
+                if (attrs.@"comptime") continue;
                 try consume(budget);
                 if (!first) try policy.sep();
                 first = false;
-                try policy.key(f.name);
+                try policy.key(name);
                 try policy.assign();
-                try walkImpl(f.type, @field(value, f.name), policy, opts, depth + 1, budget);
+                try walkImpl(Field, @field(value, name), policy, opts, depth + 1, budget);
             }
             try policy.end(.braces);
         },
@@ -126,10 +126,10 @@ pub const HashPolicy = struct {
         self.hasher.update(&.{byte});
     }
     pub fn begin(self: *HashPolicy, comptime d: Delim) anyerror!void {
-        self.tok(0xA0 ^ @intFromEnum(d));
+        self.tok(0xA0 ^ @backingInt(d));
     }
     pub fn end(self: *HashPolicy, comptime d: Delim) anyerror!void {
-        self.tok(0xB0 ^ @intFromEnum(d));
+        self.tok(0xB0 ^ @backingInt(d));
     }
     pub fn sep(self: *HashPolicy) anyerror!void {
         self.tok(0x01);
@@ -345,4 +345,12 @@ test "nested shapes, union tags, slices, vectors and errors" {
     _ = try derivedHash(@as(error{Bad}!u8, error.Bad), .{});
     _ = try derivedHash(@as(error{Bad}!u8, 3), .{});
     _ = try derivedHash(@as(@Vector(2, u8), .{ 1, 2 }), .{});
+}
+
+test "parallel reflection arrays preserve field order and comptime skipping" {
+    const S = struct { comptime fixed: u8 = 7, value: u8 };
+    var buf: [32]u8 = undefined;
+    var writer: std.Io.Writer = .fixed(&buf);
+    try derivedFormat(&writer, S{ .value = 9 }, .{});
+    try std.testing.expectEqualStrings("{value=9}", buf[0..writer.end]);
 }

@@ -65,6 +65,22 @@ def discovered_global(root: Path) -> Path:
     return directory(value)
 
 
+def require_package_separation(path: Path, args: argparse.Namespace, root: Path) -> None:
+    # CLI overrides cannot be recovered from a past build: the caller supplies them.
+    # Keep the conventional path protected even when an override is now active.
+    values = ["zig-pkg", *args.pkg_path]
+    if "ZIG_LOCAL_PKG_DIR" in os.environ:
+        values.append(os.environ["ZIG_LOCAL_PKG_DIR"])
+    candidate = path.resolve()
+    for value in values:
+        package = Path(value).expanduser()
+        if not package.is_absolute():
+            package = root / package
+        package = package.resolve()
+        if candidate == package or candidate in package.parents or package in candidate.parents:
+            raise CacheError(f"CACHE_PACKAGE_PATH_UNTOUCHED: {path} overlaps {package}")
+
+
 def descendants(path: Path):
     def fail(exc: OSError) -> None:
         raise exc
@@ -127,6 +143,7 @@ def candidates(args: argparse.Namespace, root: Path) -> list[tuple[str, Path]]:
             else:
                 plan.append(("GLOBAL", entry))
     for i, (_, left) in enumerate(plan):
+        require_package_separation(left, args, root)
         for _, right in plan[i + 1:]:
             if left == right or left in right.parents or right in left.parents:
                 raise CacheError("CACHE_PATH_REFUSED: overlapping deletion candidates")
@@ -141,6 +158,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--include-zig-pkg", action="store_true", help="retired; always refuses before deletion")
     parser.add_argument("--include-global", action="store_true")
     parser.add_argument("--global-path", help="optional assertion of the path reported by zig env")
+    parser.add_argument("--pkg-path", action="append", default=[], help="protect a build's package override; repeatable, relative to --root")
     parser.add_argument("--older-than", type=int, metavar="DAYS", help="require every descendant to be older")
     args = parser.parse_args(argv)
     if args.older_than is not None and args.older_than < 0:
@@ -171,6 +189,7 @@ def main(argv: list[str] | None = None) -> int:
             if cutoff is not None and newest >= cutoff:
                 print(f"CACHE_SKIPPED_RECENT: {path}")
                 continue
+            require_package_separation(path, args, root)
             shutil.rmtree(path)
             print(f"CACHE_{kind}_DRAINED: {path}")
         if not selected:

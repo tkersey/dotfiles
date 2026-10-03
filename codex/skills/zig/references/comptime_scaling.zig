@@ -9,13 +9,13 @@ fn Schema(comptime n: usize) type {
     var names: [n][]const u8 = undefined;
     for (&names, 0..) |*name, i| name.* = std.fmt.comptimePrint("f{d}", .{i});
     const types: [n]type = @splat(u64);
-    const attrs: [n]std.builtin.Type.StructField.Attributes = @splat(.{});
+    const attrs: [n]std.lang.Type.Struct.FieldAttributes = @splat(.{});
     return @Struct(.auto, null, &names, &types, &attrs);
 }
 
 fn weights(comptime n: usize) [n]u64 {
     var result: [n]u64 = undefined;
-    for (@typeInfo(Schema(n)).@"struct".fields, 0..) |field, i| result[i] = field.name.len;
+    for (@typeInfo(Schema(n)).@"struct".field_names, 0..) |name, i| result[i] = name.len;
     return result;
 }
 
@@ -31,8 +31,8 @@ pub fn checksum(comptime strategy: Strategy, comptime n: usize, input: *const [n
     var sum: u64 = 0;
     switch (strategy) {
         .direct => {
-            inline for (@typeInfo(Schema(n)).@"struct".fields, 0..) |field, i| {
-                sum +%= input[i] *% @as(u64, field.name.len);
+            inline for (@typeInfo(Schema(n)).@"struct".field_names, 0..) |name, i| {
+                sum +%= input[i] *% @as(u64, name.len);
             }
         },
         .plan => {

@@ -1,140 +1,110 @@
-# Zig unsafe boundary, pointer, slice, sentinel, and alignment playbook
+# Zig pointer, slice, sentinel and alignment boundaries
 
-Use this playbook when code touches raw pointers, pointer casts, address casts, sentinel conversions, C pointers, volatile memory, packed-field pointers, memory reinterpretation, zero-copy parsing, or lifetimes that cannot be proven by ordinary Zig types.
-
-## Expert objective
-
-Every unsafe boundary needs a boundary note:
-
-1. source type and destination type;
-2. length proof;
-3. alignment proof;
-4. sentinel/nullability proof;
-5. lifetime/ownership proof;
-6. aliasing and mutation assumptions;
-7. target/ABI/endian dependency;
-8. validation/test that exercises the boundary.
-
-Do not approve `@ptrCast`, `@ptrFromInt`, `@alignCast`, `@constCast`, `@volatileCast`, `[*c]T`, or packed-field pointer use without this contract.
+Use for raw pointer or qualifier casts, foreign addresses, sentinel conversions,
+packed-field pointers, byte projection and lifetime-sensitive views. Establish the
+properties needed by the operation using code, types, caller contracts and tests.
+Add concise safety notes where an obligation is non-obvious; a new eight-field
+report is not required for a boundary already justified by existing evidence.
+Do not approve an operation whose necessary invariant remains unsupported.
 
 ## Pointer vocabulary
 
-| Type | Meaning | Typical use |
-| --- | --- | --- |
-| `*T` | Single item pointer. No pointer arithmetic. | Owned object, out parameter, MMIO register pointer. |
-| `[*]T` | Many-item pointer without length. | Low-level loops, C-ish APIs where length is separate. |
-| `[]T` | Slice: pointer plus length. | Preferred for safe runtime buffers. |
-| `[*:sentinel]T` | Many-item sentinel-terminated pointer. | C strings, sentinel-delimited data. |
-| `[:sentinel]T` | Slice with sentinel guarantee. | Bounded view plus sentinel proof. |
-| `[*c]T` | C pointer with C coercion behavior. | Raw translated C boundary only; wrap quickly. |
-| `*align(n) T` | Pointer with explicit alignment. | SIMD, hardware, packed-field interop. |
-| `*volatile T` | Side-effecting memory. | MMIO only, not concurrency. |
-| `allowzero` | Zero address may be valid. | Freestanding/embedded special cases. |
+| Type | Relevant contract |
+| --- | --- |
+| `*T` | Single-item pointer; ownership is not encoded by this spelling. |
+| `[*]T` | Many-item pointer without a carried bound. |
+| `[]T` | Pointer and length; lifetime and aliasing still need an owner. |
+| `[*:sentinel]T` | Sentinel-terminated many-item pointer. |
+| `[:sentinel]T` | Slice with a sentinel at the promised end position. |
+| `[*c]T` | C pointer/coercion behavior; validate before exposing a stronger Zig interface. |
+| `*align(n) T` | Explicit alignment, not proof of size or valid destination bits. |
+| `*volatile T` | Side-effecting memory access, not synchronization. |
+| `allowzero` | Zero may be a valid address under a specific mapping contract. |
 
-Default to slices for Zig APIs. Use many-item pointers and C pointers only at boundaries where their weaker guarantees are necessary.
+Prefer slices for bounded Zig buffers. Use weaker pointer forms where the actual
+foreign, hardware or low-level contract needs them, without widening their reach
+through unrelated core code.
 
-## Cast hierarchy
+## Choose by semantics, not a cast ladder
 
-Prefer safer representations before raw pointer casts:
+A typed operation, checked slice, explicit-endian load, value conversion or borrowed
+view can each be the right representation. They are not interchangeable rungs in
+a universal hierarchy. For 0.17, `@bitCast` converts logical bits independently of
+endianness; it is not a memory view and does not accept extern aggregates. See
+[layout/ABI](layout_abi_playbook.md) and the [migration map](zig_0_17_migration.md).
 
-1. normal typed API;
-2. slice narrowing and bounds checks;
-3. `std.mem.bytesAsSlice` / `std.mem.bytesAsValue` when alignment and length are validated;
-4. `@bitCast` for value reinterpretation of equal-sized values;
-5. `@ptrCast` only when the above cannot express the operation;
-6. `@ptrFromInt` only for MMIO, freestanding ABI, or documented foreign addresses.
+For pointer projection, establish source/destination extent, sufficient alignment,
+initialization and valid bit patterns, provenance, lifetime, mutability and
+aliasing. Include ABI/endian or address-space requirements when relevant.
+`std.mem.bytesAsSlice` and `bytesAsValue` do not by themselves discharge those
+obligations. A valid cast does not prove that all subsequent typed loads are legal.
 
-Before `@ptrCast`, prove:
+A length/alignment check can establish those two properties without establishing
+arbitrary `T` validity. For example, byte storage large enough for an enum can
+still contain an invalid tag. Prefer scalar validation and semantic construction
+for hostile wire data rather than presenting a generic bytes-to-`*T` helper as
+safe. For trusted native data, carry the remaining caller contract explicitly.
 
-- memory is initialized for the destination type;
-- pointer alignment is sufficient, or use `@alignCast` after a runtime check;
-- destination size does not exceed source storage;
-- source lifetime outlives all destination uses;
-- mutation through the destination pointer does not violate aliasing/constness expectations.
+`@alignCast` checks alignment only where runtime safety is enabled. For a public
+fallible API accepting untrusted alignment, check it and return an error before
+using the cast; do not advertise a recoverable error while relying on a trap.
+Qualifier casts do not make read-only storage mutable or side-effecting access
+ordinary. Treat changes of constness, volatility and address space according to
+the actual storage and access contract.
 
-## Alignment proof pattern
+## Bounds and sentinels
 
-```zig
-fn requireAligned(comptime T: type, bytes: []u8) !*T {
-    if (bytes.len < @sizeOf(T)) return error.BufferTooSmall;
-    const addr = @intFromPtr(bytes.ptr);
-    if (addr % @alignOf(T) != 0) return error.Unaligned;
-    const aligned: *align(@alignOf(T)) u8 = @alignCast(bytes.ptr);
-    return @ptrCast(aligned);
-}
-```
+Use overflow-safe extent checks. Establish `offset <= buffer.len` before checking
+`len <= buffer.len - offset`. Keep validated offsets tied to the same backing
+extent. A checked range from one buffer is not authority to index another.
 
-Use this pattern as a review shape, not as a blanket recommendation. For many byte-to-value tasks, copying into a value and using endian-aware reads is safer and clearer.
+A sentinel conversion needs storage for the sentinel at the promised position,
+a valid bound for finding it, and stability for the duration of use. Review whether
+mutation can remove it, whether a C call retains the pointer, and whether the view
+escapes. Prefer pointer-plus-length or bounded slices when the interface permits;
+do not perform an unbounded scan of an untrusted foreign address.
 
-## Sentinel proof
+## Lifetime, witnesses and invalidation
 
-Sentinel conversions must prove the sentinel exists at the promised position.
+Check stack/arena lifetime, container reallocation, map rehash, removal, object
+moves, callback retention and task lifetime. Preserve allocator identity and a
+single cleanup owner. A context or wrapper cannot extend the life of storage it
+merely references. Use [ownership](memory_ownership_playbook.md) for transfer and
+failure cleanup.
 
-Review questions:
+A witness can bind a validated range to backing storage and simplify projection.
+It only proves what construction and all supported mutation paths maintain. A
+publicly constructible value or replaceable backing field may bypass validation;
+a type named `BorrowedPacket` or `AlignedBytes` is not sufficient evidence. Prefer
+the smallest representation that actually carries the invariant, not a new wrapper
+for every cast. Do not infer static borrow checking where Zig does not provide it.
 
-- Where is the length obtained?
-- Is the sentinel byte/value inside allocated storage?
-- Is the sentinel guaranteed stable during use?
-- Is the data mutable, and can mutation remove the sentinel?
-- Is the sentinel conversion only for a boundary call, or does it escape?
+## MMIO and concurrency
 
-Prefer bounded slices plus explicit length for Zig APIs. Use sentinel pointers for C APIs or formats that require sentinel semantics.
+Use volatile for side-effecting memory, and synchronization/ownership for shared
+concurrent state. Check device-defined widths, addresses, ordering and reserved
+bits. Avoid taking packed-field pointers where ordinary addressability is absent.
+Whole-register access may avoid a compiler-generated field read-modify-write, but
+hardware semantics still govern: write-one-to-clear and read-side effects can
+forbid such sequences. Use required barriers rather than treating volatile as one.
+See [concurrency](atomics_concurrency_playbook.md) for publication and reclamation.
 
-## Lifetime and invalidation
+## Foreign pointers
 
-Common hazards:
+At a translated-C boundary, validate nullability and pointer/length agreement
+before constructing optional pointers or slices. Establish the foreign function's
+ownership/free domain and whether returned data is static, borrowed, thread-local
+or invalidated by another call. Sentinel views require the same storage and
+lifetime reasoning as other pointer projections. Expose a stronger interface where
+it removes repeated hazards, while preserving the actual foreign contract.
 
-- returning a slice into stack storage;
-- keeping a pointer into an `ArrayList` or hash map after mutation/reallocation;
-- returning a view into an arena that has already reset/deinitialized;
-- casting bytes to a typed pointer before validating length and alignment;
-- C function retaining a pointer after the Zig buffer is freed;
-- async task using borrowed data after the parent scope exits.
+## Verification
 
-Use witness types for validated borrowed views:
-
-```zig
-const BorrowedPacket = struct {
-    backing: []const u8,
-    payload_range: struct { start: usize, end: usize },
-
-    pub fn payload(self: BorrowedPacket) []const u8 {
-        return self.backing[self.payload_range.start..self.payload_range.end];
-    }
-};
-```
-
-The witness stores enough information to project views without redoing unsafe assumptions.
-
-## Volatile vs atomics
-
-`volatile` is for side-effecting memory such as MMIO. It does not make shared memory safe between threads. Use atomics or synchronization primitives for concurrency.
-
-For MMIO:
-
-- make the pointer `*volatile RegisterType`;
-- avoid taking pointers to individual packed fields when the architecture cannot address them normally;
-- prefer read-modify-write helpers that operate on the whole register value;
-- document ordering requirements if the hardware manual requires barriers/fences.
-
-## C pointers
-
-Translated C often emits `[*c]T`. Treat it as a raw boundary type.
-
-Wrap quickly:
-
-- convert nullable C pointers to `?*T` or explicit error returns;
-- convert pointer-plus-length to `[]T` only after null/length validation;
-- convert sentinel strings with sentinel proof;
-- convert ownership conventions into Zig-owned wrappers with `deinit`.
-
-## Review checklist
-
-- Slices are preferred over many-item pointers in Zig-facing APIs.
-- Each cast has a written proof for length, alignment, lifetime, and mutability.
-- Sentinels are checked before sentinel-typed views are created.
-- C pointers are wrapped at the boundary and do not leak into core logic.
-- `volatile` is used only for MMIO/side-effecting memory.
-- Zero-copy projections are exposed only after validation.
-- Packed-field pointers are not passed as normal pointers.
-- Unsafe assumptions are tested in Debug/ReleaseSafe and across relevant targets.
+Exercise the actual boundary with valid and relevant invalid cases, including
+alignment, sentinels, lifetime/invalidation, failure cleanup and target-specific
+layout where applicable. Preserve sufficiently independent expected values for
+wire encodings; round trips alone can repeat the same error in both directions.
+Use production and other discriminating modes/targets, with 0.17 mode names
+`debug`, `safe`, `fast`, `small`; do not impose a full matrix on an unrelated edit.
+Existing applicable evidence can be reused. Distinguish tested cases from a
+source-level safety argument and from unexecuted target assumptions.

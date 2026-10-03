@@ -29,6 +29,25 @@ not unrelated deletion. One project root is inspected at a time; nested projects
 are not recursively swept by basename. Inventory and select them independently.
 The whole candidate selection is validated before any deletion.
 
+### Custom package paths in 0.17
+
+`ZIG_LOCAL_PKG_DIR` and `zig build/fetch --pkg-path` can move dependency sources
+inside an otherwise cache-looking directory. The helper protects the conventional
+`zig-pkg` path, the current environment override and explicit `--pkg-path` values,
+including canonical symlink destinations and ancestor/descendant overlaps:
+
+```bash
+bash "$zig_skill_root/scripts/zig_cache_drain.sh" --root . --pkg-path custom-packages
+```
+
+Repeat `--pkg-path` for additional locations that must survive. Relative values
+are interpreted against `--root`. Past command-line overrides are not discoverable
+from the current environment: inspect the build/CI invocation and pass them in.
+When package locations are unknown, do not authorize deletion. This flag protects
+sources; it never expands the set of deletion candidates. An overlap refuses the
+whole initial selection with `CACHE_PACKAGE_PATH_UNTOUCHED`; it is rechecked before
+individual deletions. Existing concurrent-writer limitations still apply.
+
 `--global-path` only asserts the path reported by `zig env`; it cannot select an
 arbitrary directory. Global object-store directories `o`, `h`, `z`, `b`, and `tmp`
 are supported; package storage `p` is preserved. Unknown layouts fail closed and

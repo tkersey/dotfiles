@@ -1,115 +1,100 @@
-# Zig atomics, concurrency, cancellation, and MMIO distinction playbook
+# Zig concurrency, memory ordering and cancellation
 
-Use this playbook for shared state, threads, async/group I/O, locks, atomics, `std.atomic.Value`, `@atomicLoad`, `@atomicStore`, `@atomicRmw`, `@cmpxchgWeak`, `@cmpxchgStrong`, memory ordering, cancellation, or `volatile` confusion.
+Use for shared state, threads, locks, atomics, task groups, reclamation, progress
+or cancellation. Establish the required synchronization, ownership/lifetime and
+progress guarantees, then choose the simplest mechanism that satisfies them.
+An unfilled template is not a reason to substitute a lock or endorse an algorithm.
+A necessary guarantee that remains unsupported is a real unresolved obligation.
 
-## Expert objective
+## Choosing a mechanism
 
-Do not approve concurrent code without a concurrency contract:
+Ownership transfer, sharding and locks often simplify reasoning; atomics and
+nonblocking algorithms can be necessary for a specified progress or latency
+contract. Compare mechanisms against the actual workload and requirements.
 
-1. shared state;
-2. ownership/lifetime of shared state;
-3. invariant;
-4. synchronization primitive;
-5. memory order for every atomic operation;
-6. progress guarantee or lock discipline;
-7. cancellation behavior;
-8. stress/replay/model tests.
-
-Prefer simple ownership transfer, sharding, or locks before lock-free code.
-
-## Volatile is not synchronization
-
-`volatile` is for memory whose loads/stores have side effects, mainly MMIO. It does not make inter-thread shared memory safe. If the state is shared between threads/tasks, use atomics, locks, channels/queues, or task ownership.
-
-## Choosing the mechanism
-
-| Need | Prefer |
+| Need | Candidate and relevant question |
 | --- | --- |
-| Exclusive mutation with low contention | Mutex. |
-| Many readers/few writers | RwLock if workload proves benefit. |
-| Counter/statistic | Atomic integer with documented order. |
-| One-time publication | Atomic state plus release/acquire or a lock. |
-| Work handoff | Queue/channel/task group; transfer ownership. |
-| Many independent tasks with shared lifetime | `std.Io.Group.async` where appropriate. |
-| Cancelable I/O work | `std.Io` task/cancellation model. |
-| Hardware register | `volatile`, not atomics unless hardware docs require atomic CPU ops. |
+| Exclusive mutation | Mutex or single owner; consider contention, lock order and reentrancy. |
+| Read-heavy state | Immutable snapshots, sharding or RwLock when the workload justifies it. |
+| Independent statistic | Atomic integer; determine whether it publishes any other memory. |
+| One-time publication | Explicit publication state and ordering, or a suitable lock. |
+| Work handoff | Queue/channel/task ownership with explicit transfer and shutdown. |
+| Related I/O tasks | The selected `std.Io` group/lifetime facilities and their completion contract. |
+| Required nonblocking progress | Algorithm and reclamation satisfying that requirement; a lock is not a semantics-neutral fallback. |
+| Hardware register | Device-defined volatile access, not an assumed concurrent-memory protocol. |
 
-## Atomic review template
+Keep a correct existing design when its guarantees and evidence remain applicable.
+Do not add an abstraction merely because an atomic token appears.
 
-For every atomic field:
+## Synchronization argument
 
-```text
-field: state
-atomic type: std.atomic.Value(T) or builtin atomic operation on T
-writers: ...
-readers: ...
-invariant: ...
-load order(s): ...
-store order(s): ...
-rmw/cmpxchg order(s): ...
-ABA/lifetime hazard: ...
-progress: lock-free / wait-free / blocking / obstruction-free / not claimed
-```
+Identify the shared invariant, relevant readers/writers, synchronization points,
+publication ordering, owner/reclamation strategy and promised progress. Existing
+code, comments or a model may already provide the argument. A per-field table can
+help with interacting state, but is not required for an ordinary atomic counter.
+Document subtle dependencies where maintainers need them rather than duplicating
+every property into a separate artifact.
 
-If the answer cannot fill this in, use a lock.
+For Zig 0.17, atomic order metadata is `std.lang.AtomicOrder`; inspect the selected
+compiler and [language reference](https://ziglang.org/documentation/0.17.0/)
+for the actual operation's accepted orders. Typical reasoning:
 
-## Memory-order guidance
+- `.monotonic` can suffice for an independent statistic that publishes no other memory.
+- Release/acquire can publish initialized state when the reader observes the relevant publication; order names alone do not establish that relation.
+- `.seq_cst` supplies a stronger order where the algorithm needs it or its simplicity is justified; it does not solve lifetime or reclamation.
 
-Avoid cargo-culting `.seq_cst`. It is sometimes correct but not a substitute for a proof.
+Keep success and failure ordering distinct for compare-exchange. A failure does
+not perform the successful write. Weak compare-exchange permits spurious failure;
+use it with an appropriate retry strategy. Strong compare-exchange avoids spurious
+failure for a single attempt, but still fails when the expected value differs.
+Verify order restrictions rather than copying a remembered success/failure pair.
 
-Common patterns:
+## Lifetime and progress
 
-- `.monotonic` for counters/statistics where no ordering of other memory is required;
-- release store + acquire load for publishing initialized data;
-- acquire/release or stronger orders around state-machine transitions;
-- `.seq_cst` only when a single global order is part of the reasoning or simplicity outweighs cost and is stated.
+Publishing an address does not keep its referent alive. Establish ownership and
+safe reclamation before readers can access or retain it. Consider ABA, reuse,
+allocation domains, sequence wraparound and how shutdown coordinates with active
+readers. Pointer-stability or thread-safe allocator checks are not a reclamation
+scheme.
 
-Always check the actual Zig 0.16 atomic order names/types in the target codebase before editing.
-
-## Compare-exchange discipline
-
-Use weak compare-exchange inside retry loops when spurious failure is acceptable. Use strong compare-exchange when a single operation must not fail spuriously.
-
-Review loop hazards:
-
-- ABA problem;
-- pointer lifetime after pop/free;
-- reclamation strategy;
-- starvation under contention;
-- order on success and failure;
-- missed cancellation or shutdown flag.
+Distinguish blocking, lock-free, wait-free or other claimed progress. A retry loop
+with no mutex is not automatically lock-free; allocation, callbacks and reclamation
+can introduce blocking. Analyze contention/starvation, backoff and cancellation
+against the contract. For locks, consider acquisition order, callback reentrancy
+and whether a blocking/cancelable operation holds a lock needed for completion.
+Do not silently weaken a required guarantee to make an implementation simpler.
 
 ## Cancellation and task lifetime
 
-For async/I/O tasks:
+Use the selected `std.Io` task/group contract. Establish completion before destroying
+borrowed inputs, group storage or shared resources. A cancellation request is not
+necessarily completion; inspect whether the API awaits/join completes as part of
+cancel or requires a separate operation. Cover success, failure and early-return
+paths, including children that have already completed or are blocked.
 
-- tie tasks to a clear group or parent lifetime;
-- cancel or await on every path;
-- close/deinit resources on cancellation;
-- ensure borrowed data outlives the task;
-- test cancellation before, during, and after the effectful operation.
+Cleanup and observable effects are separate. Cancellation may leave a documented
+partial write or committed operation; do not claim it rolled back simply because
+resources were freed. Use [I/O/effects](io_effects_playbook.md) and
+[state transitions](atomic_transition_playbook.md) for those contracts.
 
-## Testing strategy
+## Volatile is not synchronization
 
-Concurrency tests should include:
+Volatile addresses side-effecting memory such as MMIO. It does not publish ordinary
+shared data or make conflicting concurrent accesses safe. Device semantics govern
+width, ordering, barriers and read-modify-write, including write-one-to-clear and
+read-side effects. Atomic CPU operations are not universally appropriate for MMIO.
+See [layout/ABI](layout_abi_playbook.md).
 
-- sequential reference/model test;
-- deterministic seed/replay when possible;
-- many-iteration stress test under Debug and ReleaseSafe;
-- ReleaseFast smoke for optimizer-sensitive paths;
-- timeout lane to catch hangs;
-- cancellation tests for I/O/task code;
-- sanitizer/platform tools if available.
+## Evidence
 
-Stress tests do not prove lock-free algorithms. They only increase confidence.
+Select checks that challenge the live obligation: a sequential specification or
+linearizability model, deterministic replay where possible, contention stress,
+timeouts for hangs, shutdown/cancellation races or platform tooling. Use the
+production mode and additional modes/targets when they discriminate optimizer,
+ordering or ABI assumptions. Zig 0.17 mode names are `debug`, `safe`, `fast`, `small`.
+A narrow atomic edit need not run a universal matrix.
 
-## Review checklist
-
-- Shared state is explicitly identified.
-- A simpler non-lock-free design was considered.
-- Every atomic has documented memory orders.
-- `volatile` is not used for thread synchronization.
-- Lifetime/reclamation is solved before pointer publication.
-- Cancellation paths await/cancel/cleanup correctly.
-- Tests include model/reference behavior plus stress/timeout lanes.
-- Remaining concurrency risk is reported honestly.
+Stress success is sampled evidence, not proof of linearizability or nonblocking
+progress. Report guarantees supported by the algorithm separately from observed
+runs and untested platform assumptions. Preserve review-only scope; for authorized
+implementation, resolve introduced failures and complete relevant verification.
