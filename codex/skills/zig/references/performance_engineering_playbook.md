@@ -1,160 +1,89 @@
-# Zig performance, profiling, cache-layout, and measurement playbook
+# Zig performance and measurement
 
-Use this playbook when users ask for speedups, latency, throughput, allocation pressure, binary size, CPU hotspots, memory growth, cache behavior, SIMD/vectorization, LTO, or profiling.
+Use for latency, throughput, allocation pressure, compile time, binary size,
+CPU hotspots, layout, SIMD and LTO. State the workload, baseline, hypothesis,
+correctness guard, exact commands, version/target/CPU/mode/allocator and relevant
+noise. This can be a short result, not a mandatory report template. Report
+`UNMEASURED` instead of implying a speedup without measurements.
 
-## Expert objective
+## Separate the measured questions
 
-Do not guess about performance. Produce a measurement contract:
+Zig 0.17 changes compilation infrastructure. Measure separately:
 
-1. workload and dataset;
-2. baseline command/result;
-3. optimization hypothesis;
-4. benchmark command/result;
-5. profiler evidence if needed;
-6. correctness guard/checksum;
-7. optimize mode, target, CPU, allocator, and build flags;
-8. remaining noise/confounders.
+- cold compilation with declared local/global cache state;
+- warm no-change build/configuration-cache hits;
+- incremental edited rebuilds in a persistent `--watch` process;
+- produced-program runtime and memory behavior.
 
-## Benchmark before optimizing
+A faster warm configure step is not faster semantic analysis; a smaller object is
+not lower runtime latency. The bundled comptime driver measures cold direct
+`build-obj` wall time and object bytes only, with rotated strategies and fresh
+per-sample caches. It does not measure the build-system configure cache, persistent
+incremental compilation, peak compiler memory or runtime. Pin CPU/features when
+comparing machines; native CPU detection changes can otherwise confound results.
 
-Minimum benchmark shape:
+The 0.17 incremental milestone primarily concerns x86_64 Linux and its ELF linker.
+Verify backend/target support before proposing `-fincremental --watch`. Do not
+promise equivalent Apple Silicon/macOS gains or enable a backend solely because
+it is new. Keep usable debug information for the profiling lane; experimental
+WebAssembly debug-info support is not a production profiling guarantee.
 
-- warmup;
-- repeated samples;
-- fixed dataset;
-- checksum or invariant check;
-- fixed allocator;
-- ReleaseFast or relevant production optimize mode;
-- baseline and variant run under the same environment.
+## Runtime benchmarks
 
-Report `UNMEASURED` rather than implying a speedup without numbers.
+Use externally supplied runtime input, warmup, repeated samples, an observable
+checksum or invariant, and the same dataset and allocator across baseline and
+variant. Match the production optimize mode (`fast`, `safe` or `small` in 0.17),
+not an assumed Debug-versus-release comparison. Inspect generated code when the
+optimizer may eliminate the work or make representations equivalent.
 
-## LTO measurement lane
+Decompose a cross-layer regression into substrate, wrapper, full path and
+reference/optimized lanes only when that distinction helps isolate the cause.
+Keep identical semantic checks and input across them.
 
-Link-time optimization is a candidate release optimization, not proof by itself.
+## LTO and binary size
 
-Add an LTO lane when the hypothesis is cross-module inlining, dead-code removal, devirtualization-like specialization through visible calls, or binary-size reduction. Do not add it for semantic correctness, debug-only work, or failure triage unless the repository already ships with LTO.
-
-Compare explicit variants:
-
-```bash
-# repository-specific commands are preferred when available
-zig build -Doptimize=ReleaseFast
-zig build -Doptimize=ReleaseFast -Dlto=thin
-zig build -Doptimize=ReleaseFast -Dlto=full
-zig build -Doptimize=ReleaseSmall -Dlto=thin
-
-# direct compiler probes are acceptable for isolated artifacts
-zig build-exe src/main.zig -O ReleaseFast -fno-lto
-zig build-exe src/main.zig -O ReleaseFast -flto=thin
-zig build-exe src/main.zig -O ReleaseFast -flto=full
-```
-
-Only use `-Dlto=...` when the repository exposes that build option. Otherwise, inspect `build.zig` and either use the repo’s existing knob or propose a small enum option in the build-toolchain playbook.
-
-For each LTO result, record:
-
-```text
-lto mode: none|thin|full
-Zig version, target triple, CPU, optimize mode
-use_lld/use_new_linker/use_llvm when known
-binary size and stripped/debug-info state
-build/link time and memory pressure when relevant
-benchmark metric and variance
-correctness guard/checksum
-```
-
-Prefer `.thin` for large projects or CI lanes where link time and memory are constraints. Test `.full` only when the link is tractable or the artifact justifies the cost. If LTO changes profiler symbolization, call graph quality, sanitizer behavior, or debug-info availability, separate the profiling lane from the shipping-performance lane.
-
-## Decompose regressions
-
-When a regression spans abstraction layers, build lanes such as:
-
-1. substrate only;
-2. wrapper only;
-3. full path;
-4. reference/scalar path;
-5. optimized path.
-
-Use the same dataset and checksum across lanes. Optimize the lane that actually regressed.
-
-## Allocation pressure
-
-Hot-path allocation is often the first systems-performance issue in Zig.
-
-Measure:
-
-- allocation count;
-- allocated/freed bytes;
-- live requested bytes;
-- peak requested bytes;
-- leaks;
-- allocator contention when shared across threads.
-
-Use `zprof` for allocator metrics and system profilers for CPU/time. Do not confuse allocation metrics with wall-clock proof.
-
-## CPU profiling
-
-Use system profilers when wall time regresses and allocation is not the explanation:
+LTO is a release hypothesis, not a routine correctness requirement. Cross-module
+inlining, visible-call specialization and dead-code removal can help or regress
+an artifact. Confirm supported LLVM/linker/object-format combinations first.
 
 ```bash
-perf record --call-graph dwarf -- ./zig-out/bin/app
-perf report
+zig build-exe src/main.zig -O fast -fno-lto
+zig build-exe src/main.zig -O fast -flto=thin
+zig build-exe src/main.zig -O fast -flto=full
+zig build-exe src/main.zig -O small -flto=thin
 ```
 
-On macOS, use Instruments Time Profiler. For long-running concurrent/timeline questions, consider Tracy only when the repo already supports it or instrumentation cost is justified.
+Check installed help; prefer the repository harness. Use `-Dlto=...` only if the
+build exposes it. Compare none/thin/full under the same workload and correctness
+guard, recording artifact size, strip/debug state and compile/link time. ThinLTO
+is a candidate for constrained link time/memory, not an unconditional winner.
+Full LTO needs its own evidence. Do not infer program speed from artifact size.
 
-## Cache and layout
+## Allocation and CPU
 
-Review:
+Measure allocation count, allocated/freed bytes, live/peak requested bytes, leaks
+and contention. SafeAllocator's checks and thread safety do not demonstrate
+application throughput or race freedom. Use repository-compatible `zprof` for
+allocator metrics and a platform profiler for CPU/time; inspect actual tool
+compatibility rather than inventing flags after a compiler upgrade.
 
-- array-of-structs vs struct-of-arrays;
-- hot/cold field splitting;
-- pointer chasing and allocation locality;
-- branch-heavy code paths;
-- bounds checks and slice shapes;
-- false sharing between threads;
-- packed layout costs vs space savings;
-- endian/unaligned loads in parsers.
+On Linux, a supported lane is `perf record --call-graph dwarf -- ./zig-out/bin/app`
+followed by `perf report`. On macOS use Instruments Time Profiler. Use Tracy only
+when supported or justified by a timeline question. Preserve DWARF/call-graph
+quality separately from shipping linker/LTO choices. `zig objdump` object metadata
+inspection does not automatically replace a disassembler or a CPU profiler.
 
-Only claim cache or branch improvements when benchmark/profiler data supports them.
+## Layout, specialization and vectors
 
-## SIMD/vector guidance
+Investigate hot/cold splitting, arrays-of-structs versus structs-of-arrays, pointer
+chasing, false sharing, packed access, alignment and branch behavior. Claim cache
+or branch improvements only with suitable evidence. Count comptime specialization
+cardinality and plan storage alongside build time and binary size.
 
-Use vectors/SIMD only when:
-
-- the scalar reference path exists;
-- tests compare scalar and vector outputs;
-- target CPU features are explicit or guarded;
-- ReleaseFast benchmark proves benefit;
-- alignment and tail handling are correct.
-
-For debug iteration over vector elements in Zig 0.16, coerce to an array when runtime indexing is needed.
-
-## Binary size
-
-For size claims:
-
-```bash
-zig build -Doptimize=ReleaseSmall
-ls -lh zig-out/bin/*
-```
-
-Also compare `ReleaseSmall` with explicit LTO variants when the repository supports them, because LTO can change dead-code elimination and cross-module specialization.
-
-Examine specialization cardinality from comptime generics. Excessive value-specialization can improve hot paths while harming build time and binary size.
-
-## Linker/debug-info caveat
-
-Profiling workflows that need DWARF call graphs require binaries with suitable debug info. Do not enable linker/incremental/LTO settings that drop or destabilize debug information when the profiler depends on it.
-
-## Review checklist
-
-- Baseline and variant are measured under the same conditions.
-- Correctness guard prevents benchmarking wrong output.
-- Optimization mode matches the claim.
-- LTO is off/thin/full intentionally and recorded when relevant.
-- Allocation and CPU questions use the right profiler.
-- Cache/SIMD claims have evidence.
-- Build time and binary size are considered for comptime specialization and LTO.
-- Results include exact commands and remaining noise.
+Keep an independent scalar path for SIMD, explicit CPU features, correct alignment
+and tail handling, and scalar/vector equivalence tests. Runtime array coercion is
+an option where vector indexing support requires it, not a universal requirement.
+Zig 0.17 still disables LLVM loop vectorization for a correctness workaround; do
+not force it back on merely to improve a benchmark. Explicit vectors and automatic
+loop vectorization are different mechanisms. Revisit logical `@bitCast` semantics
+before treating vector packing as a memory-layout optimization.

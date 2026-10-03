@@ -18,10 +18,10 @@ pub fn typeSwitch(comptime T: type, comptime R: type, v: anytype) R {
 }
 
 test "typeSwitch example" {
-    const Type = std.builtin.Type;
+    const Type = std.lang.Type;
     const Kind = enum { int, float, ptr, array, struct_, other };
 
-    const k = typeSwitch([]const u8, Kind, struct {
+    const visitor = struct {
         fn onStruct(_: @This(), comptime _: type, _: Type.Struct) Kind {
             return .struct_;
         }
@@ -69,7 +69,14 @@ test "typeSwitch example" {
         fn onOther(_: @This(), comptime _: type) Kind {
             return .other;
         }
-    }{});
+    }{};
 
-    try std.testing.expect(k == .ptr);
+    try std.testing.expectEqual(Kind.ptr, typeSwitch([]const u8, Kind, visitor));
+    try std.testing.expectEqual(Kind.struct_, typeSwitch(struct { x: u8 }, Kind, visitor));
+    try std.testing.expectEqual(Kind.int, typeSwitch(u32, Kind, visitor));
+    try std.testing.expectEqual(Kind.float, typeSwitch(f32, Kind, visitor));
+    try std.testing.expectEqual(Kind.array, typeSwitch([2]u8, Kind, visitor));
+    inline for (.{ union(enum) { x: u8 }, enum { x }, @Vector(2, u8), ?u8, error{Bad}!u8, bool, void }) |T| {
+        try std.testing.expectEqual(Kind.other, typeSwitch(T, Kind, visitor));
+    }
 }

@@ -2,22 +2,25 @@
 
 ## Official sources
 
-- Zig 0.16.0 language reference: https://ziglang.org/documentation/0.16.0/
-- Zig 0.16.0 release notes: https://ziglang.org/download/0.16.0/release-notes.html
-- Zig build system guide: https://ziglang.org/learn/build-system/
+- Zig 0.17.0 language reference: https://ziglang.org/documentation/0.17.0/
+- Zig 0.17.0 release notes: https://ziglang.org/download/0.17.0/release-notes.html
 - Zig download/release index: https://ziglang.org/download/index.json
+- Zig build system guide (check its examples against the selected release): https://ziglang.org/learn/build-system/
 - LLVM LTO design: https://llvm.org/docs/LinkTimeOptimization.html
 - OpenAI, Rethinking skills and prompts for GPT-6 Astra (2026-09-11): https://developers.openai.com/blog/rethinking-skills-and-prompts-for-gpt-6-astra
 - Codex skills documentation: https://developers.openai.com/codex/skills
 
-Relevant Zig areas include allocators/ownership, pointer/sentinel/alignment
-contracts, Illegal Behavior/runtime safety, errors, atomics, ABI/layout, build
-modes, targets/linkers/LTO, comptime/reflection, Smith fuzzing, explicit I/O,
-process initialization, C translation and packages. Check the installed toolchain
-and repository pins rather than treating these links as version-independent recipes.
+The 0.17 release notes own the migration delta; the versioned language reference,
+installed help and matching stdlib source own exact signatures and behavior.
+A release index entry is not compiler execution evidence. An older repository pin
+still governs its project unless an upgrade is requested. Do not equate a minimum
+supported version, a development snapshot and an exact release pin.
 
-Retain repository-compatible Zlinter/zprof references and Matklad's Zig formatter
-guidance in the relevant playbooks. Exact compatible versions remain repo-pinned.
+Relevant areas include allocation/ownership, pointer/sentinel/alignment contracts,
+Illegal Behavior/runtime safety, errors, atomics, layout, build caches, targets,
+linkers/LTO, comptime/reflection, Smith fuzzing, explicit I/O, C translation and
+packages. Retain repository-compatible Zlinter/zprof and formatter guidance; exact
+compatible versions remain repository-pinned rather than assumed from Zig alone.
 
 ## Historical operational evidence
 
@@ -26,16 +29,22 @@ binding, lifetime escape, fallible mutation, verifier completeness, repository
 closure, evidence freshness and cache/sandbox mismatches. It established recurring
 signatures and outcomes, not causal influence from `$zig`.
 
-These distinctions remain available as non-exhaustive semantic lenses. Witness
-construction, owner-first invariants, small hazardous cores, independent reference
-paths and repository-specific validation remain useful engineering approaches;
-their presence in prose does not itself prove correctness or model effectiveness.
+These remain non-exhaustive semantic lenses. Witness construction, owner-first
+invariants, small hazardous cores, independent reference paths and repository-
+specific validation remain useful; their presence in prose is not correctness or
+model-efficacy evidence.
 
 ## This revision's rationale
 
-The Astra article motivates concise discovery, progressive disclosure, revisiting
-prescriptive recipes and stop conditions, and clear completion. The revision
-separates that operating contract from Zig expertise; it does not assert that a
-shorter prompt is necessarily better. Use the matched behavioral probes for that
-question. Local helper regressions and compiler/example tests establish only their
-specific advertised coverage. Report actual execution separately in the PR.
+Version 3.1 preserves the adaptive v3 operating contract. It updates executable
+reflection examples, version/mode selection and migration guidance, then adds
+semantic regression examples and discovers all reference test files automatically.
+Release-specific detail stays behind the reference map; ordinary work does not
+acquire a mandatory migration checklist or additional orchestration stages.
+
+Helper regressions test tools and failure classification. Real Zig example checks
+test only instantiated language behavior; cross-compilation is not execution.
+The build-cost driver does not measure runtime, peak memory, warm configuration
+hits or persistent incremental compilation. Matched behavioral probes remain the
+way to investigate skill efficacy; neither prose shortening nor compiler success
+establishes a model-quality improvement. Report actual execution in the PR.

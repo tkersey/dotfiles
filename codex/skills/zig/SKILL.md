@@ -1,11 +1,11 @@
 ---
 name: zig
 description: >-
-  Implement, debug, review, and optimize Zig code and build systems.
+  Implement, debug, review, migrate, and optimize Zig code and build systems.
   Use for Zig-specific language, toolchain, ownership, comptime,
   interoperability, or performance work.
 metadata:
-  version: "3.0.0"
+  version: "3.1.0"
   activation_cost: low
   default_depth: adaptive
 ---
@@ -18,11 +18,16 @@ map, not an itinerary. A new feature need not begin as a defect investigation.
 
 ## Working contract
 
-Inspect what the task needs. For version-sensitive work, establish the repository's
-pinned version and compare it with `zig version`; use `0.16.0` only when neither the
-repository nor user specifies a target. Check installed help and stdlib sources
-before adapting version-sensitive examples. Report a mismatch without claiming
-that a different compiler validated the target; continue independent work.
+For version-sensitive work, resolve the user-requested target and repository's
+actual pin, then compare with `zig version`. A `minimum_zig_version` is a lower
+bound, not an exact pin; a development build is not the corresponding release.
+Do not silently upgrade a pinned project. For an unpinned task, use the verified
+stable baseline `0.17.0`; when asked for "latest", check the official release
+index rather than equating `master` with stable. Match documentation and stdlib
+sources to the selected compiler. Check installed help before adapting commands.
+Report mismatches without claiming another compiler validated the target;
+continue independent work. See the [0.17 migration map](references/zig_0_17_migration.md)
+for version-sensitive changes, not a mandatory whole-project migration.
 
 Honor repository conventions, user changes, review-only scope, and authorization
 for external or destructive effects. A required safety argument can block an
@@ -39,6 +44,7 @@ When an actual consumer requires a structured artifact, honor that interface.
 
 | Task or uncertainty | Reference |
 | --- | --- |
+| Version selection, 0.16-to-0.17 migration, silent semantic changes | [0.17 migration map](references/zig_0_17_migration.md) |
 | Overlapping semantic concerns; choosing an owner or repair boundary | [Semantic lenses](references/semantic_failure_router.md) |
 | Resource bounds, assertion pairs, control flow, Tiger Style | [Engineering contracts](references/engineering_contracts.md) |
 | Constructive API design, comptime, reflection, generated types and specialization cost | [Comptime playbook](references/comptime_playbook.md) |
@@ -70,6 +76,12 @@ cleanup/atomicity, semantic mutations for claim checking, compile-fail cases for
 invalid type shapes, target/mode matrices for low-level assumptions, and measured
 comparisons for performance claims. A successful build is not evidence for an
 unexercised contract; a fuzz run is sampled evidence, not a proof of totality.
+
+For upgrades, also test contracts that still compile but changed meaning: bit
+representation, hook discovery, ownership and cached configuration inputs. Separate
+formatting, compilation, native execution, cross-target compilation, fuzzing and
+benchmarks; none silently substitutes for another. The bundled example runner
+has its own exact release pin; it does not override a consuming project's target.
 
 Reuse evidence only when its relevant inputs and assumptions remain established.
 Rerun affected checks after relevant changes or when relevance is unknown; do not

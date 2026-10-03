@@ -1,4 +1,4 @@
-//! Small Zig 0.16 patterns. Validate with the project's exact toolchain.
+//! Small Zig 0.17 patterns. Validate with the project's exact toolchain.
 const std = @import("std");
 
 fn wrappedSlot(capacity: usize, head: usize, offset: usize) usize {
@@ -43,6 +43,7 @@ pub fn requireStruct(comptime api: []const u8, comptime T: type) void {
     }
 }
 
+// Zig 0.17 discovers public declarations only, even in the defining file.
 pub fn hasDeclSafe(comptime T: type, comptime name: []const u8) bool {
     return switch (@typeInfo(T)) {
         .@"struct", .@"union", .@"enum", .@"opaque" => @hasDecl(T, name),
@@ -59,14 +60,14 @@ pub fn hasFieldSafe(comptime T: type, comptime name: []const u8) bool {
 
 pub fn StructPlan(comptime T: type) type {
     requireStruct("StructPlan", T);
-    const fields = @typeInfo(T).@"struct".fields;
+    const names = @typeInfo(T).@"struct".field_names;
     return struct {
-        pub const field_count = fields.len;
+        pub const field_count = names.len;
         pub fn fieldName(comptime index: usize) []const u8 {
-            if (index >= fields.len) {
+            if (index >= names.len) {
                 @compileError("StructPlan(" ++ @typeName(T) ++ "): field index out of range");
             }
-            return fields[index].name;
+            return names[index];
         }
     };
 }
@@ -79,7 +80,7 @@ pub fn UInt(comptime bits: u16) type {
 pub fn Pair(comptime A: type, comptime B: type) type {
     const names = [_][]const u8{ "first", "second" };
     const types = [_]type{ A, B };
-    const attrs = [_]std.builtin.Type.StructField.Attributes{ .{}, .{} };
+    const attrs = [_]std.lang.Type.Struct.FieldAttributes{ .{}, .{} };
     return @Struct(.auto, null, &names, &types, &attrs);
 }
 
