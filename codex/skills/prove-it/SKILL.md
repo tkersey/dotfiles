@@ -1,8 +1,8 @@
 ---
 name: prove-it
-description: "Adversarially adjudicate a concrete claim when explicitly requested with `$prove-it` or equivalent claim stress-testing intent. Certainty words and ordinary implementation or review alone do not activate. Rounds 1-9 are independent lens packets produced concurrently by the reusable prove_it_lens custom agent; round 10 is the prove_it_oracle custom agent that runs only after all nine packets return and owns the final verdict plus final response text."
+description: "Adversarially adjudicate a concrete claim for explicit `$prove-it` or equivalent claim stress-testing intent. Certainty words, quoted instructions, and ordinary rigor, implementation, or review alone do not activate."
 metadata:
-  version: "3.2.0"
+  version: "3.3.0"
   activation_cost: high
   default_depth: high
 ---
@@ -217,7 +217,8 @@ prove_it_oracle_packet:
     main_gaps: []
   next_tests: []
   final_response: |
-    Prove It — Parallel Subagent Gauntlet
+    I attempted to prove that <original claim>.
+    I conclude that <result, decisive reason, and essential limit>.
     ...
 ```
 
@@ -229,42 +230,63 @@ The oracle is the only component that may choose `PROVEN`, `DISPROVEN`, `NOT_PRO
 
 When constructing each assignment, read its numbered section in
 [round-lenses.md](references/round-lenses.md). Pass rounds 1–9 only their own
-lens; pass the round 10 section to the oracle after fan-in. Keep the packet
-schemas and authority rules above unchanged.
+lens; pass the round 10 section and the [response contract](#root-final-response)
+to the oracle after fan-in, including ordinary-subagent fallback. Include the
+original claim as well as its normalization. Keep the packet schemas and
+authority rules above unchanged.
 
 ## Root final response
 
 After the oracle packet returns, the root validates `prove_it_oracle_packet` and relays `final_response`. The root must not rewrite the outcome, invent a tighter claim, or add a separate verdict. If validation fails, report the oracle packet as compromised and do not synthesize a replacement verdict.
 
-The oracle's `final_response` must use this shape:
+The response must answer **what was tested and what was concluded** before
+explaining the investigation. Open with “I attempted to prove that X. I conclude
+that Y.” Use the user's actual proposition for X, preserving material quantifiers,
+conditions, and scope. Y must state what is true, false, supported only within
+named bounds, or still undetermined, with the decisive reason. An outcome enum,
+confidence label, or “the claim survives” is not a substitute for that sentence.
+
+Keep the opening independently understandable. Put any qualification that changes
+its meaning there, not only below the pressure map. When only a narrower claim
+survives, explicitly distinguish it from the original and say whether it was
+proved or merely supported. When unresolved, state the specific missing evidence
+or proof obligation; do not manufacture certainty to make the conclusion direct.
+
+Translate the oracle's existing outcome faithfully:
+
+| Outcome | What the conclusion must communicate |
+|---|---|
+| `PROVEN` | The claim is established in the stated domain; identify the proof basis and material assumptions. |
+| `DISPROVEN` | The original claim is false; identify the decisive counterexample or contradiction. A surviving narrower claim does not rescue the original. |
+| `BOUNDED_CLAIM_SURVIVES` | The original is not established as stated; name the exact narrower claim, its bounds, and whether evidence supports it or a proof establishes it. |
+| `NOT_PROVEN` | The attempt did not establish the claim; identify the unresolved obligation. Failure to prove it is not proof that it is false. |
+| `INSUFFICIENT_EVIDENCE` | The claim remains undetermined because specific necessary evidence is missing or inadequate; name it. |
+
+Do not turn reviewer agreement, confidence, passing samples, or absence of a
+counterexample into proof. Do not soften an established disproof into a vague
+caveat. The opening, `final_verdict.statement`, outcome, surviving claim, and
+closing sentence must agree. Root validation checks that consistency within the
+existing packet-validation step; it does not grant a second verdict or permission
+to rewrite the oracle's response.
+
+The oracle's `final_response` uses this order; omit empty or redundant supporting
+fields, not the opening, verdict, material limits, or required completeness facts:
 
 ```text
-Prove It — Parallel Subagent Gauntlet
+I attempted to prove that <original claim, preserving its material scope>.
+I conclude that <plain-language result, with the decisive reason and essential limit>.
+<When needed: exact narrower claim and its proof status, or the unresolved evidence gap.>
 
-Original claim:
-Normalized claim:
-Execution mode: custom-agent|custom-agent fallback
-Packets received: <oracle.packet_completeness.received_rounds>
-Missing packets: <oracle.packet_completeness.missing_rounds>
-Compromised packets: <oracle.packet_completeness.compromised_rounds>
-Oracle completeness: complete|incomplete
+Verdict: <exact outcome enum>
 
-Verdict:
-- Outcome:
-- Statement:
-- Decisive reasons:
+Why:
+- <Decisive evidence, with relevant round/source references.>
 
-Tightest surviving claim:
-
-Round pressure map:
-| Round | Lens | Effect | Key pressure/support |
-|---|---|---|---|
-
-Valid when:
-- ...
-
-Invalid when:
-- ...
+What holds and what does not:
+- Tightest surviving claim: <original, exact narrower claim, or none established>
+- Valid when:
+- Invalid when:
+- Remaining uncertainty:
 
 Confidence:
 - Level:
@@ -272,14 +294,40 @@ Confidence:
 - Gaps:
 
 Next tests:
-- ...
+- <Only tests that could change the conclusion; none when unnecessary.>
+
+Review details:
+- Original claim:
+- Normalized claim:
+- Execution mode: custom-agent|custom-agent fallback
+- Packets received:
+- Missing packets:
+- Compromised packets:
+- Oracle completeness: complete|incomplete
+
+Round pressure map:
+| Round | Lens | Effect | Key pressure/support |
+|---|---|---|---|
+
+Bottom line: <Restate the same conclusion and essential limit in one sentence.>
 ```
 
-If ordinary spawned subagents were used because custom agents were unavailable, include a custom-agent fallback warning immediately after `Execution mode`.
+The final line restates the oracle's conclusion for long-output readability; it
+must not introduce a new result, stronger certainty, or omitted qualification.
+Evidence and the pressure map remain available below the answer, not in place of
+it. Do not print raw subagent packets unless the user asks for them.
 
-Do not print all raw subagent packets unless the user asks for them. Summarize them in the pressure map.
+If ordinary spawned subagents were used because custom agents were unavailable,
+include a custom-agent fallback warning immediately after `Execution mode`.
+Do not claim all nine packets arrived unless `received_rounds` contains 1-9 and
+both `missing_rounds` and `compromised_rounds` are empty. Surface missing, failed,
+timed-out, or compromised packets in Review details; also qualify the opening
+when that incompleteness limits the conclusion. Let the oracle choose the outcome.
 
-Do not claim all nine packets arrived unless `received_rounds` contains 1-9 and both `missing_rounds` and `compromised_rounds` are empty. If any packet is missing, failed, timed out, or compromised, surface that incompleteness in the final response and let the oracle choose the corresponding outcome.
+A stop before the gauntlet runs must say the attempt did not run and why, retaining
+any required stop marker; do not falsely claim “I attempted to prove” or invent
+an oracle verdict. A compromised oracle packet likewise receives the existing
+failure explanation, not a root-authored substantive conclusion.
 
 ## Stop rules
 
@@ -294,49 +342,22 @@ Do not stop merely because a worker finds an apparently decisive proof, disproof
 
 ## Regression guards
 
+When editing or evaluating Prove It, use
+[validation-probes.md](references/validation-probes.md). These are package
+validation cases, not extra rounds or runtime prerequisites.
+
 ### Direct launch request
 
-Input request: `Use prove-it on this claim: all swans are white.`
-
-Expected behavior:
-
-- root normalizes the claim;
-- if subagents are available, root dispatches rounds 1-9 as parallel `prove_it_lens` assignments;
-- if subagents are unavailable, stop with `PROVE_IT_REQUIRES_SUBAGENTS` instead of faking a root-only gauntlet;
-- round 1 likely identifies black swans as candidate fatal pressure;
-- root does not issue a final verdict before oracle;
-- oracle decides the final verdict after all packets.
+[Direct launch case](references/validation-probes.md#direct-launch-request).
 
 ### Step, pause, or compression request
 
-Inputs:
-
-- `Run round 1 and wait for me.`
-- `Do all ten rounds in one response.`
-
-Expected behavior:
-
-- do not run a manual sequential round;
-- do not compress root-authored pseudo-rounds;
-- use the parallel subagent gauntlet or stop with `PROVE_IT_REQUIRES_SUBAGENTS`.
+[Compression/step case](references/validation-probes.md#step-pause-or-compression-request).
 
 ### Artifactless run
 
-Expected behavior:
-
-- no `.prove-it-progress.md`;
-- no `.prove-it-progress.template.md`;
-- no `.prove-it-runs/`;
-- no prompt/output transcript files;
-- no manifest;
-- final output only in conversation.
+[Artifactless case](references/validation-probes.md#artifactless-run).
 
 ### Valid-looking early proof still reaches oracle
 
-Input claim: `For every integer n, n + 0 = n.`
-
-Expected behavior:
-
-- support-oriented packets may record candidate decisive support;
-- pressure packets still run;
-- oracle decides whether the proof survives all lenses.
+[Early-proof case](references/validation-probes.md#valid-looking-early-proof-still-reaches-oracle).

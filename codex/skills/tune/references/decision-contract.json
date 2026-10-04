@@ -4,7 +4,7 @@
     "skill": {
       "name": "tune",
       "kind": "mixed",
-      "source_fingerprint": "unified-create-edit-evidence-tune-v6-software-agent-performance-v1"
+      "source_fingerprint": "unified-create-edit-evidence-tune-v7-disposable-observation-review-economy-v1"
     },
     "triggers": [
       {
@@ -113,7 +113,7 @@
       },
       {
         "route_id": "TUNE-PROPOSE",
-        "description": "Return one bounded expected delta and intervention without mutation.",
+        "description": "Return one bounded expected delta and intervention without protected-target mutation; disposable observations require separate authority and respect no-file limits.",
         "aliases": [
           "proposal",
           "inspect"
@@ -394,13 +394,15 @@
           "task outcomes and resource costs jointly adjudicated",
           "retry and failed-attempt costs included; zero-success cost per success is undefined",
           "cold/warm/concurrent cache conditions and interference are disclosed",
-          "pinned model policy and human/tool authority preserved"
+          "pinned model policy and human/tool authority preserved",
+          "evaluation-only review variants remain separate from production contracts and credit"
         ],
         "failure_signals": [
           "fewer tokens or calls treated as sufficient evidence of improvement",
           "hard failures omitted from latency or cost comparison",
           "unobserved cache hits or live model efficacy invented",
-          "quality loss or changed model policy accepted silently"
+          "quality loss or changed model policy accepted silently",
+          "experimental results counted as production review, Viewed, publication, or closure credit"
         ],
         "rationale": "Agent efficiency is measured against successful outcomes rather than cheaper attempts or smaller prompts alone."
       },
@@ -423,10 +425,11 @@
         "prohibited_routes": [],
         "required_artifacts": [
           "mutation and publication authority",
-          "permission for effectful workloads, paid evaluations, and evidence export when applicable"
+          "permission for effectful workloads, paid evaluations, and evidence export when applicable",
+          "disposable-observation permission and protected-target boundary when scratch writes are needed"
         ],
         "success_signals": [
-          "inspect remains read-only and no-file-change requests produce no files",
+          "inspect protects the target; separately authorized disposable observations preserve it, and explicit no-file requests produce no files",
           "production load, spend, secrets, and external effects remain separately bounded",
           "one experiment need not create a commit or new receipt",
           "blocked effects do not stop independent authorized work"
@@ -434,9 +437,11 @@
         "failure_signals": [
           "profiling writes or installation bypass an explicit no-file-changes request",
           "optimization request treated as deployment or paid-API authority",
-          "shared history or unrelated files rewritten for rollback"
+          "shared history or unrelated files rewritten for rollback",
+          "scratch permission treated as source, canonical-custody, or publication authority",
+          "automatic caches, logs, fixtures, or cleanup escape the authorized disposable surface"
         ],
-        "rationale": "A broader optimization surface does not broaden mutation, publication, privacy, or operational authority."
+        "rationale": "Protected-target mutation, disposable observation, publication, privacy, and operational effects retain separate authority; observation permission is not a new mode."
       }
     ],
     "instrumentation": {

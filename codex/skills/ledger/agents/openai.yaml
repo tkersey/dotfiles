@@ -1,6 +1,14 @@
 interface:
   display_name: "Ledger"
   short_description: "Operate the passive artifact runtime"
-  default_prompt: "Use $ledger to bootstrap Ledger 1.0.3 or newer within major version 1 once, operate or debug an owner-selected passive definition through the native CLI, explain the exact definition-relative proof and custody boundary, author the smallest bounded owner-local definition when needed, or perform exact transaction-bound recovery without acquiring semantic or workflow authority."
+  default_prompt: >-
+    Use $ledger to bootstrap Ledger 1.3.0 or newer within major version 1 once,
+    then select the owner-requested operation. Pure validation/materialization
+    needs no workspace or managed store. For canonical reads/writes, load the
+    selected custody guidance and retain first-use migration qualification.
+    Operate or debug the owner-selected passive definition through the native
+    CLI, explain its definition-relative proof and custody boundary, author the
+    smallest bounded owner-local definition when needed, or perform exact
+    transaction-bound recovery without acquiring semantic or workflow authority.
 policy:
   allow_implicit_invocation: true

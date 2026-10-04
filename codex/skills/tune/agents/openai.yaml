@@ -6,12 +6,16 @@ interface:
   default_prompt: >
     Use $tune to improve the requested software, agent system, or skill package.
     Select the target before the procedure; keep create, edit, and tune intent
-    separate from inspect/apply and publication authority. For performance work,
-    baseline representative workloads, identify the limiting mechanism, make an
-    attributable intervention, and verify protected behavior and end-to-end gains.
-    Protect agent quality, reliability, and cost per successful task, not token
-    counts alone. Retain complete skill creation, direct editing, evidence-backed
-    diagnosis, semantic-weakness selection, and conditional cognitive compilation.
-    Do not impose skill-authoring prerequisites on ordinary code optimization or
-    performance benchmarks on mechanical skill edits. Report measured results,
-    tradeoffs, rejected experiments, and uncertainty without overstating proof.
+    separate from inspect/apply and publication authority. Inspection protects
+    the target; disposable observations need their own existing permission,
+    and explicit no-file limits prohibit even scratch writes. For performance
+    work, baseline representative workloads, identify the limiting mechanism,
+    make an attributable intervention, and verify protected behavior and
+    end-to-end gains. Protect agent quality, reliability, and cost per successful
+    task, not token counts alone. Retain complete skill creation, direct editing,
+    evidence-backed diagnosis, semantic-weakness selection, and conditional
+    cognitive compilation. Do not impose skill-authoring prerequisites on
+    ordinary code optimization or performance benchmarks on mechanical skill
+    edits. Report measured results, tradeoffs, rejected experiments, and
+    uncertainty without overstating proof. Evaluation-only review variants do
+    not alter production contracts, model policy, or closure credit.
