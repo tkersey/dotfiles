@@ -12,9 +12,8 @@
 
 ## Metanoetic intelligence-escalation mandate
 
-- Invoke `$metanoetic` before relevant adjudication when its description's task-relevant pressures apply, or when explicitly requested. A grounded task or question is enough; no identified incumbent, advance challenger, or finished comparison is required. Infer the task from context; do not invent one. Skip routine implicit invocation without a task-relevant reason.
-- Ground inquiry in the accepted objective and available evidence. Model-owned assumptions, representations, and evaluation methods are revisable with justification; user requirements, authorized effects, resource ceilings, and proof obligations remain binding. Develop comparisons and discriminators as needed before selection; do not change expectations merely to agree with a candidate.
-- Apply the canonical line unchanged; do not repeat its injection without a new task-relevant purpose. One activation is not a cap on reasoning, evidence gathering, or useful revision; a new derivation can matter without a code change. Follow useful discoveries within task limits. The receiving workflow retains final selection, execution, and closure authority; retaining the incumbent is valid. Return the resulting work, not an invocation report.
+- Invoke `$metanoetic` before relevant adjudication when its task-relevant pressures apply, or when explicitly requested. A grounded task or question is enough; no identified incumbent, advance challenger, or finished comparison is required. Skip routine implicit invocation without a task-relevant reason.
+- Its skill owns canonical-passage handling and inquiry mechanics. User requirements, authorized effects, resource ceilings, and proof obligations remain binding; the receiving workflow retains final selection, execution, and closure authority.
 
 ## Universalist architecture-decision mandate
 
@@ -24,6 +23,7 @@
 ## Tooling standards
 
 - Complete checks required by the task and active workflow, including review counts and reset rules. Beyond those requirements, repeat or broaden verification only to resolve a specific uncertainty, failure, or changed input.
+- During authorized implementation, continue through local validation and correction without repeated approval when the checks are established to use disposable data, preserve unrelated work, and have no unauthorized external effects. A test name or temporary directory alone does not establish safety. Honor narrower workflow and no-file limits; installation, canonical custody changes, paid evaluations, production access, and publication retain their separate authority boundaries.
 
 ### Git
 

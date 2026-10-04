@@ -58,12 +58,28 @@ and terminal result are not modes.
 
 ### Mutation
 
-`inspect` forbids file changes. Select it for analyze, audit, review,
-inspect, "what should change?", proposal-only, or an explicit no-edit request.
-Read existing evidence; run non-mutating observations only when authorized and
-safe. Do not write benchmark files, generate outputs, invoke effectful workloads,
-install tools, or create branches under inspect authority or an explicit
-no-file-changes request.
+`inspect` forbids changes to the protected target: source/index, repository
+history, persistent configuration, canonical evidence, and unrelated files.
+Select it for analyze, audit, review, inspect, "what should change?", proposal-only,
+or an explicit no-edit request. Read existing evidence and run authorized safe
+observations; do not treat an analysis request as implementation authority.
+
+Disposable observation is a separate permission, not a new mode or `apply`.
+When the user or governing workflow authorizes it, a targeted test, scratch
+reproduction, or profile may write only established disposable outputs outside
+the protected target. Use inspected local commands, isolated synthetic/copy data,
+existing tools, and already-authorized resource limits; preserve the source,
+canonical custody and unrelated work. A temporary path or test name alone does
+not establish safety. Automatic caches, fixtures, logs and cleanup count as writes:
+redirect or disable them, or do not execute. Retain only requested output; clean
+up only session-owned scratch artifacts when permitted.
+
+Explicit no-file/no-write instructions prohibit even scratch outputs. Do not
+install tools, create branches, change a benchmarked implementation, write
+canonical evidence, or invoke unapproved external effects under inspection.
+Missing disposable-observation authority blocks that observation, not independent
+read-only analysis. Do not repeatedly seek permission for an already-authorized
+unchanged safe observation; honor narrower enclosing workflow limits.
 
 `apply` authorizes changes inside the requested target surface. Select it for
 create, edit, fix, update, apply, patch, optimize, or improve when the target and
@@ -112,6 +128,12 @@ evidence. Preserve the distinctions among activation, decision influence, and
 outcome causality, and all stable contract IDs. Doctrine vocabulary alone is not
 a behavioral improvement. Cognitive changes still use the conditional authoring
 reference; mechanical changes do not acquire a cognitive-compilation ritual.
+
+For a catalog/disclosure, observation-authority, or cross-workflow change, use the
+relevant cases in [workflow-probes.md](references/workflow-probes.md) as package
+validation, not a startup checklist. An explicitly requested review-economy or
+review-context evaluation uses [review-economy.md](references/review-economy.md)
+within the agent-performance route; it grants no production review credit.
 
 <a id="progressive-disclosure"></a>
 Progressive disclosure: [authoring.md](authoring.md#progressive-disclosure).

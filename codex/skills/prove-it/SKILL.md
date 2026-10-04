@@ -1,8 +1,8 @@
 ---
 name: prove-it
-description: "Adversarially adjudicate a concrete claim when explicitly requested with `$prove-it` or equivalent claim stress-testing intent. Certainty words and ordinary implementation or review alone do not activate. Rounds 1-9 are independent lens packets produced concurrently by the reusable prove_it_lens custom agent; round 10 is the prove_it_oracle custom agent that runs only after all nine packets return and owns the final verdict plus final response text."
+description: "Adversarially adjudicate a concrete claim for explicit `$prove-it` or equivalent claim stress-testing intent. Certainty words, quoted instructions, and ordinary rigor, implementation, or review alone do not activate."
 metadata:
-  version: "3.2.0"
+  version: "3.2.1"
   activation_cost: high
   default_depth: high
 ---
@@ -294,49 +294,22 @@ Do not stop merely because a worker finds an apparently decisive proof, disproof
 
 ## Regression guards
 
+When editing or evaluating Prove It, use
+[validation-probes.md](references/validation-probes.md). These are package
+validation cases, not extra rounds or runtime prerequisites.
+
 ### Direct launch request
 
-Input request: `Use prove-it on this claim: all swans are white.`
-
-Expected behavior:
-
-- root normalizes the claim;
-- if subagents are available, root dispatches rounds 1-9 as parallel `prove_it_lens` assignments;
-- if subagents are unavailable, stop with `PROVE_IT_REQUIRES_SUBAGENTS` instead of faking a root-only gauntlet;
-- round 1 likely identifies black swans as candidate fatal pressure;
-- root does not issue a final verdict before oracle;
-- oracle decides the final verdict after all packets.
+[Direct launch case](references/validation-probes.md#direct-launch-request).
 
 ### Step, pause, or compression request
 
-Inputs:
-
-- `Run round 1 and wait for me.`
-- `Do all ten rounds in one response.`
-
-Expected behavior:
-
-- do not run a manual sequential round;
-- do not compress root-authored pseudo-rounds;
-- use the parallel subagent gauntlet or stop with `PROVE_IT_REQUIRES_SUBAGENTS`.
+[Compression/step case](references/validation-probes.md#step-pause-or-compression-request).
 
 ### Artifactless run
 
-Expected behavior:
-
-- no `.prove-it-progress.md`;
-- no `.prove-it-progress.template.md`;
-- no `.prove-it-runs/`;
-- no prompt/output transcript files;
-- no manifest;
-- final output only in conversation.
+[Artifactless case](references/validation-probes.md#artifactless-run).
 
 ### Valid-looking early proof still reaches oracle
 
-Input claim: `For every integer n, n + 0 = n.`
-
-Expected behavior:
-
-- support-oriented packets may record candidate decisive support;
-- pressure packets still run;
-- oracle decides whether the proof survives all lenses.
+[Early-proof case](references/validation-probes.md#valid-looking-early-proof-still-reaches-oracle).

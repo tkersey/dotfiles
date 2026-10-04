@@ -1,6 +1,6 @@
 ---
 name: ledger
-description: "Ensure Ledger 1.3.0 or newer within major version 1 is available; resolve durable repository/worktree-family custody; automate supported lossless legacy migration; and use the passive-definition runtime to validate, canonicalize, materialize, transact, replay, project, doctor, bind, rebind, and recover owner-defined artifacts and stores. This skill owns storage-location policy. The semantic owner selects the definition and operation; Ledger enforces it without acquiring workflow authority."
+description: "Operate Ledger for owner-defined artifact validation, materialization, durable custody, migration, and recovery. Use for runtime bootstrap, passive definitions, or repository/worktree-family storage; not merely because work creates history or a receipt."
 ---
 
 # Ledger
@@ -63,80 +63,23 @@ Readiness is not compatibility with every definition. Use `definition check`
 when selecting a new/changed closure or diagnosing operator support, not as a
 redundant preflight for every unchanged operation.
 
-## Storage-context ownership
+## Select the operation
 
-This skill, its [context reference](references/storage-context.md), and
-[scripts/ledger_context.py](scripts/ledger_context.py) are the single source of
-truth for where Ledger-managed evidence lives. Do not duplicate physical roots,
-lookup rules, registration, or migration policy in `AGENTS.md` or consumers.
-Owners still declare logical slot names and semantic storage scope.
+Choose from the semantic owner's request before loading custody procedures.
+Bootstrap remains required before the first native command; reuse established
+readiness only while the executable and execution environment are unchanged.
 
-Repository-lifetime Learnings and Negative Ledger histories use one managed
-custody root for a Git repository/worktree family. A worktree is evidence
-provenance, not the owner of an independent history. Other owners opt into this
-scope explicitly; do not silently relocate worktree- or session-specific data.
-Pure validation/materialization needs neither a workspace nor a managed store.
+| Selected work | Required guidance |
+|---|---|
+| Pure `validate`, `materialize`, or definition inspection | This entrypoint and the owner's exact definition/inputs; no workspace, managed store, or migration scan. |
+| Canonical store read/write, `doctor`, projection, transaction, or managed-context resolution | [canonical-custody.md](references/canonical-custody.md) before context selection or the first operation; its first-use migration qualification remains mandatory. |
+| Binding, legacy migration, or exact recovery | Canonical custody guidance and the maintenance/migration reference it selects before the effect; availability never grants authority. |
+| Author or debug a passive definition | [definition-authoring.md](references/definition-authoring.md); add custody guidance only if a store operation is selected. |
 
-For a canonical operation, resolve the verified workspace:
-
-```bash
-uv run "$ledger_skill_root/scripts/ledger_context.py" --repo "<workspace-root>"
-```
-
-Retain the returned `workspace_root`, `repository_id`, `store_id`, `store_root`,
-and `native_args`. For normal durable operations, pass the returned selector:
-
-```bash
-ledger doctor --definition "$definition" \
-  --store-root "<context.store_root>" --store-id "<context.store_id>" --format json
-```
-
-`transact`, `project`, segmented migration, and exact recovery use the same
-selector. Resolve again after a workspace change; the native CLI rechecks the
-root marker on each operation. Never replace a failed managed selector with
-`--repo`, another checkout, a symlink, or an empty store.
-
-Normal context resolution is read-only. Before an authorized first capture,
-stop or upgrade writers that could still use legacy `--repo` custody. Fresh
-initialization requires `--initialize --confirm-no-writers`; the flag is an
-operator's quiescence assertion, not a lock on old executables. The helper checks
-all registered worktrees for legacy history twice before publishing a fresh
-registration. Existing registration always wins over changed environment defaults.
-A missing established root is a continuity error, not first use. For supported
-legacy history, prefer the automated procedure below over manual cold-adoption
-choreography. Do not initialize simply to make a recall succeed.
-
-Use workspace/branch/path and immutable artifact facts as provenance. New
-repository-scoped records should carry the returned stable `repository_id`
-where their owner schema supports it. Do not substitute the custody directory
-for the code workspace, rewrite old provenance, or broaden applicability because
-history is shared. Definition-relative source locators are resolved through this
-context, not by assuming they name files beneath a disposable checkout.
-
-## Ensure usable custody
-
-At the first canonical use of this integration for a repository family, or when
-unregistered custody, unaccounted legacy sources, or interrupted migration is
-encountered, read [automatic-migration.md](references/automatic-migration.md) and
-inspect with `scripts/ensure_custody.py --repo "<workspace-root>"` through `uv run`.
-Do this even for a pre-existing registration that has not been qualified by the
-migration helper: registration alone is not evidence of historical recovery.
-Cache a verified result for the unchanged context during the session; subsequent
-native operations use the normal resolver, not repeated migration scans.
-
-For an authorized migration, the helper's `--apply --confirm-no-writers` bundles
-supported discovery, source selection, cold transport, native binding maintenance,
-owner historical import, verification, and final registration. Do not ask the user
-to perform each routine substep or stop at archiving identifiable Learnings.
-The quiescence assertion must be established, never inferred from a process scan.
-Read-only recall produces a plan, not mutation. Divergent histories, unavailable
-worktrees, unknown damage, or missing authority remain precise blockers.
-
-Retain the returned context and receipt, then resume and verify the original
-owner operation. Report imported history separately from archived-only artifacts.
-Do not delete sources, silently rewrite provenance, or bulk-admit recovered rows
-to global memory. Native definitions remain passive; installed owners opt into
-migration through separate declarations, not repository-provided executable hooks.
+Never load storage manuals or initialize a store for a pure operation. Conversely,
+calling a canonical projection an inspection does not waive custody checks.
+Read-only recall cannot silently initialize or migrate. Only owners select
+semantic scope; other worktree/session data is not silently relocated.
 
 ## Baseline native surface
 
@@ -197,27 +140,24 @@ needed. Before authoring or debugging definitions, read
 [definition-authoring.md](references/definition-authoring.md) for bounded
 vocabulary, counterexample discipline, and the native extension law.
 
+## Storage-context ownership
+
+This skill alone owns physical storage-location and migration policy. Read
+[canonical-custody.md](references/canonical-custody.md#storage-context-ownership)
+before resolving or operating on canonical custody. Do not duplicate its policy
+in consumers or `AGENTS.md`, or substitute an empty store for a failed lookup.
+
+## Ensure usable custody
+
+Follow the [first-use qualification](references/canonical-custody.md#ensure-usable-custody)
+even for an existing registration not yet qualified by the migration helper.
+Pure validation/materialization does not select this workflow.
+
 ## Storage custody and recovery
 
-All event bytes and required binding/definition/revision custody stay together
-under the selected root. Normal reads fail closed for unbound existing stores.
-A separately authorized `bind-existing` operation validates an entire existing
-current-format store once. A separately authorized `rebind-existing` validates
-an authoritative replacement and changes only stale binding metadata.
-Neither operation chooses between divergent histories or blesses an unknown
-replacement. Diagnose missing binding separately from malformed/stale custody;
-`InvalidStoreBinding` alone is not proof that initial binding is appropriate.
-
-Normal writes use owner-selected `ledger transact` operations. Never hand-edit,
-compact, reinterpret, or skip records. The context reference and automated
-migration reference permit only their explicit cold transport; neither is an
-alternate semantic reader or writer. Fail closed on unknown closure, ABI,
-operator, binding, integrity, replay, projection, or recovery state.
-
-Lease expiry does not transfer authority. Recovery is explicitly authorized and
-bound to one transaction's resource, lock identity, fencing token, owner, and
-witnessed lease state. Read [storage-maintenance.md](references/storage-maintenance.md)
-before recovery or version-dependent migration. No broad reclaim/repair mode.
+Read [custody and recovery](references/canonical-custody.md#storage-custody-and-recovery)
+before binding or recovery. No hand-edited records, broad reclaim, or automatic
+permission transfer from lease expiry.
 
 ## Trigger cues and reporting
 
