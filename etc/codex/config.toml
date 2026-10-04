@@ -1,6 +1,9 @@
 # Shared defaults: /etc/codex/config.toml
 
-model = "gpt-6-astra"
+approval_policy = "on-request"
+approvals_reviewer = "auto_review"
+
+model = "gpt-6.1-sol"
 model_reasoning_effort = "medium"
 model_context_window = 1000000
 model_auto_compact_token_limit = 900000
