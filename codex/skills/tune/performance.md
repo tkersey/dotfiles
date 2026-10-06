@@ -8,6 +8,10 @@ Before the first experiment, read only the relevant guide:
 use both only where required. Skill-package edits additionally retain authoring
 rules, not a second optimizer or a second experiment dossier.
 
+Tune owns the software and agent-performance optimization workflow end to end.
+Specialized references and optional utilities support this procedure; they do not
+introduce another optimizer, acceptance gate, or report contract.
+
 ## Frame and baseline
 
 State the workload/task distribution, performance objective, guardrails, and
@@ -27,6 +31,12 @@ when measurement cannot otherwise answer the question. No mandatory benchmark
 framework, dashboard, score file, or new ledger. If execution is unavailable,
 retain a concrete command/fixture plan and separate hypotheses from observations.
 An unmeasured authorized patch remains explicitly unverified, not an accepted gain.
+
+When using or maintaining `bench_stats` or `perf_report`, read
+[performance-tools.md](references/performance-tools.md) for their current CLI
+contract, provenance, and release ownership. These helpers are optional; missing
+binaries do not block an experiment supported by existing project tools. Do not
+install, rebuild, or release them merely to complete an optimization pass.
 
 ## Locate the limiting mechanism
 
@@ -106,3 +116,9 @@ Report original/final results, environment, commands, uncertainty, protected
 behavior, rejected attempts, tradeoffs, and remaining bottleneck through Tune's
 existing report. This procedure proves neither global optimality nor efficacy
 on unmeasured workloads.
+
+For a requested standalone/full report, adapt
+[perf-report-template.md](assets/perf-report-template.md), omitting inapplicable
+fields and reusing existing evidence. It is an output resource, not a second
+checklist, mandatory experiment log, or compliance footer. Ordinary results stay
+in Tune's existing report without creating a file solely to fill a template.
