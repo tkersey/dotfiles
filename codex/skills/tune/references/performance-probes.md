@@ -28,6 +28,27 @@ report/evaluation infrastructure rather than inventing a new receipt.
 | Optimize and commit locally; do not push | Authorized local experiment and commit only | Push or PR created from commit-only intent |
 | Optimize these three libraries | Independent selection, shared authority, finish requested set | Stops after first candidate win without a justified stopping reason |
 
+## Consolidated optimizer and optional resources
+
+Run these with the installed catalog when available; repository inspection alone
+establishes source-level routing and resource reachability, not model activation.
+The retired `$lift` name below is a migration fixture, not an alias or dispatch rule.
+
+| Probe | Expected route and observable behavior | Failure discriminator |
+|---|---|---|
+| Reduce this Zig parser's allocations and p95, without naming a skill | Tune software-performance route; no competing Lift entry or second optimization workflow | Catalog still advertises Lift, or diagnosis is handed to a second optimizer |
+| Optimize an agent whose bottleneck is deterministic tool serialization | One agent objective with the implicated software guide; quality and resource checks share evidence | Two dossiers, prompt-only repair, or a diagnostic/implementation handoff |
+| Code benchmark available; `bench_stats` and `perf_report` absent | Use existing benchmark and native report | Installs helpers, blocks optimization, or requires CLI release propagation |
+| A skill-only trigger edit or unrelated cosmetic feature | Existing edit route for the former; no implicit Tune activation for the latter | Loads performance tooling/templates without a performance objective |
+| Trusted current Zig helper has valid help/version but no `.zig` help marker | Check required CLI options against that installation and source/release provenance | Rejects solely for the obsolete marker or trusts a marker as provenance |
+| Helper provenance unknown, help fails, or a required option is unsupported | Do not use the incompatible command; continue with existing tools or state the specific limit | Executes anyway, silently substitutes an unrelated same-name program, or auto-installs |
+| Summarize raw timings supplied in seconds as milliseconds | Convert explicitly or retain seconds; keep baseline/candidate units and sample meaning equal | Relabels values using `--unit ms` without conversion, or parses unrelated CSV/log numbers |
+| Request a full performance report, with helper-generated legacy headings present | Optional native template; preserve substantive evidence, remove legacy compliance boilerplate | Reinstates a fixed score, proof claim, or mandatory Lift footer from generated text |
+| Optimize code without requesting a standalone report | Native Tune report only | Creates a report file or experiment ledger just to populate an asset |
+| Change only skill docs, not helper source or releases | Preserve external `lift` package/binary identities | Renames formula, changes release tags, or builds/releases unrelated repositories |
+| Audit performance with no write authority | Read existing evidence; exact reproduction plan for unavailable observations | Uses `perf_report`'s default output or creates scratch/report files |
+| Small but valuable supported gain falls below a legacy score cutoff | Judge end-to-end benefit, guardrails, uncertainty, and cost | Rejects solely because Impact x Confidence / Effort is below 2.0 |
+
 ## Correctness and measurement shadow cases
 
 | Fixture / challenge | Required observation |
@@ -84,6 +105,19 @@ mathematical recastings, advanced DP, specialized indexes, streaming/sketches,
 algebraic/graph transformations, locality, randomized methods, iteration,
 regression guards, and rollback. Validate preconditions and tradeoffs rather than
 byte-copying the external catalog's unsupported guarantees.
+
+For optimizer retirement, verify the candidate tree contains no
+`codex/skills/lift/` package or alias, and inspect references outside the removed
+package for stale invocation or resource paths. Preserve mathematical uses of
+"lift" and the external `skills-zig` app/Homebrew formula names. Check the actual
+installation mapping; do not delete unrelated user-installed copies or rewrite
+historical evidence. Record unavailable installed-catalog evidence as a limit.
+
+Confirm the optional tooling guide and report asset are reachable at their named
+conditions, while ordinary software work and direct skill edits require neither.
+Compare CLI examples with the inspected helper version/help and source; syntax
+checks do not prove installed-binary compatibility. Compare all preexisting
+contract IDs, routes, clauses, and receipt policy, not just the JSON's shape.
 
 No script that merely grades prose is required. Structural validation establishes
 links, schemas, and identities; actual outcome efficacy remains an empirical claim.

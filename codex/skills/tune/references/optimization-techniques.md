@@ -56,6 +56,42 @@ Test contention, false sharing, skewed keys, oversubscription, and shutdown. For
 parallel reductions, require the relevant algebraic laws and numerical semantics;
 a mathematical associative operation need not be bitwise associative in floats.
 
+## Tail latency and overload
+
+Separate queue wait, service time, and total completion latency. Slice slow
+requests by workload class and cold/warm state; distinguish bursty arrivals from
+slow service. Measure offered load, completed work, failures, retries, timeouts,
+and cancellation together. Do not improve reported tails by dropping hard cases
+or moving their waits outside the measurement boundary.
+
+| Observed driver | Candidate lever | Preservation and discriminator |
+|---|---|---|
+| Head-of-line blocking or lock convoying | Separate independent slow/fast work, shorten shared critical paths | Preserve observable ordering and fairness; inspect both classes and starvation |
+| Large batches or pipeline queues dominate p99 | Bound batch size and flush delay; rebalance stages | Preserve result association and partial failures; measure throughput, queue wait, and end-to-end tails |
+| Retry storms or abandoned work | Bound retries and propagate cancellation/deadlines | Preserve accepted recovery, idempotency, and cleanup; count failures and work continuing after cancellation |
+| Saturation drives queue growth | Bounded admission and backpressure | Rejection, shedding, or degradation needs an accepted contract; test overload and recovery, not successful requests alone |
+
+## Hardware locality and observability
+
+For measured cache or branch stalls, consider shrinking the working set,
+flattening pointer-heavy storage, separating hot/cold fields or paths, and using
+an appropriate native vectorized kernel. Preserve ABI, validation, numerical,
+and ordering requirements; branch removal, padding, and prefetch are experiments,
+not universal improvements. Correlate hardware counters with whole-workload
+latency/throughput and include memory and code-size costs.
+
+Investigate NUMA only where the deployment topology and measurements show remote
+memory or migration costs. Candidate changes include worker-local state,
+allocation placement, or affinity within existing operational authority. Compare
+locality and load balance under representative contention; do not impose host
+pinning, privileged settings, or a resource increase on unrelated systems.
+
+When logging, tracing, or metrics are a measured hotspot, consider deferred
+formatting, aggregation, bounded cardinality, or authorized sampling. Preserve
+required audit/security events, diagnostic coverage, ordering, and privacy.
+Measure the intended production instrumentation configuration on both revisions;
+disabling observability only for the candidate is not an implementation speedup.
+
 ## Algorithms and data structures
 
 | Recognition | Candidate | Required condition / cost to include |
@@ -65,9 +101,13 @@ a mathematical associative operation need not be bitwise associative in floats.
 | Sorted search / monotone feasibility | Binary or parametric search | Sortedness/monotonicity established; duplicates/bounds handled |
 | Pair/range scan with monotone movement | Two pointers, sliding window | Movement cannot skip a required answer; empty/boundary cases |
 | Repeated static range sums | Prefix sums | Build/update cost, numeric overflow; dynamic updates need another structure |
+| Dynamic prefix/range aggregates | Fenwick or segment tree | Required operation/inverse laws, index bounds, overflow, and update semantics; compare with a simple reference |
+| FIFO or sliding-window storage | Deque or ring buffer | Capacity, wraparound, ownership, ordering, and full/empty behavior; no silent overwrite |
+| Integer-set intersections/unions dominate | Bitsets or [Roaring bitmaps](https://github.com/RoaringBitmap/CRoaring) | Key width/universe, density, construction/update costs, exact set semantics, and observable iteration order |
 | Top-k/min/max scheduling | Heap or selection instead of full sort | Stable ties, ordering requirements, update/removal semantics |
 | Repeated graph connectivity | Union-find | Updates supported by the structure; deletions/rollback require variants |
 | DAG evaluation / repeated traversal | Topological processing or DP | Cycle handling and dependencies; preserve traversal-visible effects |
+| Shortest-path search with a useful heuristic | A* | Establish admissibility, edge-weight assumptions, reopening and stopping policy, and tie-breaking; compare cost and required path identity with an independent reference |
 | Need existence/first valid result only | Early exit, lazy search | Remaining work has no required effects; preserve which result wins |
 | Repeated prefix/substring queries | Trie, automaton, suffix index | Alphabet/encoding, index build/update cost, match/tie semantics |
 
@@ -84,6 +124,14 @@ entries, key collisions, and tenant isolation. TTL alone is not proof of freshne
 Choose LRU, another eviction policy, or no cache from the observed workload.
 Agent prefix and semantic caches additionally use
 [agent-performance.md](agent-performance.md#cache-aware-experiments).
+
+For a static membership prefilter, consider an
+[xor filter](https://github.com/FastFilter/xor_singleheader) when its construction
+cost and memory fit the workload. Handle duplicate-key/build failures and rebuild
+on source changes; do not treat it as a mutable exact set. Verify positive matches
+against the authoritative source when exact answers are required, and preserve
+freshness so newly added keys cannot be incorrectly rejected. Compare total
+build, lookup, verification, and invalidation cost with existing alternatives.
 
 ## Serialization, strings, and generated code
 
