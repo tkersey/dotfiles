@@ -70,6 +70,12 @@ witness surprising? Locate the first loss of guarantee and what can be chosen,
 written, ordered, interpreted, or authorized independently that must agree.
 The family remains a hypothesis, not its observed examples; keep distinct laws separate.
 
+When the witness involves interacting corrections, accumulation, delays, or apparent
+compliance with a proxy, use [feedback-failures.md](references/feedback-failures.md)
+in this same causal compilation. Check whether individually lawful operations
+violate an accepted system obligation; the explanation may span more owners than
+the eventual construction. Keep Goal authority and the existing discriminator.
+
 Before implementation, choose the smallest source-grounded discriminator that
 could refute that explanation, not merely repeat the failing example. When a
 semantic model is implicated, seek a supported case separating notions it

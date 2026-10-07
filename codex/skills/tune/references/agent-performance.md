@@ -67,6 +67,7 @@ unobserved provider time honestly rather than assigning it to invented causes.
 | Retry/recovery dominates | Repair schemas, tool errors, stale state, brittle routing | Count avoided failures and changed success rate, not merely fewer attempts |
 | Subagent overhead dominates | Change granularity, remove redundant delegation, reuse scoped results | Preserve useful parallel work and independent checks; do not delete required reviews |
 | Decision quality limits success | Clarify contracts, tools, evidence, or reasoning at the actual decision | Matched outcome tests plus positive, near-miss, and characteristic failure cases |
+| Adaptive routing or allocation changes later evidence | Inspect pending effects and policy-dependent exposure using [feedback-dynamics.md](feedback-dynamics.md) | Distinguish capability from allocation history and genuine deployed-policy benefits |
 
 Batching external inference can trade latency for cost; parallelism can increase
 contention and retries. Neither is universally better. Keep deterministic tool

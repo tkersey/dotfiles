@@ -27,6 +27,11 @@ A first witness is a checkpoint, not completion of remaining authorized migratio
 ## Preserved / forgotten / generated / observed:
 
 ## Current-context contract:
+When dynamics affect the claim, retain the relevant accumulated state, flows,
+pending effects, policy authority, disturbance range, and observation horizon in
+the existing fields below. Distinguish causal extent from enforcement ownership;
+a local admission bound does not establish aggregate progress or stability.
+Reuse the supporting evidence rather than allocating another model or report.
 ### Context identifier / evidence fingerprint:
 ### Requirement sources:
 ### Required observations and equivalence:

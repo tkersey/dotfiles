@@ -34,8 +34,8 @@ unchanged disposition silently. Team/subagent mode remains explicit-request only
 
 ## Common path
 
-An exact incumbent or uncontested ordinary artifact without a specialized proof
-claim needs only this entrypoint.
+An exact incumbent or uncontested ordinary artifact usually needs only this
+entrypoint; load a supporting reference only for the material claim it addresses.
 Inside Actuating, load [actuating-composition.md](actuating-composition.md) before
 nominating; it owns presentation and authority across every loaded module.
 Inside Architectonic, use [architectonic-composition.md](architectonic-composition.md)
@@ -47,6 +47,12 @@ operation paths, sanctioned observations, effects, resources, compatibility,
 bypasses, and failure behavior. Start with the incumbent or an ordinary native
 candidate: a record, tagged union, checked constructor, adapter, parameter, state
 machine, operation IR, handler, graph, query, loop, merge, or compatibility witness.
+
+When the boundary claim depends on accumulation, feedback, adaptive policy, or
+recovery, use [system-dynamics.md](references/system-dynamics.md). Trace the causal
+extent needed to explain the behavior, then choose the smallest adequate enforcement
+owner. This can support an ordinary candidate; it requires neither a consequential
+comparison nor advanced mechanics by itself.
 
 Ask: **what representation or composition would make the required behavior
 structural rather than a repeated obligation?** Ordinary-first is a baseline,

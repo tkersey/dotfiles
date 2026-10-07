@@ -1,6 +1,6 @@
 {
   "schema": "universalist-routing-evaluation/v1",
-  "skill_fingerprint": "universalist-boundary-decision-v17.9-decision-sufficiency-v1",
+  "skill_fingerprint": "universalist-boundary-decision-v17.9-systems-context-v1",
   "purpose": "Evaluate implicit activation separately from route selection. Skip means no Universalist invocation, disposition, route, record, or receipt.",
   "expectations": {
     "skip": "No live semantic boundary decision is evidenced.",
@@ -147,6 +147,27 @@
       "expected": "skip",
       "expected_route": null,
       "reason": "Categorical origin does not justify another boundary pass during routine realization."
+    },
+    {
+      "id": "ordinary-shared-attempt-budget",
+      "scenario": "Valid original and retry attempts consume one accepted outstanding-work budget, but admissions independently bypass it. One native reservation owner can cover every path; no second adequate candidate is live.",
+      "expected": "activate",
+      "expected_route": "UNI-ORDINARY",
+      "reason": "The distributed resource law supports an ordinary owner. Wider feedback analysis does not require UNI-CONSEQUENTIAL, a card, a merged service, or a stability claim."
+    },
+    {
+      "id": "fixed-policy-hotspot",
+      "scenario": "Speed up an equivalent pure function under unchanged demand and an accepted owner. No ownership, admitted behavior, interaction law, or proof assumption changes.",
+      "expected": "skip",
+      "expected_route": null,
+      "reason": "A performance objective or possible system context alone is not semantic boundary pressure."
+    },
+    {
+      "id": "saturation-invalidates-response",
+      "scenario": "A prior admission-policy nomination relies on measured service rates below shared-dependency saturation. Current permitted load crosses that regime and a trace contradicts its progress claim.",
+      "expected": "reclassify",
+      "expected_route": null,
+      "reason": "The prior response assumption is invalidated; reconsider only the affected claim and retain any independently supported local bound."
     }
   ],
   "artifact_cases": [
@@ -300,6 +321,48 @@
         "assuming phantom indices alone enforce ownership"
       ],
       "claim_check": "Lower only where host guarantees support the indices; keep authority, aliasing, and external freshness honest."
+    },
+    {
+      "id": "bounded-work-is-not-completion",
+      "scenario": "A native budget covers original and retry admission and release. Scheduling and service capacity under the supported workload are not yet established.",
+      "must_preserve": [
+        "required-valid admissions within the accepted budget",
+        "the distinction between bounded outstanding work and successful completion"
+      ],
+      "must_reject": [
+        "calling the admission bound a deadline or stability proof",
+        "blocking all work to satisfy the resource bound",
+        "requiring advanced mechanics because the explanation contains feedback"
+      ],
+      "claim_check": "An ordinary reservation owner may establish the structural bound; stronger progress claims retain their separate assumptions and evidence debt."
+    },
+    {
+      "id": "pending-correction-state",
+      "scenario": "Two worker-pool states have identical live-worker and queue displays. One already has authorized workers starting; the other does not. Permitted completion of startup changes their future capacity.",
+      "must_preserve": [
+        "pending starts and required later observations",
+        "existing policy and resource authority"
+      ],
+      "must_reject": [
+        "quotienting states solely by the current display",
+        "duplicating starts because issued actions are absent from feedback",
+        "claiming that a complete observation-to-action path proves stability"
+      ],
+      "claim_check": "Retain or derive pending effects through an ordinary representation. A conditional response argument includes the relevant delay and horizon."
+    },
+    {
+      "id": "adaptive-policy-under-stable-law",
+      "scenario": "An accepted requirement allows a router to vary among authorized models while preserving a hard spend ceiling and task-quality floor.",
+      "must_preserve": [
+        "authorized policy variation",
+        "the hard budget, quality floor, and revision authority"
+      ],
+      "must_reject": [
+        "fixing one model forever without a requirement",
+        "allowing adaptation to revise the user objective or access controls",
+        "centralizing execution solely to name one semantic authority"
+      ],
+      "claim_check": "Separate the stable law from the variable policy; adaptation itself supplies no proof of improved quality or control."
     }
   ],
   "status": "authored_not_model_replayed",

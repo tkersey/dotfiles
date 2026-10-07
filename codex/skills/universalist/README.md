@@ -42,8 +42,9 @@ for rediscovering an ambient boundary.
 
 ## Common path
 
-`SKILL.md` is complete for an exact incumbent and an uncontested ordinary
-repository-native boundary without a specialized proof claim. An actual activation
+`SKILL.md` supplies the ordinary path for an exact incumbent or an uncontested
+repository-native boundary. Load supporting references only for their material
+claim, including feedback-dependent behavior on an ordinary route. An actual activation
 conveys the following evidence once; the headings are an example, not a required
 packet. Reuse the receiving workflow's fields and proof references. Unresolved
 evidence or incomparable adequate candidates do not force a final disposition:
@@ -83,6 +84,7 @@ Actuating owns experiments, selection, mutation, and closure.
 | Evidence | Module |
 |---|---|
 | Repeated obligations or a grounded law-derived challenger needs discrimination | `references/latent-structure-recognition.md` |
+| A boundary claim depends on accumulation, feedback, adaptive policy, or recovery | `references/system-dynamics.md` |
 | At least two routes materially differ | `references/consequential-boundary.md` |
 | A concrete typed hole remains | artifact selector, registry, and matching card fragments |
 | One advanced card remains live | only that card's exact `theory_refs` |
@@ -163,8 +165,8 @@ Card expansion is frozen pending evidence that the full categorical path
 improves a concrete artifact or proof beyond the routine kernel. Use
 `references/efficacy-evaluation.md` and
 `references/routing-evaluation-cases.json` only while tuning or auditing the
-skill; neither belongs in ordinary runtime context. The corpus includes 20
-routing cases and 28 artifact-level discriminators: 12 in that corpus plus 16
+skill; neither belongs in ordinary runtime context. The corpus includes 23
+routing cases and 31 artifact-level discriminators: 15 in that corpus plus 16
 in `references/representation-evaluation-cases.json` (eight eliminator-first and
 eight algebra-derived cases). Seven additional `workflow_cases` in the routing
 corpus discriminate unresolved tradeoffs, claim-scoped canonical obstruction,
@@ -221,4 +223,5 @@ not a new trigger, route, construction card, proof profile, or runtime framework
 - all 56 cards and 12 axes remain available;
 - no runtime script or skill-local executable test is added;
 - durable Ledger mechanics never load in Actuating composition;
-- routine preservation and ordinary nomination require only `SKILL.md`.
+- routine preservation and ordinary nomination use `SKILL.md`, with supporting
+  references only for their material claim.

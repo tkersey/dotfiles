@@ -75,6 +75,20 @@ The retired `$lift` name below is a migration fixture, not an alias or dispatch 
 | Necessary multi-file representation change | Allowed as one attributable experiment; not rejected solely for diff/commit size |
 | No worthwhile supported candidate remains | `no-change` or explicit stop; no complexity escalation to fill a round |
 
+## Feedback, reserves, and adaptive allocation
+
+Use the selected [feedback guide](feedback-dynamics.md) in these mechanism-specific
+cases. These are authored probes, not measurements or a required optimizer phase.
+
+| Fixture / challenge | Required observation |
+|---|---|
+| A worker pool adds capacity each tick from live-worker counts while earlier starts are still pending | Inspect pending starts, signal age, adjustment, and startup delay; distinguish the mechanism before choosing a cooldown or stronger correction |
+| The same oscillation is attributed to delays, but evidence shows alternating external demand and no responsive policy | Reject the unsupported feedback diagnosis; preserve the demand explanation and ordinary experiment |
+| A larger token bucket wins a short throughput trial while refill rate and demand are unchanged | Separate burst reserve from sustainable throughput; cover the relevant depletion/recovery horizon without inventing an infinite-horizon requirement for a finite job |
+| Faster completion induces more submissions under the actual client policy | Compare the local optimization under comparable demand, then the supported induced workload; retain any required regulation when its incidental source disappears |
+| A router's early winner later receives easier tasks, more attempts, or warm prefixes | Distinguish underlying capability from selection/exposure and deployed-policy benefit; preserve real cache affinity when that is the objective, matched quality, and all-attempt costs |
+| A pure function becomes faster under unchanged demand and behavior | Keep the ordinary performance route; no damping, feedback diagram, controller, or additional approval |
+
 ## Runnable oracle checks
 
 Extract the Bash block in `software-performance.md` unchanged. In a temporary,

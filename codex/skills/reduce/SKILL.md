@@ -112,6 +112,11 @@ Ablate or quotient only after the role and obligation are known. Prefer removing
 compensating guards and redundant semantic owners after stronger enforcement is
 proved. Preserve required derived, compatibility, and observability behavior.
 
+When a proposed cut removes a buffer, fallback, recovery path, or feedback channel,
+use [recovery-obligations.md](references/recovery-obligations.md) in this obligation
+analysis. Normal-path inactivity does not discharge a required disturbance or
+recovery role; preserve or reassign that role before removing its current surface.
+
 ## Workflow
 
 For standalone audits. Inside Actuating use the composition below directly,

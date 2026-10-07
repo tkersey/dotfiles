@@ -18,7 +18,7 @@
   "nonactivation_receipt": false,
   "decision_receipts": "standalone_durable_only",
   "decision_observability": "actuating_context_or_independently_durable",
-  "routing_evaluation_cases": 20,
+  "routing_evaluation_cases": 23,
   "advanced_card_expansion": "frozen_pending_incremental_evidence",
   "runtime_scripts": 0,
   "tests_shipped": false,
@@ -26,6 +26,6 @@
   "artifacts": "context-relative-boundary-contract",
   "latent_structure_recognition": true,
   "progressive_disclosure": "evidence-indexed",
-  "artifact_evaluation_cases": 28,
+  "artifact_evaluation_cases": 31,
   "workflow_evaluation_cases": 7
 }

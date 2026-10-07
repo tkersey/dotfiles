@@ -4,7 +4,7 @@
     "skill": {
       "name": "universalist",
       "kind": "mixed",
-      "source_fingerprint": "universalist-boundary-decision-v17.9-decision-sufficiency-v1"
+      "source_fingerprint": "universalist-boundary-decision-v17.9-systems-context-v1"
     },
     "triggers": [
       {
@@ -143,7 +143,8 @@
           "ordinary-first supplies a baseline rather than suppressing grounded law-derived alternatives",
           "an equivalent receiving-workflow challenger is reused without a second pass",
           "applicable evidence is conveyed once using the receiving workflow representation without duplicate packets",
-          "completion follows the authorized task; one coherent seam bounds reasoning rather than ending a multi-seam request"
+          "completion follows the authorized task; one coherent seam bounds reasoning rather than ending a multi-seam request",
+          "feedback-dependent claims trace the necessary causal extent and can close with an ordinary owner without another route or report"
         ],
         "failure_signals": [
           "boundary presence or crossing is treated as sufficient activation",
@@ -157,7 +158,8 @@
           "a challenger or extra packet is manufactured when evidence is already dispositive",
           "a fixed candidate quota truncates a grounded decision-changing alternative",
           "a first witness is reported as completion despite remaining authorized callers or migration",
-          "available authorized evidence is returned as unavailable without inspection"
+          "available authorized evidence is returned as unavailable without inspection",
+          "a wider causal explanation automatically merges enforcement owners or requires consequential or advanced mechanics"
         ],
         "rationale": "Activation is useful only when semantic pressure exists and yields one exact disposition."
       },
@@ -251,11 +253,13 @@
           "invalidation horizon"
         ],
         "success_signals": [
-          "claims are explicitly current-context relative"
+          "claims are explicitly current-context relative",
+          "material accumulation, pending effects, policy authority, disturbance range, and horizon qualify the existing context argument"
         ],
         "failure_signals": [
           "stale context treated as current",
-          "claim strength exceeds host enforcement"
+          "claim strength exceeds host enforcement",
+          "a local validity or admission bound is treated as aggregate progress, recovery, or stability proof"
         ],
         "rationale": "Boundary correctness is a freshness-bound proof lease."
       },
