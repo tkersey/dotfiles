@@ -25,6 +25,12 @@
 
 - Complete checks required by the task and active workflow, including review counts and reset rules. Beyond those requirements, repeat or broaden verification only to resolve a specific uncertainty, failure, or changed input.
 
+### Codex configuration
+
+- Make reusable Codex settings changes in the dotfiles repository's `etc/codex/config.toml`, linked to `/etc/codex/config.toml`.
+- Treat `home/codex/config.toml` / `~/.codex/config.toml` as machine-local configuration: project trust entries, installation-specific paths, and Codex/ChatGPT desktop-managed state belong there. Edit it only for a requested machine-local change, and leave unrelated churn unmodified and uncommitted.
+- User configuration overrides system defaults. Report any local override that masks a shared change; do not mirror shared settings into the user file.
+
 ### Git
 
 - Prefer rebase and fast-forward integration over merge commits. Use merge
