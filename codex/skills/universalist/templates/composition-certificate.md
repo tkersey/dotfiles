@@ -40,14 +40,20 @@ Nearby alternative rejected:
 
 ## Pullback / pushout square, when applicable
 
+For a universal claim, use the
+[universal witness contract](../references/claim-appropriate-proof.md#universal-witness-contract).
+An ordinary compatibility object or named integration needs its applicable laws;
+API ownership and bypass controls do not supply universal evidence.
+
 Construction: none / pullback / pushout / pushout-complement + double-pushout
 Category/world: Set / types / schemas / graphs / presheaves / other
 Span or cospan maps:
 Shared target or overlap:
 Agreement / identity policy:
 Commutative-square law:
-Factorization witness:
-Uniqueness approximation / canonical normal form:
+Structure-respecting factorization witness, if universal:
+Mediator uniqueness under declared lawful equivalence, if universal:
+Correspondence between normal form and that equality, if used:
 Effective construction: validator / join / quotient / union-find / graph rewrite
 Pushout-complement or existence obstruction:
 Provenance and conflict policy:

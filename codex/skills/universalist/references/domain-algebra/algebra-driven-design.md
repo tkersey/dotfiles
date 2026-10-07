@@ -44,6 +44,57 @@ authority. Resolve a contradiction against that authority: either the proposed
 law, the observation, or the representation may be wrong. Do not weaken an
 accepted obligation merely to obtain a familiar algebra.
 
+## Discharge derived obligations under their actual hypotheses
+
+A required law may follow from a smaller law family instead of needing an
+independent proof. When using that implication to remove repeated obligations,
+keep the derivation and the hypotheses actually used with the existing proof
+and invalidators. Generalizing a carrier, operation, or admissible map can break
+the implication while the derived law remains required. Reprove the affected
+implication or supply independent justification; reuse unaffected derivations.
+Seek weaker sufficient hypotheses when they simplify the artifact without
+weakening its contract.
+
+For a multiplication-preserving map `f` from a monoid `A` to a monoid `B`:
+
+```text
+u = f(e_A)
+u = f(e_A * e_A) = u * u
+```
+
+This proves that `u` is idempotent. If `u` is invertible, cancel it to obtain
+`u = e_B`; a group target suffices but is stronger than that proof needs.
+Another sufficient hypothesis is that `e_B` is the target's only idempotent.
+For an arbitrary monoid target, multiplication preservation alone does not
+establish identity preservation. Take Boolean conjunction, with identity `true`,
+and `f(x) = false` for every source value:
+
+```text
+f(x * y) = false = false AND false = f(x) AND f(y)
+f(e_A) = false != true
+```
+
+Thus a translation from reversible pipelines to a broader family admitting
+projections cannot retain unit preservation merely because binary composition
+still agrees. Mapping every pipeline to a fixed nonidentity idempotent normalizer
+preserves binary composition while changing the empty pipeline's behavior.
+Keep the required unit law and establish it under the new assumptions.
+
+Likewise, comparability for every pair in a total order implies reflexivity by
+taking both endpoints equal. Removing comparability removes that derivation;
+reflexivity still needs justification. These are applications of Cheng,
+[*The Joy of Abstraction*](https://doi.org/10.1017/9781108769389), sections 10.1–10.2
+(printed pp. 118, 121–122) and 13.2 (pp. 150–152); the pipeline example is an
+engineering application of the nonidentity-idempotent counterexample.
+
+When a coherence theorem reduces a family of equations to generating laws,
+retain its hypotheses and exact generated family. Samples satisfying the
+generators do not themselves prove that entire family. Cheng's section 24.7
+(printed pp. 383–384) explains the distinction between local axioms and their
+global consequences. Judge removal of implementation checks separately: a
+mathematically derived property may still supply distinct implementation
+evidence.
+
 ## Let contradictions select the carrier
 
 In the book's scavenger hunt, `both(a,b)` should combine rewards commutatively.

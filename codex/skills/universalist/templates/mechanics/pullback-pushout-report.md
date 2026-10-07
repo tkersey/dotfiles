@@ -43,16 +43,21 @@
 - Deletion/dangling/identification obstructions:
 - Result `H`:
 
-## Universal-property witness
+## Universal-property witness, when claimed
+
+Use the [universal witness contract](../../references/claim-appropriate-proof.md#universal-witness-contract).
+An ordinary checked pair or named integration needs no invented universal claim.
 
 - Commutative square:
-- Factorization candidate:
-- Uniqueness approximation:
-- Canonical public constructor / mediator:
-- Bypass prevention:
+- Admissible competitors and structure-respecting factorization equations:
+- Mediator construction:
+- Uniqueness under declared lawful equivalence:
+- Correspondence between normal form and that equality, if used:
 
 ## Operational constraints
 
+- Public construction / integration owner:
+- Bypass prevention:
 - Provenance:
 - Ordering/effects:
 - Transactions/concurrency:
@@ -65,7 +70,7 @@
 - agreement / overlap law:
 - projection / injection preservation:
 - factorization:
-- uniqueness / normalization:
+- uniqueness, with justified normalization if used:
 - falsifier:
 
 ## Disposition

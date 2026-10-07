@@ -151,6 +151,12 @@ Keep this separate from literal / effective realization / bounded approximation.
 State the evidence strength and bounded exclusions where applicable. A private
 constructor or one interpreter is not a mediation or uniqueness proof. Do not
 fill universal fields for a structure-only claim or allocate another packet.
+Use the applicable [claim-appropriate proof](../references/claim-appropriate-proof.md)
+sections in this argument: structure-respecting mediation and uniqueness for a
+universal claim; carried witnesses and direction for transport; determination
+before cancellation; endpoint correspondence for lifting or distinguishability.
+Keep any derived obligation with the hypotheses that discharge it, and revisit
+only affected derivations when those hypotheses change.
 ## Obstruction / reopening condition:
 
 ## Why this construction:

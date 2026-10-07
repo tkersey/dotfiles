@@ -4,7 +4,7 @@
     "skill": {
       "name": "universalist",
       "kind": "mixed",
-      "source_fingerprint": "universalist-boundary-decision-v17.9-systems-context-v1"
+      "source_fingerprint": "universalist-boundary-decision-v17.10-claim-evidence-and-systems-context-v1"
     },
     "triggers": [
       {
@@ -222,11 +222,13 @@
         ],
         "success_signals": [
           "recognition begins from repository operations and observations",
-          "a retained pattern removes or centralizes an obligation, enables a lawful transformation, or strengthens a reusable proof with a material delta"
+          "a retained pattern removes or centralizes an obligation, enables a lawful transformation, or strengthens a reusable proof with a material delta",
+          "a disputed abstraction separates an omitted behavior-changing premise from a broader unclaimed generalization"
         ],
         "failure_signals": [
           "pattern selected by name",
-          "generalization without dividend"
+          "generalization without dividend",
+          "a relevant narrower premise is erased or a useful shared law is rejected because a broader unclaimed law fails"
         ],
         "rationale": "Recognition matters only when it changes ownership, legal composition, or proof."
       },
@@ -344,7 +346,11 @@
           "selected mechanics change the artifact and proof",
           "structure claims use laws and preservation without invented universality",
           "universal claims identify a diagram, competitors, maps, factorization equations, and a uniqueness argument",
-          "realization strength and proof kind remain independent; bounded and sampled evidence is labelled"
+          "realization strength and proof kind remain independent; bounded and sampled evidence is labelled",
+          "universal comparisons respect the named structure and distinguish construction, mediation, and uniqueness failures",
+          "transport uses explicit witnesses and preservation laws at the claimed direction and evidence strength",
+          "stronger equality inferences have adequate determination; lifting and distinguishability claims use the relevant endpoint correspondence",
+          "derived obligations retain their actual sufficient hypotheses without requiring a separate evidence packet"
         ],
         "failure_signals": [
           "decorative terminology",
@@ -353,7 +359,11 @@
           "a coalgebra is assumed final or finite observations are called Yoneda without the correspondence",
           "a missing universal proof obstructs an otherwise adequate structure-only artifact",
           "lawful fusion or phase composition silently changes required effects, failure behavior, or valid traces",
-          "representation independence is inferred from opacity without preservation under permitted operations and required future observations"
+          "representation independence is inferred from opacity without preservation under permitted operations and required future observations",
+          "canonical IDs, normalization, or factory count replaces structure-respecting mediation and uniqueness",
+          "an arbitrary interpreter is assumed to preserve universal properties or reflect equality without the corresponding argument",
+          "global operation names hide an empty source hom-set or erased required endpoint index",
+          "full faithfulness or literal representation equality is required for an intentionally lossy observation without a stronger claim"
         ],
         "rationale": "Advanced mechanics remain evidence-bound."
       },
@@ -436,7 +446,8 @@
         "success_signals": [
           "unchanged dispositions are reused silently",
           "Actuating receives changed evidence and decides whether architecture closure still holds",
-          "Git outranks stale nomination"
+          "Git outranks stale nomination",
+          "changed hypotheses reopen affected derivations while required laws remain binding and unaffected proofs are reused"
         ],
         "failure_signals": [
           "routine refinement creates a new Universalist pass",

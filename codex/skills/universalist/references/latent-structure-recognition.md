@@ -156,6 +156,24 @@ Ask:
 
 Anti-unify behavior and proof obligations, not merely shared syntax. At a first-use boundary, derive from the required carrier, observations, and operations instead; anti-unification is inapplicable without neighboring instances.
 
+When a shared abstraction is disputed, state the exact common principle and the
+distinctions it forgets. Determine whether the objection exposes an omitted,
+more specific premise that changes required behavior, or invokes a broader
+principle the candidate does not claim. Use a distinguishing required case to
+refine or reject the boundary; a material premise may belong in a parameter,
+carrier, or separate owner.
+
+For example, retries and redelivery may share the rule that repeating one
+logical operation must not duplicate its external effect. Short retention versus
+historical replay changes the identity and lifetime obligations that must remain
+explicit. By contrast, treating equal payloads as the same operation is a broader
+claim: two distinct purchases with identical payloads refute it without refuting
+idempotency by logical-operation identity.
+
+This dispute discriminator adapts Eugenia Cheng, [*The Joy of Abstraction*](https://doi.org/10.1017/9781108769389),
+sections 2.5–2.6 (printed pp. 28–30) and 3.5 (pp. 42–43). The retry example is
+an engineering application.
+
 ### 4. Nominate a small candidate family
 
 Discriminate supplied candidates against the ordinary baseline. Consider another
@@ -208,6 +226,16 @@ Examples:
 - **Reader parameter versus Tambara framing** — is there an actual context action with unit, associative framing, and endpoint naturality?
 - **commuting square versus double category** — do both arrow families independently compose, and do local squares paste in both directions?
 - **arbitrary merge versus pushout** — is there an explicit overlap with source maps and a universal compatibility obligation?
+- **operation coverage versus endpoint correspondence** — when lifting target
+  transformations or distinguishing parallel source transformations is claimed,
+  compare `C(a,b) -> D(Fa,Fb)` at the relevant endpoint pairs. For lifting,
+  include pairs with no source transformation: collapsing both endpoints to one
+  target introduces its identity despite an empty source homset. A scope,
+  capability, or phase distinction may need to remain represented. A deliberately
+  lossy view need not be full or faithful; strict identity and authority remain
+  separate requirements. Use [endpoint-specific correspondence](claim-appropriate-proof.md#endpoint-specific-correspondence)
+  for the applicable proof, not a mandatory endpoint matrix. The criterion comes
+  from Cheng, *The Joy of Abstraction*, section 21.5 (printed pp. 323–325).
 
 ### 6. Require a generalization dividend
 

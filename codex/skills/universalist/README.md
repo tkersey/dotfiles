@@ -1,4 +1,4 @@
-# Universalist 17.9.0
+# Universalist 17.10.0
 
 Universalist is an implicitly invocable **boundary-decision** lens with
 evidence-indexed progressive disclosure.
@@ -193,6 +193,24 @@ observations with residual behavior, and optional reference-model replacement.
 Property-test derivation adds law-adequacy countermodels and generator/observer
 checks. These sharpen existing decisions without new routes, mandatory models,
 or an additional common-path pass.
+
+## Claim evidence and assumption changes
+
+`references/claim-appropriate-proof.md` distinguishes construction, mediation,
+and uniqueness failures; carries explicit witnesses through lawful interpreters;
+and checks determination before stronger equality inferences. Lifting and
+distinguishability claims use endpoint-specific correspondences, including empty
+source hom-sets. Intentional forgetting requires only its actual preservation
+contract. Older construction references now use the same structure-respecting
+uniqueness standard instead of treating API ownership or canonical IDs as proof.
+
+Latent recognition separates a missing narrower premise from an objection to a
+broader unclaimed abstraction. Domain algebra retains the hypotheses behind a
+derived obligation and revisits only affected implications when those hypotheses
+change. The identity/idempotent and rounded-key examples supply concrete
+countermodels. These engineering applications of Cheng's *The Joy of Abstraction*
+include printed-page citations and reuse existing proof, recognition, and
+reclassification fields. They add no trigger, route, card, or runtime gate.
 
 ## Eliminator-first representation
 

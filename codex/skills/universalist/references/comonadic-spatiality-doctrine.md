@@ -260,7 +260,12 @@ every situated object is canonically reconstructed
 from its diagram of basic patches
 ```
 
-In engineering, approximate uniqueness with one reconstruction API, normalization, and no unchecked competing construction path.
+A density claim needs the patch diagram, its cocone, and the comparison argument
+from the [universal witness contract](claim-appropriate-proof.md#universal-witness-contract).
+One reconstruction API enforces representation policy; it does not establish
+factorization or uniqueness. Normal forms may implement the declared equivalence
+when their correspondence with it is justified. Without density evidence, retain
+the supported patch/reconstruction structure or an explicitly bounded claim.
 
 ### Labelled-halo law
 
