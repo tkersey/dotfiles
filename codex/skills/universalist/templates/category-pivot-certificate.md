@@ -104,6 +104,13 @@
 
 ## Preservation law
 
+Use only the applicable parts of
+[claim-appropriate proof](../references/claim-appropriate-proof.md#transport-across-interpretations)
+inside this law: direction of transport and any carried witness; determination
+when inferring source equality; endpoint correspondence when lifting or
+distinguishing operations is claimed. Intentional forgetting needs no blanket
+full-faithfulness claim.
+
 ```text
 <required observation after transport> == <expected observation>
 ```

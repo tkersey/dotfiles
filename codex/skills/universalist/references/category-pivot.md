@@ -18,6 +18,24 @@ Do not force a problem to stay in Hask when syntax, semantics, posets, relations
 
 Here `Hask` means the ordinary executable-program world of computer science, not literal Haskell.
 
+## Transport obligations
+
+Use the existing preservation argument to say which direction each claim travels.
+When an explicit section, builder, or other witness supplies the needed equations,
+carry it through the interpreter instead of repeatedly rediscovering a realizer;
+see [transport across interpretations](claim-appropriate-proof.md#transport-across-interpretations).
+An arbitrary functor does not preserve every universal property, and target
+agreement does not automatically reflect source equality. Check
+[determination](claim-appropriate-proof.md#determination-before-cancellation)
+only when making that stronger inference.
+
+When the pivot promises to lift target operations or distinguish source ones,
+check the [correspondence at the relevant endpoint pairs](claim-appropriate-proof.md#endpoint-specific-correspondence),
+including empty source hom-sets for a lifting claim. Retain required owner,
+capability, tenant, and state indices, or supply an admissible adapter. Intentional
+forgetting and ordinary composition preservation do not require full faithfulness.
+These are claim-specific parts of the transfer law, not another certificate.
+
 ## Common pivots
 
 | Current hard world | Easy world | What becomes easier |

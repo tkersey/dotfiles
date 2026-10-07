@@ -9,6 +9,11 @@ Pushout:  construct the most general object obtained by gluing two objects along
 
 Use this mechanics reference only after Universalist has named the worlds, maps, observations, witness slice, and falsifier. A pullback or pushout is justified only when its universal property changes code shape, proof obligations, or ownership.
 
+An owned compatibility object or named integration may suffice without a universal
+claim. Retain its construction and preservation laws; use the
+[universal witness contract](../claim-appropriate-proof.md#universal-witness-contract)
+for the stronger claim. API ownership alone supplies no universal property.
+
 ## 1. Formal shapes
 
 ### Pullback
@@ -330,19 +335,19 @@ The integrated context should preserve non-overlap facts, retain provenance from
 
 ### Pullback in application code
 
-Represent the universal object with an opaque constructor:
+An opaque constructor can enforce compatibility:
 
 ```text
 class CompatiblePair<A,B> {
   private constructor(a, b)
-  static create(a, b, projectA, projectB): Result<CompatiblePair<A,B>>
+  static create(a, b): Result<CompatiblePair<A,B>>
 }
 ```
 
-The constructor checks:
+For the owner's fixed maps `f : A -> C` and `g : B -> C`, the constructor checks:
 
 ```text
-projectA(a) == projectB(b)
+f(a) == g(b)
 ```
 
 Tests:
@@ -350,7 +355,14 @@ Tests:
 - matching projections construct successfully;
 - mismatches fail;
 - both projections are preserved;
-- every alternate compatible representation normalizes through the same constructor/API.
+- a producer with compatible views can be compared through `P` while preserving both views.
+
+This code shape establishes neither factorization for every admissible producer
+nor uniqueness of its mediator. For a pullback claim, supply those arguments under
+the chosen category and equality; the constructor is one implementation component.
+In the literal `Set` construction, `u(x) = (xA(x), xB(x))` lies in `P` by
+compatibility, and its two projections determine it uniquely. A runtime wrapper
+must justify the same comparison under its actual representation and observations.
 
 ### Pushout in application code
 
@@ -362,15 +374,23 @@ For finite sets/graphs/schemas:
 4. preserve provenance from each equivalence class to original sources;
 5. reject or report conflicts where the target category requires more than identification.
 
+Use the category's actual quotient: set equivalence may be computed by union-find,
+while operations and relations can require further congruence/structure checks.
+Preserve required authority and provenance distinctions; if the forced quotient
+cannot preserve them, expose that incompatibility rather than choosing convenient IDs.
+
 Tests:
 
-- both source injections preserve source data;
+- source structure maps preserve required source data;
 - overlap images have one canonical representative;
 - unrelated elements remain distinct;
 - compatible downstream consumers factor through the canonical integrated artifact;
 - different merge order does not change the canonical result, when the selected category/policy promises this.
 
-## 7. Universal-property laws as software tests
+## 7. Universal-property laws and evidence
+
+These are obligations for a universal claim. Tests may falsify them or exhaust a
+finite universe; sampled success does not replace the comparison argument.
 
 ### Pullback certificate
 
@@ -396,7 +416,7 @@ Overlap agreement:
   qA(i(o)) == qB(j(o))
 
 Source preservation:
-  qA and qB retain all non-identified source structure
+  qA and qB retain all required non-identified source structure
 
 Factorization:
   every compatible pair A -> X and B -> X induces Q -> X
@@ -405,7 +425,11 @@ Uniqueness:
   two induced maps agreeing on both injections are observationally equal
 ```
 
-In ordinary languages, uniqueness is usually approximated through canonical constructors, normalization, property tests, and the absence of alternate public construction paths.
+Apply the [universal witness contract](../claim-appropriate-proof.md#universal-witness-contract)
+to the complete diagram, including its projections or source maps. Canonical
+constructors and removal of bypasses enforce representation policy. Normal forms
+can implement the declared lawful equivalence when their correspondence is
+justified; their presence alone proves neither factorization nor uniqueness.
 
 ## 8. Pullback versus pushout selection
 
@@ -459,7 +483,7 @@ False. Latency, security, ordering, resource ownership, transactionality, and ef
 
 ## 10. Composition Certificate fields
 
-When pullback/pushout mechanics are selected, add:
+When a universal pullback/pushout claim is selected, supply these in the existing evidence:
 
 ```text
 Construction:
@@ -481,11 +505,12 @@ Effective construction:
   validation / join / quotient / union-find / graph rewrite
 
 Law:
-  commutative square + factorization + uniqueness approximation
+  commutative square + admissible factorization + uniqueness under lawful equivalence
 
 Falsifier:
   mismatch admitted / false identification / silent conflict / lost provenance /
-  non-unique public construction / failed pushout complement
+  missing mediator / inequivalent mediators satisfying the same equations /
+  failed pushout complement
 ```
 
 ## 11. Sources and further reading

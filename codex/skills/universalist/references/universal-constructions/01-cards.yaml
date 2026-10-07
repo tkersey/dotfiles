@@ -128,8 +128,8 @@ constructions:
   universal:
     role: receiver
     competitors: every admissible producer satisfying the required equations
-    mediator: one comparison path from each producer into the selected owner
-    canonicality: the comparison is unique up to the declared observations, equations, and normalization
+    mediator: a comparison from each producer preserving every specified component projection
+    canonicality: any two mediators satisfying those projection equations are equal under the declared lawful equivalence
     effectivity: construction, comparison, interpretation, and validation fit the declared resource model
   selection_mode: selectable
   diagnostic_order: 10
@@ -153,6 +153,7 @@ constructions:
   theory_refs:
   - structures-and-laws.md
   - canonical-boundary-artifacts.md
+  - claim-appropriate-proof.md
 - id: exclusive_cases
   expert_name: Coproduct
   public_name: explicit exclusive-state model
@@ -175,8 +176,8 @@ constructions:
   universal:
     role: emitter
     competitors: every admissible consumer or interpretation of the generated/integrated artifact
-    mediator: one comparison path from the selected artifact into each compatible consumer
-    canonicality: the comparison is unique up to the declared observations, equations, and normalization
+    mediator: a comparison to each compatible consumer whose composite with every case injection is the specified case map
+    canonicality: any two mediators satisfying those injection equations are equal under the declared lawful equivalence
     effectivity: construction, comparison, interpretation, and validation fit the declared resource model
   selection_mode: selectable
   diagnostic_order: 11
@@ -200,6 +201,7 @@ constructions:
   theory_refs:
   - structures-and-laws.md
   - canonical-boundary-artifacts.md
+  - claim-appropriate-proof.md
 - id: validated_subtype
   expert_name: Equalizer / refined type
   public_name: validated value object
@@ -223,8 +225,8 @@ constructions:
   universal:
     role: receiver
     competitors: every admissible producer satisfying the required equations
-    mediator: one comparison path from each producer into the selected owner
-    canonicality: the comparison is unique up to the declared observations, equations, and normalization
+    mediator: a comparison from each equalizing producer whose composite with the subtype inclusion is its specified carrier map
+    canonicality: any two mediators satisfying that inclusion equation are equal under the declared lawful equivalence
     effectivity: construction, comparison, interpretation, and validation fit the declared resource model
   selection_mode: selectable
   diagnostic_order: 12
@@ -248,6 +250,7 @@ constructions:
   theory_refs:
   - structures-and-laws.md
   - canonical-boundary-artifacts.md
+  - claim-appropriate-proof.md
 - id: compatibility_object
   expert_name: Pullback
   public_name: owned compatibility object
@@ -273,9 +276,9 @@ constructions:
   fallback: checked pair
   universal:
     role: receiver
-    competitors: every compatible source pair satisfying the shared observation agreement
-    mediator: one owner-controlled construction path from each compatible pair
-    canonicality: the path is unique up to owner normalization while both source projections remain observable
+    competitors: every admissible producer with two maps satisfying the shared observation agreement
+    mediator: a comparison from each compatible producer preserving both specified projections
+    canonicality: any two mediators satisfying both projection equations are equal under the declared lawful equivalence
     effectivity: agreement is computable or supplied by a verifiable witness
   selection_mode: selectable
   diagnostic_order: 13
@@ -301,6 +304,7 @@ constructions:
   theory_refs:
   - structures-and-laws.md
   - mechanics/pullbacks-and-pushouts.md
+  - claim-appropriate-proof.md
 - id: canonical_quotient
   expert_name: Coequalizer / quotient
   public_name: canonical normalized representation
@@ -318,14 +322,15 @@ constructions:
   laws:
   - equivalent presentations normalize together
   - normalization respects all sanctioned observations
+  - the equivalence respects permitted operations and required future observations, including authority and provenance
   falsifiers:
   - two observation-distinct values collide
   fallback: explicit normalization helper
   universal:
     role: emitter
-    competitors: every admissible consumer or interpretation of the generated/integrated artifact
-    mediator: one comparison path from the selected artifact into each compatible consumer
-    canonicality: the comparison is unique up to the declared observations, equations, and normalization
+    competitors: every admissible consumer constant on the declared equivalence classes
+    mediator: a comparison from the quotient whose composite with the quotient map is the specified source consumer
+    canonicality: any two mediators satisfying that equation are equal under lawful declared equivalence; normal forms implement it only with a justified correspondence
     effectivity: construction, comparison, interpretation, and validation fit the declared resource model
   selection_mode: selectable
   diagnostic_order: 14
@@ -352,6 +357,7 @@ constructions:
   theory_refs:
   - structures-and-laws.md
   - possibility-sheafification.md
+  - claim-appropriate-proof.md
 - id: canonical_integration
   expert_name: Pushout
   public_name: canonical overlap-aware integration
@@ -370,7 +376,8 @@ constructions:
   - integrated-model-or-schema
   laws:
   - source injections agree on overlap
-  - non-overlap and provenance survive
+  - identifications are generated by the declared overlap and required congruence closure
+  - required non-overlap structure and provenance survive
   - compatible consumers factor through the integration
   falsifiers:
   - unrelated entities are identified
@@ -378,9 +385,9 @@ constructions:
   fallback: named merge with provenance
   universal:
     role: emitter
-    competitors: every pair of sources and downstream consumers agreeing on the declared overlap
-    mediator: source injections and one integrated artifact mediate all compatible consumers
-    canonicality: only declared overlap is identified; canonical IDs or normalization remove competing merge meanings
+    competitors: every admissible common target with two source maps agreeing on the fixed declared overlap
+    mediator: a comparison from the integrated artifact whose composites with both source maps are the specified consumer maps
+    canonicality: any two mediators satisfying both source-map equations are equal under declared lawful equivalence; IDs or normal forms require a justified correspondence
     effectivity: conflict detection, provenance retention, and normalization fit the integration budget
   selection_mode: selectable
   diagnostic_order: 15
@@ -409,3 +416,4 @@ constructions:
   - structures-and-laws.md
   - mechanics/pullbacks-and-pushouts.md
   - pushout-reconciliation.md
+  - claim-appropriate-proof.md

@@ -1,6 +1,6 @@
 {
   "name": "universalist",
-  "version": "17.9.0",
+  "version": "17.10.0",
   "description": "Semantic-pressure-triggered boundary decisions with evidence-bounded law-derived alternatives, claim-appropriate proofs, 56 lazy construction cards, and optional standalone durability.",
   "private": true,
   "unified_mechanics": true,

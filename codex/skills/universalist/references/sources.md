@@ -6,6 +6,7 @@ Stable references:
 
 - Mac Lane, *Categories for the Working Mathematician*: adjunctions, products/coproducts, limits/colimits, pullbacks, pushouts, density, Yoneda, Kan extensions, monads, and comonads.
 - Riehl, *Category Theory in Context*: modern presentation of universal properties, limits/colimits, pullbacks/pushouts, adjunctions, density, and Kan extensions.
+- Eugenia Cheng, [*The Joy of Abstraction*](https://doi.org/10.1017/9781108769389): abstraction disputes (pp. 28–30, 42–43), equivalence and operation compatibility (pp. 93–94), conditional axioms and coherence (pp. 118, 121–122, 150–152, 383–384), cancellation and split witnesses (§§15.3–15.6, 20.5, 22.6), structure-respecting universal comparison (§§16.4, 16.6, 18.3–18.4), and endpoint-specific full/faithful functors (§21.5). Printed page numbers; the boundary-design uses in latent recognition, domain algebra, and claim-appropriate proof are engineering applications under their stated hypotheses.
 - Charles Ehresmann's work on categories internal to categories: foundational source of double categories.
 - Marco Grandis and Robert Paré, “Limits in Double Categories,” *Cahiers de Topologie et Géométrie Différentielle Catégoriques* 40 (1999): double limits, tabulators/cotabulators, and two-dimensional universal properties.
 - Michael Shulman, “Framed Bicategories and Monoidal Fibrations,” *Theory and Applications of Categories* 20 (2008); arXiv:0706.1286: pseudo double categories, framed bicategories/equipments, companions, conjoints, restrictions, and base change.

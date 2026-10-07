@@ -12,6 +12,12 @@ route, or seam decomposition. Routine refinement under the same owner, axis,
 law, falsifier, route, obligations, and invalidators reuses the current proof
 lease silently.
 
+When hypotheses change, include required obligations previously derived from
+them, even if those obligations no longer appear as independent checks. Reprove
+affected implications or supply independent justification for obligations that
+no longer follow; reuse unaffected derivations. See
+[derived obligations](references/domain-algebra/algebra-driven-design.md#discharge-derived-obligations-under-their-actual-hypotheses).
+
 Record:
 
 ```text

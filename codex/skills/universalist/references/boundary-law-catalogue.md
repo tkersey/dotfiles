@@ -7,8 +7,8 @@ These are practical proof signals, not formal proofs. Use one positive law and o
 | Embedding | `new(embed(old)) == old(old)` | embedded old case changes behavior |
 | Projection | `observe(project(internal)) == expectedPublicBehavior` | internal candidate cannot produce public observation |
 | Forgetful | `forget(combineRich(a,b)) == combineRaw(forget(a),forget(b))` | forgetting after combination disagrees with combining forgotten values |
-| Pullback agreement | `f(projectA(p)) == g(projectB(p))`; every compatible pair factors through the canonical witness | mismatched pair admitted, projections lost, or two distinct public mediators preserve the same views |
-| Pushout gluing | `injectA(includeA(o)) == injectB(includeB(o))`; every compatible pair of consumers factors through the integrated artifact | false identification, silent conflict collapse, lost non-overlap data, or noncanonical duplicate integration paths |
+| Pullback agreement | `f(projectA(p)) == g(projectB(p))`; for a universal claim, every admissible compatible producer factors uniquely through the witness under declared lawful equivalence | mismatched pair admitted, projections lost, a missing mediator, or two inequivalent mediators satisfying both projection equations |
+| Pushout gluing | `injectA(includeA(o)) == injectB(includeB(o))`; for a universal claim, every admissible compatible pair of consumers factors uniquely through the integrated artifact under declared lawful equivalence | false identification, silent conflict collapse, loss of required source data, a missing mediator, or two inequivalent mediators agreeing with both source maps |
 | Double-pushout rewrite | preserved interface survives; delete/add squares commute; rewrite runs only when pushout complement exists | dangling edge, forbidden identification, deleted shared structure, or silently guessed complement |
 | Interpreter | `interpret(translate(syntax)) == oldBehavior(syntax)` | translated syntax changes behavior |
 | Serializer | `decode(encode(internal))` preserves public invariants | encoded form loses required evidence |
@@ -52,7 +52,10 @@ These are practical proof signals, not formal proofs. Use one positive law and o
 | Free builder | `project(free(required(case)))` satisfies required behavior | projection loses evidence required by behavior |
 | Residual obligation | missing obligation fails; satisfying obligations passes | accepted implementation lacks required obligation |
 
-For pullbacks and pushouts, do not stop at square commutativity. Require factorization through the selected artifact and an engineering approximation of uniqueness.
+For universal pullback and pushout claims, square commutativity is insufficient:
+apply the [universal witness contract](claim-appropriate-proof.md#universal-witness-contract).
+Counting public construction paths establishes neither factorization nor uniqueness.
+An adequate checked pair or named integration may retain a weaker claim.
 
 For double categories, do not stop at a collection of commutative squares. Require two independently meaningful arrow families, identities and composition in both directions, typed square boundaries, horizontal and vertical square pasting, interchange or coherent comparison, one double-functor interpretation, effective normalization/invalidation, and a falsifier. Interchange never grants effect commutativity by itself.
 

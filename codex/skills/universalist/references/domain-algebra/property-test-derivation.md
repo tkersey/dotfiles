@@ -101,6 +101,32 @@ the existing property-test plan. Adequate native evidence can discharge the
 questions without an additional report or testing subsystem. Finite-model tests
 of these techniques are not evidence of coding-agent efficacy.
 
+Agreement after a lossy observer or over a restricted generated domain supports
+only that comparison. When inferring a stronger internal law, use
+[determination before cancellation](../claim-appropriate-proof.md#determination-before-cancellation)
+to establish why the observer or producer determines the claimed behavior.
+
+### Falsifier: equal keys do not preserve a continuation
+
+This illustrates the existing requirement to preserve permitted future
+operations. For mathematical rounding to the nearest integer, `key(x) = round(x)`
+induces an equivalence relation, but adding the same value can distinguish
+equivalent inputs:
+
+```text
+key(0.1) = key(0.4) = 0
+key(0.1 + 0.2) = 0
+key(0.4 + 0.2) = 1
+```
+
+Key equality is therefore not a congruence for the original addition operation.
+A lossy display may intentionally use this key; a cache, deduplication owner,
+or state quotient promising the original continuation behavior needs a stable
+relation or retained residual data. Derive this distinction from the required
+observations before treating normalization as semantic equality. The example
+adapts Cheng, [*The Joy of Abstraction*](https://doi.org/10.1017/9781108769389),
+section 7.7 (printed pp. 93–94); the software applications are Universalist's.
+
 ## Worked transformation: fold–map fusion
 
 For finite lists and pure total `g` and `f`, derive:
