@@ -44,6 +44,14 @@
 - Run scripts, tests, linters, and CLIs through `uv run ...`. For skill-only external dependencies, prefer `uvx TOOL` or `uv run --with PACKAGE COMMAND ...`; do not create or reuse `.venv*` or use `uv pip install` unless a persistent dependency is explicitly requested.
 - For projects that intentionally manage Python dependencies, keep `pyproject.toml` and `uv.lock` authoritative with `uv sync`, or `uv lock` followed by `uv sync`.
 
+### Containers
+
+- When local Linux containers are needed on macOS 26+ with Apple silicon, use
+  Apple's `container` CLI instead of Docker unless the user explicitly requests
+  Docker or a required capability is unavailable in `container`. If missing,
+  install it with `brew install container`; start its service as needed with
+  `container system start`.
+
 ### JSON
 
 - Use `jaq` instead of `jq` when `jaq` is installed; fall back to `jq` when it is not.
