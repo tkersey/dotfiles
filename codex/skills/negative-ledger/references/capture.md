@@ -66,6 +66,12 @@ gate. Do not treat variable outcomes as deterministic impossibility proofs.
 Use existing hypothesis, outcome, evidence, exclusion, applicability, and
 reopening fields to retain the supported boundary. A stale cache entry may
 justify excluding reuse when its key omits a semantic input, not all caching.
+For a failure involving feedback or accumulated effects, retain the relevant
+workload/regime, observation delay, and evaluated horizon in those same fields.
+Separate the witnessed outcome from a hypothesized mechanism; recurrence alone
+does not establish policy resistance or a general strategy exclusion. A changed
+delay, capacity, or response policy can be an applicability or reopening condition
+when it could change the result. Do not add a pattern schema or diagnosis authority.
 Choose the narrowest useful supported scope, retaining `need-evidence` or
 `capture_candidate` when support is inadequate. Do not weaken active structure
 just to make a transaction pass.

@@ -38,6 +38,13 @@ actual workload, threat model, failure model, and environment evidence. A type,
 state machine, or lawful composition is not evidence of sufficient capacity,
 authorization freshness, durable atomicity, or safe distributed execution.
 
+When interacting feedback, accumulated state, delayed effects, or recovery
+determines an operational claim, reuse Universalist's
+[system-dynamics.md](../../universalist/references/system-dynamics.md) in this trace.
+Follow the causal extent needed to explain the result without merging enforcement
+owners or claiming stability from local validity. This reference alone does not
+activate a boundary nomination; the existing live-decision trigger still governs.
+
 Carry soundness skepticism, footgun analysis, invariant preservation, correctness
 complexity, and fresh-eyes reconstruction through those same traces. Start from
 required outcomes independently of the current component diagram. Ask what the

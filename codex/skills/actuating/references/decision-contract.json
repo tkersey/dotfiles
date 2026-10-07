@@ -4,7 +4,7 @@
     "skill": {
       "name": "actuating",
       "kind": "mixed",
-      "source_fingerprint": "actuating-construction-compiler-v15"
+      "source_fingerprint": "actuating-construction-compiler-v16"
     },
     "triggers": [
       {

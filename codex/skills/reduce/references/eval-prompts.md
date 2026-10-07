@@ -91,6 +91,35 @@ Expected:
 - not a reduce trigger unless framed as layer removal;
 - normal refactor or no action.
 
+## Disturbance and recovery
+
+### Quiet production fallback
+
+Prompt: "This retry supervisor has not run in our normal-path benchmarks. A new
+in-memory queue passes every healthy-worker test. Can we remove the supervisor?
+The accepted contract includes delivery after worker restart."
+
+Expected:
+
+- identify the restart/delivery obligation and the actual state that survives;
+- test the successor under that failure boundary, not only steady state;
+- hold the cut if recovery is lost; tests do not replace production recovery;
+- no invented disaster requirement, universal buffer size, or new controller.
+
+### Recovery already owned
+
+Prompt: "The durable queue owns retry and delivery across every required worker
+failure. Source traces show this wrapper only forwards the same acknowledgments;
+it carries no additional state, timing, compatibility, or recovery obligation.
+Can we collapse it?"
+
+Expected:
+
+- verify the claimed coverage, then permit removal under the existing proof;
+- retain independent verification and required observations;
+- do not preserve the wrapper solely because it is called a supervisor, or
+  invoke another architecture pass inside Actuating independently.
+
 ## Scoring rubric for evals
 
 A good answer includes:

@@ -47,6 +47,11 @@ available or a reproducible local workload. Do not run live load without authori
 A flamegraph's width reflects sampled attribution; stack depth alone is not proof
 of call overhead. Correlate profiles with traces/counters and the target metric.
 
+When backlog growth, oscillation, repeated correction, or adaptive allocation
+makes timing or exposure material, use [feedback-dynamics.md](references/feedback-dynamics.md)
+within this experiment. Distinguish state from rates, account for pending effects,
+and choose the comparison horizon from the proposed mechanism.
+
 Inspect scaling across relevant input sizes and distributions. A rare request
 class can govern p99; an allocation or off-CPU problem need not be a top CPU
 hotspot. Search/grep can nominate code to inspect, never prove it is expensive.

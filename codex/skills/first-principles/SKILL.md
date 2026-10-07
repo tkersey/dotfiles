@@ -4,3 +4,8 @@ description: "Run one explicit first-principles pass verbatim, rebuilding the ta
 ---
 
 Start over from first principles. Set aside the current framing, solution, abstractions, conventions, analogies, and inherited constraints. State the irreducible outcome and the evidence that would establish it; separate established facts and necessary constraints from assumptions, hypotheses, preferences, and contingent choices; identify the governing invariants and causal mechanisms. Make the surviving premises explicit as a minimal axiom basis: label each as an observed fact, necessary constraint, chosen objective, or irreducible postulate; test each for necessity and independence and the set for consistency and sufficiency; distinguish axioms from definitions and derived claims; and admit no conclusion without a traceable derivation. Then derive the smallest sufficient approach upward from only that basis. Compare the derivation with any current approach and expose every hidden or unsupported premise, accidental constraint, unnecessary component, contradiction, and missed possibility. Be AXIOMATIC—RUTHLESSLY foundational, derivational, and exacting!
+
+When interactions, accumulated state, or delayed effects determine whether the
+basis is sufficient, use [systemic-premises.md](references/systemic-premises.md)
+within this pass. It supports the canonical passage above without changing its
+text, activation, or the receiving workflow's authority.

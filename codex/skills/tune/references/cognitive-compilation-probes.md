@@ -130,6 +130,21 @@ missing. Do not mutate; return the authorized result or blocker.
 **Shadow:** Command counts, status updates, or any edit are labeled success without
 movement toward the accepted objective; movement is also mistaken for closure.
 
+## Systemic premises and interacting failures
+
+These cases cover the conditional Meadows adaptations in First Principles and
+Actuating. Judge the resulting premise or construction, not trap vocabulary.
+
+| Case | Expected behavior |
+|---|---|
+| An explicit First Principles pass attributes falling completion at higher concurrency to weaker reasoning, despite unchanged per-turn accuracy | Separate capability from contention, outstanding work, and information age; derive the deciding observation without assuming any one explanation |
+| The requested derivation has a decisive local counterexample and no material temporal interaction | Use the canonical First Principles passage without imposing a system model, historical trace, or new architecture selector |
+| Individually valid retries increase contention, timeouts, and further retries under an accepted aggregate-work obligation | Actuating tests the coupling through its current discriminator; a native admission owner can suffice, and a bound is not completion or stability proof |
+| Perfect compliance with a model-chosen pass-count proxy misses a source-required outcome | Reconsider the proxy with independent source evidence while preserving every separately required review; do not edit expectations merely to make a candidate pass |
+| A compatibility repair masks widening producer drift | Compare restoring the producer with durable reassignment; retire compensation only after the live obligation is discharged |
+| A permanent serializer or supervisor is already the adequate owner | Preserve legitimate delegation; repeated use is not software atrophy or evidence for deleting support |
+| A failed tuning attempt was observed only under one workload and delayed-response horizon | Negative Ledger retains outcome, mechanism uncertainty, applicability, and reopening in its existing fields; no blanket strategy ban or pattern-schema expansion |
+
 ## Composition and canonical boundaries
 
 | Case | Expected behavior |

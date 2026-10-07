@@ -27,7 +27,7 @@ const names = ['standard','soundness-skeptic','footgun-finder','invariant-ace','
 assert.equal(c.schema, 'actuating-review-contract/v17');
 assert.equal(c.contract_id, 'actuating-review-contract-v20');
 assert.equal(d.contract_version, 'SKDC-v1');
-assert.equal(d.skill.source_fingerprint, 'actuating-construction-compiler-v15');
+assert.equal(d.skill.source_fingerprint, 'actuating-construction-compiler-v16');
 assert.deepEqual(c.required_lenses.map(l => l.name), names);
 assert.deepEqual(c.required_lenses[0], {name:'standard',role:'standard',instruction_source:'codex-default',custom_instructions:false});
 assert.deepEqual(c.review_scheduling.initial_lens_order, names);
