@@ -28,7 +28,7 @@
 ### Codex configuration
 
 - Make reusable Codex settings changes in the dotfiles repository's `etc/codex/config.toml`, linked to `/etc/codex/config.toml`.
-- Treat `home/codex/config.toml` / `~/.codex/config.toml` as machine-local configuration: project trust entries, installation-specific paths, and Codex/ChatGPT desktop-managed state belong there. Edit it only for a requested machine-local change, and leave unrelated churn unmodified and uncommitted.
+- Treat `~/.codex/config.toml` as machine-local configuration: project trust entries, installation-specific paths, and Codex/ChatGPT desktop-managed state belong there. Edit it only for a requested machine-local change, and leave unrelated churn unmodified and uncommitted.
 - User configuration overrides system defaults. Report any local override that masks a shared change; do not mirror shared settings into the user file.
 
 ### Git
