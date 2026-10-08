@@ -14,6 +14,7 @@ from typing import Any
 from urllib.parse import urlsplit
 
 SCHEMA = "elenctic-report/v1"
+COMPOSITION_SCHEMA = "ergasterion-report/v1"
 KINDS = {"merge-blocker", "risk", "concern"}
 
 
@@ -250,15 +251,90 @@ def prepare_resolution(raw: dict[str, Any], report: dict[str, Any]) -> None:
     report[workflow] = {"status": "complete", "groups": list(groups.values()), **extra}
 
 
+def validate_composition(identity: dict[str, Any], *, analysis: bool) -> None:
+    """Validate cross-source presentation bindings, never review credit or truth."""
+    allowed = {"schema", "mode", "repo", "pr", "base", "base_tip", "candidate", "view", "strategy"}
+    allowed |= {"analysis_id", "evidence_refs"} if analysis else {
+        "campaign_id", "coverage", "selected_scope_coverage", "whole_pr_coverage", "verdict", "assessments"}
+    if not identity.keys() <= allowed:
+        raise ValueError("unexpected composition identity fields; owner receipts stay separate")
+    strategy = identity.get("strategy")
+    if not isinstance(strategy, str):
+        raise ValueError("composition strategy must be a string")
+    required = {"combined": {"architectonic", "elenctic"},
+                "architectonic": {"architectonic"}, "elenctic": {"elenctic"}}.get(strategy)
+    if required is None:
+        raise ValueError("composition strategy must name its actual non-native reviewers")
+    text(identity.get("base_tip"), "identity.base_tip")
+    if analysis:
+        refs = identity.get("evidence_refs")
+        if not isinstance(refs, list) or not refs:
+            raise ValueError("analysis needs its actual evidence source references")
+        for ref in refs:
+            text(ref, "evidence reference")
+        return
+    assessments = identity.get("assessments")
+    if not isinstance(assessments, dict) or not assessments.keys() <= required:
+        raise ValueError("assessments must belong to the selected reviewers")
+    for owner, assessment in assessments.items():
+        if not isinstance(assessment, dict):
+            raise ValueError("each assessment must be an object")
+        text(assessment.get("source_ref"), "assessment.source_ref")
+        text(assessment.get("scope"), "assessment.scope")
+        for field in ("repo", "pr", "base", "base_tip", "candidate"):
+            if (type(assessment.get(field)) is not type(identity[field])
+                    or assessment[field] != identity[field]):
+                raise ValueError(f"{owner} assessment has a different {field}")
+        if assessment.get("coverage") not in ("complete", "partial"):
+            raise ValueError("invalid assessment coverage")
+        if owner == "elenctic" and assessment.get("whole_pr_coverage") not in (
+                "complete", "partial", "not-established"):
+            raise ValueError("Elenctic assessment needs actual whole-PR coverage")
+    complete = (assessments.keys() == required
+                and all(a["coverage"] == "complete" for a in assessments.values()))
+    full_pr = complete and assessments.get("elenctic", {}).get("whole_pr_coverage") == "complete"
+    if identity["selected_scope_coverage"] == "complete" and (
+            not complete or (strategy == "combined" and not full_pr)):
+        raise ValueError("complete composition scope requires all selected assessments")
+    if "elenctic" not in assessments and identity["whole_pr_coverage"] != "not-established":
+        raise ValueError("absent Elenctic evidence cannot claim whole-PR coverage")
+    if identity["whole_pr_coverage"] == "complete" and (
+            not full_pr or identity["selected_scope_coverage"] != "complete"):
+        raise ValueError("whole-PR composition coverage cannot exceed its sources")
+
+
+def composition_origins(source: dict[str, Any], identity: dict[str, Any], *, analysis: bool) -> list[dict[str, str]]:
+    """Keep all original references/dispositions through aggregate deduplication."""
+    origins = source.get("origins")
+    if not isinstance(origins, list) or not origins:
+        raise ValueError("aggregate findings require original source provenance")
+    allowed = {"architectonic", "elenctic", "pr-feedback"} if analysis else set(identity["assessments"]) | {"pr-feedback"}
+    result, seen = [], set()
+    for origin in origins:
+        if not isinstance(origin, dict):
+            raise ValueError("each origin must be an object")
+        item = {k: text(origin.get(k), f"origin.{k}") for k in ("owner", "reference", "disposition")}
+        if item["owner"] not in allowed:
+            raise ValueError("origin does not name an available source")
+        key = (item["owner"], item["reference"])
+        if key in seen:
+            raise ValueError("duplicate source reference is not independent provenance")
+        seen.add(key)
+        result.append(item)
+    return sorted(result, key=lambda o: (o["owner"], o["reference"]))
+
+
 def prepare(raw: Any) -> dict[str, Any]:
     """Validate the presentation boundary, not the truth/admission of a review."""
-    if not isinstance(raw, dict) or raw.get("schema") != SCHEMA:
-        raise ValueError(f"expected schema {SCHEMA}")
+    if not isinstance(raw, dict) or raw.get("schema") not in (SCHEMA, COMPOSITION_SCHEMA):
+        raise ValueError(f"expected schema {SCHEMA} or {COMPOSITION_SCHEMA}")
+    composed = raw["schema"] == COMPOSITION_SCHEMA
+    owner = "ergasterion" if composed else "elenctic"
     identity = raw.get("identity")
     if not isinstance(identity, dict):
         raise ValueError("identity must be the actual campaign identity object")
     identity = dict(identity)
-    analysis = identity.get("schema") == "elenctic-construction-identity/v1"
+    analysis = identity.get("schema") == f"{owner}-construction-identity/v1"
     if analysis:
         if identity.get("mode") != "analysis" or raw.get("workflow") != "construction":
             raise ValueError("construction analysis identities require construction workflow")
@@ -267,8 +343,8 @@ def prepare(raw: Any) -> dict[str, Any]:
                       "campaign_id", "campaign_context_id", "campaign_seed_thread_id", "campaign_policy_id"):
             if field in identity:
                 raise ValueError("comment analysis cannot claim campaign provenance, review coverage or a verdict")
-    elif identity.get("schema") != "elenctic-review-identity/v1" or identity.get("mode") != "campaign":
-        raise ValueError("identity must be an Elenctic v1 campaign or construction analysis identity")
+    elif identity.get("schema") != f"{owner}-review-identity/v1" or identity.get("mode") != "campaign":
+        raise ValueError(f"identity must be a {owner} v1 campaign or construction analysis identity")
     for field in ("repo", "base", "candidate", "view"):
         text(identity.get(field), f"identity.{field}")
     if type(identity.get("pr")) is not int or identity["pr"] <= 0:
@@ -287,17 +363,21 @@ def prepare(raw: Any) -> dict[str, Any]:
         expected = "complete" if identity["whole_pr_coverage"] == "complete" else "partial"
         if identity["coverage"] != expected:
             raise ValueError("coverage must conservatively represent whole-PR coverage")
-        # Null is a legitimate absence, never an invented provenance identifier.
-        for field in ("campaign_context_id", "campaign_seed_thread_id", "campaign_policy_id"):
-            if field not in identity:
-                raise ValueError(f"identity.{field} is required; use null only when never created")
-            if identity[field] is not None:
-                text(identity[field], f"identity.{field}")
-        if identity["campaign_seed_thread_id"] is not None and (
-                identity["campaign_context_id"] is None or identity["campaign_policy_id"] is None):
-            raise ValueError("a seed requires both prepared context and policy identity")
+        if not composed:
+            # Null is a legitimate absence, never an invented provenance identifier.
+            for field in ("campaign_context_id", "campaign_seed_thread_id", "campaign_policy_id"):
+                if field not in identity:
+                    raise ValueError(f"identity.{field} is required; use null only when never created")
+                if identity[field] is not None:
+                    text(identity[field], f"identity.{field}")
+            if identity["campaign_seed_thread_id"] is not None and (
+                    identity["campaign_context_id"] is None or identity["campaign_policy_id"] is None):
+                raise ValueError("a seed requires both prepared context and policy identity")
 
-    result: dict[str, Any] = {"schema": SCHEMA, "identity": identity}
+    if composed:
+        validate_composition(identity, analysis=analysis)
+
+    result: dict[str, Any] = {"schema": raw["schema"], "identity": identity}
     for field in ("title", "generated_at", "summary", "coverage_note", "report_text"):
         result[field] = text(raw.get(field), field)
     result["pr_url"] = link(raw.get("pr_url"), "pr_url")
@@ -321,8 +401,18 @@ def prepare(raw: Any) -> dict[str, Any]:
         if finding["disposition"] not in KINDS:
             raise ValueError(f"invalid disposition for {finding['id']}")
         finding["draft"] = text(source.get("draft", ""), "draft", empty=True)
+        if composed:
+            finding["origins"] = composition_origins(source, identity, analysis=analysis)
+            if finding["draft"]:
+                draft_owner = text(source.get("draft_owner"), "draft_owner")
+                owners = {o["owner"] for o in finding["origins"]}
+                if draft_owner not in owners | {"ergasterion"}:
+                    raise ValueError("draft owner must match its source or aggregate coordinator")
+                finding["draft_owner"] = draft_owner
         if finding["draft"] and finding["disposition"] != "merge-blocker":
-            raise ValueError("only retained merge blockers may contain a draft")
+            if not (composed and finding.get("draft_owner") == "architectonic"
+                    and finding["disposition"] == "concern"):
+                raise ValueError("only blockers or sourced architectural opportunities may contain a draft")
         sources = source.get("sources", [])
         if not isinstance(sources, list):
             raise ValueError("sources must be an array")
@@ -343,10 +433,15 @@ def prepare(raw: Any) -> dict[str, Any]:
     result["findings"].sort(key=lambda f: ["merge-blocker", "risk", "concern"].index(f["disposition"]))
     # Stable across regenerations of this campaign; never silently carry checks to a new epoch.
     instance = "analysis_id" if analysis else "campaign_id"
-    result["report_key"] = ("elenctic-analysis:" if analysis else "elenctic:") + digest({
-        k: identity[k] for k in ("repo", "pr", instance, "base", "candidate", "view")
+    key_fields = ("repo", "pr", instance, "base", "candidate", "view")
+    if composed:
+        key_fields += ("base_tip", "strategy")
+    result["report_key"] = owner + ("-analysis:" if analysis else ":") + digest({
+        k: identity[k] for k in key_fields
     })
     prepare_resolution(raw, result)
+    if composed and any("number" not in f for f in result["findings"]):
+        raise ValueError("aggregate findings require their stable original numbers")
     return result
 
 
@@ -362,6 +457,9 @@ def render(raw: Any, *, previous: dict[str, Any] | None = None) -> tuple[str, di
             raise ValueError("cannot reuse finding numbers from another campaign")
         bind_number_history(report, previous)
     template = (Path(__file__).resolve().parents[1] / "assets" / "report.html").read_text(encoding="utf-8")
+    if report["schema"] == COMPOSITION_SCHEMA:
+        # Brand the trusted shared template before inserting any report/user text.
+        template = template.replace("Elenctic", "Ergasterion").replace("ELENCTIC", "ERGASTERION")
     replacements = {"__REPORT_DATA__": script_data(report),
                     "__REPORT_TEXT__": html.escape(report["report_text"]),
                     "__REPORT_TITLE__": html.escape(report["title"])}

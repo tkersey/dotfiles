@@ -1,0 +1,10 @@
+policy:
+  allow_implicit_invocation: false
+interface:
+  display_name: "Ergasterion"
+  short_description: "Actuating construction with selectable aggregate review"
+  default_prompt: >-
+    Use $ergasterion for the accepted task. Reuse Actuating implementation;
+    default to Architectonic then Elenctic on one frozen candidate and aggregate
+    both before correction. Preserve read-only and proposal modes, full coverage,
+    exact-source provenance, model parity and independent native review credit.
