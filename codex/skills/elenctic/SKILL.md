@@ -1,6 +1,6 @@
 ---
 name: elenctic
-description: "Explicit-only PR review: adjudicate your prior threads, review unchecked files and their causal consequences, and return evidence-backed findings with an interactive local report. Request 'for resolution' for groups, or 'for construction' to adjudicate PR feedback into explicit code-change proposals without implementing them."
+description: "Explicit-only PR review: adjudicate your prior threads, review unchecked (or explicitly all-changed) files and their causal consequences, and return evidence-backed findings with an interactive local report. Request 'for resolution' for groups, or 'for construction' to adjudicate PR feedback into explicit code-change proposals without implementing them."
 ---
 
 # Elenctic
@@ -20,6 +20,7 @@ $elenctic this PR
 $elenctic this branch
 $elenctic PR #123
 $elenctic PR #123 with concurrency 10
+$elenctic PR #123 selection=all-changed
 $elenctic PR #123 for resolution
 $elenctic PR #123 for construction
 $elenctic PR #123 review for construction
@@ -40,6 +41,14 @@ starts a review campaign. Authorship does not select any output workflow.
 No workflow implements fixes or publishes comments.
 Extract the PR selector independently from workflow/concurrency instructions;
 pass only that selector to `gh`. Concurrency remains unchanged (default/cap 20).
+
+`selection=unchecked` remains the default. Explicit `selection=all-changed` or
+an accepted Ergasterion composition loads
+[ergasterion-composition.md](references/ergasterion-composition.md) before campaign preflight.
+That owner-approved route changes the inventory partition, not review standards,
+worker provenance or implementation authority. An enclosing Ergasterion can also
+explicitly defer presentation/synthesis to its joint aggregate under that contract;
+standalone invocation retains the existing automatic report and output workflows.
 
 Resolve an unqualified request with `gh pr view` without a positional selector.
 Pass an explicit PR number, URL, or named branch unchanged as its selector; never
