@@ -149,7 +149,7 @@
     "confirmation_invalidation_requires_new_initial_wave": false
   },
   "construction_selection": {
-    "objective": "family-exclusion-with-required-valid-preservation",
+    "objective": "required-law-realization-with-family-exclusion-and-required-valid-preservation",
     "cumulative_causal_basis_before_candidate_selection": true,
     "discriminator_selected_before_implementation": true,
     "mechanical_defect_requires_no_invented_sibling_quota": true,

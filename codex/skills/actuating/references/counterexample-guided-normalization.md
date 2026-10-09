@@ -13,6 +13,36 @@ behavior. An absent corpus limits historical claims; it neither proves absence n
 prevents initial implementation. Preserve witness provenance when stronger proof
 subsumes tests.
 
+## Constructive derivation
+
+Work backward from required observations and continuations to sufficient facts,
+cases, and operation rules; choose native representations and algorithms that
+make those premises hold. These are optional design moves selected by a real
+uncertainty, not a sequence, quota, or prerequisite for an adequate direct fix:
+
+| Law or premise to establish | Native construction to derive | Deciding countercase |
+|---|---|---|
+| A value is determined by another fact. | Derive it through that fact's owner instead of admitting another independent setting. | Equal current values carry distinct required history or admit different future behavior. |
+| Only certain states or operation sequences are valid. | Tagged cases and owner-controlled transitions, with the information each case requires. | An alias revives a consumed state, or the protocol forbids a required retry. |
+| An algorithm must achieve a postcondition and progress. | Work backward into an invariant, a preserving step, and a well-founded decrease or other contract-appropriate progress argument; choose state that supports them. | The invariant holds while execution stalls, overflows, or skips a required result. |
+| Meaning is determined by recursive cases and their combination. | A native fold or transition interpreter with justified primitive meanings and composition. | Cases agree separately but combination duplicates an input, mishandles the empty case, or reorders an effect. |
+| An intermediate exists only to supply an observation. | Compute that observation directly, fuse a traversal, or scope production to consumption. | Inspection, identity, sharing, replay, early termination, effects, or resource behavior requires the discarded structure. |
+| Complex search produces a compact checkable witness. | An untrusted producer followed by a small, independently justified checker before trusted admission. | Producer and checker share a false premise; sound rejection alone does not establish required search completeness or progress. |
+
+Establish primitive meaning and why permitted composition preserves it. Choose
+the relation required by the source: exact observations or round trips when
+promised, otherwise an adequate refinement or simulation. Refinement may choose
+among merely permitted nondeterministic outcomes; it must preserve required
+choices, observations, continuations, and progress. Difficulty proving a step,
+recovering an observation, or expressing lawful composition is feedback to revise
+the representation, algorithm, or interpretation, not merely add predicates.
+
+For an unresolved operation vocabulary, interacting law family, or observation
+carrier at a live boundary, reuse Universalist's
+[domain-algebra derivation](../../universalist/references/domain-algebra/algebra-driven-design.md).
+Use the existing decision and common proof obligations; no new pass, IR, framework,
+packet, or second implementation is implied.
+
 ## Construction argument and source-derived coverage
 
 A candidate that changes the comparison domain, quotients distinctions, or
@@ -115,13 +145,48 @@ correcting one obligation authorizes unrelated strengthening or claim narrowing.
 
 ## Worked cases
 
-These illustrate domain selection, not required implementation patterns.
+These illustrate domain selection and derivation, not required implementation patterns.
 
 | Tempting local construction | Source-required domain and adequate construction | Discriminating case |
 |---|---|---|
-| Check that every supplied acquisition attempt has a capture. | Derive required acquisitions from retained occurrence semantics whose completeness is established for the claim. Preserve distinct historical facts; derive evidence obligations and projections. Reference collection alone does not establish semantic recovery. | Omit an attempt and its capture together. The obligation must survive their omission; legitimate occurrences requiring no acquisition remain admissible. |
-| Free scratch inside the reported artifact method. | Temporary decoding belongs to every operation sharing the public call lifetime. The call boundary backs scratch independently of the retained response allocator, deep-copies the returned value into response storage, and releases scratch before the next batch member. | Exercise completed and failed result decoding through another method. Required results survive while temporary allocations no longer accumulate across calls. |
-| Add schema specialization to registry matching. | Preserve complete capability identity through authored declaration, emitted metadata, admission, and selection. A shared typed association can carry the distinction across producers and consumers. | Two declarations share a semantic name but require different schema-specialized observations. Their emitted metadata must preserve the distinction; equivalent identities still match. |
+| Check every supplied acquisition attempt has a capture. | Derive acquisitions from retained occurrence semantics whose completeness is established for the claim. | Omit attempt and capture together; the obligation survives. Legitimate occurrences requiring neither remain admissible. |
+| Free scratch inside the reported artifact method. | The public call owns independent temporary storage, deep-copies returned values into response storage, and releases scratch before the next batch member. | Completed and failed decoding through another method releases scratch while required results survive. |
+| Add schema specialization to registry matching. | Carry complete identity through declaration, emitted metadata, admission, and selection using a shared typed association. | Equal semantic names with distinct required schema specializations remain distinct; equivalent identities still match. |
+
+### Derive complete frame representability
+
+Suppose admitted results must remain retrievable under byte, token, and depth
+limits. Derive accounting from the encoded structure: for a compact array, bytes
+are two brackets, separators, and the sum of encoded child bytes. Strings count
+after escaping; tokens and nesting follow the peer's actual definitions. A frame
+builder composes these quantities with checked arithmetic and reserves wrapper
+and batch overhead. The primitive bounds and their composition establish the
+whole-frame bound; separate per-value limits cannot.
+
+To preserve result availability, derive a projection that selects inline output
+when it fits, or an exact retrievable reference when the source permits it. The
+reference and its wrapper must also fit, and retrieval must make the required
+progress within its own bounds. Two individually fitting children, an escaping
+string, and an oversized referenced result distinguish these obligations. A final
+guard that only rejects oversized output establishes neither representability nor
+required retrieval.
+
+### Derive recursive codec preservation
+
+Suppose the source requires `decode(encode(v)) ~= v` for supported values. Begin
+with required distinctions: absent field, present null, empty collection, and a
+number versus its textual spelling cannot share an encoding if observations
+distinguish them. Give the primitive cases adequate encodings, then derive record
+and sequence codecs by composing those operations. Establish the round trip for
+each primitive and show that the container operations preserve it, including empty
+and nested cases. This yields the recursive argument instead of independent
+special cases for every consumer.
+
+The reverse byte round trip is required only if the source promises it; permitted
+normalization may change spelling while preserving meaning. Mutually agreeing
+codecs can still share the wrong convention, so source-distinguishing wire cases
+remain independent deciding evidence. When a nested present-null value collapses
+to absence, revise the carrier or encoding that lost the distinction.
 
 A missing package allowlist entry with adequate semantic owners still deserves a
 direct allowlist correction. A refuted allegation requires no production repair.

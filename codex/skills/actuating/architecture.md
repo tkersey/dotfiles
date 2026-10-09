@@ -57,6 +57,14 @@ adequate candidates remain `unresolved`, not an invented obstruction or arbitrar
 winner. Split independent seams and prove their composition. Universalist
 nominates; Actuating selects and proves.
 
+When the operation vocabulary, interacting equations, or observation carrier
+needs derivation, have that nomination use Universalist's existing
+[domain algebra discovery](../universalist/references/domain-algebra/algebra-driven-design.md).
+Derive operations from required uses, use contradictions to revise the carrier,
+and look for a sufficient interpretation whose composition preserves the required
+meaning. Reuse the current decision and discriminator; do not add a discovery
+pass or load advanced machinery for an already-adequate ordinary construction.
+
 In that existing selection, compare adequate interfaces through a representative
 caller and a source-supported change. What must a new producer or consumer know,
 choose, sequence, synchronize, or clean up, and what becomes owner-local? Prefer

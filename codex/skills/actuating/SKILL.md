@@ -8,13 +8,16 @@ description: "Implement accepted goals, analyze counterexamples, or close out re
 ## Mission
 
 Actuating is a **requirements-to-construction compiler** with a
-counterexample-to-construction feedback path. Derive required relationships from
-the Goal; use witnesses to revise the model, domain, or realization. Remove what
-permits the supported failure family while preserving required-valid behavior.
+counterexample-to-construction feedback path. Use the required behavior to derive
+representations, operations, algorithms, and interpretations whose construction
+explains their correctness. Develop the code and its argument together; use
+witnesses to revise the model, domain, or realization. Preserve required-valid
+behavior while removing what permits the supported failure family.
 
 ```text
-accepted Goal -> required relationships and source-derived domains
--> initial construction -> law implication + preservation proof
+accepted Goal -> required observations and laws
+-> derive the construction and its correctness argument together
+-> exact code + law implication + preservation proof
 
 frozen reviewed candidate -> cumulative accepted counterexamples
 -> causal explanation -> discriminating sibling predictions
@@ -23,9 +26,11 @@ frozen reviewed candidate -> cumulative accepted counterexamples
 ```
 
 The accepted law remains the completion target; an excluded family alone cannot
-establish it. For admitted behavior `B'` and any supported invalid family `Phi`, establish:
+establish it. For admitted observations and traces `B'`, the source-required law
+`L`, and any supported invalid family `Phi`, establish:
 
 ```text
+B' satisfies L throughout the source-required domain
 B' intersect Phi = empty
 required-valid subset B'
 every sanctioned path to trusted behavior crosses a law-preserving boundary
@@ -145,27 +150,47 @@ identity is required. A summary or digest never replaces the source or proves co
 
 ## Initial construction
 
-Before expanding functionality whose correctness spans representations or
-transitions, derive its required observable relationships from the accepted
-source. Distinguish authoritative facts, derived projections, and separately
-retained historical facts. Identify what a permitted producer or operation could
-still get wrong independently. Derive projections through their owner; preserve
-distinct history and independent deciding evidence.
+Use the law to generate the implementation. Work backward from required results
+and permitted continuations to the facts, distinctions, and operation rules that
+would establish them. For a proposed step, derive when it establishes the required
+result; let those conditions determine its algorithm, inputs, or guards. For
+iteration or recursion, derive the invariant and progress argument needed by the
+contract. Work forward through the resulting operations to check that the
+premises actually hold. A missing premise directs the next design or deciding
+experiment; it is not discharged by implementing more cases.
+
+Treat the representation, operation vocabulary, algorithm, and interpretation as
+design variables within source-fixed constraints. Distinguish authoritative
+facts, derived projections, and separately retained history. Change the carrier
+when it invents irrelevant distinctions or erases required ones. Derive a shared
+meaning when production observations repeat it; remove materialization when its
+inspection, identity, sharing, and persistence roles are unnecessary or preserved.
+Use the [construction moves](references/counterexample-guided-normalization.md#constructive-derivation)
+when a law has not yet suggested an adequate native realization.
+
+Derive a small useful set of constructors, operations, and lawful combinations
+that expresses the required uses. Establish the primitive meanings and how
+composition preserves them, so supported variants reuse the construction's
+argument. Relate the concrete implementation to the required observations,
+including failures and subsequent behavior; equality, refinement, and required
+progress have different obligations. A hard or repetitive proof can expose a
+better representation, operation, or decomposition. Preserve independent deciding
+evidence even when production interpretations are unified.
 
 Realize the smallest complete affected path before multiplying its variants:
 identity includes production and consumption; recovery includes the promised
 restored observations; validity includes subsequent permitted transitions.
-Establish the shared construction using the existing source argument and verifier.
-For delegated work, bind the shared relationship before dividing its realization
-and account for composition afterward. A partial slice remains work in progress.
+For delegated work, bind the shared laws and operation/interpretation contracts
+before dividing realization, then establish their actual composition. Use the
+existing source argument and verifier; a partial slice remains work in progress.
 
 Reuse an adequate existing boundary. Open the architecture path only for a live
 semantic decision; no counterexample, review wave, new document, or mandatory
-Universalist pass is needed to begin. Stop expanding the model when further
-source-supported cases would not change the mechanism or deciding proof. A direct
+Universalist pass is needed to begin. Use a model, solver, or proof tool when it
+resolves the actual uncertainty; neither a second implementation nor a formal
+proof framework is a default prerequisite. Stop expanding when further
+source-supported cases cannot change the construction or deciding proof. A direct
 correction remains adequate when the existing construction already owns the law.
-Use the [worked cases](references/counterexample-guided-normalization.md#worked-cases)
-when the obligation domain or ownership needs discrimination.
 
 ## Proof acceptance
 

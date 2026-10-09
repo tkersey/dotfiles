@@ -27,7 +27,7 @@ const names = ['standard','soundness-skeptic','footgun-finder','invariant-ace','
 assert.equal(c.schema, 'actuating-review-contract/v17');
 assert.equal(c.contract_id, 'actuating-review-contract-v20');
 assert.equal(d.contract_version, 'SKDC-v1');
-assert.equal(d.skill.source_fingerprint, 'actuating-construction-compiler-v17');
+assert.equal(d.skill.source_fingerprint, 'actuating-construction-compiler-v18');
 assert.deepEqual(c.required_lenses.map(l => l.name), names);
 assert.deepEqual(c.required_lenses[0], {name:'standard',role:'standard',instruction_source:'codex-default',custom_instructions:false});
 assert.deepEqual(c.review_scheduling.initial_lens_order, names);
@@ -55,7 +55,7 @@ assert.equal(c.evidence_acquisition.initial_implementation_requires_initial_fals
 assert.equal(c.counterexample_corpus.definition, 'review-fold/counterexample-corpus');
 assert.equal(c.counterexample_corpus.current_applicability_recomputed, true);
 assert.equal(c.counterexample_corpus.actuating_copy_or_store_forbidden, true);
-assert.equal(c.construction_selection.objective, 'family-exclusion-with-required-valid-preservation');
+assert.equal(c.construction_selection.objective, 'required-law-realization-with-family-exclusion-and-required-valid-preservation');
 for (const key of ['cumulative_causal_basis_before_candidate_selection','discriminator_selected_before_implementation',
   'mechanical_defect_requires_no_invented_sibling_quota','metanoetic_before_universalist_when_triggered',
   'live_boundary_not_route_label_triggers_universalist']) assert.equal(c.construction_selection[key], true, key);
