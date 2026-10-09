@@ -50,9 +50,10 @@ python java ruby go kubectl aws time`.
   language/cloud context, and the `%r` AM/PM clock.
 
 Edit `conf.d/native-prompt.fish` for context selection, thresholds, clock format,
-Git options, and cursor shapes. The default language/cloud items match the
-snapshot's effective list. Optional adapters are `zig rustc php crystal elixir`.
-For example, append `zig` to `native_prompt_context_items` for Zig projects.
+Git options, and cursor shapes. The default language/cloud items include the
+snapshot's effective list plus Zig and Rust. Versions appear in directories with
+a `build.zig` or `Cargo.toml` file, respectively, and their descendants.
+Optional adapters are `php crystal elixir`.
 
 Fish still provides vi editing via the existing `fish_vi_key_bindings` call.
 Ghostty displays Fish's line (insert), block (normal/visual), and underscore

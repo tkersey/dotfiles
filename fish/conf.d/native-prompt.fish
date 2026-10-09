@@ -9,9 +9,9 @@ set -g fish_cursor_replace_one underscore
 set -g fish_cursor_replace underscore
 set -g fish_cursor_visual block
 
-# Match the effective right-hand items in the repository's saved Tide snapshot.
-# Optional additional supported items: zig rustc php crystal elixir.
-set -g native_prompt_context_items node python java ruby go kubectl aws
+# Saved Tide context items, with Zig and Rust version reporting enabled.
+# Optional additional supported items: php crystal elixir.
+set -g native_prompt_context_items node python rustc java ruby go zig kubectl aws
 set -g native_prompt_duration_threshold 3000
 set -g native_prompt_time_format '%r'
 set -g native_prompt_min_input_columns 34
