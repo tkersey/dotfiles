@@ -1,18 +1,20 @@
 ---
 name: actuating
-description: "Implement accepted goals, analyze counterexamples, or close out reviewed changes. Turn supported failure families into constructions that preserve required-valid behavior. Unqualified review or analysis is read-only."
+description: "Implement accepted goals, analyze counterexamples, or close out reviewed changes. Derive law-preserving constructions from requirements and counterexamples. Unqualified review or analysis is read-only."
 ---
 
 # Actuating
 
 ## Mission
 
-Actuating is a **counterexample-to-construction compiler**, not a patch scheduler
-or a repair-classification service. Learn the cause from the witnesses; change
-what permits the family, not just what permits the reported example.
+Actuating is a **requirements-to-construction compiler** with a
+counterexample-to-construction feedback path. Derive required relationships from
+the Goal; use witnesses to revise the model, domain, or realization. Remove what
+permits the supported failure family while preserving required-valid behavior.
 
 ```text
-accepted Goal -> initial construction -> local proof
+accepted Goal -> required relationships and source-derived domains
+-> initial construction -> law implication + preservation proof
 
 frozen reviewed candidate -> cumulative accepted counterexamples
 -> causal explanation -> discriminating sibling predictions
@@ -20,7 +22,8 @@ frozen reviewed candidate -> cumulative accepted counterexamples
 -> family exclusion + required-valid preservation -> adversarial review
 ```
 
-For admitted behavior `B'` and the supported invalid family `Phi`, establish:
+The accepted law remains the completion target; an excluded family alone cannot
+establish it. For admitted behavior `B'` and any supported invalid family `Phi`, establish:
 
 ```text
 B' intersect Phi = empty
@@ -82,11 +85,11 @@ not optional background. Do not load every workflow at entry.
 
 | Selected work | Required guidance |
 |---|---|
-| Initial/local `implement` | Source binding, proof acceptance, realization, and completion below; no review campaign is required. |
+| Initial/local `implement` | Source binding, initial construction, proof acceptance, realization, and completion below; no review campaign is required. |
 | `analyze` | The same source and claim discipline, read-only. Load the relevant evidence or architecture guidance; do not execute realization, persist a corpus, publish, or grant closure. |
 | A finding, failed check, or counterexample-driven selection | [counterexamples.md](counterexamples.md), before admitting a liability or selecting its response. |
 | A live boundary decision or an existing Metanoetic trigger, including a suspect explanation or oracle | [architecture.md](architecture.md), before that decision; Universalist remains live-architecture-only. |
-| An elimination claim meets a current witness, or efficacy is being assessed | [recurrence.md](recurrence.md), before retaining the claim or selecting a successor. |
+| An elimination claim meets a current witness, a broader Goal obligation remains unresolved after a narrow repair, or efficacy is being assessed | [recurrence.md](recurrence.md), before retaining the claim or selecting a successor. |
 | `review-closeout`, or bare Actuating reaching review | [review-closeout.md](review-closeout.md) and its required review contract, before the first CAS request; use the complete frozen-subject and convergence rules. |
 | Bare Actuating reaching publication | `$ship`; publication does not replace subsequent review-closeout. |
 
@@ -140,10 +143,37 @@ Reuse an adequate binding in the Working Set and existing downstream owner forma
 No separate skill invocation, mandatory Goal Contract packet, durable record, or new
 identity is required. A summary or digest never replaces the source or proves completion.
 
+## Initial construction
+
+Before expanding functionality whose correctness spans representations or
+transitions, derive its required observable relationships from the accepted
+source. Distinguish authoritative facts, derived projections, and separately
+retained historical facts. Identify what a permitted producer or operation could
+still get wrong independently. Derive projections through their owner; preserve
+distinct history and independent deciding evidence.
+
+Realize the smallest complete affected path before multiplying its variants:
+identity includes production and consumption; recovery includes the promised
+restored observations; validity includes subsequent permitted transitions.
+Establish the shared construction using the existing source argument and verifier.
+For delegated work, bind the shared relationship before dividing its realization
+and account for composition afterward. A partial slice remains work in progress.
+
+Reuse an adequate existing boundary. Open the architecture path only for a live
+semantic decision; no counterexample, review wave, new document, or mandatory
+Universalist pass is needed to begin. Stop expanding the model when further
+source-supported cases would not change the mechanism or deciding proof. A direct
+correction remains adequate when the existing construction already owns the law.
+Use the [worked cases](references/counterexample-guided-normalization.md#worked-cases)
+when the obligation domain or ownership needs discrimination.
+
 ## Proof acceptance
 
-Before implementation, choose the exact-head verifier and realize the mechanism,
-migrations, and retirements together under the common proof obligations.
+Before implementation, identify the mechanism's actual guarantee and why it
+implies the source-required observation. Could that guarantee hold while the
+requirement fails? Challenge the implication with a source-supported state or
+trace; a decisive source argument can suffice. Choose the exact-head verifier and
+realize the mechanism, migrations, and retirements under the common proof obligations.
 
 At entry and after material change, bind the Goal, immutable base, exact head,
 current construction, proof inventory, and any publication state. Read the
@@ -162,17 +192,19 @@ inventory; no separate critic, packet, or review stage.
 
 ## Realization and common proof obligations
 
-There is one operation: realize the selected successor. Selection states an
-intended mechanism and falsifier; acceptance requires the actual exact-head code.
+There is one operation: realize the selected construction, initially or as a
+successor. Selection states an intended mechanism and falsifier; acceptance
+requires the actual exact-head code.
 Local experiments may occur only with mutation authority and outside an open
 review epoch. They are not reviewable, publishable as complete, or proof by intent.
 
-Every correction, regardless of its eventual descriptive label, must establish:
+Every initial construction and correction must establish the applicable obligations:
 
 ```text
-current witness addressed and required-valid behavior preserved
-supported causal family covered at the declared claim strength
-preselected sibling/domain discriminator executed, or explicit limitation
+required relationships realized and required-valid behavior and observations preserved
+current accepted witnesses addressed when present
+supported causal families covered at the declared claim strength when present
+preselected verifier and applicable sibling/domain discriminator executed, or explicit limitation
 all relevant sanctioned producers, consumers, transitions, and bypasses accounted for
 admission and permitted operations enforce the required law in the declared domain
 proof authority, inputs, domain, and public claim agree
@@ -211,9 +243,10 @@ means investigate or block the affected claim, not invent a digest or a rewrite.
 
 ## Construction Working Set
 
-Keep the current Goal/head, admitted witnesses and source horizon, causal mechanism
-and discriminator, source-derived domain, actual proof, migrations, retirements,
-residuals, and unresolved work in the active thread or accepted implementation
+Keep the current Goal/head, required relationships and source-derived domains,
+construction and deciding evidence, admitted witnesses and causal account when
+present, source horizon, actual proof, migrations, retirements, residuals, and
+unresolved work in the active thread or accepted implementation
 specification. Reuse owner evidence rather than re-expressing it in another packet.
 These are working facts, not a report template or durable Actuating store. Surface
 only material decisions and limitations; preserve historical witness provenance.
@@ -225,7 +258,9 @@ Local completion requires the accepted Goal realized on the exact head, its
 complete required validation, no unresolved accepted liability or unauthorized
 strengthening, and honest claim strength and owned residuals. Do not claim an
 experiment or an incomplete proof as complete. Read [closure.md](references/closure.md)
-when deciding a publication-bearing or review-closeout terminal state.
+when deciding a publication-bearing or review-closeout terminal state. State the
+law attempted, the conclusion established by the actual construction and evidence,
+and its limits. A narrower supported claim does not complete a broader accepted Goal.
 
 Bare Actuating continues through authorized Ship and review-closeout; do not
 stop for approval merely because the first implementation exists. Missing

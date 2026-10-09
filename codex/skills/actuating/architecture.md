@@ -46,23 +46,30 @@ lane. It neither replaces nor gates Glaze, Metanoetic, or Universalist; all
 selection, mutation, proof, and closure authority stays with Actuating.
 
 Only when architecture is live, give `$universalist` one independently governed
-axis, one typed hole, and source-derived domain evidence. Require `candidate`,
-`preserve-incumbent`, `unresolved`, or `obstructed` with a compact code-bound argument,
-its discriminator, and material migration/residual consequences. Missing evidence
-or incomparable adequate candidates remain `unresolved`, not an invented obstruction
-or arbitrary winner. Split independent seams and prove their composition.
-Universalist nominates; Actuating selects and proves.
+axis, one typed hole, and source-derived domain evidence. The axis is a required
+relationship and may span modules; it is not bounded by the reported function.
+Derive its semantic obligations and operation surface before choosing the typed
+hole. Preserve authoritative facts, derived projections, and distinct historical
+facts according to their actual roles. Require `candidate`, `preserve-incumbent`,
+`unresolved`, or `obstructed` with a compact code-bound argument, its discriminator,
+and material migration/residual consequences. Missing evidence or incomparable
+adequate candidates remain `unresolved`, not an invented obstruction or arbitrary
+winner. Split independent seams and prove their composition. Universalist
+nominates; Actuating selects and proves.
 
 In that existing selection, compare adequate interfaces through a representative
-caller and a source-supported change. What must callers know, choose, sequence,
-synchronize, or clean up, and what becomes owner-local? Prefer removing those
-obligations without weakening the common proof bar; merely concealing them is not
-reduction. Sketch the smallest complete caller-facing contract before committing
-to the boundary. Required implementation knowledge or avoidable choreography is
+caller and a source-supported change. What must a new producer or consumer know,
+choose, sequence, synchronize, or clean up, and what becomes owner-local? Prefer
+removing those obligations without weakening the common proof bar; concealing
+them is not reduction. Prefer the smallest adequate semantic boundary. Consider a
+source-supported ordinary owner change when a local patch is framed against a
+broad redesign.
+Sketch its smallest complete caller-facing contract and keep it beside the interface
+when realizing it. Required implementation knowledge or avoidable choreography is
 reason to reconsider the interface, not shorten its explanation by omission.
-Keep the selected contract beside the interface when realizing it. Reuse supplied
-comparisons; add no design pass, report, review lane, or mandatory second implementation.
-Design opportunities remain nonblocking unless an accepted obligation is violated.
+Reuse supplied comparisons; add no design pass, report, review lane, or mandatory
+second implementation. Design opportunities remain nonblocking unless an accepted
+obligation is violated.
 
 Choose the exact-head verifier before implementation and realize the mechanism,
 migrations, and retirements together under the common proof obligations. Use `$reduce`

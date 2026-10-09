@@ -63,12 +63,15 @@ requirement, compatibility promise, or release posture needs explicit authority.
 
 ## Compile the first loss of guarantee
 
-Combine current and applicable historical witnesses under the accepted law.
+Combine current and applicable historical witnesses under the source-required law.
 Acceptance establishes a supported disagreement, not the causal explanation.
-Keep the law fixed while challenging the account: which assumption makes this
-witness surprising? Locate the first loss of guarantee and what can be chosen,
-written, ordered, interpreted, or authorized independently that must agree.
-The family remains a hypothesis, not its observed examples; keep distinct laws separate.
+Locate the first loss of guarantee: what can be chosen, omitted, written, ordered,
+interpreted, or authorized independently that must agree? Follow that freedom
+through its authoritative facts, producers, consumers, and permitted transitions
+to derive the affected domain before selecting a mechanism. The reported path and
+supplied records are evidence, not the authority for that domain. Keep the law
+fixed while challenging the account; the family remains a hypothesis, not its
+observed examples. Preserve distinct laws and legitimate operation differences.
 
 When the witness involves interacting corrections, accumulation, delays, or apparent
 compliance with a proxy, use [feedback-failures.md](references/feedback-failures.md)
@@ -76,22 +79,23 @@ in this same causal compilation. Check whether individually lawful operations
 violate an accepted system obligation; the explanation may span more owners than
 the eventual construction. Keep Goal authority and the existing discriminator.
 
-Before implementation, choose the smallest source-grounded discriminator that
-could refute that explanation, not merely repeat the failing example. When a
-semantic model is implicated, seek a supported case separating notions it
-conflates or a dependency the law does not require. If the model treats two cases
-alike but the law requires different observations, retain or derive the missing
-distinction; more checks on the unchanged proxy cannot recover it. A decisive
-source argument can suffice; no paired-case quota or forced redesign.
+From that source-derived domain, choose the smallest discriminator before
+implementation that could refute the explanation. Seek a supported operation
+outside the reported path that retains the same freedom, or a case separating
+notions the semantic model conflates. If the model treats two cases alike but
+the law requires different observations, retain or derive the missing distinction;
+more checks on the unchanged proxy cannot recover it. Also challenge a dependency
+the law does not require. A decisive source argument can suffice; no paired-case
+quota or forced redesign.
 
-Distinguish a wrong model from omitted enforcement. Correcting a predicate does
-not prove every path uses it; applying it everywhere does not prove it expresses
-the law. For lifetime, aliasing, or composition, exercise permitted transitions
-from valid state and preserve required-valid counterparts. When source evidence
-identifies a shared obligation, ask whether an operation can omit or reinterpret
-it independently. Prefer making that omission unavailable over teaching each branch
-to remember another check. Preserve legitimate operation differences; a helper,
-exhaustive switch, or new type alone proves neither meaning nor coverage.
+Distinguish model adequacy, required semantic content, and operation coverage.
+Correcting a predicate does not prove every path uses it; applying it everywhere
+does not prove it expresses the law or that all required records exist. Derive
+such records from retained obligations rather than only checking supplied members.
+For lifetime, aliasing, or composition, exercise permitted transitions from valid
+state and preserve required-valid counterparts. Prefer making an equivalent
+omission unavailable to other operations over teaching each branch another check.
+A helper, exhaustive switch, or new type alone proves neither meaning nor coverage.
 
 Compare adequate candidates under the same laws, observations, compatibility,
 resources, and proof bar. Remove, derive, or lawfully control the enabling freedom;
@@ -111,5 +115,7 @@ Preserve required failure distinctions, permission checks, partial-effect visibi
 and progress; state-level idempotency does not prove retries have no extra effects.
 
 Use the [construction argument](references/counterexample-guided-normalization.md)
-when domain, operation, or migration coverage needs it. Samples discriminate an
-explanation; they do not prove an open-domain exclusion.
+when semantic content, operation, or migration coverage needs it. Stop expanding
+the inquiry when another source-supported path or causal layer cannot change the
+selected mechanism or its required proof. Samples discriminate an explanation;
+they do not prove an open-domain exclusion.

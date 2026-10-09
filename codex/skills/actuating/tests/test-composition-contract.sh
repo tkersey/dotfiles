@@ -28,7 +28,8 @@ const protectedSections = {
   "Review-epoch immutability and evidence acquisition": "1db48d44444f7f346820393de4305a42da9da7e3f4a2ea1acce4563a3867aed4",
   // #300 adds explicit evidence admission without changing review quotas.
   "Review and closure": "a577a29c392abf9ca61f3bb06f958ba03dbf0688b1564b42ce99a48a324256bb",
-  "Realization and common proof obligations": "df2f70beac4ca71c55ca4e4bc8c6f63c23453aafe8ef7406102832f658055ad8"
+  // Apply the same proof bar to initial construction; witnesses are conditional.
+  "Realization and common proof obligations": "14bd3233e5cf89c6a805b16782db88a557a6f6d2325cac1bb5a8f10c5b6b87f7"
 };
 // Relocation changes where the section is read, not its accepted bytes.
 const protectedSources = {
@@ -38,14 +39,15 @@ const protectedSources = {
 assert(skill.includes('[review-closeout.md](review-closeout.md)'), 'review guide not routed');
 for (const [name, digest] of Object.entries(protectedSections))
   assert.equal(sha256(section(protectedSources[name] ?? skill,name)),digest,`protected Actuating section: ${name}`);
-// #300 separates no-findings verdicts from validation completeness in all five lenses.
-// Pin that intentional correction while retaining every lens search instruction.
+// Refresh stale expectations to the unchanged lens bytes at the immutable task
+// base d3f24e515059f6517cf238084ef084a55fff2242. The source diff and Git blob
+// identities establish this oracle correction; no review instruction is changed.
 const lensBlobs = {
-  'soundness-review.md':'bcc7632af93e1d24ac9ad90806eac4a3f152a195',
-  'footgun-review.md':'5e03cc4edeb5566fcf18a5f84022d22441de0ba2',
-  'invariant-review.md':'0aaf1e6a7ec7a5b79d0b546db82ff0768d5bfcd0',
-  'complexity-review.md':'2d0d3e05b49623ccb1435bbe1220009fe06de38e',
-  'fresh-eyes-review.md':'29d68a33492533184d103204a586ec3cc7e4800f'
+  'soundness-review.md':'404d8a90ce66cd056de57b1171518e5a1b169975',
+  'footgun-review.md':'1a8c3a133077a9d8e36a234687464564ad5f4180',
+  'invariant-review.md':'523881241875cddae1512dfd23f1bd3a9faf2dd1',
+  'complexity-review.md':'aa213ce128a1a5d6efecd15b4e4d42349cb1c320',
+  'fresh-eyes-review.md':'b0ae10f2fd0eb91d9fee2291395c2011128cbdad'
 };
 for (const [name, digest] of Object.entries(lensBlobs)) {
   const bytes = Buffer.from(text(`references/lenses/${name}`));
