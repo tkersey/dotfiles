@@ -4,7 +4,7 @@
     "skill": {
       "name": "actuating",
       "kind": "mixed",
-      "source_fingerprint": "actuating-construction-compiler-v16"
+      "source_fingerprint": "actuating-construction-compiler-v18"
     },
     "triggers": [
       {
@@ -160,18 +160,29 @@
         "required_artifacts": [
           "accepted Goal",
           "exact Git subject",
-          "local construction and validation obligations"
+          "local construction and validation obligations",
+          "source-backed laws, mechanism guarantees, supported domains, and deciding observations"
         ],
         "success_signals": [
           "initial implementation may mutate without review dispatch",
           "existing evidence may inform implementation without opening review",
-          "local completion needs no CAS convergence or publication"
+          "local completion needs no CAS convergence or publication",
+          "required relationships distinguish authoritative facts, derived projections, and independently retained history before implementation breadth expands",
+          "required results and continuations determine native representations, algorithms, primitive operations, and lawful combinations",
+          "primitive meanings and their composition are established under the required observation or refinement relation",
+          "a difficult or repetitive proof can revise the representation, algorithm, or decomposition instead of adding per-case obligations",
+          "a source argument or requirement-derived deciding observation establishes why the mechanism guarantee implies the required law",
+          "source-derived operation coverage and required-content completeness remain separate obligations"
         ],
         "failure_signals": [
           "a review wave or counterexample is required before initial implementation",
-          "initial architecture is blocked pending a revoked predecessor theorem"
+          "initial architecture is blocked pending a revoked predecessor theorem",
+          "typed records, a shared owner, or a weaker guarantee substitute for the required relationship",
+          "initial construction requires a speculative framework or a separate architecture packet",
+          "requirement narration or a proof template substitutes for deriving and realizing the program",
+          "lawful composition is credited as intended primitive meaning without establishing that meaning"
         ],
-        "rationale": "Implementation constructs the candidate; review later falsifies it."
+        "rationale": "The accepted law guides discovery of the native program and its composition argument; counterexamples refine the derivation."
       },
       {
         "clause_id": "ACT-REVIEW-EPOCH-001",
@@ -249,20 +260,22 @@
         "prohibited_routes": [],
         "required_artifacts": [
           "cumulative current and applicable historical basis",
-          "source-supported first loss of guarantee, enabling operation, and invalid-family domain",
+          "source-supported first loss of guarantee, independently repeatable enabling choice, and law and family domains",
           "required-valid boundary",
           "pre-implementation mechanism-discriminating operation or source-domain witness",
           "selected adequate mechanism and falsifier",
           "actual exact-head proof and compensator dispositions"
         ],
         "success_signals": [
-          "selection removes, derives, or lawfully controls the enabling independent choice rather than preserving the incumbent",
+          "selection removes, derives, or lawfully controls the enabling independent choice across its source-derived domain, not only the reported path",
           "a local correction may restore an adequate family mechanism without forced redesign",
           "a mechanism change may win without disproving every possible local repair",
           "plausible subtractive alternatives are tested when redundancy is evidenced",
           "admission, permitted-transition preservation, law implication, and escape closure are distinguished; required progress survives",
-          "a source-grounded discriminator challenges the causal model and separates conflated notions before enforcement is extended",
-          "model adequacy, permitted-operation preservation, and sanctioned-path participation remain distinct"
+          "a source-grounded discriminator challenges whether the mechanism guarantee can hold while the required law fails before enforcement is extended",
+          "model adequacy, permitted-operation preservation, and sanctioned-path participation remain distinct",
+          "a supported sibling retaining the enabling freedom reopens the broader Goal decision even when the narrower elimination claim remains true",
+          "the smallest adequate semantic boundary is considered between a local exception and a broad redesign"
         ],
         "failure_signals": [
           "one special case per finding",
@@ -270,9 +283,12 @@
           "restoration label bypasses family or path proof",
           "hypothesized family or sampled siblings called universal proof",
           "cut passage or a checked constructor is credited as preservation under later permitted operations",
-          "a shared predicate, exhaustive switch, or new type is treated as proof of meaning or coverage"
+          "a shared predicate, exhaustive switch, or new type is treated as proof of meaning or coverage",
+          "the supplied evidence being validated defines which evidence must exist",
+          "code-path coverage is credited as required-content completeness",
+          "broader Goal reconsideration falsely revokes a narrower claim without contradicting its predicate and domain"
         ],
-        "rationale": "A causal explanation directs an operation-level change and a discriminating test, not another report."
+        "rationale": "The required law determines the repair domain; a causal explanation removes the independently repeatable mistake within that domain."
       },
       {
         "clause_id": "ACT-METANOETIC-ADMISSIBILITY-001",
@@ -406,7 +422,7 @@
           "Ship/provider and CAS convergence when required"
         ],
         "success_signals": [
-          "family excluded at the declared strength and required-valid behavior survives",
+          "required laws hold at the declared strength, applicable families are excluded, and required-valid behavior survives",
           "all relevant paths and residuals accounted for",
           "redundant primary compensation retired or justified by distinct obligations",
           "same-claim witness revokes exclusion and reopens its causal explanation",

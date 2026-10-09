@@ -180,6 +180,37 @@ const bypass = {...graph,alternate:['consume']};
 assert.throws(() => verifyCut(bypass,dispositions,'admit',['producer','alternate'],'consume'), /omitted/);
 assert.throws(() => verifyCut(bypass,{...dispositions,alternate:'factor-through'},'admit',['producer','alternate'],'consume'), /around cut/);
 verifyCut({...graph,alternate:['admit']},{...dispositions,alternate:'factor-through'},'admit',['producer','alternate'],'consume');
+
+// Every producer can cross admission while its predicate proves an easier law.
+// Checking all supplied attempt/capture pairs does not detect their joint
+// omission. These finite facts are authoritative independently of the archive;
+// this example makes no completeness claim beyond those retained roots.
+const occurrenceIds = ['first','second'];
+const selectedIds = mask => occurrenceIds.filter((_,i) => mask & (1 << i));
+const suppliedPairsAgree = archive =>
+  archive.attempts.every(id => archive.captures.includes(id)) &&
+  archive.captures.every(id => archive.attempts.includes(id));
+const completeEvidence = (facts,archive) => suppliedPairsAgree(archive) &&
+  facts.filter(fact => fact.required).every(fact =>
+    archive.attempts.includes(fact.id) && archive.captures.includes(fact.id));
+const requiredFacts = occurrenceIds.map(id => ({id,required:true}));
+const jointOmission = {attempts:['first'],captures:['first']};
+assert(suppliedPairsAgree(jointOmission)); // the selected invariant still holds
+assert(!completeEvidence(requiredFacts,jointOmission)); // the source law fails
+for (let required = 0; required < 4; required++)
+  for (let attempts = 0; attempts < 4; attempts++)
+    for (let captures = 0; captures < 4; captures++) {
+      const facts = occurrenceIds.map((id,i) => ({id,required:Boolean(required & (1 << i))}));
+      const archive = {attempts:selectedIds(attempts),captures:selectedIds(captures)};
+      // Independent bitset oracle covers all 64 states of this finite domain.
+      const expected = attempts === captures && (attempts & required) === required;
+      assert.equal(completeEvidence(facts,archive), expected);
+    }
+// Absence of optional evidence is valid; demanding a pair for every occurrence
+// would fix the omission example by silently strengthening the requirement.
+assert(completeEvidence([{id:'first',required:true},{id:'second',required:false}],jointOmission));
+assert(completeEvidence(requiredFacts.map(fact => ({...fact,required:false})),{attempts:[],captures:[]}));
+
 // A covered admission path can still lose its guarantee through a writable
 // alias. These concrete scalar-range constructions test that distinction, not
 // model effectiveness or a universal theorem about JavaScript objects.
@@ -240,6 +271,6 @@ const correction = {evidenceSource:'executor', streaming:'unchanged'};
 verifyDelta(before, correction, new Set(['evidenceSource']));
 assert.throws(() => verifyDelta(before, {...correction, streaming:'new-requirement'}, new Set(['evidenceSource'])), /unauthorized/);
 verifyDelta(before, {...correction, streaming:'new-requirement'}, new Set(['evidenceSource','streaming']));
-console.log(`actuating: ${fixture.scenarios.length} receipt scenarios and finite family/path/preservation/authority discriminators passed`);
+console.log(`actuating: ${fixture.scenarios.length} receipt scenarios and finite family/path/content/preservation/authority discriminators passed`);
 JS
 sh "$skill_root/tests/test-composition-contract.sh"

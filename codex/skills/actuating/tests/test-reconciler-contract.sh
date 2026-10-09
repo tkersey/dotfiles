@@ -27,7 +27,7 @@ const names = ['standard','soundness-skeptic','footgun-finder','invariant-ace','
 assert.equal(c.schema, 'actuating-review-contract/v17');
 assert.equal(c.contract_id, 'actuating-review-contract-v20');
 assert.equal(d.contract_version, 'SKDC-v1');
-assert.equal(d.skill.source_fingerprint, 'actuating-construction-compiler-v16');
+assert.equal(d.skill.source_fingerprint, 'actuating-construction-compiler-v18');
 assert.deepEqual(c.required_lenses.map(l => l.name), names);
 assert.deepEqual(c.required_lenses[0], {name:'standard',role:'standard',instruction_source:'codex-default',custom_instructions:false});
 assert.deepEqual(c.review_scheduling.initial_lens_order, names);
@@ -55,7 +55,7 @@ assert.equal(c.evidence_acquisition.initial_implementation_requires_initial_fals
 assert.equal(c.counterexample_corpus.definition, 'review-fold/counterexample-corpus');
 assert.equal(c.counterexample_corpus.current_applicability_recomputed, true);
 assert.equal(c.counterexample_corpus.actuating_copy_or_store_forbidden, true);
-assert.equal(c.construction_selection.objective, 'family-exclusion-with-required-valid-preservation');
+assert.equal(c.construction_selection.objective, 'required-law-realization-with-family-exclusion-and-required-valid-preservation');
 for (const key of ['cumulative_causal_basis_before_candidate_selection','discriminator_selected_before_implementation',
   'mechanical_defect_requires_no_invented_sibling_quota','metanoetic_before_universalist_when_triggered',
   'live_boundary_not_route_label_triggers_universalist']) assert.equal(c.construction_selection[key], true, key);
@@ -182,15 +182,19 @@ assert(text('SKILL.md').includes('[counterexamples.md](counterexamples.md)'), 'c
 const causal = text('counterexamples.md').split('## Compile the first loss of guarantee\n')[1].split('\n## ')[0].replace(/\s+/g, ' ');
 for (const rule of [
   'Acceptance establishes a supported disagreement, not the causal explanation',
-  'source-grounded discriminator that could refute that explanation',
+  'From that source-derived domain, choose the smallest discriminator before implementation that could refute the explanation',
   'retain or derive the missing distinction',
-  'Distinguish a wrong model from omitted enforcement',
+  'Distinguish model adequacy, required semantic content, and operation coverage',
   'without merging away independent verification',
   'no paired-case quota or forced redesign'
 ]) assert(causal.includes(rule), 'lost model-refinement rule: ' + rule);
 const lawAdmission = d.clauses.find(cl => cl.clause_id === 'ACT-LAW-AUTHORITY-001');
 assert(lawAdmission.success_signals.includes('failed checks use counterexample admission without granting expectations authority or rewriting failed results as passes'));
 const construction = d.clauses.find(cl => cl.clause_id === 'ACT-CONSTRUCTION-COMPILER-001');
+const initialConstruction = d.clauses.find(cl => cl.clause_id === 'ACT-IMPLEMENT-ENTRY-001');
+assert.deepEqual(initialConstruction.trigger_refs, ['ACT-BARE', 'ACT-ROUTE']);
+assert.deepEqual(initialConstruction.expected_routes, ['ACT-IMPLEMENT']);
+assert.deepEqual(construction.trigger_refs, ['ACT-COUNTEREXAMPLE', 'ACT-POST-ELIMINATION']);
 assert(construction.success_signals.includes('model adequacy, permitted-operation preservation, and sanctioned-path participation remain distinct'));
 assert(construction.failure_signals.includes('a shared predicate, exhaustive switch, or new type is treated as proof of meaning or coverage'));
 // End admission/model-refinement source contracts.
@@ -207,7 +211,7 @@ assert(rootStep.includes('Let the inquiry discover which premises and evidence n
 assert(rootStep.includes('Keep the accepted Goal fixed'));
 assert(rootStep.includes('Only when architecture is live'));
 assert(text('counterexamples.md').includes('never changed expectations merely to agree with the candidate'));
-assert(text('counterexamples.md').includes('Prefer making that omission unavailable'));
+assert(causal.includes('Prefer making an equivalent omission unavailable to other operations'));
 assert(text('references/counterexample-guided-normalization.md').includes('required-valid observation preservation'));
 assert(text('agents/openai.yaml').includes('Glaze then Metanoetic verbatim in one shared activation'));
 const challenger = d.clauses.find(cl => cl.clause_id === 'ACT-METANOETIC-ADMISSIBILITY-001');
