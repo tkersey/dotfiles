@@ -1,0 +1,10 @@
+policy:
+  allow_implicit_invocation: true
+interface:
+  display_name: "Protean computations"
+  short_description: "Author and execute checked native computations"
+  default_prompt: >-
+    Use $protean to author and execute the requested computation through the
+    actual Horos/Protean APIs and native Kronos. Choose general authoring or
+    admitted component composition appropriately, preserve authorized effects,
+    and return the real result without adding arbitrary limits or another runtime.
