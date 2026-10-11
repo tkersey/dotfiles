@@ -2,7 +2,7 @@
 name: negative-ledger
 description: "Recall prior attempts or handle witnessed failed/no-effect routes, regressions, reverts, abandoned strategies, repeated retries, and negative-evidence lifecycle or memory admission. Not ordinary successful closeout."
 metadata:
-  version: "8.3.1"
+  version: "8.4.0"
 ---
 
 # Negative Ledger
@@ -17,15 +17,15 @@ The structural boundary is the passive definition:
 ${CODEX_HOME:-$HOME/.codex}/skills/negative-ledger/definitions/ledger/negative-evidence-protocol.json
 ```
 
-Its `events` logical slot in `$ledger`-resolved custody is canonical. The Ledger
-skill alone owns physical storage location, worktree-family registration,
-initialization, and migration policy. Do not derive a separate history from each
-checkout. Worktrees share evidence, not automatic applicability or exclusions.
+Its `events` logical slot in the `$ledger`-resolved personal store is canonical.
+The Ledger skill owns storage location, the personal catalog, initialization, and
+migration policy. Explicit store selection works without Git; checkout lifetime
+does not own history. Worktrees share evidence, not automatic applicability.
 
 The derived memory-admission channel remains:
 
 ```text
-~/.codex/memories/extensions/negative-ledger/notes/*.md
+the selected memory root's extensions/negative-ledger/notes/*.md
 ```
 
 `$negative-ledger` owns the meaning and lifecycle of negative-evidence state.
@@ -56,8 +56,11 @@ failed, had no effect, regressed a signal, was reverted, was rejected by current
 proof/review evidence, or is about to be retried under the same cluster. Do not
 wait for the user to name the skill.
 
-Before selecting a route resembling a prior failure, project canonical
-`route-gate`. A recalled learning may trigger the check, not block directly.
+Before selecting a route resembling a prior failure, discover canonical
+`route-candidates` using component, invariant, and failure-mechanism terms.
+Assess material candidates against the current artifact, then project the exact
+`route-gate` using established identities. A route-label miss is not absence of
+relevant evidence. A recalled learning may trigger the check, not block directly.
 After a material strategy pivot, regression-confirmed revert, or closeout leaving
 a failed route likely to recur, evaluate capture. A transient red test, syntax
 error, first incomplete implementation, or discarded typo is `no-op` unless it
@@ -102,7 +105,7 @@ return. Do not read operation manuals merely because the skill activated.
 | Selected work | Required guidance before that decision or effect |
 |---|---|
 | Canonical recall, projection, or any native operation | [store.md](references/store.md); `$ledger` owns bootstrap and custody. |
-| Select a retry resembling prior failure | Store guidance and [route-gate.md](references/route-gate.md); read and interpret the canonical gate before selection. |
+| Select a retry resembling prior failure | Store guidance and [route-gate.md](references/route-gate.md); discover candidates, assess applicability, and interpret the exact gate before selection. |
 | Capture or promote negative evidence, or challenge an exclusion's scope | [capture.md](references/capture.md); scope challenge precedes capture/promotion. Canonical operations also require store guidance. |
 | Transition, reopen, narrow, or supersede a record | [lifecycle.md](references/lifecycle.md), with its selected capture/scope guidance; canonical operations also require store guidance. |
 | Admit or update a derived memory snapshot | [memory-admission.md](references/memory-admission.md) and store guidance; load `$memory-source-notes` before transport. |
@@ -169,7 +172,8 @@ applicability and promote qualifying evidence through canonical `capture`.
 - Do not bypass Ledger, hand-edit records, or use a checkout-local fallback.
 - Do not let memory notes outrank canonical custody or write compiled memory.
 - Do not publish incomplete projections or capture every transient red test.
-- Failed context, route-gate, memory-note, or doctor boundaries fail closed.
+- A failed canonical read is unavailable evidence, not an empty result. A failed
+  memory admission does not invalidate independent canonical writes or delivery.
 - Do not invoke sibling sources merely because Negative Ledger activated.
 
 For exclusion-scope changes, use Negative Ledger cases in

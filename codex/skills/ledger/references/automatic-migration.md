@@ -1,17 +1,17 @@
-# Ensure usable custody
+# Explicit historical migration
 
-Use `scripts/ensure_custody.py` when repository custody is unregistered, supported
-legacy sources have not been accounted for, or a prior migration was interrupted.
-The existing `ledger_context.py` remains a read-only resolver during normal use.
-Both helpers belong to `$ledger`; only the original context helper defines the
-physical storage home, root identity, and Git-family registration policy.
+Use `scripts/ensure_custody.py --migrate` only for selected legacy inspection,
+historical import, or interrupted migration. Without `--migrate`, the helper
+only resolves the personal catalog; existing custody needs no migration receipt
+or complete worktree inventory. Both helpers belong to `$ledger`; the context
+helper owns storage home, stable root identity, and catalog associations.
 
 ## Skill workflow
 
 After bootstrap, inspect the verified workspace:
 
 ```bash
-uv run "$ledger_skill_root/scripts/ensure_custody.py" --repo "<workspace-root>"
+uv run "$ledger_skill_root/scripts/ensure_custody.py" --migrate --repo "<workspace-root>"
 ```
 
 Do not turn a recognized legacy-source error into a user-maintained repair
@@ -21,15 +21,16 @@ authorized migration and actual writer quiescence, perform the procedure as one
 operation rather than requesting approval for each routine substep:
 
 ```bash
-uv run "$ledger_skill_root/scripts/ensure_custody.py" --repo "<workspace-root>" \
+uv run "$ledger_skill_root/scripts/ensure_custody.py" --migrate --repo "<workspace-root>" \
   --apply --confirm-no-writers
 ```
 
 Explicit migration requests authorize the supported lossless procedure, not a
 claim that writers have stopped. For an otherwise authorized capture, use the
 same procedure only when the enclosing task grants custody initialization or
-migration. Read-only recall stays read-only: report the plan and precise missing
-authority. Never assert quiescence merely because no process was noticed; old
+migration. Ordinary recall uses the personal catalog without selecting migration.
+Read-only migration inspection reports a plan. Never assert quiescence merely
+because no process was noticed; old
 `--repo` writers are not fenced by the registration lock. Stop or upgrade those
 writers before applying. Unavailable worktrees are not automatically pruned.
 
@@ -65,8 +66,8 @@ are checked unchanged across binding maintenance.
 
 Retired imports preflight IDs and packets, retain native receipts, then verify
 full-record parity and native health. Source/worktree inventories are rechecked
-before publication; staged and final native doctors must pass. Registration is
-published last. No source is deleted, no timestamp winner is selected, and no
+before publication; staged and final native doctors must pass. The personal
+catalog is published last. No source is deleted, no timestamp winner is selected, and no
 histories are concatenated. Divergent or additional managed-versus-local history
 requires owner reconciliation, not an empty store or checkout fallback.
 
@@ -76,13 +77,15 @@ an explicit blocker, not permission to omit evidence.
 
 ## Completion, retry, and failures
 
-Registration and migration completion are separate. An existing registration
-without a verified migration receipt is inspected, not declared complete. The
-receipt binds the source inventory, installed owner manifests/importers, native
-definition closures, and destination event digests. Unchanged verified input and
-destination state returns without mutation; changed destination bytes invalidate
-the shortcut and require reconciliation. Ordinary canonical appends do not change
-the root identity.
+Catalog identity and migration completion are separate. An existing root is
+usable without a migration receipt. Only explicit migration inspection asks
+whether historical recovery is complete. The `ledger-custody-migration/v2`
+receipt binds source inventory, installed owner manifests/importers, native
+definition closures, store identity, and byte-count/digest witnesses for the
+imported destination prefixes. A valid canonical append preserves that evidence;
+replacement/truncation of the witnessed prefix requires reconciliation. Native
+doctor still validates current custody during explicit migration verification.
+Earlier receipts can be requalified by this maintenance without blocking access.
 
 Archives and sources are preserved on failures. An interrupted registered-store
 import resumes by native full-record reconciliation, not by trusting a saved
@@ -99,12 +102,13 @@ become invented records. Global memory admission remains a separate owner action
 
 ## Release gate
 
-Merge the owner historical-import change before this orchestration change. Run
-both new test modules with `LEDGER_BIN` set, plus the existing Ledger context
+Run the owner historical-import and migration test modules with `LEDGER_BIN` set,
+plus the Ledger context
 suite. Native tests must pass; mocked native results are not custody evidence.
 The Learnings native compatibility test covers the earlier local recovery
 protocol and its archived definitions alongside new imports and captures.
-Qualify an existing recovered store with read-only doctor and full-record
-projections. Normal context resolution continues to use its existing
-registration, including stores adopted by the earlier scoped helper. Never
-migrate an already-recovered live store merely to exercise these changes.
+Test that a native append preserves the witnessed source snapshot, that normal
+access ignores a missing historical worktree/receipt, and that direct native
+projection still works after all checkouts are deleted. Existing recovered roots
+can be cataloged by their unchanged ID/root without running migration. Never
+migrate a live recovered store merely to exercise these changes.

@@ -1,6 +1,6 @@
 # Negative Ledger memory admission
 
-Read [store.md](store.md) before canonical doctor/project operations. Apply the
+Read [store.md](store.md) before canonical projection operations. Apply the
 admission gate before transport; a successful canonical write is independent of
 derived admission and survives a later admission failure. This guide grants no
 canonical capture, lifecycle or publication authority.
@@ -10,11 +10,11 @@ canonical capture, lifecycle or publication authority.
 A source note is allowed only when:
 
 1. a canonical `NEG-*` record exists;
-2. definition-bound doctor passes in resolved canonical custody;
-3. `memory-note --param id=NEG-ID` returns a complete current projection;
-4. active projections include witness, applicability, exclusion, and reopening;
-5. the record is likely to matter in future related work;
-6. the note embeds the full bounded projection, stable repository identity,
+2. `memory-note --param id=NEG-ID` validates the selected native store and returns
+   a complete current projection;
+3. active projections include witness, applicability, exclusion, and reopening;
+4. the record is likely to matter in future related work;
+5. the note embeds the full bounded projection, stable repository identity,
    event-chain/projection fingerprints, and any prior projection link.
 
 Do not admit prose-only claims, unpromoted Learnings hits, partial
@@ -33,7 +33,7 @@ memory_source_notes_root="$(realpath "${CODEX_HOME:-$HOME/.codex}/skills/memory-
 ```bash
 uv run "$memory_source_notes_root/scripts/negative_ledger_memory_note.py" \
   admit \
-  --repo "<workspace-root>" \
+  --store-id "<context.store_id>" \
   --id NEG-000001 \
   --kind ledger-projection
 ```
@@ -43,17 +43,23 @@ For a status transition:
 ```bash
 uv run "$memory_source_notes_root/scripts/negative_ledger_memory_note.py" \
   admit \
-  --repo "<workspace-root>" \
+  --store-id "<context.store_id>" \
   --id NEG-000001 \
   --kind ledger-status-transition
 ```
 
-The adapter's `--repo` identifies the evidence workspace. It delegates custody
-resolution to `$ledger` and passes the managed selector to native doctor/project;
-it must not use that workspace as the native storage address. It rejects
+The adapter delegates `--store-id` resolution to `$ledger` and passes its native
+selector to the definition-bound projection. `--repo` may resolve a cataloged
+workspace alias; a checkout is not required. It rejects
 incomplete projections, preserves deterministic payload bytes, and invokes the
 immutable writer idempotently. It transports an accepted decision, not a judgment
 about recurrence, utility, or route applicability.
+
+The writer and reader must select the same configured memory root. A persisted
+note, reader visibility, and observable compiled attribution are different facts;
+absence of a literal `NEG-*` ID from a compact summary does not prove lag. Keep
+store/owner/record identity together when reconciling sources. Do not backfill all
+canonical records merely because the admission path was repaired.
 
 If context/projection is unavailable, preserve any successful canonical transaction:
 

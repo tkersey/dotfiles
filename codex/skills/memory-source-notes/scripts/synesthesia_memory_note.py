@@ -22,6 +22,12 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from memory_layout import (
+    LayoutError, MemoryLayout, compiled_documents, copy_instructions,
+    layout_for, memory_note_binary, selected_layout,
+)
+
 LOGICAL_TO_PHYSICAL_KIND = {
     "mapping-endorsement": "mapping-endorsement",
     "mapping-confirmation": "mapping-endorsement",
@@ -441,32 +447,10 @@ def read_json_input(path: str) -> Any:
 
 
 def find_memory_note_binary() -> Path | None:
-    override = os.environ.get("MEMORY_NOTE_BIN")
-    if override:
-        path = Path(override).expanduser()
-        if path.is_file() and os.access(path, os.X_OK):
-            return path
-    discovered = shutil.which("memory-note")
-    if discovered:
-        return Path(discovered)
-    candidates: list[Path] = []
-    skills_repo = os.environ.get("SKILLS_ZIG_REPO")
-    if skills_repo:
-        candidates.append(Path(skills_repo).expanduser() / "zig-out/bin/memory-note")
-    candidates.append(Path.home() / "workspace/tk/skills-zig/zig-out/bin/memory-note")
-    for path in candidates:
-        if path.is_file() and os.access(path, os.X_OK):
-            return path
-    return None
-
-
-def codex_home(override: str | None = None) -> Path:
-    if override:
-        return Path(override).expanduser().resolve()
-    env = os.environ.get("CODEX_HOME")
-    if env:
-        return Path(env).expanduser().resolve()
-    return (Path.home() / ".codex").resolve()
+    try:
+        return Path(memory_note_binary())
+    except LayoutError:
+        return None
 
 
 def repo_root() -> Path:
@@ -478,7 +462,7 @@ def source_instructions_path() -> Path:
 
 
 def live_instructions_path(home: Path) -> Path:
-    return home / "memories/extensions/synesthesia/instructions.md"
+    return layout_for(home).instructions_path
 
 
 def _existing_components(path: Path) -> list[Path]:
@@ -510,40 +494,7 @@ def sha256_file(path: Path) -> str:
 
 
 def sync_instructions(home: Path, source: Path | None = None) -> dict[str, Any]:
-    source_path = (source or source_instructions_path()).resolve()
-    if not source_path.is_file():
-        raise ValidationError(f"source instructions not found: {source_path}")
-    destination = live_instructions_path(home)
-    ensure_no_symlink_components(destination)
-    if destination.is_symlink():
-        raise ValidationError(f"destination is a symlink: {destination}")
-    destination.parent.mkdir(parents=True, exist_ok=True)
-    ensure_no_symlink_components(destination.parent)
-
-    source_bytes = source_path.read_bytes()
-    before = destination.read_bytes() if destination.is_file() else None
-    status = "current" if before == source_bytes else "copied"
-    if status == "copied":
-        fd, temp_name = tempfile.mkstemp(
-            prefix=".synesthesia-instructions-", dir=str(destination.parent)
-        )
-        try:
-            with os.fdopen(fd, "wb") as handle:
-                handle.write(source_bytes)
-                handle.flush()
-                os.fsync(handle.fileno())
-            os.chmod(temp_name, 0o644)
-            os.replace(temp_name, destination)
-        finally:
-            if os.path.exists(temp_name):
-                os.unlink(temp_name)
-    return {
-        "status": status,
-        "source": str(source_path),
-        "destination": str(destination),
-        "sha256": hashlib.sha256(source_bytes).hexdigest(),
-        "symlink": destination.is_symlink(),
-    }
+    return copy_instructions(layout_for(home), source or source_instructions_path())
 
 
 class StoredNote:
@@ -697,11 +648,11 @@ def parse_note(path: Path) -> dict[str, Any] | None:
 
 
 def notes_directory(home: Path) -> Path:
-    return home / "memories/extensions/synesthesia/notes"
+    return layout_for(home).notes_dir
 
 
 def resources_directory(home: Path) -> Path:
-    return home / "memories/extensions/synesthesia/resources"
+    return layout_for(home).resources_dir
 
 
 def default_digest_path(home: Path) -> Path:
@@ -1044,10 +995,9 @@ def _scope_lines(note: StoredNote) -> list[str]:
 
 
 def _suggested_target(lineage: dict[str, Any]) -> str:
-    note: StoredNote = lineage["current_note"]
-    if lineage["category"] == "boundary" and note.scope["kind"] == "global":
-        return "memory_summary.md"
-    return "MEMORY.md"
+    # The v2 compiler produces only a compact summary. Detailed mappings remain
+    # in immutable notes; this is a possible routing target, not a promotion.
+    return "memory_summary.md"
 
 
 def _render_source_provenance(lines: list[str], lineage: dict[str, Any]) -> None:
@@ -1254,8 +1204,9 @@ def render_memory_digest(
             "",
             "- Use this digest as an index; immutable notes remain authoritative.",
             "- Promote only entries with resolvable source-note IDs and a current event chain.",
-            "- Put compact global activation boundaries in `memory_summary.md`.",
-            "- Put scoped mappings and verification rules in `MEMORY.md`.",
+            "- Use `memory_summary.md` only for compact defaults or scoped retrieval routes.",
+            "- Keep detailed mappings and verification evidence in immutable source notes.",
+            "- The active Phase 2 contract decides promotion and permitted output artifacts.",
             "- Do not recreate the installed Synesthesia skill in memory.",
             "- Regenerate this digest after source-note changes before Phase 2 consolidation.",
             "",
@@ -1488,26 +1439,21 @@ def generate_memory_digest(
 
 
 def _scan_compiled_memory(home: Path, note_ids: list[str]) -> dict[str, Any]:
-    roots = [home / "memories/memory_summary.md", home / "memories/MEMORY.md"]
-    skills_root = home / "memories/skills"
-    if skills_root.is_dir():
-        roots.extend(path for path in skills_root.rglob("*") if path.is_file())
+    documents, unavailable = compiled_documents(layout_for(home))
     mentions: list[dict[str, Any]] = []
-    terms = ["synesthesia", "sensory_phrase", "engineering_translation", *note_ids]
-    for path in roots:
-        if not path.is_file():
-            continue
-        try:
-            text = path.read_text(encoding="utf-8", errors="replace")
-        except OSError:
-            continue
-        hits = [term for term in terms if term and term in text]
+    for path, text in documents.items():
+        hits = [term for term in note_ids if term and re.search(
+            rf"(?<![A-Za-z0-9_-]){re.escape(term)}(?![A-Za-z0-9_-])", text
+        )]
         if hits:
             mentions.append({"path": str(path), "terms": hits[:20]})
-    return {"files_checked": len(roots), "mentions": mentions}
+    return {"files_checked": len(documents), "mentions": mentions,
+            "unavailable_paths": unavailable,
+            "status": "note-id-observed" if mentions else "unknown" if unavailable else "not-observed"}
 
 
 def doctor(home: Path, source_repo: Path | None = None) -> dict[str, Any]:
+    home = layout_for(home)
     source_ledger = _inspect_source_ledger((source_repo or Path.cwd()).resolve())
     source = source_instructions_path()
     live = live_instructions_path(home)
@@ -1547,8 +1493,7 @@ def doctor(home: Path, source_repo: Path | None = None) -> dict[str, Any]:
                 "doctor",
                 "--extension",
                 "synesthesia",
-                "--codex-home",
-                str(home),
+                *home.writer_args(),
             ],
             text=True,
             capture_output=True,
@@ -1598,10 +1543,10 @@ def doctor(home: Path, source_repo: Path | None = None) -> dict[str, Any]:
         stage = f"source-notes-digest-{digest['status']}"
         recommendation = "Repair the digest path if needed, then run memory-digest --force."
     elif compiled["mentions"]:
-        stage = "compiled-memory-present"
+        stage = "compiled-note-id-observed"
         recommendation = "Verify retrieval scope and wording if the mapping is still not recalled."
     else:
-        stage = "source-notes-digest-current-awaiting-promotion"
+        stage = "source-notes-digest-current-promotion-unverified"
         recommendation = (
             "The current digest is ready for Phase 2. Resolve any invalid or unresolved chains, "
             "then inspect Phase 2 scheduling and promotion output."
@@ -1609,7 +1554,8 @@ def doctor(home: Path, source_repo: Path | None = None) -> dict[str, Any]:
 
     return {
         "synesthesia_memory_doctor": {
-            "codex_home": str(home),
+            "codex_home": str(home.codex_home),
+            "memory_layout": home.as_dict(),
             "stage": stage,
             "recommendation": recommendation,
             "source_ledger": source_ledger,
@@ -1842,7 +1788,7 @@ def _require_note_relationships(normalized: dict[str, Any]) -> None:
 
 
 def cmd_admission(args: argparse.Namespace) -> int:
-    resolver = AdmissionResolver(Path(args.repo), codex_home(args.codex_home))
+    resolver = AdmissionResolver(Path(args.repo), selected_layout(args, "synesthesia"))
     prepared = resolver.prepare(args.id)
     if args.command == "inspect-admission":
         print(json.dumps({"synesthesia_admission": prepared}, indent=2, sort_keys=True))
@@ -1903,8 +1849,8 @@ def _append_normalized(
         "--json",
         "-",
     ]
-    if args.codex_home:
-        command.extend(["--codex-home", args.codex_home])
+    layout = selected_layout(args, "synesthesia")
+    command.extend(layout.writer_args())
     if args.dry_run:
         command.append("--dry-run")
     proc = subprocess.run(
@@ -1919,7 +1865,7 @@ def _append_normalized(
         sys.stderr.buffer.write(proc.stderr)
     if proc.returncode == 0 and not args.dry_run:
         try:
-            generate_memory_digest(codex_home(args.codex_home))
+            generate_memory_digest(layout)
         except Exception as exc:  # Digest failure must never roll back source-note capture.
             print(f"memory-digest warning: {exc}", file=sys.stderr)
     return proc.returncode
@@ -1928,7 +1874,7 @@ def _append_normalized(
 def cmd_memory_digest(args: argparse.Namespace) -> int:
     output = Path(args.output).expanduser() if args.output else None
     result = generate_memory_digest(
-        codex_home(args.codex_home),
+        selected_layout(args, "synesthesia"),
         output=output,
         include_inactive=args.include_inactive,
         limit=args.limit,
@@ -1948,7 +1894,7 @@ def cmd_memory_digest(args: argparse.Namespace) -> int:
 
 def cmd_sync(args: argparse.Namespace) -> int:
     result = sync_instructions(
-        codex_home(args.codex_home), Path(args.source).expanduser() if args.source else None
+        selected_layout(args, "synesthesia"), Path(args.source).expanduser() if args.source else None
     )
     print(json.dumps({"synesthesia_instruction_sync": result}, indent=2, sort_keys=True))
     return 0
@@ -1956,7 +1902,7 @@ def cmd_sync(args: argparse.Namespace) -> int:
 
 def cmd_doctor(args: argparse.Namespace) -> int:
     report = doctor(
-        codex_home(args.codex_home),
+        selected_layout(args, "synesthesia"),
         Path(args.repo).expanduser().resolve(),
     )
     if args.format == "text":
@@ -1995,6 +1941,7 @@ def build_parser() -> argparse.ArgumentParser:
     append_parser.add_argument("--kind", required=True, choices=sorted(LOGICAL_TO_PHYSICAL_KIND))
     append_parser.add_argument("--json", required=True, help="JSON input file or - for stdin")
     append_parser.add_argument("--codex-home")
+    append_parser.add_argument("--memory-version", choices=("v1", "v2"))
     append_parser.add_argument("--dry-run", action="store_true")
     append_parser.set_defaults(func=cmd_append)
 
@@ -2005,6 +1952,7 @@ def build_parser() -> argparse.ArgumentParser:
         admission_parser.add_argument("--repo", required=True, help="Exact canonical custody root")
         admission_parser.add_argument("--id", required=True, help="Canonical SYN-* event identity")
         admission_parser.add_argument("--codex-home")
+        admission_parser.add_argument("--memory-version", choices=("v1", "v2"))
         if name == "admit":
             admission_parser.add_argument("--dry-run", action="store_true")
         admission_parser.set_defaults(func=cmd_admission)
@@ -2013,6 +1961,7 @@ def build_parser() -> argparse.ArgumentParser:
         "memory-digest", help="Fold Synesthesia events into a current-state digest"
     )
     digest_parser.add_argument("--codex-home")
+    digest_parser.add_argument("--memory-version", choices=("v1", "v2"))
     digest_parser.add_argument("--output")
     digest_parser.add_argument("--limit", type=int, default=0)
     digest_parser.add_argument("--force", action="store_true")
@@ -2030,11 +1979,13 @@ def build_parser() -> argparse.ArgumentParser:
         "sync-instructions", help="Copy the checked-in adapter into the live memory root"
     )
     sync_parser.add_argument("--codex-home")
+    sync_parser.add_argument("--memory-version", choices=("v1", "v2"))
     sync_parser.add_argument("--source")
     sync_parser.set_defaults(func=cmd_sync)
 
     doctor_parser = sub.add_parser("doctor", help="Diagnose note, digest, and Phase 2 state")
     doctor_parser.add_argument("--codex-home")
+    doctor_parser.add_argument("--memory-version", choices=("v1", "v2"))
     doctor_parser.add_argument("--repo", default=".")
     doctor_parser.add_argument("--format", choices=("json", "text"), default="json")
     doctor_parser.set_defaults(func=cmd_doctor)
@@ -2046,7 +1997,7 @@ def main() -> int:
     args = parser.parse_args()
     try:
         return int(args.func(args))
-    except ValidationError as exc:
+    except (ValidationError, LayoutError) as exc:
         print(
             json.dumps(
                 {"synesthesia_memory_note": {"verdict": "fail", "error": str(exc)}},

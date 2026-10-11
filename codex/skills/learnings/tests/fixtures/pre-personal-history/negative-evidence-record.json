@@ -1,0 +1,25 @@
+{
+ "schema": "ledger-artifact-definition/v1",
+ "id": "negative-ledger/negative-evidence-record",
+ "owner": "negative-ledger",
+ "imports": [{"id":"negative-ledger/negative-evidence-record-shape","path":"negative-evidence-record-shape.json"}],
+ "requires": {"abi":"ledger-artifact-abi/v1","operators":["at-least-one","bounded-array","bounded-string","canonical-json","definition-ref","enum","implies","optional-field","regex"]},
+ "parameters": {},
+ "inputs": {"record":{"codec":"json","required":true,"max_bytes":4194304}},
+ "canonicalization": {"steps":[{"op":"canonical-json","input":"record"}]},
+ "shape": {
+  "documents": {
+   "record": {
+    "definition": "negative-ledger/negative-evidence-record-shape",
+    "fields": {"record_version":{"enum":["NER-v2"]},"kind":{"enum":["authority_model","kernel_distinction","proof_pattern","realization_route"]},"hypothesis":{"string":{"trimmed_min":1,"max":1048576}},"attempted_change":{"string":{"trimmed_min":1,"max":1048576}},"observed_outcome":{"string":{"trimmed_min":1,"max":1048576}},"failure_class":{"enum":["global-regression","local-regression","no-effect","stale","too-complex","unsound"]},"confidence":{"enum":["high","low","medium"]},"next_search_hint":{"string":{"trimmed_min":1,"max":1048576}},"source_refs":{"array":{"min":1,"max":128}},"exclusion_scope":{"enum":["authority_model","cluster","distinction_pattern","exact","proof_pattern","route","route_family"]},"exclusion_rule":{"string":{"trimmed_min":1,"max":1048576}},"applicability_conditions":{"array":{"min":1,"max":128}},"reopening_criteria":{"array":{"min":1,"max":128}}},
+    "laws": [["implies",{"input":"record","if":"/exclusion_scope","equals":"exact","rules":[["at-least-one",{"paths":["/route_id","/route"],"rules":[["bounded-string",{"path":"","trimmed_min":1,"max":4194304}]]}]]}],["implies",{"input":"record","if":"/exclusion_scope","equals":"route","rules":[["at-least-one",{"paths":["/route_id","/route"],"rules":[["bounded-string",{"path":"","trimmed_min":1,"max":4194304}]]}]]}],["implies",{"input":"record","if":"/exclusion_scope","equals":"route_family","rules":[["at-least-one",{"paths":["/route_family_id","/route_or_model_id"],"rules":[["bounded-string",{"path":"","trimmed_min":1,"max":4194304}]]}]]}],["implies",{"input":"record","if":"/exclusion_scope","equals":"cluster","rules":[["at-least-one",{"paths":["/cluster_id","/cluster"],"rules":[["bounded-string",{"path":"","trimmed_min":1,"max":4194304}]]}]]}],["implies",{"input":"record","if":"/exclusion_scope","equals":"authority_model","rules":[["at-least-one",{"paths":["/authority_model_id","/route_or_model_id"],"rules":[["bounded-string",{"path":"","trimmed_min":1,"max":4194304}]]}]]}],["implies",{"input":"record","if":"/exclusion_scope","equals":"distinction_pattern","rules":[["at-least-one",{"paths":["/distinction_pattern_id","/route_or_model_id"],"rules":[["bounded-string",{"path":"","trimmed_min":1,"max":4194304}]]}]]}],["implies",{"input":"record","if":"/exclusion_scope","equals":"proof_pattern","rules":[["at-least-one",{"paths":["/proof_pattern_id","/route_or_model_id"],"rules":[["bounded-string",{"path":"","trimmed_min":1,"max":4194304}]]}]]}],["at-least-one",{"input":"record","paths":["/artifact_state_id","/artifact"],"rules":[["regex",{"path":"","patterns":["^[A-Fa-f0-9]{40}$","^[A-Fa-f0-9]{64}$","^commit:[A-Fa-f0-9]{40}$","^commit:[A-Fa-f0-9]{64}$","^tree:[A-Fa-f0-9]{40}$","^tree:[A-Fa-f0-9]{64}$","^sha256:[A-Fa-f0-9]{64}$","^surface:[A-Fa-f0-9]{64}$"],"max":72}]]}]]
+   }
+  }
+ },
+ "constraints": {"laws":[]},
+ "identity": {},
+ "storage": {"kind":"pure"},
+ "operations": {},
+ "projections": {},
+ "bounds": {"max_input_bytes":4194304,"max_store_bytes":4194304,"max_records":128,"max_output_bytes":4194304,"max_diagnostics":64,"max_reducer_states":1}
+}

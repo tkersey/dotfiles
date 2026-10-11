@@ -4,13 +4,33 @@ generated_at: <YYYY-MM-DDTHH-MM-SSZ>
 source: <learnings query | negative-ledger handoff | fixed-point ledger | manual digest>
 scope: <repo / path family / task family / workflow>
 
-Use this file as a short-lived evidence packet for Codex memory consolidation. Copy it into:
+The checked-in file in `codex/memories/extensions/.templates/` is a source
+template only. For a real short-lived evidence packet, first resolve the
+selected extension layout:
 
-```text
-~/.codex/memories/extensions/negative-ledger/resources/YYYY-MM-DDTHH-MM-SS-negative-ledger-digest.md
+```bash
+memory-note path --extension negative-ledger --format json
 ```
 
-Do not use this template filename inside `resources/`; real resource files should have a timestamp prefix.
+Use `resources_dir` from the returned `memory-note-layout/v1` JSON as the copy
+destination. Retain its `codex_home` and `memory_version`, and pin those values
+on subsequent writer/reader commands:
+
+```bash
+memory-note list --extension negative-ledger \
+  --codex-home "<layout.codex_home>" \
+  --memory-version "<layout.memory_version>"
+```
+
+Copy the populated digest to:
+
+```text
+<layout.resources_dir>/YYYY-MM-DDTHH-MM-SS-negative-ledger-digest.md
+```
+
+Do not use this template filename inside `resources/`; real resource files should
+have a timestamp prefix. Do not deploy the source template directory into live
+memory or infer an unversioned root from the destination's existence.
 
 ## Promote
 

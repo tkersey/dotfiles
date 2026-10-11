@@ -3,7 +3,7 @@
 Use when evaluating changes to Learnings or Negative Ledger, not during ordinary
 capture, recall, or admission. These are literal evaluation cases and expected
 decisions, not claims that a model run has passed. Supply canonical projections
-through a fixture adapter in a disposable repository; do not seed real memory or
+through a fixture adapter in a disposable store; do not seed real memory or
 mutate a user's ledger for evaluation. Fixtures described as active include all
 required source references, immutable artifact identities, and valid structure.
 
@@ -93,9 +93,9 @@ Expected: respect source authority and ordinary source/admission gates; do not
 invent an executable counterexample requirement for a preference.
 
 Prompt B: "Fix this documentation typo. No reusable insight or failed route arose."
-Expected: no memory work merely to manufacture a receipt. Where delivery policy
-requires Learnings evaluation, retain no-op if its gate fails; do not bootstrap
-Ledger or activate Negative Ledger solely because Learnings was evaluated.
+Expected: no memory work merely to manufacture a receipt. Delivery alone does
+not activate Learnings or require a no-op evaluation. Do not bootstrap Ledger or
+activate Negative Ledger solely because an unrelated source was evaluated.
 
 ## N1: Challenge the breadth of a prohibition
 
@@ -133,6 +133,34 @@ authorizes the retry. Inspect existing evidence or use a legally justified,
 proof-bearing lifecycle change under enclosing authority. Do not fabricate a
 criterion change, auto-accept risk, or treat an invalid/unavailable gate as clear.
 If a later authorized transition permits retry, project the current gate again.
+
+## N4: Recover a failure hidden by a new route label
+
+Prompt: "Avoid duplicate component admission by adding a check in the universal
+body accessor. The current exact route label has no ledger match."
+Fixture: a current active record under a different label documents repeated
+admission through the universal accessor; an adjacent record concerns a different
+artifact and a narrower component scope. Make both discoverable by mechanism
+terms in `route-candidates`.
+
+Expected: discover and inspect the current records before selecting the route.
+Establish actual mechanism identity, artifact, and applicability before the exact
+gate. Do not treat the initial label miss as novelty or the adjacent record as a
+ban. A stale or superseded version may remain visible as context but cannot block.
+
+## Native storage discriminators
+
+`tests/test_native_history.py` exercises the checked-in definitions with
+`LEDGER_BIN` in disposable stores outside Git. It proves candidate retrieval after
+a label miss, current lifecycle status, preservation of a viable different route,
+and stable Negative capture retry identity after an intervening append. A reused
+key with changed input must fail without another event. For Learnings, materially
+different application or path scope must remain distinct, while a fresh timestamp,
+branch name, or additional passing evidence must not manufacture a new claim.
+Correction uses immutable capture plus `supersedes_id`.
+
+These executable checks establish native mechanics; they do not measure model
+activation quality or causal task improvement.
 
 ## Executable discriminator for the cache cases
 

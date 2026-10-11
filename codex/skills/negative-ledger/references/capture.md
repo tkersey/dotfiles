@@ -19,16 +19,29 @@ ledger transact \
   --definition "$negative_ledger_definition" \
   --operation capture \
   --store-root "<context.store_root>" --store-id "<context.store_id>" \
+  --param "capture_key=<stable-task-and-finding-token>" \
   --input capture=capture.json \
   --format json
 ```
 
 `capture.json` contains one `record`, including requested initial `status`.
+Choose `capture_key` once for this capture operation and preserve it with the
+request. A retry after an uncertain acknowledgement uses the same key, input,
+and store; Ledger returns the original event and `NEG-*` identity, even after
+other appends. A reused key with changed input is an error. A substantively new
+capture uses a new key after the source gate; transport identity does not decide
+whether two failed routes are semantically equivalent. No historical ID changes.
+
 Inadequate witness evidence means `need-evidence` or `capture_candidate`, not an
 active exclusion. Active capture requires supported scope/identity, immutable
 artifact identity, structured source references, applicability conditions,
 a narrow exclusion, and identified reopening criteria. Select `need-evidence`
 when structure is incomplete; never assert `active` after Ledger rejects it.
+
+The owning task adjudicates workers' evidence and writes one accepted capture;
+repeated inherited reports do not each need a record. Retain the native result
+instead of repeated doctor/precommit readback. Read back only for an uncertain
+result, a changed consumer, or requested proof. Admission remains independent.
 
 Every transition to `active`, including promotion/reactivation/reopening,
 requires transition proof and a complete replacement record with status `active`.

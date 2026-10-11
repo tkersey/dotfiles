@@ -1,8 +1,8 @@
 ---
 name: memory-source-notes
-description: "Transport source-approved Learnings, Negative Ledger, and Synesthesia admissions through validated adapters to the `memory-note` CLI; inspect, reconcile, and diagnose immutable-note, digest, and Phase 2 visibility gaps. Never decides source eligibility or edits compiled memory."
+description: "Transport source-approved Learnings, Negative Ledger, and Synesthesia admissions through validated adapters to the native memory-note CLI; inspect selected memory layouts, copy extension instructions, and reconcile canonical records with immutable notes and compiled note references. Use for source handoffs or explicit memory transport, repair, or reconciliation requests. Never decides source eligibility or edits compiled memory."
 metadata:
-  version: "2.1.2"
+  version: "2.2.0"
 ---
 
 # Memory Source Notes
@@ -13,18 +13,21 @@ Provide one append-only transport path, bounded derived-digest tooling, and the
 read-only cross-source reconciliation application for controlled custom memory
 sources while preserving domain authority and Phase 2's compiler boundary.
 
-This skill writes source evidence only:
+Resolve the selected layout through `memory-note path --extension <name>
+--format json`. The returned `notes_dir` owns immutable admissions; the
+Synesthesia adapter may also regenerate its disposable `resources_dir` digest.
+Do not derive these paths independently from `$HOME` or a config-file parser.
 
 ```text
-~/.codex/memories/extensions/<extension>/notes/*.md
+<layout.notes_dir>/*.md
 ```
 
-It never writes:
+Phase 2 alone writes compiled memory. Version v2 produces only the compact
+`memory_summary.md`; v1 may additionally produce `MEMORY.md` and `skills/*`.
+Read only the selected version's artifacts when diagnosing compiled references:
 
 ```text
-~/.codex/memories/memory_summary.md
-~/.codex/memories/MEMORY.md
-~/.codex/memories/skills/*
+<layout.memory_root>/memory_summary.md
 ```
 
 ## Authority model
@@ -38,10 +41,11 @@ source skill or canonical domain store
 -> compiled memory
 ```
 
-- `$learnings` owns the passive Learnings protocol, `.ledger/learnings/events.jsonl`, and learning admission semantics.
-- `$negative-ledger` owns the passive Negative Evidence protocol, `.ledger/negative-ledger/events.jsonl`, and route-state admission semantics.
+- `$learnings` owns the passive Learnings protocol and learning admission semantics.
+- `$negative-ledger` owns the passive Negative Evidence protocol and route-state admission semantics.
+- `$ledger` owns canonical custody and personal store selection for these managed sources. Use its returned `native_args` and stable `repository_id`; a workspace is an optional cataloged alias, and Git is unnecessary for direct `--store-id` selection.
 - `$synesthesia` owns the passive `synesthesia/protocol` definition, `.ledger/synesthesia/events.jsonl`, sensory mapping semantics, and the admission decision.
-- The `memory-note` CLI owns the final immutable note write.
+- The `memory-note` CLI owns effective memory-root resolution and every immutable note write or version migration.
 - `$memory-source-notes` owns command syntax, extension-specific adapters, derived digest generation, copy-based instruction deployment, diagnostics, proof-line interpretation, and read-only reconciliation across canonical sources, immutable admissions, and Phase 2 visibility.
 - Phase 2 owns promotion, deduplication, supersession, and compiled-memory updates.
 
@@ -58,28 +62,24 @@ synesthesia
 
 Refuse `ad_hoc` and Chronicle. Native remember/forget/update requests belong to Codex's native ad-hoc path. Chronicle is upstream-owned.
 
-## Trigger cues
-
-- explicit `$memory-source-notes`;
-- documented handoff from `$learnings`, `$negative-ledger`, or `$synesthesia`;
-- explicit request to inspect or repair a custom memory-source layout;
-- explicit request to synchronize extension instructions into the live memory root;
-- explicit request to diagnose why admitted notes are not reaching compiled memory;
-- explicit request to reconcile canonical source records with immutable notes or Phase 2 visibility;
-- explicit source-authorized historical admission or harvest request.
-
 Do not trigger merely because a task produced history. The owning skill must first establish a source-specific admission event, unless the request is explicitly read-only reconciliation or diagnostics.
 
 ## CLI discovery
 
-Before the first native Ledger command in an admission, reconciliation, or
-diagnostic workflow, load `$ledger` and complete `$ledger ensure` once.
+Load `$ledger` for canonical context and operation selection. Resolve a managed
+source once using its selected store ID or registered workspace. Read-only
+transport and diagnostics do not initialize stores, scan worktrees, or run
+custody maintenance. Synesthesia retains its explicitly selected unmanaged root.
 
 For general extensions, resolve the writer in this order:
 
 ```bash
 run_memory_note_tool() {
-  if [ -n "${MEMORY_NOTE_BIN:-}" ] && [ -x "$MEMORY_NOTE_BIN" ]; then
+  if [ -n "${MEMORY_NOTE_BIN:-}" ]; then
+    if [ ! -x "$MEMORY_NOTE_BIN" ]; then
+      echo "memory-note: failed: selected CLI unavailable" >&2
+      return 127
+    fi
     "$MEMORY_NOTE_BIN" "$@"
     return
   fi
@@ -102,15 +102,31 @@ run_memory_note_tool() {
 
 Do not silently install unreleased tooling. Never hand-author a note as a fallback for a missing CLI.
 
+## Select one memory layout
+
+The native writer asks Codex's effective configuration through local app-server
+`config/read` when `--memory-version` is omitted. Explicit `--codex-home` and
+`--memory-version v1|v2` pin a known active session. The native path response uses
+schema `memory-note-layout/v1` and names `codex_home`, `memory_version`,
+`memory_root`, `extension_root`, `notes_dir`, `instructions_path`, and
+`resources_dir`.
+
+Resolve once and pass the returned home/version to every append, list, show,
+doctor, digest, and instruction-copy operation in that workflow. The bundled
+adapters share `scripts/memory_layout.py` for this. A resolver failure is a
+diagnostic error; never fall back to an old directory because it exists.
+After a config-version change, verify reader access in a fresh Codex session.
+Ordinary operations never search or write both versions.
+
 ## General append workflow
 
 1. Receive an accepted payload from the owning skill.
-2. Confirm the live memory root and extension directory are real directories, not symlinks.
+2. Resolve and pin the memory layout; confirm existing path components are real directories, not symlinks.
 3. Remove secrets, unnecessary local paths, raw transcript chronology, and unsupported inference.
 4. Ensure authority, scope, source references, relationships, operation, and payload are complete.
 5. Run the extension's validated append path.
 6. Capture the structured result.
-7. Emit exactly one proof line when persistence was attempted.
+7. Retain the writer proof and report any transport degradation separately from canonical success.
 
 Resolve adapter paths once from the installed skill, independently of the target
 repository's working directory:
@@ -193,7 +209,7 @@ use:
 uv run \
   "$memory_source_notes_root/scripts/negative_ledger_memory_note.py" \
   admit \
-  --repo "<repo-root>" \
+  --store-id "<context.store_id>" \
   --id NEG-... \
   --kind ledger-projection
 ```
@@ -213,7 +229,7 @@ Negative Ledger decides recurrence and utility. Inspect without writing via:
 uv run \
   "$memory_source_notes_root/scripts/negative_ledger_memory_note.py" \
   inspect \
-  --repo "<repo-root>" \
+  --store-id "<context.store_id>" \
   --id NEG-...
 ```
 
@@ -227,10 +243,10 @@ uv run \
   memory-digest
 ```
 
-Default output:
+The default output is in the same selected layout as admission:
 
 ```text
-${CODEX_HOME:-$HOME/.codex}/memories/extensions/synesthesia/resources/latest_synesthesia_digest.md
+<layout.resources_dir>/latest_synesthesia_digest.md
 ```
 
 The generator validates all stored Synesthesia notes and folds `assert`, `confirm`, `supersede`, `reject`, `retract`, and `reopen` into a deterministic current-state projection. It preserves active mappings, active boundaries, inactive entries, unresolved event chains, invalid-note diagnostics, source-note provenance, and a source fingerprint.
@@ -241,11 +257,12 @@ The default digest is a complete materialized view and must remain a regular fil
 
 Live memory extension instructions must be regular copied files. Do not deploy them as symlinks.
 
-Synchronize Synesthesia instructions from the dotfiles repository into the live memory root:
+Synchronize all three controlled extensions from the tracked source files into
+the selected memory root:
 
 ```bash
 uv run \
-  "$memory_source_notes_root/scripts/synesthesia_memory_note.py" \
+  "$memory_source_notes_root/scripts/memory_source_layout.py" \
   sync-instructions
 ```
 
@@ -256,6 +273,13 @@ The command:
 - uses an atomic regular-file replacement;
 - reports `current` when no copy is needed;
 - refuses a symlinked destination or symlinked destination component.
+
+Use `--extension <name>` to select one extension, `--source-root <directory>`
+when the checked-in instruction source is elsewhere, and `--memory-version`
+with `--codex-home` to pin a reviewed layout. `doctor` on the same script reports
+selected paths and source/live hashes without creating directories. The
+repository wrapper `scripts/doctor-memory-source-layout.sh` delegates to it.
+The Synesthesia-specific `sync-instructions` command remains supported.
 
 ## Synesthesia doctor
 
@@ -275,7 +299,7 @@ The doctor reports:
   `insecure-permissions`, or unsafe path);
 - current active/inactive/unresolved projection counts;
 - `memory-note` availability and doctor output;
-- compiled-memory mentions of Synesthesia or source-note IDs;
+- exact source-note IDs observed in the selected compiled artifacts;
 - the likely failing stage and next action.
 
 ## General writer command
@@ -286,6 +310,8 @@ For extensions without a dedicated adapter:
 run_memory_note_tool append \
   --extension <extension> \
   --kind <kind> \
+  --codex-home "<layout.codex_home>" \
+  --memory-version "<layout.memory_version>" \
   --json -
 ```
 
@@ -303,12 +329,6 @@ Duplicate accepted as no-op:
 memory-note: duplicate-skip: extension=<name> fingerprint=<fingerprint>
 ```
 
-No qualifying event, but only when the gate was materially evaluated:
-
-```text
-memory-note: not-attempted: source admission gate not met
-```
-
 Unavailable CLI:
 
 ```text
@@ -321,7 +341,7 @@ Unsafe topology or validation failure:
 memory-note: failed: <concise reason>
 ```
 
-Do not emit memory proof lines during ordinary work when no durable event or persistence request exists. Digest refresh is silent on successful automatic runs; only manual `memory-digest` calls print a digest summary.
+Keep no-ops internal unless the user asks for their evidence. Do not emit memory proof lines during ordinary work when no durable event or persistence request exists. Digest refresh is silent on successful automatic runs; only manual `memory-digest` calls print a digest summary.
 
 A source-note failure must not undo a successful canonical learning, negative-ledger, or Synesthesia write. Report canonical and admission outcomes separately.
 
@@ -368,7 +388,8 @@ Phase 2 provenance without writing or deciding eligibility.
 memory_source_notes_root="$(realpath "$HOME/.agents/skills/memory-source-notes")"
 uv run python \
   "$memory_source_notes_root/scripts/source-memory-reconcile.py" \
-  --repo "$(git rev-parse --show-toplevel)" \
+  --store-id "<context.store_id>" \
+  --source learnings --source negative-ledger \
   --format text
 ```
 
@@ -383,15 +404,23 @@ incomplete-projection
 stale-note
 ```
 
-Phase 2 visibility is reported separately as `visible`, `lag`, or `unknown`.
-Exact source or note IDs must appear as bounded provenance tokens; a substring
-is not evidence. Unreadable Phase 2 files produce `unknown`, never a false claim
-of absence.
+The `source-memory-reconciliation/v3` report separates compiled references as
+`note-id-observed`, `not-observed`, `unknown`, or `not-applicable`. Only the exact
+immutable note ID is an observed link. A bare `NEG-*` or learning ID can collide
+across stores and does not attribute admission. Missing or unreadable required
+compiled files produce `unknown`. A readable summary without a literal note ID
+does not establish compiler lag, rejection, paraphrase, or decision impact.
 
-Repository-scoped notes match only the canonical normalized origin identity
-when one is available. Basename aliases do not establish repository identity.
-Unscoped notes remain unscoped; they are not silently rebound to the current
-repository.
+Managed notes use `ledger-repository:<store_id>`. A historical scope can match
+only through the same source's exact native exported bytes and writer
+fingerprint, without rewriting the note or inventing Git remote/basename
+aliases. Notes lacking that witness remain foreign or unresolved. Per-source
+context, inventory, or projection errors preserve unrelated healthy results.
+
+Use `--repo <registered-workspace>` as a managed store alias if no store ID is
+selected. For Synesthesia include `--source synesthesia --repo
+<explicit-unmanaged-root>`; the default source set includes all three. Use
+`--source` to avoid diagnosing a source that is outside the intended task.
 
 When source owners have reviewed historical rows, pass an explicit
 `source-memory-eligibility/v1` JSON file via `--eligibility`. Each decision must
@@ -406,13 +435,18 @@ auditable; never bulk-admit every source row.
 See [source-store-layout.md](references/source-store-layout.md) and
 [harvest-workflow.md](references/harvest-workflow.md).
 
+For an explicit root-version cutover, use native `memory-note migrate` as
+documented in [source-store-layout.md](references/source-store-layout.md).
+Migrate only existing admitted immutable envelopes. Migration is separate from
+source eligibility and does not authorize historical bulk admission.
+
 ## General read and doctor workflow
 
 ```bash
-run_memory_note_tool doctor
-run_memory_note_tool doctor --extension negative-ledger
-run_memory_note_tool list --extension learnings
-run_memory_note_tool show --extension negative-ledger --id MSN-...
+run_memory_note_tool path --extension learnings --format json
+run_memory_note_tool doctor --extension learnings --codex-home "<layout.codex_home>" --memory-version "<layout.memory_version>"
+run_memory_note_tool list --extension learnings --codex-home "<layout.codex_home>" --memory-version "<layout.memory_version>"
+run_memory_note_tool show --extension learnings --id MSN-... --codex-home "<layout.codex_home>" --memory-version "<layout.memory_version>"
 ```
 
 Use source-specific doctors for canonical stores and this skill's reconciler
@@ -428,7 +462,7 @@ Do not use this skill to:
 
 - bypass native ad-hoc remember/forget/update behavior;
 - write compiled memory directly;
-- replace canonical repo-local source stores;
+- replace canonical source stores or choose custody outside `$ledger`;
 - decide whether negative evidence blocks a route;
 - decide whether a learning, negative projection, or sensory mapping is eligible;
 - infer durable user preferences from assistant prose alone;

@@ -7,20 +7,25 @@ admit every canonical row and it never writes compiled memory.
 
 ```text
 owner-defined canonical Ledger projections
-${CODEX_HOME:-$HOME/.codex}/memories/extensions/*/notes/*.md
-${CODEX_HOME:-$HOME/.codex}/memories/extensions/synesthesia/resources/latest_synesthesia_digest.md
-Phase 2 compiled-memory files
+native-selected extension notes_dir/*.md
+native-selected Synesthesia resources_dir/latest_synesthesia_digest.md
+selected-version Phase 2 compiled-memory files
 optional source-memory-eligibility/v1 decisions
 ```
 
 ## Procedure
 
-1. Run the owning source definition's doctor and exact reconciliation-index
-   projection.
-2. Inventory immutable notes through `memory-note` and verify their normalized
-   repository identity, source ID, kind, and writer fingerprint.
-3. Check Phase 2 using exact canonical-record or note-ID provenance tokens.
-   Unreadable Phase 2 files make visibility `unknown`; they do not prove lag.
+1. Resolve the owner's canonical context and selected native memory layout.
+   Run the definition-bound doctor and exact reconciliation-index projection
+   using the same native selector; pin the memory home/version throughout.
+2. Inventory immutable notes through `memory-note`. Match managed identities
+   by `ledger-repository:<store_id>`. Historical scope correspondence requires
+   the same source's exact native export fingerprint; do not infer aliases from
+   a Git remote, basename, or shared canonical record ID.
+3. Inspect the selected compiler artifacts for exact immutable note IDs. Report
+   `note-id-observed`, `not-observed`, or `unknown`; a bare canonical ID does not
+   prove admission provenance. Missing/unreadable artifacts are `unknown`.
+   Literal absence does not prove compiler lag, rejection, or absence of use.
 4. Ask the source owner to classify only rows that remain
    `needs-source-review`. Record accepted decisions in a bounded
    `source-memory-eligibility/v1` input.

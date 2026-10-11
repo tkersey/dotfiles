@@ -24,8 +24,10 @@ Activate when any of these could change the next route:
 - a learning hit describes a failed hypothesis that may need promotion;
 - an artifact-state change may satisfy a recorded reopening criterion.
 
-The first action is normally the read-only `route-gate` projection, not
-`capture`.
+The first action is normally read-only `route-candidates` discovery from component,
+invariant, and failure-mechanism terms. Assess the candidates, then use the exact
+`route-gate` with established scope/artifact identities. Do not capture merely
+because retrieval was activated.
 
 ## Capture gate
 
@@ -36,7 +38,7 @@ Capture only when the event has all of the following:
 - an inspectable witness;
 - a stated observed outcome and failure class;
 - structured source references to inspectable evidence;
-- a repository-bound, immutable artifact identity;
+- a stable project scope and immutable artifact identity;
 - current artifact-state applicability;
 - an explicit supported scope and its identity;
 - a narrow exclusion rule and future-routing delta;
@@ -71,8 +73,10 @@ Review empirical decision episodes, not raw mention counts. A healthy week may h
 For each candidate episode, ask:
 
 1. Did `$negative-ledger` appear before the next route was selected?
-2. Did it project `route-gate` rather than immediately capture?
+2. Did it discover current candidates, assess applicability, and project the exact
+   gate rather than rely on a label miss or immediately capture?
 3. Did transient failures remain `no-op`?
 4. Did a qualified event produce durable, narrow evidence?
 5. Did blocking require an active, fully validated, witnessed, exact native-scope match with current-state applicability?
-6. Did the `route-gate` projection and memory-note admission fail closed rather than project malformed authority?
+6. Did invalid reads remain distinct from empty results, and did independent
+   memory failures remain separate from canonical validity?

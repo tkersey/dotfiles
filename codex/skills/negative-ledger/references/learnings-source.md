@@ -8,7 +8,7 @@ deciding route meaning or authority.
 
 ## Read Path
 
-Resolve the verified workspace through `$ledger` and retain
+Resolve the intended personal store through `$ledger` and retain
 `context.store_root` and `context.store_id` for this managed Learnings history.
 
 ```bash

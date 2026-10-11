@@ -1,0 +1,54 @@
+{
+ "schema": "ledger-artifact-definition/v1",
+ "id": "negative-ledger/negative-evidence-record-shape",
+ "owner": "negative-ledger",
+ "requires": {"abi":"ledger-artifact-abi/v1","operators":["all","bounded-array","bounded-object","bounded-string","canonical-json","enum","exact-object","optional-field"]},
+ "parameters": {},
+ "inputs": {"record":{"codec":"json","required":true,"max_bytes":4194304}},
+ "canonicalization": {"steps":[{"op":"canonical-json","input":"record"}]},
+ "shape": {
+  "documents": {
+   "record": {
+    "object_bounds": {"min":1,"max":64},
+    "fields": {
+     "record_version": {"if_present":true,"enum":["NER-v2"]},
+     "kind": {"if_present":true,"enum":["authority_model","kernel_distinction","proof_pattern","realization_route"]},
+     "exclusion_scope": {"if_present":true,"enum":["authority_model","cluster","distinction_pattern","exact","proof_pattern","route","route_family"]},
+     "failure_class": {"if_present":true,"enum":["global-regression","local-regression","no-effect","stale","too-complex","unknown","unsound"]},
+     "confidence": {"if_present":true,"enum":["high","low","medium","unknown"]},
+     "source_refs": {"if_present":true,"array":{"max":128},"items":{"object":"open","fields":{"kind":{"string":{"trimmed_min":1,"max":128}},"ref":{"string":{"trimmed_min":1,"max":4096}},"summary":{"optional":true,"string":{"max":4096}}}}},
+     "falsifying_evidence": {"if_present":true,"array":{"max":128},"items":{"string":{"trimmed_min":1,"max":1048576}}},
+     "applicability_conditions": {"if_present":true,"array":{"max":128},"items":{"string":{"trimmed_min":1,"max":1048576}}},
+     "reopening_criteria": {"if_present":true,"array":{"max":128},"items":{"object":"open","fields":{"condition":{"string":{"trimmed_min":1,"max":1048576}},"id":{"string":{"trimmed_min":1,"max":256}}}}},
+     "applicable_paths": {"if_present":true,"array":{"max":128},"items":{"string":{"trimmed_min":1,"max":4096}}},
+     "route_or_model_id": {"if_present":true,"string":{"max":4194304}},
+     "route_id": {"if_present":true,"string":{"max":4194304}},
+     "route": {"if_present":true,"string":{"max":4194304}},
+     "route_family_id": {"if_present":true,"string":{"max":4194304}},
+     "cluster_id": {"if_present":true,"string":{"max":4194304}},
+     "cluster": {"if_present":true,"string":{"max":4194304}},
+     "authority_model_id": {"if_present":true,"string":{"max":4194304}},
+     "distinction_pattern_id": {"if_present":true,"string":{"max":4194304}},
+     "proof_pattern_id": {"if_present":true,"string":{"max":4194304}},
+     "artifact_state_id": {"if_present":true,"string":{"max":4194304}},
+     "artifact_state_label": {"if_present":true,"string":{"max":4194304}},
+     "artifact": {"if_present":true,"string":{"max":4194304}},
+     "hypothesis": {"if_present":true,"string":{"max":4194304}},
+     "attempted_change": {"if_present":true,"string":{"max":4194304}},
+     "observed_outcome": {"if_present":true,"string":{"max":4194304}},
+     "exclusion_rule": {"if_present":true,"string":{"max":4194304}},
+     "next_search_hint": {"if_present":true,"string":{"max":4194304}},
+     "repository_id": {"string":{"trimmed_min":1,"max":4194304}},
+     "surface": {"if_present":true,"string":{"max":4194304}},
+     "status": {"if_present":true,"string":{"max":4194304}}
+    }
+   }
+  }
+ },
+ "constraints": {"laws":[]},
+ "identity": {},
+ "storage": {"kind":"pure"},
+ "operations": {},
+ "projections": {},
+ "bounds": {"max_input_bytes":4194304,"max_store_bytes":4194304,"max_records":128,"max_output_bytes":4194304,"max_diagnostics":64,"max_reducer_states":1}
+}

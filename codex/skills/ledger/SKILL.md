@@ -1,6 +1,6 @@
 ---
 name: ledger
-description: "Operate Ledger for owner-defined artifact validation, materialization, durable custody, migration, and recovery. Use for runtime bootstrap, passive definitions, or repository/worktree-family storage; not merely because work creates history or a receipt."
+description: "Operate Ledger for owner-defined artifact validation, materialization, personal custody, migration, and recovery. Use for runtime bootstrap, passive definitions, stable store selection, or explicit historical import; not merely because work creates history or a receipt."
 ---
 
 # Ledger
@@ -34,7 +34,8 @@ grant mutation, publication, review, delivery, or closure authority.
 
 The caller owns definition selection, input construction, semantic
 interpretation, and workflow actions. This skill's explicit context helper
-resolves the caller-selected Git workspace and storage registration; it is not
+resolves a personal catalog by stable store identity or an explicit workspace
+association; it is not
 hidden discovery inside a passive definition or the native engine.
 
 A successful result remains definition-relative. It does not establish that the
@@ -72,7 +73,7 @@ readiness only while the executable and execution environment are unchanged.
 | Selected work | Required guidance |
 |---|---|
 | Pure `validate`, `materialize`, or definition inspection | This entrypoint and the owner's exact definition/inputs; no workspace, managed store, or migration scan. |
-| Canonical store read/write, `doctor`, projection, transaction, or managed-context resolution | [canonical-custody.md](references/canonical-custody.md) before context selection or the first operation; its first-use migration qualification remains mandatory. |
+| Canonical store read/write, `doctor`, projection, transaction, or managed-context resolution | [canonical-custody.md](references/canonical-custody.md) for the personal catalog and native selector. Historical import completeness does not gate normal access. |
 | Binding, legacy migration, or exact recovery | Canonical custody guidance and the maintenance/migration reference it selects before the effect; availability never grants authority. |
 | Author or debug a passive definition | [definition-authoring.md](references/definition-authoring.md); add custody guidance only if a store operation is selected. |
 
@@ -147,11 +148,14 @@ This skill alone owns physical storage-location and migration policy. Read
 before resolving or operating on canonical custody. Do not duplicate its policy
 in consumers or `AGENTS.md`, or substitute an empty store for a failed lookup.
 
-## Ensure usable custody
+## Resolve personal custody
 
-Follow the [first-use qualification](references/canonical-custody.md#ensure-usable-custody)
-even for an existing registration not yet qualified by the migration helper.
-Pure validation/materialization does not select this workflow.
+Resolve an existing store by `--store-id` or its cataloged workspace association.
+Normal `ensure_custody.py` performs the same read-only lookup. Missing worktrees,
+unresolved legacy imports, and absent migration receipts do not invalidate owned
+custody. Read [explicit adoption and migration](references/canonical-custody.md#explicit-adoption-and-migration)
+only when that maintenance is selected. A missing or corrupt established root
+still fails closed; it is never replaced with an empty store.
 
 ## Storage custody and recovery
 
@@ -162,7 +166,7 @@ permission transfer from lease expiry.
 ## Trigger cues and reporting
 
 Use for explicit `$ledger`/`$ledger ensure`, a consumer's first native command,
-runtime/ABI availability, managed storage context, worktree continuity, definition
+runtime/ABI availability, personal storage context, worktree continuity, definition
 authoring, validation/materialization, durable transactions/projections, binding,
 legacy migration, and exact recovery. Do not trigger merely because work creates
 history or a receipt; the semantic owner selects the protocol.

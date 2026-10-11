@@ -8,6 +8,7 @@ import importlib.util
 import json
 import os
 from pathlib import Path
+import shutil
 import subprocess
 import tempfile
 import unittest
@@ -24,6 +25,9 @@ class ContextFixture:
     REGISTRATION_SCHEMA = 'ledger-repository-registration/v1'
     MARKER = '.ledger-root.json'
     MARKER_SCHEMA = 'ledger-storage-root/v1'
+
+    class UnregisteredContext(RuntimeError):
+        pass
 
     def __init__(self, root):
         self.root = root
@@ -60,6 +64,9 @@ class ContextFixture:
 
     def checked_registration(self, root, common, *, mutated=False):
         reg = json.loads((common / self.REGISTRATION).read_text())
+        return self.checked(root, reg, mutated=mutated)
+
+    def checked(self, root, reg, *, mutated=False):
         custody = Path(reg['store_root']); self.no_symlinks(custody)
         marker = json.loads((custody / self.MARKER).read_text())
         if marker['store_id'] != reg['store_id'] or not (custody / '.ledger').is_dir():
@@ -68,6 +75,25 @@ class ContextFixture:
                 'repository_id': 'ledger-repository:' + reg['store_id'],
                 'native_args': ['--store-root', str(custody), '--store-id', reg['store_id']],
                 'storage_mutated': mutated, 'authority_granted': False}
+
+    def resolve(self, repo=None, *, store_id=None):
+        catalog = self.storage_home() / 'catalog.json'
+        if not catalog.exists():
+            raise self.UnregisteredContext('No cataloged store')
+        reg = json.loads(catalog.read_text())
+        if store_id is not None and reg['store_id'] != store_id:
+            raise RuntimeError('Wrong store')
+        return self.checked(repo or self.repo, reg)
+
+    def register_root(self, custody, store_id, repo=None):
+        catalog = self.storage_home() / 'catalog.json'
+        reg = {'store_id': store_id, 'store_root': str(custody)}
+        result = self.checked(repo or self.repo, reg)
+        changed = not catalog.exists() or json.loads(catalog.read_text()) != reg
+        self.storage_home().mkdir(parents=True, exist_ok=True)
+        if changed:
+            self.write_json(catalog, reg)
+        return {**result, 'storage_mutated': changed}
 
 
 class EnsureTests(unittest.TestCase):
@@ -109,7 +135,7 @@ class EnsureTests(unittest.TestCase):
         return path
 
     def ensure(self, **kwargs):
-        return module.ensure(self.ctx.repo, skill_root=self.skills, **kwargs)
+        return module.migrate(self.ctx.repo, skill_root=self.skills, **kwargs)
 
     def test_inspection_is_read_only(self):
         self.event(self.ctx.repo)
@@ -247,6 +273,29 @@ class EnsureTests(unittest.TestCase):
         with self.assertRaisesRegex(module.MigrationError, 'Additional/divergent'):
             self.ensure(apply=True, confirm_no_writers=True)
 
+    def test_valid_extension_preserves_imported_source_snapshot(self):
+        self.event(self.ctx.repo)
+        first = self.ensure(apply=True, confirm_no_writers=True)
+        event = Path(first['context']['store_root']) / '.ledger/fixture/events.jsonl'
+        with event.open('a') as handle:
+            handle.write('{"id":"later"}\n')
+        second = self.ensure()
+        self.assertEqual(second['status'], 'verified')
+        self.assertEqual(second['sources'], first['sources'])
+        self.assertEqual(second['destination_prefixes'], first['destination_prefixes'])
+        self.assertFalse(second['storage_mutated'])
+
+    def test_normal_ensure_needs_neither_worktree_coverage_nor_migration_receipt(self):
+        self.event(self.ctx.repo)
+        first = self.ensure(apply=True, confirm_no_writers=True)
+        (Path(first['context']['store_root']) / 'migration-receipt.json').unlink()
+        self.ctx.other.rmdir()
+        calls = len(self.calls)
+        result = module.ensure(self.ctx.repo)
+        self.assertEqual(result['store_id'], first['context']['store_id'])
+        self.assertEqual(len(self.calls), calls)
+        self.assertFalse(result['storage_mutated'])
+
     def test_owner_paths_cannot_escape_or_alias_slots(self):
         for name in ('../outside', '/outside', './path', 'a//b', 'a\\b'):
             with self.assertRaises(module.MigrationError):
@@ -255,6 +304,53 @@ class EnsureTests(unittest.TestCase):
 
 @unittest.skipUnless(os.environ.get('LEDGER_BIN'), 'Set LEDGER_BIN for real native/context conformance')
 class NativeIntegration(unittest.TestCase):
+    def test_conflicting_legacy_registration_blocks_before_destination_mutation(self):
+        skills = SCRIPT.parents[2]
+        binary = os.environ['LEDGER_BIN']
+        definition = skills / 'learnings/definitions/ledger/learnings-protocol.json'
+        ctx = module.load_module(SCRIPT.with_name('ledger_context.py'))
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary).resolve(); repo = root / 'repo'; repo.mkdir()
+            subprocess.run(['git', '-C', str(repo), 'init', '-q'], check=True, capture_output=True)
+            subprocess.run(['git', '-C', str(repo), '-c', 'user.name=Fixture', '-c',
+                            'user.email=fixture@example.invalid', 'commit', '--allow-empty', '-qm', 'fixture'],
+                           check=True, capture_output=True)
+            with patch.dict(os.environ, {'LEDGER_HOME': str(root / 'home'), 'LEDGER_CACHE_DIR': str(root / 'cache')}):
+                selected = ctx.resolve(initialize=True)
+                custody = Path(selected['store_root'])
+                submission = {'record': {'status': 'codify_now', 'learning': 'Existing selected-store claim.',
+                    'evidence': ['fixture'], 'application': 'Preserve this unrelated history.', 'source': 'fixture',
+                    'context': {'repo': selected['repository_id'], 'branch': 'not-applicable', 'paths': []}}}
+                capture = subprocess.run([binary, 'transact', '--definition', str(definition), *selected['native_args'],
+                    '--operation', 'capture', '--input', 'submission=-', '--format', 'json'],
+                    input=json.dumps(submission).encode(), capture_output=True)
+                self.assertEqual(capture.returncode, 0, capture.stdout.decode() + capture.stderr.decode())
+                legacy = root / 'old registered custody'; (legacy / '.ledger').mkdir(parents=True)
+                legacy_id = 'a' * 32
+                ctx.write_json(legacy / ctx.MARKER, {'schema': ctx.MARKER_SCHEMA, 'store_id': legacy_id})
+                registration = repo / '.git' / ctx.REGISTRATION
+                ctx.write_json(registration, {'schema': ctx.REGISTRATION_SCHEMA, 'store_id': legacy_id,
+                                              'store_root': str(legacy)})
+                historical = {'id': 'legacy-source-claim', 'captured_at': '2026-01-01T00:00:00Z',
+                    'fingerprint': 'legacy-source-fingerprint', 'status': 'codify_now', 'learning': 'Legacy claim.',
+                    'evidence': ['fixture'], 'application': 'Retain the original store.', 'source': 'fixture'}
+                source = repo / '.learnings.jsonl'; source.write_text(json.dumps(historical) + '\n')
+                def snapshot():
+                    return {path.relative_to(custody).as_posix(): path.read_bytes()
+                            for path in custody.rglob('*') if path.is_file()}
+                before = snapshot()
+                catalog = (ctx.storage_home() / ctx.CATALOG).read_bytes()
+                original_registration = registration.read_bytes()
+                original_source = source.read_bytes()
+                with self.assertRaisesRegex(module.MigrationError, 'different legacy registration'):
+                    module.migrate(repo, store_id=selected['store_id'], apply=True, confirm_no_writers=True,
+                                   binary=binary, skill_root=skills)
+                self.assertEqual(snapshot(), before)
+                self.assertFalse((custody / 'legacy-archive').exists())
+                self.assertEqual((ctx.storage_home() / ctx.CATALOG).read_bytes(), catalog)
+                self.assertEqual(registration.read_bytes(), original_registration)
+                self.assertEqual(source.read_bytes(), original_source)
+
     def test_retired_only_repository_and_linked_worktree(self):
         skills = SCRIPT.parents[2]
         with tempfile.TemporaryDirectory() as temporary:
@@ -270,13 +366,33 @@ class NativeIntegration(unittest.TestCase):
                    'evidence': ['witnessed'], 'application': 'Retain original identity.', 'source': 'original session'}
             source.write_text(json.dumps(row) + '\n'); original = source.read_bytes()
             with patch.dict(os.environ, {'LEDGER_HOME': str(root / 'home')}):
-                result = module.ensure(repo, apply=True, confirm_no_writers=True, binary=os.environ['LEDGER_BIN'], skill_root=skills)
+                result = module.migrate(repo, apply=True, confirm_no_writers=True, binary=os.environ['LEDGER_BIN'], skill_root=skills)
                 self.assertEqual(result['imports'][0]['appended'], 1)
                 self.assertTrue(Path(result['imports'][0]['sources'][0]['source']).is_file())
-                again = module.ensure(other, binary=os.environ['LEDGER_BIN'], skill_root=skills)
-                self.assertEqual(again['context']['store_id'], result['context']['store_id'])
+                again = module.ensure(other)
+                self.assertEqual(again['store_id'], result['context']['store_id'])
                 self.assertFalse(again['storage_mutated'])
                 self.assertEqual(source.read_bytes(), original)
+                definition = skills / 'learnings/definitions/ledger/learnings-protocol.json'
+                submission = {'record': {'status': 'codify_now', 'learning': 'Later native capture.',
+                    'evidence': ['observed'], 'application': 'Keep imported evidence.', 'source': 'fixture',
+                    'context': {'repo': again['repository_id'], 'branch': 'main', 'paths': []}}}
+                capture = subprocess.run([os.environ['LEDGER_BIN'], 'transact', '--definition', str(definition),
+                    *again['native_args'], '--operation', 'capture', '--input', 'submission=-', '--format', 'json'],
+                    input=json.dumps(submission).encode(), capture_output=True)
+                self.assertEqual(capture.returncode, 0, capture.stdout.decode() + capture.stderr.decode())
+                verified = module.migrate(repo, binary=os.environ['LEDGER_BIN'], skill_root=skills)
+                self.assertEqual(verified['status'], 'verified')
+                self.assertEqual(verified['destination_prefixes'], result['destination_prefixes'])
+                self.assertFalse(verified['storage_mutated'])
+                shutil.rmtree(other)
+                self.assertEqual(module.ensure(repo)['store_id'], again['store_id'])
+                shutil.rmtree(repo)
+                direct = module.ensure(store_id=again['store_id'])
+                projection = subprocess.run([os.environ['LEDGER_BIN'], 'project', '--definition', str(definition),
+                    *direct['native_args'], '--projection', 'import-records', '--format', 'json'], capture_output=True)
+                self.assertEqual(projection.returncode, 0, projection.stdout.decode() + projection.stderr.decode())
+                self.assertEqual(len(json.loads(projection.stdout)['data']), 2)
 
 
     def test_bound_prefix_adoption_rebind_archive_and_registered_recovery(self):
@@ -314,7 +430,7 @@ class NativeIntegration(unittest.TestCase):
             source = repo / '.learnings.jsonl'; source.write_text(json.dumps(historical) + '\n')
             original_source = source.read_bytes()
             with patch.dict(os.environ, {'LEDGER_HOME': str(root / 'home')}):
-                result = module.ensure(repo, apply=True, confirm_no_writers=True, binary=binary, skill_root=skills)
+                result = module.migrate(repo, apply=True, confirm_no_writers=True, binary=binary, skill_root=skills)
                 self.assertEqual(result['imports'][0]['appended'], 1)
                 custody = Path(result['context']['store_root'])
                 archive = custody / 'legacy-archive' / result['fingerprint']
@@ -324,7 +440,7 @@ class NativeIntegration(unittest.TestCase):
                 self.assertEqual(source.read_bytes(), original_source)
                 # A registration alone must not skip historical reconciliation.
                 (custody / 'migration-receipt.json').unlink()
-                recovered = module.ensure(other, apply=True, confirm_no_writers=True, binary=binary, skill_root=skills)
+                recovered = module.migrate(other, apply=True, confirm_no_writers=True, binary=binary, skill_root=skills)
                 self.assertEqual(recovered['context']['store_id'], result['context']['store_id'])
                 self.assertEqual(recovered['imports'][0]['appended'], 0)
                 projection = subprocess.run([binary, 'project', '--definition', str(definition),

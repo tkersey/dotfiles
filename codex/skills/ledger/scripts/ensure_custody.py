@@ -1,9 +1,8 @@
 #!/usr/bin/env -S uv run python
-"""Ensure usable owner-defined custody without making the resolver a writer.
+"""Resolve personal custody, or explicitly maintain selected legacy history.
 
-Inspection is read-only. --apply authorizes lossless cold transport, owner-bound
-binding maintenance and supported historical import as one operation. It still
-requires a real --confirm-no-writers assertion; no process scan fabricates it.
+Normal use only resolves the personal catalog. --migrate selects historical
+inspection; --apply additionally requires actual writer quiescence.
 """
 from __future__ import annotations
 
@@ -20,7 +19,7 @@ import sys
 import tempfile
 import uuid
 
-SCHEMA = 'ledger-custody-ensure/v1'
+SCHEMA = 'ledger-custody-migration/v2'
 ARCHIVES = {'.bindings', '.definitions', '.revisions'}
 MAX_FILES = 100000
 MAX_BYTES = 2 * 1024**3
@@ -263,8 +262,16 @@ def sync_tree(path: Path, ctx) -> None:
         ctx.sync_directory(directory)
 
 
-def ensure(repo: Path, *, apply: bool = False, confirm_no_writers: bool = False,
+def ensure(repo: Path | None = None, *, store_id: str | None = None) -> dict:
+    """Normal use resolves owned custody without historical coverage checks."""
+    ctx = load_module(Path(__file__).with_name('ledger_context.py'))
+    return ctx.resolve(repo, store_id=store_id)
+
+
+def migrate(repo: Path, *, store_id: str | None = None, apply: bool = False, confirm_no_writers: bool = False,
            binary: str = 'ledger', skill_root: Path | None = None, framing_controls: dict | None = None) -> dict:
+    if apply and not confirm_no_writers:
+        raise MigrationError('--apply requires --confirm-no-writers after actually quiescing legacy and managed writers')
     ctx = load_module(Path(__file__).with_name('ledger_context.py'))
     workspace, common = ctx.workspace(repo)
     installed = skill_root or Path(__file__).resolve().parents[2]
@@ -292,9 +299,25 @@ def ensure(repo: Path, *, apply: bool = False, confirm_no_writers: bool = False,
                     raise MigrationError(f'Legacy lease requires native recovery: {tree / name}')
         return trees, snapshot, source
 
+    def current_context():
+        try:
+            context = ctx.resolve(workspace, store_id=store_id)
+        except ctx.UnregisteredContext:
+            # This is explicit maintenance, not a fallback in ordinary lookup.
+            if os.path.lexists(common / ctx.REGISTRATION):
+                context = ctx.checked_registration(workspace, common)
+            else:
+                return None
+        if os.path.lexists(common / ctx.REGISTRATION):
+            legacy = ctx.checked_registration(workspace, common)
+            if (legacy['store_id'] != context['store_id']
+                    or Path(legacy['store_root']).resolve(strict=True) != Path(context['store_root']).resolve(strict=True)):
+                raise MigrationError('Selected workspace has a different legacy registration; reconcile explicitly before migration')
+        return context
+
     trees, snapshot, source = inspect()
-    registered = os.path.lexists(common / ctx.REGISTRATION)
-    context = ctx.checked_registration(workspace, common) if registered else None
+    context = current_context()
+    registered = context is not None
     fingerprint = hashlib.sha256(canonical({'sources': snapshot, 'owners': selected,
         'definitions': {o['definition']: digest_file(Path(o['definition'])) for o in selected},
         'importers': {o['importer']: digest_file(Path(o['importer'])) for o in selected if o['importer']},
@@ -303,13 +326,40 @@ def ensure(repo: Path, *, apply: bool = False, confirm_no_writers: bool = False,
     for owner in selected:
         descriptions.append(native(binary, owner, [], 'definition', 'describe'))
     fingerprint = hashlib.sha256((fingerprint + canonical([d.get('definition') for d in descriptions])).encode()).hexdigest()
-    def destination_revisions(custody):
+    def destination_prefixes(custody):
         revisions = {}
         for slot in slots:
             path = custody / '.ledger' / slot
             ctx.no_symlinks(path)
-            revisions[slot] = digest_file(path) if path.exists() else None
+            revisions[slot] = {'bytes': path.stat().st_size, 'sha256': digest_file(path)} if path.exists() else None
         return revisions
+
+    def preserves_imported_prefixes(custody, witnessed):
+        if not isinstance(witnessed, dict) or set(witnessed) != set(slots):
+            return False
+        for slot, witness in witnessed.items():
+            if witness is None:
+                continue
+            if (not isinstance(witness, dict) or set(witness) != {'bytes', 'sha256'}
+                    or type(witness['bytes']) is not int or witness['bytes'] < 0
+                    or not isinstance(witness['sha256'], str)):
+                return False
+            path = custody / '.ledger' / slot
+            ctx.no_symlinks(path)
+            if not path.is_file() or path.stat().st_size < witness['bytes']:
+                return False
+            remaining = witness['bytes']
+            digest = hashlib.sha256()
+            with path.open('rb') as handle:
+                while remaining:
+                    block = handle.read(min(1048576, remaining))
+                    if not block:
+                        return False
+                    digest.update(block)
+                    remaining -= len(block)
+            if digest.hexdigest() != witness['sha256']:
+                return False
+        return True
 
     if registered:
         receipt_path = Path(context['store_root']) / 'migration-receipt.json'
@@ -318,23 +368,24 @@ def ensure(repo: Path, *, apply: bool = False, confirm_no_writers: bool = False,
             saved = json.loads(receipt_path.read_bytes(), object_pairs_hook=unique)
             if (saved.get('schema') == SCHEMA and saved.get('fingerprint') == fingerprint
                     and saved.get('status') == 'verified'
-                    and saved.get('destination_revisions') == destination_revisions(Path(context['store_root']))):
+                    and saved.get('store_id') == context['store_id']
+                    and preserves_imported_prefixes(Path(context['store_root']), saved.get('destination_prefixes'))):
                 for owner in selected:
                     healthy(binary, owner, context['native_args'])
-                return {**saved, 'context': context, 'storage_mutated': False}
+                if apply:
+                    context = ctx.register_root(Path(context['store_root']), context['store_id'], workspace)
+                return {**saved, 'context': context, 'storage_mutated': context.get('storage_mutated', False)}
     if not apply:
         return {'schema': SCHEMA, 'status': 'planned', 'registered': registered, 'context': context,
                 'fingerprint': fingerprint, 'sources': snapshot, 'selected_source': str(source) if source else None,
-                'owners': selected, 'requires': ['--apply', '--confirm-no-writers'],
+                'owners': selected, 'requires': ['--migrate', '--apply', '--confirm-no-writers'],
                 'storage_mutated': False, 'authority_granted': False}
-    if not confirm_no_writers:
-        raise MigrationError('--apply requires --confirm-no-writers after actually quiescing legacy and managed writers')
     with ctx.registration_lock(common):
         # Reject a changed view rather than silently applying a new migration.
-        if inspect()[1] != snapshot or os.path.lexists(common / ctx.REGISTRATION) != registered:
+        current = current_context()
+        if inspect()[1] != snapshot or (current is not None) != registered:
             raise MigrationError('Migration inputs changed; inspect and retry')
         if registered:
-            current = ctx.checked_registration(workspace, common)
             if current['store_id'] != context['store_id'] or current['store_root'] != context['store_root']:
                 raise MigrationError('Registered identity changed')
             custody = Path(context['store_root'])
@@ -350,11 +401,11 @@ def ensure(repo: Path, *, apply: bool = False, confirm_no_writers: bool = False,
             repos = ctx.storage_home() / 'repos'
             ctx.no_symlinks(repos)
             repos.mkdir(parents=True, exist_ok=True, mode=0o700)
-            store_id = uuid.uuid4().hex
+            new_id = uuid.uuid4().hex
             custody = Path(tempfile.mkdtemp(prefix='.migrating-', dir=repos))
             (custody / '.ledger').mkdir(mode=0o700)
-            ctx.write_json(custody / ctx.MARKER, {'schema': ctx.MARKER_SCHEMA, 'store_id': store_id})
-            selector = ['--store-root', str(custody), '--store-id', store_id]
+            ctx.write_json(custody / ctx.MARKER, {'schema': ctx.MARKER_SCHEMA, 'store_id': new_id})
+            selector = ['--store-root', str(custody), '--store-id', new_id]
         # Keep interrupted evidence for inspection. Never auto-select an orphan.
         archive = custody / 'legacy-archive' / fingerprint
         ctx.no_symlinks(archive)
@@ -410,36 +461,37 @@ def ensure(repo: Path, *, apply: bool = False, confirm_no_writers: bool = False,
             healthy(binary, owner, selector)
         if inspect()[1] != snapshot:
             raise MigrationError('Source/worktree view changed during migration; reconcile on retry')
-        published_root = custody if registered else custody.parent / store_id
+        selected_id = context['store_id'] if registered else new_id
+        published_root = custody if registered else custody.parent / selected_id
         for imported in imports:
             for item in imported['sources']:
                 # Only a transport locator changes; never rewrite record provenance.
                 item['source'] = str(published_root / Path(item['source']).relative_to(custody))
         receipt = {'schema': SCHEMA, 'status': 'verified', 'fingerprint': fingerprint, 'sources': snapshot,
                    'owners': selected, 'definitions': descriptions, 'imports': imports,
-                   'destination_revisions': destination_revisions(custody),
+                   'store_id': selected_id, 'destination_prefixes': destination_prefixes(custody),
                    'unselected_disposition': 'preserved in source and archive; not semantically imported',
                    'storage_mutated': True, 'authority_granted': False}
         ctx.write_json(custody / 'migration-receipt.json', receipt)
         sync_tree(custody, ctx)
         if not registered:
-            destination = custody.parent / store_id
+            destination = custody.parent / selected_id
             os.rename(custody, destination)
             ctx.sync_directory(destination.parent)
-            final_selector = ['--store-root', str(destination), '--store-id', store_id]
+            final_selector = ['--store-root', str(destination), '--store-id', selected_id]
             for owner in selected:
                 healthy(binary, owner, final_selector)
             if inspect()[1] != snapshot:
                 raise MigrationError(f'Source changed before publication; unregistered destination retained: {destination}')
-            ctx.write_json(common / ctx.REGISTRATION, {'schema': ctx.REGISTRATION_SCHEMA,
-                                                      'store_id': store_id, 'store_root': str(destination)})
-        receipt['context'] = ctx.checked_registration(workspace, common, mutated=True)
+        receipt['context'] = ctx.register_root(published_root, selected_id, workspace)
         return receipt
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--repo', type=Path, default=Path.cwd())
+    parser.add_argument('--repo', type=Path)
+    parser.add_argument('--store-id')
+    parser.add_argument('--migrate', action='store_true')
     parser.add_argument('--apply', action='store_true')
     parser.add_argument('--confirm-no-writers', action='store_true')
     parser.add_argument('--ledger-bin', default='ledger')
@@ -449,10 +501,17 @@ def main() -> int:
         controls = json.loads(args.framing_controls.read_bytes(), object_pairs_hook=unique) if args.framing_controls else None
         if args.confirm_no_writers and not args.apply:
             raise MigrationError('--confirm-no-writers requires --apply')
-        result = ensure(args.repo, apply=args.apply, confirm_no_writers=args.confirm_no_writers,
-                        binary=args.ledger_bin, framing_controls=controls)
+        if (args.apply or args.confirm_no_writers or args.framing_controls) and not args.migrate:
+            raise MigrationError('Migration effects require explicit --migrate')
+        if args.migrate:
+            if args.repo is None:
+                raise MigrationError('--migrate requires the selected legacy --repo')
+            result = migrate(args.repo, store_id=args.store_id, apply=args.apply, confirm_no_writers=args.confirm_no_writers,
+                             binary=args.ledger_bin, framing_controls=controls)
+        else:
+            result = ensure(args.repo, store_id=args.store_id)
     except (MigrationError, OSError, ValueError, RuntimeError) as exc:
-        print(json.dumps({'schema': SCHEMA, 'status': 'blocked', 'error': str(exc),
+        print(json.dumps({'schema': SCHEMA if args.migrate else 'ledger-workspace-context-error/v1', 'status': 'blocked', 'error': str(exc),
                           'storage_mutated': None if args.apply else False, 'authority_granted': False}), file=sys.stderr)
         return 3
     print(canonical(result))

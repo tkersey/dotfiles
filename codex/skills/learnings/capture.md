@@ -2,32 +2,21 @@
 
 ## Write Workflow
 
-1. Verify the Git workspace with `git rev-parse --show-toplevel`. This identifies
-   code/evidence provenance, not the canonical storage address.
-2. Resolve its managed custody through `$ledger`. Only an authorized first
-   capture may request initialization. The Ledger owner handles legacy inventory,
-   cold adoption, and exact binding/recovery; do not create a parallel checkout
-   store or repeat initial binding in each worktree.
-3. Run the definition-bound doctor against that same context:
-
-   ```bash
-   ledger doctor \
-     --definition "$learnings_definition" \
-     --store-root "<context.store_root>" --store-id "<context.store_id>" \
-     --format json
-   ```
-
-   Append only when the selected source is current or legitimately absent in
-   the established custody root. Root/marker failures, invalid rows, binding
-   failures, and unknown replacements block capture. Do not skip/reinterpret rows
-   or change selectors to make the check pass.
-4. Gather exact evidence, immutable artifact identity, and changed paths from
-   the workspace. Use the resolved stable `repository_id` in `context.repo` for
-   new rows, retaining branch/path provenance separately. Distinguish observed
-   results from proposed explanations and transferable claims.
-5. Distill objective, inflection, proof, and a bounded rule using the
+1. Resolve the intended personal store through `$ledger`, using an explicit
+   `--store-id` or an existing cataloged workspace alias. Git is optional
+   provenance; unavailable legacy worktrees do not block an existing valid store.
+   Only an explicitly requested new store may be initialized.
+2. Gather exact evidence, immutable artifact identity where relevant, and changed
+   paths. Use stable `repository_id` in `context.repo`, retaining actual branch
+   provenance separately (`not-applicable` for non-Git evidence). Use stable,
+   sorted project-relative paths, not temporary checkout paths. Distinguish
+   observed results from explanations and transferable claims.
+3. Distill objective, inflection, proof, and a bounded rule using the
    [claim discipline](#bounded-claims) below.
-6. Author `learning.json` as one `submission.record` packet, then append:
+4. Inspect a relevant prior record when deciding whether this is a duplicate or
+   correction. Same wording with different applicability can be a distinct rule;
+   another timestamp, branch name, or repeated proof run is not novelty.
+5. Author `learning.json` as one `submission.record` packet, then append:
 
    ```bash
    ledger transact \
@@ -38,11 +27,13 @@
      --format json
    ```
 
-7. Retain the appended learning ID, rerun doctor, and use a focused `record` or
-   `recall` projection in the same context to verify readability.
-8. Before any Codex-made commit, inspect the current learning through `record`.
-   Do not read the store directly or stage canonical private history as source.
-9. Retain exactly one canonical learning proof line in working evidence. Include
+6. Retain the native transaction outcome and returned learning ID. Native
+   compare-and-append owns validation, binding, and concurrent-write safety; do
+   not surround a successful transaction with repeated doctor or precommit
+   readback. Use a focused `record` projection if the result is uncertain or a
+   changed consumer needs verification. Native failure remains a failure; do not
+   change selectors or reinterpret invalid rows to make an append pass.
+7. Retain the canonical learning outcome in working evidence. Include
    source-memory proof in the final reply only when it changed repo-visible
    state, needs action, explains a blocker/error, or the user explicitly asks.
 
@@ -80,8 +71,12 @@ Leave unrelated rules alone. Admitted guidance changes follow
 never edit old events or compiled memory.
 
 No change is valid. Do not append a warning beside a rule needing correction,
-manufacture paraphrases to count reuses, or bypass idempotency to add evidence to
-an unchanged claim. The fingerprint uses status and learning text, not evidence;
-sharing custody does not change that identity law or add evidence enrichment.
+manufacture paraphrases to count reuses, or bypass idempotency to add another
+passing run to an unchanged claim. New capture fingerprints cover status,
+normalized learning text, application, stable project identity, and scoped paths.
+Capture time, branch, session/source metadata, and evidence bytes do not create
+novelty. A substantive correction belongs in a bounded claim/application with
+`supersedes_id`, preserving its evidence. Historical IDs and fingerprints remain
+unchanged; compare old records by their full claim and scope, not hash equality.
 A failed learning does not automatically warrant an operational exclusion:
 Negative Ledger must satisfy its own activation and capture gates.

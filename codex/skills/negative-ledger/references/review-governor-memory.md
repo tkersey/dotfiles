@@ -7,11 +7,16 @@
 ```yaml
 negative_route_gate:
   checked: yes
+  candidate_discovery:
+    projection: route-candidates
+    query: "<mechanism component invariant>"
+    current_record_applicability_inspected: yes
   evidence_source:
     route_gate_projection: yes
     ledger_cli: ledger
     definition: negative-ledger/negative-evidence-protocol
     store: <context.store_root>/.ledger/negative-ledger/events.jsonl
+    store_id: <context.store_id>
     command: "ledger project --definition ... --projection route-gate --store-root '<context.store_root>' --store-id '<context.store_id>' --param artifact=... --param identity=... --format json"
     exit_code: 0 | 2 | 3
     ledger_available: yes | no
@@ -24,6 +29,11 @@ negative_route_gate:
   capture_created: yes | no
   handoff_allowed: yes | no
 ```
+
+Candidate discovery precedes the exact gate when a prior failure may apply.
+Its matches suggest investigation; only an active exact match with satisfied
+applicability conditions can establish an exclusion. A label miss does not prove
+there is no relevant recorded mechanism.
 
 If the parent workflow requires an operational same-cluster gate and the ledger is unavailable or invalid, mutation is blocked.
 

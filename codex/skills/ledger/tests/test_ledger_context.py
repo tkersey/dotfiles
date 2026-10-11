@@ -1,4 +1,4 @@
-"""Worktree/storage policy regression tests; native custody is tested separately."""
+"""Personal catalog policy tests; native custody is tested separately."""
 from concurrent.futures import ThreadPoolExecutor
 import importlib.util
 import json
@@ -45,10 +45,9 @@ class LedgerContextTests(unittest.TestCase):
         self.assertFalse((self.repo / ".git" / context.REGISTRATION).exists())
         self.assertFalse((self.repo / ".git" / "ledger-store.lock").exists())
 
-    def test_fresh_initialization_requires_legacy_writer_quiescence(self):
-        with self.assertRaisesRegex(context.ContextError, "--confirm-no-writers"):
-            context.resolve(self.repo, initialize=True)
-        self.assertFalse(self.home.exists())
+    def test_new_private_store_does_not_require_legacy_writer_quiescence(self):
+        result = context.resolve(self.repo, initialize=True)
+        self.assertTrue(Path(result['store_root']).is_dir())
         self.assertFalse((self.repo / ".git" / context.REGISTRATION).exists())
 
     def test_worktrees_share_identity_and_root_but_not_workspace(self):
@@ -88,6 +87,30 @@ class LedgerContextTests(unittest.TestCase):
         self.git(self.repo, "worktree", "remove", str(moved))
         self.assertEqual(context.resolve(self.repo)["store_id"], first["store_id"])
 
+    def test_reused_worktree_path_cannot_select_the_previous_git_family(self):
+        first = context.resolve(self.other, initialize=True)
+        catalog = (context.storage_home() / context.CATALOG).read_bytes()
+        self.git(self.repo, 'worktree', 'remove', str(self.other))
+        self.other.mkdir()
+        self.git(self.other, 'init', '-q')
+        for parameters in ({}, {'initialize': True}):
+            with self.subTest(parameters=parameters), self.assertRaisesRegex(context.ContextError, 'Git common directory'):
+                context.resolve(self.other, **parameters)
+        # An unchanged family association and explicit ID access remain usable.
+        self.assertEqual(context.resolve(self.repo)['store_id'], first['store_id'])
+        self.assertEqual(context.resolve(store_id=first['store_id'])['store_root'], first['store_root'])
+        self.assertEqual((context.storage_home() / context.CATALOG).read_bytes(), catalog)
+
+    def test_new_git_identity_on_plain_workspace_requires_explicit_attachment(self):
+        plain = self.root / 'plain workspace'; plain.mkdir()
+        first = context.resolve(plain, initialize=True)
+        self.git(plain, 'init', '-q')
+        with self.assertRaisesRegex(context.ContextError, 'Git common directory'):
+            context.resolve(plain)
+        attached = context.resolve(plain, store_id=first['store_id'], attach_workspace=True)
+        self.assertEqual(attached['store_id'], first['store_id'])
+        self.assertEqual(context.resolve(plain)['store_root'], first['store_root'])
+
     def test_clone_is_not_automatically_attached(self):
         first = context.resolve(self.repo, initialize=True, confirm_no_writers=True)
         clone = self.root / "clone"
@@ -95,11 +118,13 @@ class LedgerContextTests(unittest.TestCase):
         second = context.resolve(clone, initialize=True, confirm_no_writers=True)
         self.assertNotEqual(first["store_id"], second["store_id"])
 
-    def test_environment_change_does_not_fork_registered_history(self):
+    def test_environment_change_never_implicitly_initializes_an_unknown_catalog(self):
         first = context.resolve(self.repo, initialize=True, confirm_no_writers=True)
         with patch.dict(os.environ, {"CODEX_HOME": str(self.root / "different"), "LEDGER_HOME": str(self.root / "override")}):
-            second = context.resolve(self.other, initialize=True, confirm_no_writers=True)
-        self.assertEqual(first["store_root"], second["store_root"])
+            with self.assertRaises(context.UnregisteredContext):
+                context.resolve(self.other)
+            with self.assertRaises(context.ContextError):
+                context.resolve(store_id=first['store_id'], initialize=True)
         self.assertFalse((self.root / "override").exists())
 
     def test_missing_established_root_is_never_recreated(self):
@@ -145,55 +170,196 @@ class LedgerContextTests(unittest.TestCase):
         self.assertEqual(list(target.iterdir()), [])
         self.assertFalse((self.repo / ".git" / context.REGISTRATION).exists())
 
-    def test_legacy_history_in_sibling_blocks_empty_initialization(self):
-        legacy = self.other / ".ledger/learnings"
+    def test_known_selected_legacy_history_blocks_parallel_empty_initialization(self):
+        legacy = self.repo / ".ledger/learnings"
         legacy.mkdir(parents=True)
         (legacy / "events.jsonl").write_text("fixture\n")
         with self.assertRaises(context.ContextError):
             context.resolve(self.repo, initialize=True, confirm_no_writers=True)
         self.assertFalse(self.home.exists())
 
-    def test_legacy_history_created_during_initialization_blocks_publication(self):
-        inspect = context.legacy_roots
-        inspections = 0
+    def test_selected_legacy_history_created_during_initialization_blocks_publication(self):
+        write = context.write_json
 
-        def observe(root):
-            nonlocal inspections
-            inspections += 1
-            if inspections == 2:
-                legacy = self.other / ".ledger/learnings"
+        def observe(path, value):
+            write(path, value)
+            if path.name == context.MARKER:
+                legacy = self.repo / ".ledger/learnings"
                 legacy.mkdir(parents=True)
                 (legacy / "events.jsonl").write_text("late append\n")
-            return inspect(root)
 
-        with patch.object(context, "legacy_roots", side_effect=observe):
-            with self.assertRaisesRegex(context.ContextError, "appeared during initialization"):
+        with patch.object(context, "write_json", side_effect=observe):
+            with self.assertRaisesRegex(context.ContextError, "legacy history"):
                 context.resolve(self.repo, initialize=True, confirm_no_writers=True)
-        self.assertEqual(inspections, 2)
         self.assertFalse((self.repo / ".git" / context.REGISTRATION).exists())
         self.assertEqual(list((self.home / "ledger/repos").iterdir()), [])
 
     def test_retired_source_blocks_parallel_initialization(self):
-        (self.other / ".learnings.jsonl").write_text("fixture\n")
+        (self.repo / ".learnings.jsonl").write_text("fixture\n")
         with self.assertRaises(context.ContextError):
             context.resolve(self.repo, initialize=True, confirm_no_writers=True)
 
-    def test_non_repository_is_rejected(self):
-        with self.assertRaises(context.ContextError):
-            context.resolve(self.root, initialize=True, confirm_no_writers=True)
-        self.assertFalse(self.home.exists())
+    def test_personal_store_and_plain_workspace_need_no_git(self):
+        with patch.object(context, 'git', side_effect=FileNotFoundError('Git is not installed')):
+            first = context.resolve(self.root, initialize=True)
+        direct = context.resolve(store_id=first['store_id'])
+        self.assertEqual(first['store_root'], direct['store_root'])
+        self.assertIsNone(direct['workspace_root'])
+        self.assertIsNone(direct['git_common_dir'])
+        self.assertEqual(context.resolve(self.root)['store_id'], first['store_id'])
 
     def test_registration_survives_common_directory_relocation(self):
         first = context.resolve(self.repo, initialize=True, confirm_no_writers=True)
         self.git(self.repo, "worktree", "remove", str(self.other))
         moved = self.root / "renamed repo"
         self.repo.rename(moved)
-        self.assertEqual(context.resolve(moved)["store_root"], first["store_root"])
+        second = context.resolve(moved, store_id=first['store_id'], attach_workspace=True)
+        self.assertEqual(second['store_root'], first['store_root'])
+        self.assertEqual(context.resolve(moved)['store_id'], first['store_id'])
 
     def test_new_store_permissions_are_private(self):
         first = context.resolve(self.repo, initialize=True, confirm_no_writers=True)
         self.assertEqual(Path(first["store_root"]).stat().st_mode & 0o777, 0o700)
         self.assertEqual((Path(first["store_root"]) / context.MARKER).stat().st_mode & 0o777, 0o600)
+        self.assertEqual((context.storage_home() / context.CATALOG).stat().st_mode & 0o777, 0o600)
+
+    def test_missing_sibling_and_append_do_not_requalify_existing_custody(self):
+        first = context.resolve(self.repo, initialize=True)
+        # Addressing fixture only: native event validity belongs to owner tests.
+        (Path(first['store_root']) / '.ledger/fixture').write_text('later append\n')
+        shutil.rmtree(self.other)
+        with patch.object(context, 'worktrees', side_effect=AssertionError('normal use must not enumerate worktrees')):
+            result = context.resolve(self.repo)
+        self.assertEqual(result['store_id'], first['store_id'])
+        self.assertFalse(result['storage_mutated'])
+        self.assertFalse((Path(first['store_root']) / 'migration-receipt.json').exists())
+
+    def test_direct_access_after_all_git_metadata_is_deleted(self):
+        first = context.resolve(self.repo, initialize=True)
+        shutil.rmtree(self.repo)
+        shutil.rmtree(self.other)
+        with patch.object(context, 'git', side_effect=AssertionError('direct selection must not run Git')):
+            result = context.resolve(store_id=first['store_id'])
+        self.assertEqual(result['native_args'], first['native_args'])
+        self.assertEqual(result['repository_id'], first['repository_id'])
+
+    def test_absent_explicit_identity_is_never_reinitialized(self):
+        with self.assertRaisesRegex(context.ContextError, 'not cataloged'):
+            context.resolve(store_id='a' * 32, initialize=True)
+        self.assertFalse(self.home.exists())
+
+    def test_missing_catalog_never_masks_existing_roots_with_empty_initialization(self):
+        first = context.resolve(self.repo, initialize=True)
+        (context.storage_home() / context.CATALOG).unlink()
+        with self.assertRaisesRegex(context.ContextError, 'lack a catalog'):
+            context.resolve(self.repo, initialize=True)
+        restored = context.register_root(Path(first['store_root']), first['store_id'], self.repo)
+        self.assertEqual(restored['store_id'], first['store_id'])
+
+    def test_read_only_listing_recovers_store_identity_after_checkout_deletion(self):
+        first = context.resolve(self.repo, initialize=True)
+        catalog = (context.storage_home() / context.CATALOG).read_bytes()
+        shutil.rmtree(self.repo)
+        shutil.rmtree(self.other)
+        proc = subprocess.run([sys.executable, str(SCRIPT), '--list-stores'], capture_output=True)
+        self.assertEqual(proc.returncode, 0, proc.stderr.decode())
+        result = json.loads(proc.stdout)
+        self.assertFalse(result['storage_mutated'])
+        self.assertEqual(result['stores'][0]['store_id'], first['store_id'])
+        self.assertIn('workspace:' + str(self.repo), result['stores'][0]['aliases'])
+        self.assertNotIn('healthy', result['stores'][0])
+        self.assertEqual(catalog, (context.storage_home() / context.CATALOG).read_bytes())
+
+    def test_empty_catalog_listing_is_read_only(self):
+        self.assertEqual(context.list_stores()['stores'], [])
+        self.assertFalse(self.home.exists())
+
+    def test_oversized_catalog_update_preserves_readable_metadata(self):
+        first = context.resolve(self.repo, initialize=True)
+        home = context.storage_home()
+        before = (home / context.CATALOG).read_bytes()
+        catalog = context.read_catalog(home)
+        catalog['aliases']['workspace:/' + 'x' * 1048576] = first['store_id']
+        with self.assertRaisesRegex(context.ContextError, 'size bound'):
+            context.publish_catalog(home, catalog)
+        self.assertEqual(before, (home / context.CATALOG).read_bytes())
+        self.assertEqual(context.resolve(store_id=first['store_id'])['store_root'], first['store_root'])
+
+    def existing_root(self):
+        custody = self.root / 'existing custody'
+        (custody / '.ledger').mkdir(parents=True)
+        store_id = 'a' * 32
+        context.write_json(custody / context.MARKER, {'schema': context.MARKER_SCHEMA, 'store_id': store_id})
+        return custody, store_id
+
+    def test_explicit_root_catalog_adoption_needs_no_checkout(self):
+        custody, store_id = self.existing_root()
+        shutil.rmtree(self.repo)
+        shutil.rmtree(self.other)
+        before = (custody / context.MARKER).read_bytes()
+        with patch.object(context, 'git', side_effect=AssertionError('no Git')):
+            first = context.register_root(custody, store_id)
+            second = context.resolve(store_id=store_id)
+        self.assertEqual(first['store_id'], second['store_id'])
+        self.assertEqual(before, (custody / context.MARKER).read_bytes())
+        self.assertFalse(context.register_root(custody, store_id)['storage_mutated'])
+
+    def test_legacy_registration_is_imported_explicitly_without_fallback(self):
+        custody, store_id = self.existing_root()
+        registration = self.repo / '.git' / context.REGISTRATION
+        context.write_json(registration, {'schema': context.REGISTRATION_SCHEMA,
+                                          'store_id': store_id, 'store_root': str(custody)})
+        before = registration.read_bytes()
+        with self.assertRaises(context.UnregisteredContext):
+            context.resolve(self.repo)
+        with self.assertRaisesRegex(context.ContextError, 'must be imported'):
+            context.resolve(self.repo, initialize=True)
+        result = context.import_registration(registration, self.repo)
+        self.assertEqual(result['store_id'], store_id)
+        self.assertEqual(context.resolve(self.other)['store_root'], str(custody))
+        self.assertEqual(before, registration.read_bytes())
+
+    def test_adoption_does_not_hide_a_different_legacy_registration(self):
+        custody, store_id = self.existing_root()
+        registration = self.repo / '.git' / context.REGISTRATION
+        context.write_json(registration, {'schema': context.REGISTRATION_SCHEMA,
+                                          'store_id': store_id, 'store_root': str(custody)})
+        other = context.resolve(initialize=True)
+        with self.assertRaisesRegex(context.ContextError, 'different legacy registration'):
+            context.register_root(Path(other['store_root']), other['store_id'], self.repo)
+        with self.assertRaises(context.UnregisteredContext):
+            context.resolve(self.repo)
+
+    def test_alias_conflict_never_overwrites_an_established_history(self):
+        first = context.resolve(self.repo, initialize=True)
+        second = context.resolve(initialize=True)
+        catalog = (context.storage_home() / context.CATALOG).read_bytes()
+        with self.assertRaisesRegex(context.ContextError, 'Conflicting'):
+            context.resolve(self.repo, store_id=second['store_id'], attach_workspace=True)
+        self.assertEqual((context.storage_home() / context.CATALOG).read_bytes(), catalog)
+        self.assertEqual(context.resolve(self.repo)['store_id'], first['store_id'])
+
+    def test_store_root_conflict_is_not_a_relocation(self):
+        first = context.resolve(self.repo, initialize=True)
+        copy = self.root / 'another root'
+        shutil.copytree(first['store_root'], copy)
+        with self.assertRaisesRegex(context.ContextError, 'another root'):
+            context.register_root(copy, first['store_id'])
+
+    def test_catalog_symlink_and_duplicate_metadata_are_rejected(self):
+        first = context.resolve(self.repo, initialize=True)
+        catalog = context.storage_home() / context.CATALOG
+        saved = catalog.read_bytes()
+        target = self.root / 'catalog-copy.json'
+        target.write_bytes(saved)
+        catalog.unlink()
+        catalog.symlink_to(target)
+        with self.assertRaisesRegex(context.ContextError, 'Symlink'):
+            context.resolve(store_id=first['store_id'])
+        catalog.unlink()
+        catalog.write_text('{"schema":"bad","schema":"duplicate","stores":{},"aliases":{}}')
+        with self.assertRaisesRegex(context.ContextError, 'Invalid metadata'):
+            context.resolve(store_id=first['store_id'])
 
     def test_relative_storage_override_is_rejected(self):
         with patch.dict(os.environ, {"LEDGER_HOME": "relative"}), self.assertRaises(context.ContextError):

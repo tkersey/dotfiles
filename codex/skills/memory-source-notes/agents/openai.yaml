@@ -3,4 +3,4 @@ policy:
 interface:
   display_name: "Memory Source Notes"
   short_description: "Transport and reconcile source admissions"
-  default_prompt: "Use $memory-source-notes after Learnings, Synesthesia, or Negative Ledger authorizes admission, or for explicit read-only reconciliation. Validate and append immutable source notes through the documented adapter, preserve canonical writes across transport or digest failure, compare canonical records with notes and exact Phase 2 provenance without inferring eligibility, and never edit compiled memory."
+  default_prompt: "Use $memory-source-notes after Learnings, Synesthesia, or Negative Ledger authorizes admission, or for explicit memory layout repair or read-only reconciliation. Resolve and pin the native memory layout, preserve canonical writes across transport or digest failure, use managed store context for Learnings and Negative Ledger, and compare exact immutable note references without inferring eligibility, compiler uptake, or behavioral value. Never edit compiled memory."

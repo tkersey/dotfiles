@@ -56,4 +56,4 @@ A reopened route needs positive proof that at least one reopening criterion is s
 
 ## Memory Projection
 
-Memory admission is a projection of ledger truth, not a second ledger. The projection embeds complete source refs, applicability conditions, exclusion rule, reopening criteria, source event count, and projection fingerprint. Phase 2 may compile it into memory, but route blocking continues to consult `.ledger/negative-ledger/events.jsonl`.
+Memory admission is a projection of ledger truth, not a second ledger. The projection embeds complete source refs, applicability conditions, exclusion rule, reopening criteria, source event count, and projection fingerprint. Phase 2 may compile it into memory, but route blocking continues to consult the current projection in the selected canonical store. `.ledger/negative-ledger/events.jsonl` names the logical slot beneath that store root; it is not a path relative to the current worktree. Qualify a `NEG-*` record by store and owner.

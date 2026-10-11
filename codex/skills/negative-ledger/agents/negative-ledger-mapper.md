@@ -1,20 +1,20 @@
 ---
 name: negative-ledger-mapper
-description: "Read-only specialist for mapping repo-local ledger records, learnings evidence, reverts, regressions, and current artifact state into narrow negative-evidence routing constraints."
+description: "Read-only specialist for mapping a selected personal Ledger store, learnings evidence, reverts, regressions, and current artifact state into narrow negative-evidence routing constraints."
 ---
 
 # Negative Ledger Mapper
 
 ## Mission
 
-Prevent repeated semantic dead ends by mapping canonical native Ledger evidence against the current repository and artifact state.
+Prevent repeated semantic dead ends by mapping canonical native Ledger evidence against the current project and artifact state.
 
 This specialist is read-only. It never captures ledger events, changes statuses, or writes memory-source notes.
 
 ## Allowed Reads
 
-- `ledger doctor` and `ledger project` with the canonical passive definition;
-- `current-records`, `route-gate`, and `memory-note` projections;
+- `ledger project` with the canonical passive definition, and `ledger doctor` for a diagnosed store problem;
+- `route-candidates`, `current-records`, `route-gate`, and `memory-note` projections;
 - selected Learnings projections as historical candidate evidence;
 - relevant commits, reverts, reviews, benchmarks, tests, traces, and diffs;
 - the current changed surface needed to judge applicability.
@@ -22,20 +22,29 @@ This specialist is read-only. It never captures ledger events, changes statuses,
 ## Method
 
 1. Establish `repository_id`, immutable `artifact_state_id`, human-readable `artifact_state_label`, route, cluster, every applicable native scope identity, target signal, and declared scope.
-2. Load `$ledger`, resolve the verified workspace without initializing, and retain
-   `context.store_root` and `context.store_id`. Set the canonical definition and
-   prove that managed store:
+2. Load `$ledger` and resolve the intended personal store without initializing.
+   `--store-id` works without Git; `--repo` may resolve a cataloged workspace
+   alias. Retain `context.store_root`, `context.store_id`, and `repository_id`.
+   Set the canonical definition and search the current records by mechanism,
+   component, or invariant:
 
    ```bash
    negative_ledger_definition="$(realpath "${CODEX_HOME:-$HOME/.codex}/skills/negative-ledger/definitions/ledger/negative-evidence-protocol.json")"
 
-   ledger doctor \
+   ledger project \
      --definition "$negative_ledger_definition" \
+     --projection route-candidates \
      --store-root "<context.store_root>" --store-id "<context.store_id>" \
+     --param "query=<mechanism component invariant>" --param limit=8 \
      --format json
    ```
 
-3. Run `route-gate` once for each established scope identity:
+3. Assess each material candidate's exact identity, applicability conditions,
+   lifecycle status, and artifact against the proposed route. A renamed helper
+   or route can still repeat the same mechanism. A similar record for another
+   scope suggests investigation, not exclusion. Broaden the terms or inspect
+   bounded `current-records` if known evidence is missing. Then run `route-gate`
+   for each established scope identity:
 
    ```bash
    ledger project \
@@ -47,11 +56,15 @@ This specialist is read-only. It never captures ledger events, changes statuses,
      --format json
    ```
 
-   Interpret exit `0` as no exact active match, `2` as an exact
-   active/applicable match, and `3` as blocked. Always include the identity for
-   the record's declared scope; omit only identities that were not established.
+   Interpret exit `0` as no exact active match for those selectors, `2` as an
+   exact active match whose applicability still requires inspection, and `3` as
+   unavailable or invalid. A label miss does not prove absence of prior evidence.
+   Always include the identity for the record's declared scope; omit only
+   identities that were not established. Do not substitute a historical artifact
+   identity to force a current match.
 
-4. For material `NEG-*` records, obtain the complete current structural record:
+4. Candidate results already contain the complete current structural record and
+   reducer status. Use a bounded current projection when more context is needed:
 
    ```bash
    ledger project \
@@ -73,7 +86,9 @@ This specialist is read-only. It never captures ledger events, changes statuses,
 ```yaml
 negative_evidence_ledger:
   - neg_id: NEG-000001
-    ledger_path: .ledger/negative-ledger/events.jsonl
+    store_id: "<context.store_id>"
+    owner: negative-ledger
+    ledger_path: "<context.store_root>/.ledger/negative-ledger/events.jsonl"
     record_version: NER-v2
     status: capture_candidate | need-evidence | unknown | active | accepted_risk | stale | reopened | superseded
     repository_id: "..."
@@ -121,7 +136,7 @@ final_call: active_exclusions | no_applicable_negative_evidence | reopen_require
 
 ## Guardrails
 
-- No source note or compiled memory can outrank the current repo-local ledger.
+- No source note or compiled memory can outrank the selected canonical Ledger store.
 - Do not block from fuzzy overlap.
 - Do not use stale evidence without applicability reasoning.
 - Do not treat a learning hit as active exclusion until promoted into the ledger.

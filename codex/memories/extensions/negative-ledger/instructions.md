@@ -4,13 +4,11 @@ Use this file only during Codex Phase 2 memory consolidation.
 
 ## Role
 
-This extension compiles selected projections of repo-local negative-evidence ledgers into durable memory routing guidance.
-
-Operational authority remains:
-
-```text
-<repo>/.ledger/negative-ledger/events.jsonl
-```
+Compile selected negative-evidence projections into durable retrieval guidance.
+`$negative-ledger` owns current route state; `$ledger` selects its canonical
+personal store independently of Git. Managed identity is
+`ledger-repository:<store_id>`. Preserve historical scopes and source-reference
+bytes as recorded; do not infer scope from a directory basename or Git remote.
 
 Extension intake is:
 
@@ -19,6 +17,12 @@ extensions/negative-ledger/notes/*.md
 ```
 
 A source note is an immutable snapshot of ledger truth for memory admission. It is never the blocking route gate and never replaces the canonical ledger.
+
+Deploy this file as a regular copy at native
+`memory-note path --extension negative-ledger --format json`'s
+`instructions_path`. Read only that selected root. A `ledger_path` in the
+payload names a canonical namespace relative to the selected native store;
+it does not authorize reading a similarly named repository-local file.
 
 ## Primary Source
 
@@ -76,7 +80,7 @@ If an active event lacks witness, applicability, narrow exclusion, reopening cri
 
 Only `active` may compile to a narrow route constraint. `accepted_risk`, `stale`, `reopened`, and `superseded` preserve history or proof obligations but do not block. `need-evidence`, `capture_candidate`, and `unknown` do not compile as exclusions.
 
-Never edit/delete notes or the repo-local ledger.
+Never edit/delete notes or the canonical ledger.
 
 ## Promotion Gate
 
@@ -84,17 +88,25 @@ Require narrow hypothesis, named attempted route, inspectable witness, observed 
 
 ## Artifact Targeting
 
-- `memory_summary.md`: broad routing rules only.
-- `MEMORY.md`: use task-group structure with `NEG-*`, canonical-store path,
-  status, artifact state, failed hypothesis,
-  exclusion/applicability/reopening fields, `source_note_ids`, and projection
-  fingerprint.
-- `skills/*`: only for repeated repo-specific preflight procedures.
-- `none`: incomplete, non-recurrent, weak, retracted, or superseded material with no remaining routing value.
+Follow the active compiler contract. V2 produces only compact
+`memory_summary.md`; retain a useful retrieval route or narrowly scoped
+reminder, not the full projection. Preserve the immutable note ID and stable
+store identity when needed to locate support. Detailed witness, artifact,
+applicability, exclusion, reopening, and fingerprint fields stay in source
+notes and current canonical projections.
+
+V1 may additionally permit `MEMORY.md` task groups or proven repeated
+preflight procedures in `skills/*`. Do not create either under a v2 contract.
+Choose `none` for incomplete, non-recurrent, weak, retracted, or superseded
+material with no remaining routing value.
 
 ## Current Verification Rule
 
-Compiled negative memory can guide where to look, but a normal runtime agent should still verify route state against the current repo-local ledger and artifact state before blocking work.
+Compiled memory supplies a discovery cue. Before a runtime route decision,
+use `$negative-ledger` to discover mechanism/component/invariant candidates in
+the selected personal store, verify current artifact applicability and declared
+identity, then use the exact current route gate. A similar route name, an old
+active snapshot, or an unmatched compiled `NEG-*` ID cannot block a route.
 
 ## Cross-Extension Ownership
 
