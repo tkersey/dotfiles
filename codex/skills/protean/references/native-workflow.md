@@ -5,7 +5,7 @@ The inspected Protean source was `6f4c6f48b9edec6ec597d0b6ad62cbdf8a09a43d`:
 repository URLs used the new names while source still used `agent`, `boundary`,
 `world`, and `adaptive-agent`. Resolve the consuming project's actual pins and
 exports; these historical spellings are inspection leads, not a fallback stack.
-Kronos references below are mutable documentation locations, not dependency pins.
+Kosmos references below are mutable documentation locations, not dependency pins.
 
 ## 1. General authored computation: the broad route
 
@@ -37,7 +37,7 @@ inspect `tools/native/emit.zig`, `build_native.zig`, and the retained downstream
 consumer rather than inventing their interfaces. `.application.emitted` reuses an
 exact image/assets/types tuple instead of regenerating it.
 
-For pure code with no task-host requirement, use Horos compilation and Kronos's
+For pure code with no task-host requirement, use Horos compilation and Kosmos's
 public native module directly. The inspected exports were `Session`, `Prepared`,
 `Resident`, and `invocation`. `Session.initImage(allocator, image, arguments)`
 admits an image/input; the corresponding prepared/resident interfaces expose the
@@ -88,7 +88,7 @@ Read the actual loaded `tool-construction` catalog. `tool_build` accepts a
 `proposal_json` string containing `instances`, `bindings`, and `entry` in the
 current recipe grammar. It returns a program reference and actual contracts or
 structured rejection. `tool_run` accepts `tool_ref` and `input_ref` and invokes
-that program through native Kronos. References resolve within their admitted task
+that program through native Kosmos. References resolve within their admitted task
 and policy; they are not arbitrary paths, global handles, or execution grants.
 
 The initial generated-tool domain is pure computation over admitted values.
@@ -102,15 +102,17 @@ Do not send `{"method":"tool_build"}` to stdio without a discovered method,
 forge an acquired model response, or route deterministic computation through a
 paid adaptive task simply because a direct command has not been added yet.
 
-## 4. A future skills-zig interface
+## 4. The future skills-zig `compute` interface
 
 No new CLI is implemented or required by this skill. Prefer a published native
 computation interface when one exists; its installed help is authoritative.
-A useful implementation would provide build, inspect, run, and continuation
-operations around the existing owners. It must keep source compilation separate
+The selected command name is `compute`: after its installed interface is verified,
+use `compute build`, `compute inspect`, `compute run`, and `compute resume` around
+the existing owners. This naming correction does not implement those commands.
+It must keep source compilation separate
 from running a precompiled program and return typed terminal or suspended outcomes.
 
-The CLI must not recreate Protean's model/task loop, Kronos's evaluator, Horos's
+The CLI must not recreate Protean's model/task loop, Kosmos's evaluator, Horos's
 compiler/linker, their codecs, or a durable store. General authoring must remain
 possible outside the adaptive component catalog. Effect requests use existing
 explicit handlers or are returned to the caller; there is no implicit shell or
@@ -127,8 +129,8 @@ missing convenience interface accurately.
 - [Protean public architecture and native build](https://github.com/tkersey/protean/blob/6f4c6f48b9edec6ec597d0b6ad62cbdf8a09a43d/README.md)
 - [Native downstream build call](https://github.com/tkersey/protean/blob/6f4c6f48b9edec6ec597d0b6ad62cbdf8a09a43d/test/consumers/adaptive/build.zig)
 - [Original runtime construction skill](https://github.com/tkersey/protean/blob/6f4c6f48b9edec6ec597d0b6ad62cbdf8a09a43d/examples/adaptive-agent/skills/tool-construction/SKILL.md)
-- [Kronos public native exports](https://github.com/tkersey/kronos/blob/main/src/root.zig) and [session owner](https://github.com/tkersey/kronos/blob/main/src/interpreter_v2/stable_session.zig)
-- [Kronos execution/embedding distinction](https://github.com/tkersey/kronos/blob/main/README.md)
+- [Kosmos public native exports](https://github.com/tkersey/kosmos/blob/main/src/root.zig) and [session owner](https://github.com/tkersey/kosmos/blob/main/src/interpreter_v2/stable_session.zig)
+- [Kosmos execution/embedding distinction](https://github.com/tkersey/kosmos/blob/main/README.md)
 - [skills-zig CLI and distribution conventions](https://github.com/tkersey/skills-zig/blob/main/README.md)
 
 These links locate implementation owners; they do not install dependencies,

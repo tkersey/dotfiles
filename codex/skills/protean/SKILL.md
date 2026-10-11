@@ -2,7 +2,7 @@
 name: protean
 description: >-
   Author, compile, execute, inspect, and reuse computations with Protean, Horos,
-  and native Kronos. Use for general typed programs, explicit effects and retained
+  and native Kosmos. Use for general typed programs, explicit effects and retained
   continuations, or constructing a reusable tool from admitted components. Not
   limited to the adaptive agent's precompiled tool catalog.
 metadata:
@@ -13,7 +13,7 @@ metadata:
 
 Turn the requested behavior into an executable computation, run it, and return
 its actual result. Horos (formerly Boundary) owns checked construction and
-compilation; Kronos (formerly World) executes the program; Protean (formerly
+compilation; Kosmos (formerly World) executes the program; Protean (formerly
 Agent) supplies reusable agent constructions and native environmental capabilities.
 This is a skill for the **coding agent**, not instructions to launch another model.
 
@@ -25,13 +25,13 @@ artifact materially helps the task. Do not require a framework for simple work.
 
 | Need | Route |
 | --- | --- |
-| A new algorithm, control structure, type, or procedure outside the frozen tool catalog | Author Zig using the actual Horos/Protean APIs; emit an ordinary program and execute it with native Kronos. |
+| A new algorithm, control structure, type, or procedure outside the frozen tool catalog | Author Zig using the actual Horos/Protean APIs; emit an ordinary program and execute it with native Kosmos. |
 | A pure procedure expressible by components already admitted to a Protean task | Use that task's real `tool_build` and `tool_run` interface. |
 | Model reasoning, interactive work, or existing native capabilities | Use the actual Protean authored/native host path, including `addNativeSystem` when building an application. |
 
 The component route is a subset, not the general programming interface. Do not
 force every computation into its current tables, predicates, or input schemas.
-Conversely, general authoring does not make arbitrary native code a Kronos
+Conversely, general authoring does not make arbitrary native code a Kosmos
 program: the relevant algorithm and control must be lowered into the actual
 Horos program representation, not computed by an emitter or a host callback.
 Pure computation needs no model, provider credential, or SQLite task host unless
@@ -48,8 +48,10 @@ semantic boundary decision; neither requires a new planning artifact.
 Use the names and paths the selected revisions actually export. A repository
 rename does not imply that its source/API rename has landed. Do not resurrect
 retired JavaScript runtimes, invent compatibility aliases, or hand-edit package
-hashes. Do not assume a proposed skills-zig computation CLI exists: consult its
-actual installed help and published contract before invoking one.
+hashes. Do not assume the proposed skills-zig `compute` CLI exists: consult its
+actual installed help and published contract before invoking it. Once its
+installed interface is verified, prefer `compute build`, `compute inspect`,
+`compute run`, and `compute resume` over manual Zig invocation or bespoke drivers.
 
 ## Derive the computation, not a staged answer
 
@@ -66,7 +68,7 @@ iteration, branching, handlers, and ownership facilities where the actual API
 supports them. Introduce a missing ordinary computation in the caller's code,
 not a new interpreter or a complete goal disguised as a primitive. Use Protean
 constructions when they provide needed semantics; direct Horos authoring plus
-Kronos is sufficient for a pure program. Missing expressiveness is a concrete
+Kosmos is sufficient for a pure program. Missing expressiveness is a concrete
 implementation question, not evidence that the frozen component catalog is the
 limit of the entire system.
 
@@ -84,7 +86,7 @@ program and its real interfaces. The build host runs emitters; a cross-compiled
 target is not a build-time generator. Zig is an authoring/build dependency, not a
 requirement to execute an already compiled program through a prebuilt native host.
 
-Run the exact admitted image and compatible input through Kronos. Preserve the
+Run the exact admitted image and compatible input through Kosmos. Preserve the
 three separate claims: structurally admitted, authorized to execute, and correct
 for the requested task. A digest identifies bytes; a successful link is not a
 proof of natural-language intent. Use independent expected relationships and an
@@ -105,7 +107,7 @@ authoring work can continue without pretending execution succeeded.
 
 ## Effects, continuation, and recovery
 
-Observe Kronos's real outcome. Completed, failed, cancelled, yielded, and requested
+Observe Kosmos's real outcome. Completed, failed, cancelled, yielded, and requested
 work are distinct. A request is not permission to execute it. Serve only an
 admitted effect, or return the actual pending request and checkpoint to its caller.
 Do not coerce suspension or missing capability into success.
