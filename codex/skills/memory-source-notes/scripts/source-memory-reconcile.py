@@ -18,7 +18,11 @@ from urllib.parse import urlparse
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from memory_layout import LayoutError, MemoryLayout, compiled_documents, resolve_layout
-from negative_ledger_memory_note import AdapterError, resolve_custody
+from negative_ledger_memory_note import (
+    ALLOWED_KINDS as NEGATIVE_NOTE_KINDS,
+    AdapterError,
+    resolve_custody,
+)
 from memory_source_layout import instruction_status
 
 SOURCES = ("learnings", "synesthesia", "negative-ledger")
@@ -398,6 +402,56 @@ def note_source_id(source: str, note: dict[str, Any]) -> str | None:
     return value if isinstance(value, str) and value else None
 
 
+def matches_negative_predecessor(
+    note: dict[str, Any], current_export: dict[str, Any], record_id: str
+) -> bool:
+    """Bind an immutable snapshot to the native fold's immediate predecessor.
+
+    Negative Ledger computes this link from its prior state, retained record,
+    repository identity, and event chain. It is separate from the transport's
+    writer fingerprint and never makes the older snapshot current.
+    """
+    kind = note.get("kind")
+    if (
+        note.get("extension") != "negative-ledger"
+        or not isinstance(kind, str)
+        or kind not in NEGATIVE_NOTE_KINDS
+        or note.get("authority") != "ledger-cli"
+        or current_export.get("authority") != "ledger-cli"
+    ):
+        return False
+    previous = note.get("payload")
+    current = current_export.get("payload")
+    if not isinstance(previous, dict) or not isinstance(current, dict):
+        return False
+    for payload in (previous, current):
+        if payload.get("schema") != "negative-ledger-projection/v3" or payload.get("neg_id") != record_id:
+            return False
+    repository = current.get("repository_id")
+    if not isinstance(repository, str) or not repository or previous.get("repository_id") != repository:
+        return False
+    for envelope in (note, current_export):
+        scope = envelope.get("scope")
+        if not isinstance(scope, dict) or scope.get("kind") != "repo" or scope.get("repo") != repository:
+            return False
+    source_refs = current_export.get("source_refs")
+    if (
+        not isinstance(source_refs, list)
+        or not source_refs
+        or note.get("source_refs") != source_refs
+        or any(not isinstance(ref, dict) or ref.get("kind") != "negative-ledger" for ref in source_refs)
+        or previous.get("ledger_path") != current.get("ledger_path")
+        or current.get("ledger_path") != ".ledger/negative-ledger/events.jsonl"
+    ):
+        return False
+    predecessor = current.get("previous_projection_fingerprint")
+    return bool(
+        isinstance(predecessor, str)
+        and re.fullmatch(r"[a-f0-9]{64}", predecessor)
+        and previous.get("projection_fingerprint") == predecessor
+    )
+
+
 def classify_record(
     *,
     record_id: str,
@@ -574,6 +628,7 @@ def source_report(
     notes_by_id: dict[str, list[dict[str, Any]]] = {}
     scoped_ids = {note.get("id") for note in local_notes}
     exact_export_ids: set[str] = set()
+    predecessor_export_ids: set[str] = set()
     for note in notes:
         source_id = note_source_id(source, note)
         if source_id:
@@ -624,6 +679,8 @@ def source_report(
             except Exception as exc:
                 export_error = f"synesthesia adapter: {exc}"
         elif raw is not None:
+            current_export = parse_json(raw, f"{source} {record_id} native export")
+            predecessor_candidates = []
             for candidate in candidates:
                 kind = candidate.get("kind")
                 if not isinstance(kind, str):
@@ -633,7 +690,13 @@ def source_report(
                     note, expected = candidate, candidate_expected
                     if isinstance(candidate.get("id"), str):
                         exact_export_ids.add(candidate["id"])
+                if source == "negative-ledger" and matches_negative_predecessor(candidate, current_export, record_id):
+                    predecessor_candidates.append(candidate)
+                    if isinstance(candidate.get("id"), str):
+                        predecessor_export_ids.add(candidate["id"])
             if expected is None:
+                if predecessor_candidates:
+                    note = predecessor_candidates[0]
                 kind = note.get("kind") if note else logical_kind
                 if isinstance(kind, str):
                     expected = writer_fingerprint(source, kind, raw)
@@ -647,15 +710,22 @@ def source_report(
                 compiled_corpus=compiled_corpus,
                 unreadable_phase2=unreadable_phase2,
             )
-        row["scope_binding"] = "canonical-export" if note and note.get("id") in exact_export_ids else "declared-scope"
+        if note and note.get("id") in exact_export_ids:
+            row["scope_binding"] = "canonical-export"
+        elif note and note.get("id") in predecessor_export_ids:
+            row["scope_binding"] = "canonical-predecessor"
+        else:
+            row["scope_binding"] = "declared-scope"
         rows.append(row)
 
     # Old immutable snapshots retain their historical scope. Exact native export
-    # bytes can establish correspondence without inventing a repository alias.
-    local_notes = [note for note in notes if note.get("id") in scoped_ids | exact_export_ids]
-    foreign_notes = [note for note in foreign_notes if note.get("id") not in exact_export_ids]
-    unresolved_notes = [note for note in unresolved_notes if note.get("id") not in exact_export_ids]
-    unscoped_notes = [note for note in unscoped_notes if note.get("id") not in exact_export_ids]
+    # bytes or the source's qualified predecessor link establish correspondence
+    # without inventing a repository alias. Only exact current bytes are admitted.
+    source_bound_ids = exact_export_ids | predecessor_export_ids
+    local_notes = [note for note in notes if note.get("id") in scoped_ids | source_bound_ids]
+    foreign_notes = [note for note in foreign_notes if note.get("id") not in source_bound_ids]
+    unresolved_notes = [note for note in unresolved_notes if note.get("id") not in source_bound_ids]
+    unscoped_notes = [note for note in unscoped_notes if note.get("id") not in source_bound_ids]
 
     expected_fingerprints = {
         row["expected_fingerprint"] for row in rows if row["expected_fingerprint"]
@@ -697,6 +767,7 @@ def source_report(
         ),
         "fallback_show_count": fallback_show_count,
         "exact_export_note_ids": sorted(exact_export_ids),
+        "predecessor_export_note_ids": sorted(predecessor_export_ids),
     }
 
 

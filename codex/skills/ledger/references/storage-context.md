@@ -2,6 +2,8 @@
 
 This reference and `../scripts/ledger_context.py` own the Codex integration's
 location policy. The native CLI takes explicit roots and has no Codex/Git default.
+For existing installations, follow [the upgrade guide](personal-store-upgrade.md)
+before initializing or moving any history.
 
 ## Catalog and identity
 
@@ -147,7 +149,14 @@ Add `--repo "<workspace-path>"` only when that workspace should select the new
 identity. Retain the returned ID. Initialization with an unknown explicit
 `--store-id` is forbidden, and an established broken root cannot be recreated.
 Known legacy registration or history in the selected workspace requires explicit
-adoption/import; the helper does not claim coverage of undiscovered sources.
+adoption/import. When attaching a verified Git family to new custody, initialization
+also inspects its linked worktrees before staging and immediately before catalog
+publication. Sibling history in `.ledger`, including retired
+`.ledger/learnings/learnings.jsonl`, or in `.learnings.jsonl` requires explicit migration.
+An unavailable sibling blocks new family custody until its legacy coverage is
+resolved. This creation check never gates normal access, direct store selection,
+or adoption of an existing identity, and does not apply to a new Git-free store.
+The helper does not claim coverage of other undiscovered sources.
 
 New isolated roots require no global writer shutdown. Legacy cold transport and
 historical import do require actual quiescence of affected old and managed writers.

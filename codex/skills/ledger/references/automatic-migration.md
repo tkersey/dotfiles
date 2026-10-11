@@ -5,6 +5,9 @@ historical import, or interrupted migration. Without `--migrate`, the helper
 only resolves the personal catalog; existing custody needs no migration receipt
 or complete worktree inventory. Both helpers belong to `$ledger`; the context
 helper owns storage home, stable root identity, and catalog associations.
+For a coordinated upgrade of existing installations, start with
+[the upgrade guide](personal-store-upgrade.md); already-managed roots normally
+need catalog adoption rather than historical migration.
 
 ## Skill workflow
 
@@ -33,6 +36,14 @@ Read-only migration inspection reports a plan. Never assert quiescence merely
 because no process was noticed; old
 `--repo` writers are not fenced by the registration lock. Stop or upgrade those
 writers before applying. Unavailable worktrees are not automatically pruned.
+
+When Git metadata was removed but an unmanaged source directory survives, select
+that existing directory with the same `--repo` option. Migration then inventories
+that one explicit source, without claiming coverage of other lost copies. Broken
+or surviving Git metadata cannot trigger this fallback. The source receives no
+lock file or new Git metadata; the migration lock lives in the personal home.
+The source/Git association is rechecked along with source bytes before publication.
+An existing managed root instead requires catalog adoption with its original ID.
 
 On success, retain the returned `context`, resume the original owner operation,
 and verify its own returned result. A migration receipt is not evidence that a

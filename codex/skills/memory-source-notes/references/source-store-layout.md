@@ -59,6 +59,10 @@ controlled `instructions.md` files; it leaves notes and resources untouched.
 
 ## Explicit version cutover
 
+Coordinate source identity, writer versions, and rollback through the Ledger
+[upgrade guide](../../ledger/references/personal-store-upgrade.md). Existing notes
+already in the selected version stay in place.
+
 Inspect both versions explicitly only during requested storage maintenance.
 An empty old note directory requires no migration; do not manufacture notes to
 fill it. For admitted notes that are stranded in v1:
@@ -85,6 +89,16 @@ their scope/IDs, or admit canonical rows as part of a location migration.
 Copy current extension instructions into the selected root separately and
 regenerate only disposable source digests there. Do not copy compiled memory
 between versions as a substitute for the selected compiler.
+
+For the three controlled extension instructions, use the pinned native layout:
+
+```bash
+uv run "$memory_source_notes_skill_root/scripts/memory_source_layout.py" sync-instructions \
+  --codex-home "<selected-codex-home>" --memory-version v2
+```
+
+Use `v1` instead when that is the selected reader layout. This command copies
+tracked instructions as regular files; it does not migrate or append notes.
 
 ## Verification boundaries
 

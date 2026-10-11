@@ -268,19 +268,53 @@ def ensure(repo: Path | None = None, *, store_id: str | None = None) -> dict:
     return ctx.resolve(repo, store_id=store_id)
 
 
+def migration_source(repo: Path, ctx) -> tuple[Path, Path | None]:
+    """Select a verified Git family or one explicitly named surviving directory."""
+    selected = repo.expanduser().absolute()
+    ctx.no_symlinks(selected)
+    if not selected.is_dir():
+        raise MigrationError(f'Legacy source must be an existing directory: {selected}')
+    if os.path.lexists(selected / ctx.MARKER):
+        raise MigrationError('Existing managed root requires --register-root with its original store ID, not migration')
+    try:
+        root, common = ctx.workspace(selected)
+    except ctx.ContextError as exc:
+        # A broken checkout is not evidence that its other worktrees disappeared.
+        # Bare controls also survive an unreadable or missing HEAD.
+        if any(
+            os.path.lexists(parent / '.git')
+            or all(os.path.lexists(parent / name) for name in ('config', 'objects', 'refs'))
+            for parent in (selected, *selected.parents)
+        ):
+            raise MigrationError(f'Cannot establish Git family coverage for legacy source: {selected}') from exc
+        try:
+            ctx.git(selected, 'rev-parse', '--git-dir')
+        except ctx.ContextError:
+            pass
+        else:
+            raise MigrationError(f'Legacy source is Git metadata, not a verified worktree: {selected}') from exc
+    else:
+        if os.path.lexists(root / ctx.MARKER):
+            raise MigrationError('Existing managed root requires --register-root with its original store ID, not migration')
+        return root, common
+    return selected.resolve(strict=True), None
+
+
 def migrate(repo: Path, *, store_id: str | None = None, apply: bool = False, confirm_no_writers: bool = False,
            binary: str = 'ledger', skill_root: Path | None = None, framing_controls: dict | None = None) -> dict:
     if apply and not confirm_no_writers:
         raise MigrationError('--apply requires --confirm-no-writers after actually quiescing legacy and managed writers')
     ctx = load_module(Path(__file__).with_name('ledger_context.py'))
-    workspace, common = ctx.workspace(repo)
+    workspace, common = migration_source(repo, ctx)
     installed = skill_root or Path(__file__).resolve().parents[2]
     selected = owners(installed, ctx)
     slots = [slot for owner in selected for slot in owner['slots']]
     retired = sorted({name for owner in selected for name in owner['retired_sources']})
 
     def inspect():
-        trees = sorted(ctx.worktrees(workspace), key=str)
+        if migration_source(repo, ctx) != (workspace, common):
+            raise MigrationError('Legacy source/Git association changed; inspect and retry')
+        trees = sorted(ctx.worktrees(workspace), key=str) if common is not None else [workspace]
         for tree in trees:
             ctx.no_symlinks(tree / '.ledger')
             for name in retired:
@@ -304,11 +338,11 @@ def migrate(repo: Path, *, store_id: str | None = None, apply: bool = False, con
             context = ctx.resolve(workspace, store_id=store_id)
         except ctx.UnregisteredContext:
             # This is explicit maintenance, not a fallback in ordinary lookup.
-            if os.path.lexists(common / ctx.REGISTRATION):
+            if common is not None and os.path.lexists(common / ctx.REGISTRATION):
                 context = ctx.checked_registration(workspace, common)
             else:
                 return None
-        if os.path.lexists(common / ctx.REGISTRATION):
+        if common is not None and os.path.lexists(common / ctx.REGISTRATION):
             legacy = ctx.checked_registration(workspace, common)
             if (legacy['store_id'] != context['store_id']
                     or Path(legacy['store_root']).resolve(strict=True) != Path(context['store_root']).resolve(strict=True)):
@@ -373,6 +407,8 @@ def migrate(repo: Path, *, store_id: str | None = None, apply: bool = False, con
                 for owner in selected:
                     healthy(binary, owner, context['native_args'])
                 if apply:
+                    if inspect()[1] != snapshot:
+                        raise MigrationError('Source view changed before catalog adoption; inspect and retry')
                     context = ctx.register_root(Path(context['store_root']), context['store_id'], workspace)
                 return {**saved, 'context': context, 'storage_mutated': context.get('storage_mutated', False)}
     if not apply:
@@ -380,7 +416,13 @@ def migrate(repo: Path, *, store_id: str | None = None, apply: bool = False, con
                 'fingerprint': fingerprint, 'sources': snapshot, 'selected_source': str(source) if source else None,
                 'owners': selected, 'requires': ['--migrate', '--apply', '--confirm-no-writers'],
                 'storage_mutated': False, 'authority_granted': False}
-    with ctx.registration_lock(common):
+    lock_root = common
+    if lock_root is None:
+        # The surviving source may be read-only; control state belongs to custody.
+        lock_root = ctx.storage_home()
+        ctx.no_symlinks(lock_root)
+        lock_root.mkdir(parents=True, exist_ok=True, mode=0o700)
+    with ctx.registration_lock(lock_root):
         # Reject a changed view rather than silently applying a new migration.
         current = current_context()
         if inspect()[1] != snapshot or (current is not None) != registered:
@@ -481,8 +523,8 @@ def migrate(repo: Path, *, store_id: str | None = None, apply: bool = False, con
             final_selector = ['--store-root', str(destination), '--store-id', selected_id]
             for owner in selected:
                 healthy(binary, owner, final_selector)
-            if inspect()[1] != snapshot:
-                raise MigrationError(f'Source changed before publication; unregistered destination retained: {destination}')
+        if inspect()[1] != snapshot:
+            raise MigrationError(f'Source changed before publication; destination retained: {published_root}')
         receipt['context'] = ctx.register_root(published_root, selected_id, workspace)
         return receipt
 

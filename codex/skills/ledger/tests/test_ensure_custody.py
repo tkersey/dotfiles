@@ -26,7 +26,10 @@ class ContextFixture:
     MARKER = '.ledger-root.json'
     MARKER_SCHEMA = 'ledger-storage-root/v1'
 
-    class UnregisteredContext(RuntimeError):
+    class ContextError(RuntimeError):
+        pass
+
+    class UnregisteredContext(ContextError):
         pass
 
     def __init__(self, root):
@@ -302,8 +305,145 @@ class EnsureTests(unittest.TestCase):
                 module.relative(name)
 
 
+class LegacySourceSelection(unittest.TestCase):
+    def test_invalid_sources_never_fall_back_to_single_directory(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary).resolve()
+            missing = root / 'missing'
+            broken = root / 'broken'; broken.mkdir()
+            (broken / '.git').write_text('gitdir: /unavailable-legacy-worktree\n')
+            nested = broken / 'nested'; nested.mkdir()
+            bare = root / 'bare.git'
+            subprocess.run(['git', 'init', '--bare', '-q', str(bare)], check=True, capture_output=True)
+            damaged_bare = root / 'damaged-bare.git'
+            subprocess.run(['git', 'init', '--bare', '-q', str(damaged_bare)], check=True, capture_output=True)
+            (damaged_bare / 'HEAD').write_text('damaged HEAD\n')
+            missing_bare_head = root / 'missing-head.git'
+            subprocess.run(['git', 'init', '--bare', '-q', str(missing_bare_head)], check=True, capture_output=True)
+            (missing_bare_head / 'HEAD').unlink()
+            managed = root / 'managed'; managed.mkdir()
+            (managed / '.ledger-root.json').write_text('{}')
+            link = root / 'linked-source'; link.symlink_to(managed, target_is_directory=True)
+            git_parent = root / 'git-parent'; git_parent.mkdir()
+            subprocess.run(['git', '-C', str(git_parent), 'init', '-q'], check=True, capture_output=True)
+            nested_managed = git_parent / 'old-managed'; (nested_managed / '.ledger').mkdir(parents=True)
+            marker = {'schema': 'ledger-storage-root/v1', 'store_id': 'a' * 32}
+            (nested_managed / '.ledger-root.json').write_text(json.dumps(marker))
+            managed_worktree = root / 'managed-worktree'; managed_worktree.mkdir()
+            subprocess.run(['git', '-C', str(managed_worktree), 'init', '-q'], check=True, capture_output=True)
+            (managed_worktree / '.ledger-root.json').write_text(json.dumps(marker))
+            (managed_worktree / '.ledger').mkdir()
+            child = managed_worktree / 'child'; child.mkdir()
+            with patch.dict(os.environ, {'LEDGER_HOME': str(root / 'home')}), \
+                    patch.object(module, 'native', side_effect=AssertionError('Invalid source reached native')) as engine:
+                for source in (missing, broken, nested, bare, damaged_bare, missing_bare_head,
+                               managed, link, nested_managed, child):
+                    with self.subTest(source=source), self.assertRaises(RuntimeError):
+                        module.migrate(source, apply=True, confirm_no_writers=True, binary='must-not-run-ledger')
+                    self.assertFalse((root / 'home').exists())
+                engine.assert_not_called()
+
+
 @unittest.skipUnless(os.environ.get('LEDGER_BIN'), 'Set LEDGER_BIN for real native/context conformance')
 class NativeIntegration(unittest.TestCase):
+    def test_surviving_directory_preserves_old_native_history_and_retired_import(self):
+        skills = SCRIPT.parents[2]
+        binary = os.environ['LEDGER_BIN']
+        definition = skills / 'learnings/definitions/ledger/learnings-protocol.json'
+        previous = skills / 'learnings/tests/fixtures/pre-personal-history/learnings-protocol.json'
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary).resolve(); source = root / 'surviving source'; source.mkdir()
+            subprocess.run(['git', '-C', str(source), 'init', '-q'], check=True, capture_output=True)
+            environment = {'LEDGER_HOME': str(root / 'home'), 'LEDGER_CACHE_DIR': str(root / 'cache')}
+            def native(selector, command, *arguments, packet=None, selected_definition=definition):
+                result = subprocess.run([binary, command, '--definition', str(selected_definition),
+                    *selector, *arguments, '--format', 'json'], capture_output=True,
+                    input=None if packet is None else json.dumps(packet).encode())
+                self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+                return json.loads(result.stdout)
+            def snapshot(directory):
+                return {path.relative_to(directory).as_posix(): path.read_bytes()
+                        for path in directory.rglob('*') if path.is_file()}
+            with patch.dict(os.environ, environment):
+                old_selector = ['--repo', str(source)]
+                record = {'status': 'codify_now', 'learning': 'Retain a surviving native claim.',
+                    'evidence': ['original fixture'], 'application': 'Keep identity after Git is deleted.',
+                    'source': 'old session', 'context': {'repo': str(source), 'branch': 'main', 'paths': []}}
+                native(old_selector, 'transact', '--operation', 'capture', '--input', 'submission=-',
+                       packet={'record': record}, selected_definition=previous)
+                original = native(old_selector, 'project', '--projection', 'import-records',
+                                  selected_definition=previous)['data'][0]
+                old_note = native(old_selector, 'project', '--projection', 'memory-note', '--param',
+                                  'id=' + original['id'], selected_definition=previous)['data']
+                historical = {'id': 'retired-surviving-claim', 'captured_at': '2026-01-01T00:00:00Z',
+                    'fingerprint': 'retained-retired-fingerprint', 'status': 'codify_now',
+                    'learning': 'Preserve the separate retired record.', 'evidence': ['fixture'],
+                    'application': 'Import without inventing a replacement ID.', 'source': 'retired session'}
+                (source / '.learnings.jsonl').write_text(json.dumps(historical) + '\n')
+                shutil.rmtree(source / '.git')
+                before = snapshot(source)
+                planned = module.migrate(source, binary=binary, skill_root=skills)
+                self.assertEqual(planned['status'], 'planned')
+                self.assertEqual([item['workspace'] for item in planned['sources'].values()], [str(source)])
+                self.assertFalse((root / 'home').exists())
+                self.assertEqual(snapshot(source), before)
+
+                migrated = module.migrate(source, apply=True, confirm_no_writers=True,
+                                          binary=binary, skill_root=skills)
+                selected = migrated['context']
+                custody = Path(selected['store_root'])
+                self.assertIsNone(selected['git_common_dir'])
+                self.assertEqual(snapshot(source), before)
+                self.assertEqual(snapshot(custody / 'legacy-archive' / migrated['fingerprint'] / 'worktree-0'), before)
+                self.assertEqual(native(selected['native_args'], 'project', '--projection', 'import-records')['data'],
+                                 [original, historical])
+                self.assertEqual(native(selected['native_args'], 'project', '--projection', 'memory-note',
+                                        '--param', 'id=' + original['id'])['data'], old_note)
+                for name, contents in before.items():
+                    if name.startswith('.ledger/.definitions/') and not name.endswith('.cas.lock.advisory'):
+                        self.assertEqual((custody / name).read_bytes(), contents)
+                self.assertTrue((custody / '.ledger/learnings/events.jsonl').read_bytes().startswith(
+                    before['.ledger/learnings/events.jsonl']))
+                self.assertTrue((root / 'home/ledger-store.lock').is_file())
+                again = module.migrate(source, apply=True, confirm_no_writers=True,
+                                       binary=binary, skill_root=skills)
+                self.assertEqual(again['context']['store_id'], selected['store_id'])
+                self.assertFalse(again['storage_mutated'])
+                record['learning'] = 'Append after the surviving-directory cutover.'
+                record['context']['repo'] = selected['repository_id']
+                native(selected['native_args'], 'transact', '--operation', 'capture', '--input', 'submission=-',
+                       packet={'record': record})
+                self.assertEqual(module.migrate(source, binary=binary, skill_root=skills)['status'], 'verified')
+                shutil.rmtree(source)
+                direct = module.ensure(store_id=selected['store_id'])
+                self.assertEqual(len(native(direct['native_args'], 'project', '--projection', 'import-records')['data']), 3)
+
+    def test_surviving_directory_gaining_git_before_publication_is_rejected(self):
+        skills = SCRIPT.parents[2]
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary).resolve(); source = root / 'surviving'; source.mkdir()
+            historical = {'id': 'retired-before-git-change', 'captured_at': '2026-01-01T00:00:00Z',
+                'fingerprint': 'retired-fingerprint', 'status': 'codify_now', 'learning': 'Preserve old history.',
+                'evidence': ['fixture'], 'application': 'Do not change migration coverage during publication.',
+                'source': 'fixture'}
+            (source / '.learnings.jsonl').write_text(json.dumps(historical) + '\n')
+            real_sync = module.sync_tree
+            changed = False
+            def sync_and_change(path, ctx):
+                nonlocal changed
+                real_sync(path, ctx)
+                if (path / 'migration-receipt.json').exists() and not changed:
+                    subprocess.run(['git', '-C', str(source), 'init', '-q'], check=True, capture_output=True)
+                    changed = True
+            with patch.dict(os.environ, {'LEDGER_HOME': str(root / 'home'), 'LEDGER_CACHE_DIR': str(root / 'cache')}), \
+                    patch.object(module, 'sync_tree', side_effect=sync_and_change):
+                with self.assertRaisesRegex(module.MigrationError, 'association changed'):
+                    module.migrate(source, apply=True, confirm_no_writers=True,
+                                   binary=os.environ['LEDGER_BIN'], skill_root=skills)
+                self.assertTrue(changed)
+                self.assertFalse((root / 'home/catalog.json').exists())
+                self.assertEqual(json.loads((source / '.learnings.jsonl').read_bytes()), historical)
+
     def test_conflicting_legacy_registration_blocks_before_destination_mutation(self):
         skills = SCRIPT.parents[2]
         binary = os.environ['LEDGER_BIN']

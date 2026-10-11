@@ -54,8 +54,11 @@ ledger_skill_root="$(realpath "${CODEX_HOME:-$HOME/.codex}/skills/ledger")"
 ```
 
 After `ledger-bootstrap-ready/v1`, invoke the native CLI directly. The handler
-requires Ledger 1.3.0 or newer within major version 1 and
-`ledger-artifact-abi/v1`. It can install or upgrade `tkersey/tap/ledger` only when
+defaults to Ledger 1.3.0 or newer within major version 1 and
+`ledger-artifact-abi/v1`. An owner requiring a newer runtime must pass its minimum,
+for example `ensure-ledger --min-version 1.5.0`. Preserve that option when adding
+`--install`; an earlier baseline readiness result does not satisfy the owner.
+The handler can install or upgrade `tkersey/tap/ledger` only when
 user-level provisioning is authorized. Otherwise stop with its remediation.
 Never use an alternate implementation, `curl | sh`, an unpinned download, or
 installation during an active repository effect. It does not proxy commands.
@@ -75,6 +78,7 @@ readiness only while the executable and execution environment are unchanged.
 | Pure `validate`, `materialize`, or definition inspection | This entrypoint and the owner's exact definition/inputs; no workspace, managed store, or migration scan. |
 | Canonical store read/write, `doctor`, projection, transaction, or managed-context resolution | [canonical-custody.md](references/canonical-custody.md) for the personal catalog and native selector. Historical import completeness does not gate normal access. |
 | Binding, legacy migration, or exact recovery | Canonical custody guidance and the maintenance/migration reference it selects before the effect; availability never grants authority. |
+| Upgrade an existing installation or plan rollback | [personal-store-upgrade.md](references/personal-store-upgrade.md) for identity adoption, writer cutover, retained admissions, and compatible fallback. |
 | Author or debug a passive definition | [definition-authoring.md](references/definition-authoring.md); add custody guidance only if a store operation is selected. |
 
 Never load storage manuals or initialize a store for a pure operation. Conversely,

@@ -50,6 +50,13 @@ class NativeHistory(unittest.TestCase):
             args += ['--param', f'{key}={value}']
         return self.native(definition, 'project', *args)['data']
 
+    def check_definition(self, definition):
+        completed = subprocess.run([
+            os.environ['LEDGER_BIN'], 'definition', 'check', '--definition', str(definition),
+            '--format', 'json'], capture_output=True, cwd=self.root, env=self.environment)
+        self.assertEqual(completed.returncode, 0, completed.stdout + completed.stderr)
+        self.assertTrue(json.loads(completed.stdout)['valid'])
+
     def custody(self):
         return {str(path.relative_to(self.root)): path.read_bytes()
                 for path in (self.root / '.ledger').rglob('*') if path.is_file()}
@@ -157,6 +164,7 @@ class NegativeHistoryTests(NativeHistory):
         old_note = self.project(previous, 'memory-note', id=old_id)
         before = self.custody()
 
+        self.check_definition(NEGATIVE)
         self.assertEqual(self.project(NEGATIVE, 'current-records', limit=20), old_rows)
         self.assertEqual(self.project(NEGATIVE, 'memory-note', id=old_id), old_note)
         self.assertTrue(self.native(NEGATIVE, 'doctor')['healthy'])
@@ -258,11 +266,17 @@ class LearningHistoryTests(NativeHistory):
         old_note = self.project(previous, 'memory-note', id=old_id)
         before = self.custody()
 
+        self.check_definition(LEARNINGS)
         self.assertEqual(self.project(LEARNINGS, 'import-records'), old_rows)
         self.assertEqual(self.project(LEARNINGS, 'record', id=old_id), old_rows[0])
         self.assertEqual(self.project(LEARNINGS, 'memory-note', id=old_id), old_note)
         self.assertTrue(self.native(LEARNINGS, 'doctor')['healthy'])
         self.assertEqual(self.custody(), before)
+        now = datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
+        recalled = self.project(LEARNINGS, 'recall', query='immutable configuration cache',
+                                now=now, drop_superseded='true', search_limit=8)
+        self.assertEqual([record['id'] for record in recalled], [old_id])
+        self.assertEqual(self.project(LEARNINGS, 'record', id=old_id), old_rows[0])
 
         scoped = copy.deepcopy(original)
         scoped['application'] = 'Reuse only within the immutable request snapshot.'

@@ -511,6 +511,14 @@ def resolve(
             no_symlinks(control)
             if os.path.lexists(root / '.learnings.jsonl') or (os.path.lexists(control) and (not control.is_dir() or any(control.iterdir()))):
                 raise ContextError("Selected workspace contains legacy history; use explicit migration without declaring it recovered")
+            if common is not None:
+                # A new family association must not hide history in another
+                # checkout. This coverage check belongs only to creation;
+                # existing custody and explicit adoption never reach it.
+                candidates = legacy_roots(root)
+                if candidates:
+                    raise ContextError("Linked worktrees contain legacy history; use explicit migration: "
+                                       + ", ".join(map(str, candidates)))
 
     reject_known_history()
     candidates = []
@@ -549,6 +557,10 @@ def resolve(
             if adopt_from is not None:
                 native_doctor(ledger_bin, custody, [p.resolve(strict=True) for p in definitions or []],
                               ["--store-root", str(custody), "--store-id", new_id])
+            else:
+                # Catalog publication associates the family with this identity.
+                # Recheck after syncing its final root, before that association.
+                reject_known_history()
             # Publish only after validation at the final, identity-checked address.
             catalog['stores'][new_id] = str(custody)
             associate(catalog, aliases, new_id)

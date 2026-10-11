@@ -109,10 +109,62 @@ class BootstrapTests(unittest.TestCase):
         self.assertTrue(error["remediation"])
 
     def test_supported_versions_do_not_provision(self):
-        for version in ("1.3.0", "1.3.1", "1.4.1", "1.10.0"):
+        for version in ("1.3.0", "1.3.1", "1.4.0", "1.4.1", "1.10.0"):
             with self.subTest(version=version):
                 self.write_executable("ledger", ledger_stub(version=version))
                 self.assert_ready(self.run_bootstrap(), version=version)
+        self.assertEqual(self.calls(self.brew_log), [])
+
+    def test_owner_minimum_blocks_old_binary_without_install_authority(self):
+        self.write_executable("ledger", ledger_stub(version="1.4.0"))
+        self.installed.touch()
+        self.assert_ready(self.run_bootstrap(), version="1.4.0")
+        result = self.run_bootstrap("--min-version", "1.5.0")
+        self.assert_blocked(result, "version-or-abi-mismatch")
+        self.assertIn("--min-version 1.5.0 --install", result.stderr)
+        self.assertEqual(self.calls(self.brew_log), [])
+
+    def test_owner_minimum_upgrades_existing_supported_baseline(self):
+        self.write_executable("ledger", ledger_stub(version="1.4.0"))
+        self.installed.touch()
+        self.env["MOCK_LEDGER_AFTER"] = ledger_stub(version="1.5.0")
+        self.assert_ready(self.run_bootstrap("--min-version", "1.5.0", "--install"),
+                          action="upgraded", version="1.5.0")
+        self.assertEqual(self.calls(self.brew_log),
+                         [f"list --versions {FORMULA}", f"upgrade {FORMULA}"])
+
+    def test_owner_minimum_fails_when_upgrade_still_returns_older_formula(self):
+        self.write_executable("ledger", ledger_stub(version="1.4.0"))
+        self.installed.touch()
+        self.env["MOCK_LEDGER_AFTER"] = ledger_stub(version="1.4.1")
+        result = self.run_bootstrap("--install", "--min-version", "1.5.0")
+        self.assert_blocked(result, "post-upgrade-version-or-abi-mismatch", code=2)
+        self.assertIn("1.5.0", result.stderr)
+        self.assertEqual(self.calls(self.brew_log),
+                         [f"list --versions {FORMULA}", f"upgrade {FORMULA}"])
+
+    def test_owner_minimum_checks_patch_version_and_retains_abi_requirement(self):
+        for version, abi, ready in (("1.5.0", "ledger-artifact-abi/v1", False),
+                                    ("1.5.1", "ledger-artifact-abi/v1", True),
+                                    ("1.10.0", "ledger-artifact-abi/v1", True),
+                                    ("1.5.1", "ledger-artifact-abi/v2", False)):
+            with self.subTest(version=version, abi=abi):
+                self.write_executable("ledger", ledger_stub(version, abi))
+                result = self.run_bootstrap("--min-version", "1.5.1")
+                if ready:
+                    self.assert_ready(result, version=version)
+                else:
+                    self.assert_blocked(result, "version-or-abi-mismatch")
+        self.assertEqual(self.calls(self.brew_log), [])
+
+    def test_invalid_owner_minimum_does_not_probe_or_provision(self):
+        for args in (("--min-version",), ("--min-version", "1.2.0"),
+                     ("--min-version", "2.0.0"), ("--min-version", "1.5"),
+                     ("--min-version", "1.5.0-rc.1")):
+            with self.subTest(args=args):
+                self.assert_blocked(self.run_bootstrap(*args),
+                                    "invalid-minimum-version", code=2)
+        self.assertEqual(self.calls(self.ledger_log), [])
         self.assertEqual(self.calls(self.brew_log), [])
 
     def test_bad_versions_and_missing_abi_are_blocked(self):
@@ -195,7 +247,7 @@ class BootstrapTests(unittest.TestCase):
     def test_help_and_unknown_arguments_do_not_probe_or_proxy(self):
         result = self.run_bootstrap("--help")
         self.assertEqual(result.returncode, 0)
-        self.assertIn("ensure-ledger [--install]", result.stdout)
+        self.assertIn("ensure-ledger [--min-version 1.MINOR.PATCH] [--install]", result.stdout)
         self.assert_blocked(self.run_bootstrap("validate"), "unknown-option", code=2)
         self.assertEqual(self.calls(self.ledger_log), [])
         self.assertEqual(self.calls(self.brew_log), [])

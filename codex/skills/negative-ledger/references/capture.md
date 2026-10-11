@@ -32,6 +32,14 @@ other appends. A reused key with changed input is an error. A substantively new
 capture uses a new key after the source gate; transport identity does not decide
 whether two failed routes are semantically equivalent. No historical ID changes.
 
+This key is a new-session capture contract. Before resuming a pre-upgrade capture
+with an uncertain result, resolve its prior transaction receipt or known `NEG-*`
+record in the selected store. A new key cannot identify an earlier unkeyed
+capture; blindly retrying it would append another record. Inspect the known
+current record and retained evidence before deciding whether a new capture is
+needed. Keep the selected definition unchanged for a keyed transport retry;
+native idempotency also binds the request to that definition closure.
+
 Inadequate witness evidence means `need-evidence` or `capture_candidate`, not an
 active exclusion. Active capture requires supported scope/identity, immutable
 artifact identity, structured source references, applicability conditions,

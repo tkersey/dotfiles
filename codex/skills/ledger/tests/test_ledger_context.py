@@ -38,6 +38,23 @@ class LedgerContextTests(unittest.TestCase):
     def git(self, cwd, *args):
         return subprocess.run(["git", "-C", str(cwd), *args], check=True, capture_output=True).stdout
 
+    def capture_legacy_learning(self):
+        definition = SCRIPT.parents[2] / 'learnings/tests/fixtures/pre-personal-history/learnings-protocol.json'
+        submission = {'record': {'status': 'codify_now', 'learning': 'Preserve the linked worktree history.',
+            'evidence': ['fixture:prior-native-capture'], 'application': 'Adopt before creating new custody.',
+            'source': 'prior session', 'context': {'repo': str(self.repo), 'branch': 'original', 'paths': []}}}
+        result = subprocess.run([os.environ['LEDGER_BIN'], 'transact', '--definition', str(definition),
+            '--repo', str(self.other), '--operation', 'capture', '--input', 'submission=-', '--format', 'json'],
+            input=json.dumps(submission).encode(), capture_output=True,
+            env=dict(os.environ, LEDGER_CACHE_DIR=str(self.root / 'native-cache')))
+        self.assertEqual(result.returncode, 0, (result.stdout + result.stderr).decode())
+        self.assertEqual(json.loads(result.stdout)['effects'][0]['result'], 'appended')
+
+    def legacy_custody_snapshot(self):
+        control = self.other / '.ledger'
+        return {str(path.relative_to(control)): path.read_bytes()
+                for path in control.rglob('*') if path.is_file()}
+
     def test_read_only_resolution_does_not_initialize(self):
         with self.assertRaises(context.ContextError):
             context.resolve(self.repo)
@@ -198,6 +215,74 @@ class LedgerContextTests(unittest.TestCase):
         (self.repo / ".learnings.jsonl").write_text("fixture\n")
         with self.assertRaises(context.ContextError):
             context.resolve(self.repo, initialize=True, confirm_no_writers=True)
+
+    def test_sibling_retired_sources_block_new_family_custody(self):
+        for retired in ('.learnings.jsonl', '.ledger/learnings/learnings.jsonl'):
+            with self.subTest(retired=retired):
+                source = self.other / retired
+                source.parent.mkdir(parents=True, exist_ok=True)
+                source.write_bytes(b'preserved retired source\n')
+                with self.assertRaisesRegex(context.ContextError, 'Retired source|legacy history'):
+                    context.resolve(self.repo, initialize=True)
+                self.assertEqual(source.read_bytes(), b'preserved retired source\n')
+                self.assertFalse(self.home.exists())
+                source.unlink()
+                if (self.other / '.ledger').exists():
+                    shutil.rmtree(self.other / '.ledger')
+
+    def test_missing_sibling_blocks_creation_but_not_existing_adoption_and_access(self):
+        shutil.rmtree(self.other)
+        with self.assertRaisesRegex(context.ContextError, 'unavailable worktree'):
+            context.resolve(self.repo, initialize=True)
+        self.assertFalse(self.home.exists())
+        custody, store_id = self.existing_root()
+        registration = self.repo / '.git' / context.REGISTRATION
+        context.write_json(registration, {'schema': context.REGISTRATION_SCHEMA,
+                                          'store_id': store_id, 'store_root': str(custody)})
+        with patch.object(context, 'worktrees', side_effect=AssertionError('existing custody needs no family inventory')):
+            adopted = context.import_registration(registration, self.repo)
+            self.assertEqual(adopted['store_id'], store_id)
+            self.assertEqual(context.resolve(self.repo)['store_id'], store_id)
+            self.assertEqual(context.resolve(self.repo, initialize=True)['store_id'], store_id)
+            self.assertEqual(context.resolve(store_id=store_id)['store_root'], str(custody))
+
+    @unittest.skipUnless(os.environ.get('LEDGER_BIN'), 'Set LEDGER_BIN for the real native legacy fixture')
+    def test_native_sibling_history_blocks_empty_family_initialization(self):
+        self.capture_legacy_learning()
+        original = self.legacy_custody_snapshot()
+        with self.assertRaisesRegex(context.ContextError, 'Linked worktrees contain legacy history'):
+            context.resolve(self.repo, initialize=True)
+        self.assertFalse(self.home.exists())
+        self.assertEqual(self.legacy_custody_snapshot(), original)
+        definition = SCRIPT.parents[2] / 'learnings/definitions/ledger/learnings-protocol.json'
+        projection = subprocess.run([os.environ['LEDGER_BIN'], 'project', '--definition', str(definition),
+            '--repo', str(self.other), '--projection', 'import-records', '--format', 'json'], capture_output=True,
+            env=dict(os.environ, LEDGER_CACHE_DIR=str(self.root / 'native-cache')))
+        self.assertEqual(projection.returncode, 0, (projection.stdout + projection.stderr).decode())
+        self.assertEqual(len(json.loads(projection.stdout)['data']), 1)
+        self.assertEqual(self.legacy_custody_snapshot(), original)
+
+    @unittest.skipUnless(os.environ.get('LEDGER_BIN'), 'Set LEDGER_BIN for the real native legacy fixture')
+    def test_late_native_sibling_history_blocks_catalog_publication(self):
+        sync = context.sync_directory
+        captured = False
+
+        def append_after_final_root_sync(path):
+            nonlocal captured
+            sync(path)
+            if path == self.home / 'ledger/repos' and not captured:
+                captured = True
+                self.capture_legacy_learning()
+
+        with patch.object(context, 'sync_directory', side_effect=append_after_final_root_sync):
+            with self.assertRaisesRegex(context.ContextError, 'Linked worktrees contain legacy history'):
+                context.resolve(self.repo, initialize=True)
+        self.assertTrue(captured)
+        self.assertFalse((self.home / 'ledger/catalog.json').exists())
+        self.assertEqual(context.list_stores()['stores'], [])
+        self.assertEqual(len((self.other / '.ledger/learnings/events.jsonl').read_bytes().splitlines()), 1)
+        with self.assertRaises(context.UnregisteredContext):
+            context.resolve(self.repo)
 
     def test_personal_store_and_plain_workspace_need_no_git(self):
         with patch.object(context, 'git', side_effect=FileNotFoundError('Git is not installed')):

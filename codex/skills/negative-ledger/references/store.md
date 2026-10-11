@@ -5,16 +5,28 @@ change effect authority or activate capture/admission.
 
 ## Canonical Store and CLI
 
-Load `$ledger` and complete `$ledger ensure` before the first native command.
-Require Ledger 1.5.0 or newer within major version 1 and `ledger-artifact-abi/v1`.
+Load `$ledger` and complete its owner-specific bootstrap before the first native
+command. Require Ledger 1.5.0 or newer within major version 1 and `ledger-artifact-abi/v1`:
+
+```bash
+ledger_skill_root="$(realpath "${CODEX_HOME:-$HOME/.codex}/skills/ledger")"
+"$ledger_skill_root/scripts/ensure-ledger" --min-version 1.5.0
+```
+
+When installation is already authorized, add `--install` to that same command.
 Candidate discovery composes the current keyed fold with native relevance and
-sorting; earlier binaries do not support that composition.
+sorting; earlier binaries cannot compile any projection in this definition.
 Reuse unchanged readiness; recheck for changed executable/environment or selected
 definition requirements.
 
 ```bash
 negative_ledger_definition="$(realpath "${CODEX_HOME:-$HOME/.codex}/skills/negative-ledger/definitions/ledger/negative-evidence-protocol.json")"
 ```
+
+On upgrade or selection of a changed definition, verify the complete definition
+with `ledger definition check --definition "$negative_ledger_definition" --format json`.
+A healthy store doctor does not establish projection compatibility. Reuse this
+check while the definition and executable are unchanged.
 
 Resolve the intended personal store through `$ledger`: `--store-id` requires no
 Git workspace; `--repo` can resolve a cataloged workspace alias. Retain
