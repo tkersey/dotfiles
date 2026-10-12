@@ -144,9 +144,10 @@ def read_catalog(home: Path) -> dict:
     path = home / CATALOG
     no_symlinks(path)
     if not os.path.lexists(path):
-        return {"schema": CATALOG_SCHEMA, "stores": {}, "aliases": {}}
+        return {"schema": CATALOG_SCHEMA, "stores": {}, "aliases": {}, "workspace_identities": {}}
     value = read_document(path, max_bytes=1048576)
-    if (not isinstance(value, dict) or set(value) != {"schema", "stores", "aliases"}
+    if (not isinstance(value, dict) or set(value) not in ({"schema", "stores", "aliases"},
+            {"schema", "stores", "aliases", "workspace_identities"})
             or value["schema"] != CATALOG_SCHEMA
             or not isinstance(value["stores"], dict) or not isinstance(value["aliases"], dict)):
         raise ContextError("Invalid personal Ledger catalog")
@@ -160,6 +161,14 @@ def read_catalog(home: Path) -> dict:
                 or not Path(path).is_absolute() or not isinstance(store_id, str)
                 or store_id not in value["stores"]):
             raise ContextError("Invalid personal Ledger workspace association")
+    identities = value.setdefault("workspace_identities", {})
+    if not isinstance(identities, dict):
+        raise ContextError("Invalid catalog workspace identities")
+    for alias, common in identities.items():
+        if (alias not in value['aliases'] or not alias.startswith('workspace:')
+                or (common is not None and (not isinstance(common, str) or not Path(common).is_absolute()
+                    or value['aliases'].get('git-common-dir:' + common) != value['aliases'][alias]))):
+            raise ContextError("Invalid catalog workspace identity")
     return value
 
 
@@ -213,6 +222,23 @@ def catalog_selection(catalog: dict, aliases: list[str], store_id: str | None,
             key.startswith('git-common-dir:') and catalog['aliases'].get(key) not in workspace_ids
             for key in aliases):
         raise ContextError("Workspace alias has an unregistered Git common directory; select the intended --store-id and --attach-workspace explicitly")
+    live_common = next((key[len('git-common-dir:'):] for key in aliases
+                        if key.startswith('git-common-dir:')), None)
+    for alias in aliases:
+        if not alias.startswith('workspace:') or alias not in catalog['aliases']:
+            continue
+        identities = catalog['workspace_identities']
+        if alias in identities:
+            expected_common = identities[alias]
+            if (expected_common is not None and expected_common != live_common
+                    and (live_common is None or not attach_workspace)):
+                raise ContextError("Registered Git common directory identity is unavailable or changed; use direct --store-id access")
+        elif live_common is None and any(
+                key.startswith('git-common-dir:') and selected == catalog['aliases'][alias]
+                for key, selected in catalog['aliases'].items()):
+            # Old catalogs did not retain per-workspace provenance. A Git-bound
+            # store cannot safely authenticate a surviving plain path.
+            raise ContextError("Legacy workspace Git common directory identity cannot be verified; use direct --store-id access")
     return store_id or next(iter(associated), None)
 
 
@@ -222,6 +248,11 @@ def associate(catalog: dict, aliases: list[str], store_id: str) -> None:
         if existing is not None and existing != store_id:
             raise ContextError("Workspace is already associated with another store; refusing replacement")
     catalog["aliases"].update({alias: store_id for alias in aliases})
+    common = next((alias[len('git-common-dir:'):] for alias in aliases
+                   if alias.startswith('git-common-dir:')), None)
+    for alias in aliases:
+        if alias.startswith('workspace:'):
+            catalog['workspace_identities'][alias] = common
 
 
 def publish_catalog(home: Path, catalog: dict) -> None:
@@ -320,6 +351,13 @@ def checked_root(custody: Path, store_id: str, root: Path | None = None,
 
 def register_root(custody: Path, store_id: str, repo: Path | None = None) -> dict:
     """Catalog an existing identity without moving, rebinding, or merging data."""
+    home = storage_home()
+    with catalog_lock(home):
+        return _register_root_locked(custody, store_id, repo, home)
+
+
+def _register_root_locked(custody: Path, store_id: str, repo: Path | None, home: Path) -> dict:
+    """Publish while the caller holds the catalog lock through its effects."""
     root, common, aliases = workspace_associations(repo)
     checked_root(custody, store_id, root, common)
     custody = custody.resolve(strict=True)
@@ -327,20 +365,19 @@ def register_root(custody: Path, store_id: str, repo: Path | None = None) -> dic
         legacy = checked_registration(root, common)
         if legacy['store_id'] != store_id or Path(legacy['store_root']).resolve(strict=True) != custody:
             raise ContextError("Selected workspace has a different legacy registration; reconcile explicitly")
-    home = storage_home()
-    with catalog_lock(home):
-        catalog = read_catalog(home)
-        existing = catalog["stores"].get(store_id)
-        if existing is not None and existing != str(custody):
-            raise ContextError("Store identity is already cataloged at another root; refusing replacement")
-        before = json.dumps(catalog, sort_keys=True)
-        catalog["stores"][store_id] = str(custody)
-        associate(catalog, aliases, store_id)
-        checked_root(custody, store_id, root, common)
-        changed = json.dumps(catalog, sort_keys=True) != before
-        if changed:
-            publish_catalog(home, catalog)
-        return checked_root(custody, store_id, root, common, mutated=changed)
+    catalog = read_catalog(home)
+    catalog_selection(catalog, aliases, None, attach_workspace=True)
+    existing = catalog["stores"].get(store_id)
+    if existing is not None and existing != str(custody):
+        raise ContextError("Store identity is already cataloged at another root; refusing replacement")
+    before = json.dumps(catalog, sort_keys=True)
+    catalog["stores"][store_id] = str(custody)
+    associate(catalog, aliases, store_id)
+    checked_root(custody, store_id, root, common)
+    changed = json.dumps(catalog, sort_keys=True) != before
+    if changed:
+        publish_catalog(home, catalog)
+    return checked_root(custody, store_id, root, common, mutated=changed)
 
 
 def import_registration(path: Path, repo: Path | None = None) -> dict:

@@ -46,6 +46,12 @@ Normal resolution is read-only. It does not enumerate sibling worktrees, inspect
 legacy logs, demand a migration receipt, or rewrite catalog associations. Normal
 `ensure_custody.py --store-id ...` or `--repo ...` is the same lookup. An absent
 historical source limits a recovery claim, not access to intact owned data.
+Git-bound workspace aliases require their registered common-directory identity
+to remain verifiable. After checkout deletion, use direct `--store-id` access.
+Legacy catalogs without per-workspace provenance conservatively reject plain
+paths associated with a Git-bound store; explicit adoption of a live Git
+workspace records its identity. Explicitly registered plain workspaces remain
+usable even when their store also has Git associations.
 Native invalid rows, bindings, root identity mismatches, and recovery errors
 remain failures. Never turn one into an empty store or a legacy `--repo` retry.
 

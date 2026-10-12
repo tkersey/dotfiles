@@ -117,6 +117,9 @@ class LedgerContextTests(unittest.TestCase):
         self.assertEqual(context.resolve(self.repo)['store_id'], first['store_id'])
         self.assertEqual(context.resolve(store_id=first['store_id'])['store_root'], first['store_root'])
         self.assertEqual((context.storage_home() / context.CATALOG).read_bytes(), catalog)
+        attached = context.resolve(self.other, store_id=first['store_id'], attach_workspace=True)
+        self.assertEqual(attached['store_id'], first['store_id'])
+        self.assertEqual(context.resolve(self.other)['store_root'], first['store_root'])
 
     def test_new_git_identity_on_plain_workspace_requires_explicit_attachment(self):
         plain = self.root / 'plain workspace'; plain.mkdir()
@@ -127,6 +130,42 @@ class LedgerContextTests(unittest.TestCase):
         attached = context.resolve(plain, store_id=first['store_id'], attach_workspace=True)
         self.assertEqual(attached['store_id'], first['store_id'])
         self.assertEqual(context.resolve(plain)['store_root'], first['store_root'])
+
+    def test_vanished_git_identity_cannot_authenticate_a_workspace_path(self):
+        first = context.resolve(self.other, initialize=True)
+        catalog_path = context.storage_home() / context.CATALOG
+        saved = catalog_path.read_bytes()
+        self.git(self.repo, 'worktree', 'remove', str(self.other))
+        # Both the absent checkout and an unrelated plain replacement fail.
+        for recreated in (False, True):
+            if recreated:
+                self.other.mkdir()
+            for parameters in ({}, {'initialize': True},
+                               {'store_id': first['store_id'], 'attach_workspace': True}):
+                with self.subTest(recreated=recreated, parameters=parameters):
+                    with self.assertRaisesRegex(context.ContextError, 'Git common directory'):
+                        context.resolve(self.other, **parameters)
+            self.assertEqual(catalog_path.read_bytes(), saved)
+        self.assertEqual(context.resolve(store_id=first['store_id'])['store_root'], first['store_root'])
+        self.assertEqual(context.resolve(self.repo)['store_id'], first['store_id'])
+
+    def test_legacy_git_alias_without_provenance_fails_closed(self):
+        first = context.resolve(self.other, initialize=True)
+        catalog_path = context.storage_home() / context.CATALOG
+        catalog = json.loads(catalog_path.read_bytes())
+        del catalog['workspace_identities']
+        catalog_path.write_text(json.dumps(catalog))
+        self.git(self.repo, 'worktree', 'remove', str(self.other))
+        self.other.mkdir()
+        with self.assertRaisesRegex(context.ContextError, 'Git common directory'):
+            context.resolve(self.other)
+        self.assertEqual(context.resolve(store_id=first['store_id'])['store_root'], first['store_root'])
+
+    def test_plain_alias_remains_usable_in_a_store_with_git_associations(self):
+        plain = self.root / 'plain workspace'; plain.mkdir()
+        first = context.resolve(plain, initialize=True)
+        context.resolve(self.repo, store_id=first['store_id'], attach_workspace=True)
+        self.assertEqual(context.resolve(plain)['store_id'], first['store_id'])
 
     def test_clone_is_not_automatically_attached(self):
         first = context.resolve(self.repo, initialize=True, confirm_no_writers=True)

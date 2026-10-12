@@ -10,6 +10,7 @@ import os
 from pathlib import Path
 import shutil
 import subprocess
+import sys
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -57,6 +58,13 @@ class ContextFixture:
     @contextmanager
     def registration_lock(self, common):
         yield
+
+    @contextmanager
+    def catalog_lock(self, home):
+        yield
+
+    def _register_root_locked(self, custody, store_id, repo, home):
+        return self.register_root(custody, store_id, repo)
 
     def sync_directory(self, path):
         pass
@@ -346,6 +354,71 @@ class LegacySourceSelection(unittest.TestCase):
 
 @unittest.skipUnless(os.environ.get('LEDGER_BIN'), 'Set LEDGER_BIN for real native/context conformance')
 class NativeIntegration(unittest.TestCase):
+    def test_attachment_before_migration_lock_rejects_before_destination_effects(self):
+        ctx = module.load_module(SCRIPT.with_name('ledger_context.py'))
+        loader = module.load_module
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary).resolve(); source = root / 'source'; source.mkdir()
+            with patch.dict(os.environ, {'LEDGER_HOME': str(root / 'home'), 'LEDGER_CACHE_DIR': str(root / 'cache')}):
+                competing = ctx.resolve(initialize=True)
+                lock = ctx.registration_lock
+
+                @contextmanager
+                def attach_before_lock(lock_root):
+                    ctx.register_root(Path(competing['store_root']), competing['store_id'], source)
+                    with lock(lock_root):
+                        yield
+
+                with patch.object(module, 'load_module', side_effect=lambda path:
+                        ctx if path.name == 'ledger_context.py' else loader(path)), \
+                        patch.object(ctx, 'registration_lock', side_effect=attach_before_lock):
+                    with self.assertRaisesRegex(module.MigrationError, 'Migration inputs changed'):
+                        module.migrate(source, apply=True, confirm_no_writers=True,
+                                       binary=os.environ['LEDGER_BIN'], skill_root=SCRIPT.parents[2])
+                self.assertEqual(ctx.resolve(source)['store_id'], competing['store_id'])
+                self.assertEqual(list((root / 'home/repos').iterdir()), [Path(competing['store_root'])])
+                self.assertFalse((Path(competing['store_root']) / 'legacy-archive').exists())
+
+    def test_catalog_attachment_is_serialized_through_migration_publication(self):
+        ctx = module.load_module(SCRIPT.with_name('ledger_context.py'))
+        skills = SCRIPT.parents[2]
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary).resolve(); source = root / 'source'; source.mkdir()
+            environment = {'LEDGER_HOME': str(root / 'home'), 'LEDGER_CACHE_DIR': str(root / 'cache')}
+            with patch.dict(os.environ, environment):
+                competing = ctx.resolve(initialize=True)
+                ready = root / 'attacher-ready'
+                worker = None
+                copy = module.copy_inventory
+
+                def copy_while_attacher_waits(snapshot, destination):
+                    nonlocal worker
+                    code = ('import importlib.util, pathlib, sys; '
+                            's=importlib.util.spec_from_file_location("ctx",sys.argv[1]); '
+                            'm=importlib.util.module_from_spec(s); s.loader.exec_module(m); '
+                            'pathlib.Path(sys.argv[5]).write_text("ready"); '
+                            'm.register_root(pathlib.Path(sys.argv[2]),sys.argv[3],pathlib.Path(sys.argv[4]))')
+                    worker = subprocess.Popen([sys.executable, '-c', code, str(SCRIPT.with_name('ledger_context.py')),
+                        competing['store_root'], competing['store_id'], str(source), str(ready)],
+                        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                    self.addCleanup(lambda: worker.kill() if worker.poll() is None else None)
+                    # A real register_root must wait, rather than publish a
+                    # competing alias while migration mutates its destination.
+                    with self.assertRaises(subprocess.TimeoutExpired):
+                        worker.communicate(timeout=0.5)
+                    self.assertTrue(ready.exists())
+                    copy(snapshot, destination)
+
+                with patch.object(module, 'copy_inventory', side_effect=copy_while_attacher_waits):
+                    migrated = module.migrate(source, apply=True, confirm_no_writers=True,
+                                              binary=os.environ['LEDGER_BIN'], skill_root=skills)
+                output, error = worker.communicate(timeout=10)
+                self.assertNotEqual(worker.returncode, 0, output + error)
+                self.assertIn(b'already associated', error)
+                self.assertEqual(ctx.resolve(source)['store_id'], migrated['store_id'])
+                self.assertEqual(ctx.resolve(store_id=competing['store_id'])['store_root'], competing['store_root'])
+                self.assertEqual(len(list((root / 'home/repos').iterdir())), 2)
+
     def test_surviving_directory_preserves_old_native_history_and_retired_import(self):
         skills = SCRIPT.parents[2]
         binary = os.environ['LEDGER_BIN']

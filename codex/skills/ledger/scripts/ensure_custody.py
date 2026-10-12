@@ -422,7 +422,8 @@ def migrate(repo: Path, *, store_id: str | None = None, apply: bool = False, con
         lock_root = ctx.storage_home()
         ctx.no_symlinks(lock_root)
         lock_root.mkdir(parents=True, exist_ok=True, mode=0o700)
-    with ctx.registration_lock(lock_root):
+    home = ctx.storage_home()
+    with ctx.registration_lock(lock_root), ctx.catalog_lock(home):
         # Reject a changed view rather than silently applying a new migration.
         current = current_context()
         if inspect()[1] != snapshot or (current is not None) != registered:
@@ -525,7 +526,7 @@ def migrate(repo: Path, *, store_id: str | None = None, apply: bool = False, con
                 healthy(binary, owner, final_selector)
         if inspect()[1] != snapshot:
             raise MigrationError(f'Source changed before publication; destination retained: {published_root}')
-        receipt['context'] = ctx.register_root(published_root, selected_id, workspace)
+        receipt['context'] = ctx._register_root_locked(published_root, selected_id, workspace, home)
         return receipt
 
 

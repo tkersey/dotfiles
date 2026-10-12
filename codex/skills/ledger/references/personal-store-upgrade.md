@@ -107,6 +107,9 @@ source. Broken Git metadata does not silently reduce a family to one directory.
 The plain source receives no migration lock or Git metadata; custody controls
 are in the personal home. Source selection and bytes are rechecked before
 catalog publication.
+Apply holds the personal catalog association lock from its final pre-mutation
+identity check through publication. Competing attachments wait and then must
+respect the published association. This lock does not fence legacy writers.
 
 After actual writer quiescence and authorized migration, repeat the command with
 `--apply --confirm-no-writers`. Supported current Ledger histories and the
