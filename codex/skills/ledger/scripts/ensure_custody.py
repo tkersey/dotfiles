@@ -121,8 +121,13 @@ def owners(skill_root: Path, ctx) -> list[dict]:
     return found
 
 
-def inventory(trees: list[Path], retired: list[str]) -> dict:
+def inventory(trees: list[Path], retired: list[str], *, slots: list[str] | tuple[str, ...] = ()) -> dict:
     """Account for every regular byte and link spelling; never follow links."""
+    protected = set(retired) | {'.ledger/' + slot for slot in slots}
+    protected.update('.ledger/' + name for name in ARCHIVES)
+    for slot in slots:
+        protected.update(parent.as_posix() for parent in Path('.ledger', slot).parents)
+    archives = tuple('.ledger/' + name + '/' for name in ARCHIVES)
     result = {}
     size = 0
     count = 0
@@ -149,6 +154,10 @@ def inventory(trees: list[Path], retired: list[str]) -> dict:
             elif stat.S_ISREG(info.st_mode):
                 size += info.st_size
                 entries[spelling] = {'kind': 'file', 'size': info.st_size, 'sha256': digest_file(path)}
+            elif stat.S_ISFIFO(info.st_mode) and spelling not in protected and not spelling.startswith(archives):
+                # A pipe has no retained byte stream. Preserve its topology in
+                # the archive manifest, without opening or recreating it.
+                entries[spelling] = {'kind': 'fifo', 'mode': stat.S_IMODE(info.st_mode)}
             else:
                 raise MigrationError(f'Unsupported special source entry: {path}')
             count += 1
@@ -248,7 +257,7 @@ def copy_inventory(snapshot: dict, destination: Path) -> None:
                 if target.is_symlink() or digest_file(target) != entry['sha256']:
                     raise MigrationError(f'Changed source while archiving: {root / name}')
                 target.chmod(0o600)
-            # Symlink spellings are retained in the manifest, not made live.
+            # Symlink spellings and FIFO metadata stay in the manifest, not live.
 
 
 def sync_tree(path: Path, ctx) -> None:
@@ -319,7 +328,7 @@ def migrate(repo: Path, *, store_id: str | None = None, apply: bool = False, con
             ctx.no_symlinks(tree / '.ledger')
             for name in retired:
                 ctx.no_symlinks(tree / name)
-        snapshot = inventory(trees, retired)
+        snapshot = inventory(trees, retired, slots=slots)
         source = select_source(trees, slots, ctx)
         # Native owns pending transaction interpretation; never infer from lock age.
         for tree in trees:

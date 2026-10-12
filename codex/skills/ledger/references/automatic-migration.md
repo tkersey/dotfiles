@@ -66,7 +66,11 @@ owners must explicitly opt in; segmented, dynamic, and document-slot migration
 remain outside this route. Missing owners and conflicting claims fail closed.
 
 Before registration, the procedure preserves a complete bounded archive of regular
-files and symlink spellings, without following external targets. It cold-copies
+files and symlink spellings, without following external targets. Unowned named
+pipes remain in the source; their type and permissions are retained only in the
+archive manifest, without opening or recreating a live channel. Named pipes in
+owner event slots, retired sources, or native custody archives remain invalid.
+It cold-copies
 selected event bytes and native definition/binding/revision archives, excluding
 native transaction journals, fencing counters, and advisory lock resources from
 active custody. Legacy leases and pending transactions require native recovery.

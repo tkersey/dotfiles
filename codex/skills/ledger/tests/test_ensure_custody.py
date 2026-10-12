@@ -9,6 +9,7 @@ import json
 import os
 from pathlib import Path
 import shutil
+import stat
 import subprocess
 import sys
 import tempfile
@@ -155,6 +156,41 @@ class EnsureTests(unittest.TestCase):
         self.assertFalse(self.ctx.storage_home().exists())
         self.assertFalse((self.ctx.common / self.ctx.REGISTRATION).exists())
         self.assertFalse(any(call[0] == 'transact' for call in self.calls))
+
+    def test_unowned_fifo_is_archived_as_metadata_without_opening_or_recreating(self):
+        source = self.event(self.ctx.repo)
+        pipe = self.ctx.repo / '.ledger/cas/watchdog.log'
+        pipe.parent.mkdir()
+        os.mkfifo(pipe, 0o600)
+        original = source.read_bytes()
+        result = self.ensure(apply=True, confirm_no_writers=True)
+        custody = Path(result['context']['store_root'])
+        self.assertEqual((custody / '.ledger/fixture/events.jsonl').read_bytes(), original)
+        self.assertEqual(source.read_bytes(), original)
+        self.assertTrue(stat.S_ISFIFO(pipe.lstat().st_mode))
+        manifest_path = next((custody / 'legacy-archive').glob('*/manifest.json'))
+        manifest = json.loads(manifest_path.read_text())
+        source_tree = next(tree for tree in manifest['sources'].values()
+                           if tree['workspace'] == str(self.ctx.repo))
+        self.assertEqual(source_tree['entries']['.ledger/cas/watchdog.log'],
+                         {'kind': 'fifo', 'mode': 0o600})
+        self.assertFalse(any((manifest_path.parent / name / '.ledger/cas/watchdog.log').exists()
+                             for name in ('worktree-0', 'worktree-1')))
+        self.assertFalse((custody / '.ledger/cas/watchdog.log').exists())
+
+    def test_fifo_cannot_replace_owner_events_or_native_custody(self):
+        for relative in ('fixture/events.jsonl', '.bindings/fixture.json', 'fixture', '.bindings'):
+            with self.subTest(relative=relative):
+                pipe = self.ctx.repo / '.ledger' / relative
+                pipe.parent.mkdir(parents=True, exist_ok=True)
+                os.mkfifo(pipe, 0o600)
+                try:
+                    with self.assertRaisesRegex(module.MigrationError, 'Unsupported special source entry'):
+                        self.ensure()
+                    self.assertFalse(self.ctx.storage_home().exists())
+                finally:
+                    pipe.unlink()
+                    shutil.rmtree(self.ctx.repo / '.ledger')
 
     def test_apply_needs_real_writer_assertion(self):
         self.event(self.ctx.repo)
