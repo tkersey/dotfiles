@@ -5,12 +5,9 @@ approvals_reviewer = "auto_review"
 
 model = "gpt-6-astra"
 model_reasoning_effort = "medium"
-model_context_window = 1000000
-model_auto_compact_token_limit = 900000
 plan_mode_reasoning_effort = "max"
 suppress_unstable_features_warning = true
 web_search = "live"
-personality = "pragmatic"
 service_tier = "default"
 
 [features]
