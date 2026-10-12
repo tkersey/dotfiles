@@ -1,6 +1,6 @@
 {
   "schema": "actuating-review-contract/v17",
-  "contract_id": "actuating-review-contract-v20",
+  "contract_id": "actuating-review-contract-v21",
   "required_lenses": [
     {
       "name": "standard",
@@ -36,6 +36,7 @@
   ],
   "review_scheduling": {
     "default_mode": "parallel-reviews",
+    "waiting_work": "read-only-self-review-of-frozen-subject",
     "request_local": true,
     "all_lenses_required": true,
     "initial_lens_order": [
@@ -320,6 +321,7 @@
     "derived_from_current_owner_facts": true,
     "live_relevant_sources": [
       "cas",
+      "self-review",
       "provider-review",
       "test",
       "incident",

@@ -17,6 +17,36 @@ Fold it and already-live required owner observations; do not launch another
 auxiliary wave on the invalidated head. A clean epoch closes after convergence.
 Outside an open review epoch, review is not a prerequisite for implementation.
 
+## Self-review while reviewers are running
+
+While required CAS reviews are in flight, use otherwise available time for
+read-only self-review of their exact frozen subject. Start from the accepted Goal
+and actual code. Challenge consequential assumptions and proof choices made during
+implementation; seek concrete counterexamples to required behavior or the
+construction's claimed guarantees.
+
+Continue the inquiry across waiting intervals. Prefer unexamined, material
+questions over repeating completed checks. Collect review results, perform required
+recovery, and dispatch required reviews promptly. Do not prolong the epoch merely
+to finish a self-review pass; when no useful falsification target remains, wait.
+This supplements required pre-review proof; discovering missing mandatory proof
+retains the existing reviewability-invalidation rule.
+
+Route self-discovered candidate findings through Review Fold as they arise,
+preserving exact-subject and self-review provenance in the existing handoff.
+Adjudicate them under the same [counterexample admission](../review-fold/SKILL.md#counterexample-admission)
+as other findings; a suspicion alone is not an admitted violation. An admitted
+current material finding entailed by the Goal invalidates the candidate and all
+review credit even when CAS returns clean. Complete the initial frozen wave, or
+stop new confirmations and fold already-live required evidence, under the existing
+phase rules. Adjudicate discovered material evidence before claiming convergence.
+
+Preserve the frozen subject and reviewer inputs. Defer successor changes, including
+test edits and mutation experiments, until the epoch closes. Self-review supplies
+evidence; it provides no CAS receipt, independent confirmation, or clean credit
+and adds no required review lane or pass-completion gate. Existing route and
+corpus-write authority still govern every handoff.
+
 ## Review and closure
 
 The initial inventory remains standard, soundness-skeptic, footgun-finder,

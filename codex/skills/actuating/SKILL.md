@@ -99,8 +99,11 @@ not optional background. Do not load every workflow at entry.
 | Bare Actuating reaching publication | `$ship`; publication does not replace subsequent review-closeout. |
 
 An open review epoch forbids successor mutation, including experiments. Read its
-selected contract rather than repairing mid-wave. `corpus_write_authorized: false`
-always applies to `analyze`; supporting skills cannot enlarge effect authority.
+selected contract rather than repairing mid-wave. Use available waiting time for
+[read-only self-review](review-closeout.md#self-review-while-reviewers-are-running)
+of the frozen candidate; route self-discovered findings through Review Fold.
+`corpus_write_authorized: false` always applies to `analyze`; supporting skills
+cannot enlarge effect authority.
 Universalist may return `candidate`, `preserve-incumbent`, `unresolved`, or
 `obstructed`; Actuating retains selection and proof authority.
 

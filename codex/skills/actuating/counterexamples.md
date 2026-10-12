@@ -16,9 +16,9 @@ cannot discharge an unchanged requirement. Keep unexplained proof loss unresolve
 and block only dependent completion or reviewability. Reuse the existing proof
 inventory; no separate critic, packet, or review stage.
 
-Before counterexample-driven selection, reconcile relevant CAS, provider/PR,
-test, incident, migration, compatibility, verifier, and corpus evidence. Each
-live source is folded, proven non-current, or explicitly unavailable. An omitted
+Before counterexample-driven selection, reconcile relevant CAS, self-review,
+provider/PR, test, incident, migration, compatibility, verifier, and corpus evidence.
+Each live source is folded, proven non-current, or explicitly unavailable. An omitted
 live finding keeps the cut open; an unavailable source makes the affected horizon
 incomplete, not clean. Missing evidence blocks only claims or actions that depend
 on it; do not make provider availability a prerequisite for initial implementation.
@@ -36,6 +36,8 @@ underdetermined   seek authority; no correctness mutation from the claim
 
 Have Review Fold apply its [counterexample admission](../review-fold/SKILL.md#counterexample-admission)
 for review findings and failed checks before treating either as a liability.
+Self-discovered review findings use the same admission; preserve their provenance
+without inventing a CAS receipt or waiving admission because Actuating found them.
 A failed execution stays failed; its diagnosis is adjudicated, not its history.
 A discrepancy may expose a defect in the implementation, the witness's interpretation, an oracle, or a proof/assessment
 claim. Establish which obligation actually fails; do not default to changing

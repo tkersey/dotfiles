@@ -144,6 +144,11 @@ required owner evidence are folded; no new auxiliary wave runs on the invalid he
 
 ## Scheduling
 
+Use available waiting time for [read-only self-review](../review-closeout.md#self-review-while-reviewers-are-running)
+of the frozen subject. This supplies evidence without adding a required lens or
+clean credit, delaying required dispatch/recovery/result collection, or extending
+the epoch to finish a pass.
+
 The required initial order is:
 
 ```text
@@ -175,10 +180,18 @@ the selected scheduling mode.
 ## Live owner-source frontier
 
 Before a counterexample-driven selection or a completion claim, reconcile relevant
-CAS, provider/PR, tests, incidents, migrations, compatibility, repository verifiers,
-and historical corpus evidence. Each source is folded, proven non-current, or
-explicitly unavailable. An omitted live finding keeps the cut open. Quota exhaustion
-or a missing tool result is unavailable, never a clean semantic verdict.
+CAS, self-review, provider/PR, tests, incidents, migrations, compatibility,
+repository verifiers, and historical corpus evidence. Each source is folded,
+proven non-current, or explicitly unavailable. An omitted live finding keeps the
+cut open. Quota exhaustion or a missing tool result is unavailable, never a clean
+semantic verdict.
+
+Self-discovered findings retain their own provenance and pass Review Fold admission;
+they are not CAS outcomes. Once admitted as current, material, and entailed, they
+invalidate the candidate and all review credit under the same phase rules as any
+other finding, regardless of clean CAS receipts. An unfinished self-review pass
+does not make a required review source unavailable; discovered material evidence
+still needs adjudication before closure.
 
 Unavailable evidence limits the claims that depend on it. It does not force a
 new review campaign or block unrelated authorized initial implementation. A required

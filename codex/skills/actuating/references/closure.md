@@ -19,10 +19,10 @@ preference, new-requirement, or underdetermined. Only accepted current liabiliti
 create automatic correctness work. Historical CEX records retain their original
 subjects; current meaning is re-evaluated rather than copied from the corpus.
 
-Reconcile relevant CAS, provider, tests, incidents, migrations, verifiers, and
-corpus sources. An omitted live finding keeps the evidence cut open. Unavailable
-sources make the affected horizon incomplete; quota exhaustion is not a clean
-review. Do not claim historical absence, first occurrence, or complete closure
+Reconcile relevant CAS, self-review, provider, tests, incidents, migrations,
+verifiers, and corpus sources. An omitted live finding keeps the evidence cut open.
+Unavailable sources make the affected horizon incomplete; quota exhaustion is not
+a clean review. Do not claim historical absence, first occurrence, or complete closure
 from unavailable evidence required by that claim. This is not a blanket provider
 or historical-corpus dependency for initial implementation.
 

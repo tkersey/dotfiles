@@ -4,7 +4,7 @@
     "skill": {
       "name": "actuating",
       "kind": "mixed",
-      "source_fingerprint": "actuating-construction-compiler-v18"
+      "source_fingerprint": "actuating-construction-compiler-v19"
     },
     "triggers": [
       {
@@ -202,11 +202,13 @@
         ],
         "success_signals": [
           "candidate stays frozen through the applicable cut",
+          "available waiting time supports read-only self-review without delaying required collection, recovery, or dispatch or requiring a completed pass",
           "serial and parallel acquire the same initial six-lens evidence",
           "confirmation invalidation requires no new auxiliary wave on the invalid head"
         ],
         "failure_signals": [
           "mutation inside an open epoch",
+          "self-review prolongs the epoch or adds a required review lane or pass-completion gate",
           "initial implementation forced to review first",
           "verdictless recovery omitted from the barrier"
         ],
@@ -392,12 +394,15 @@
         ],
         "success_signals": [
           "all current and applicable historical sources inform one causal basis",
+          "admitted current material entailed self-findings invalidate the candidate and all credit under existing phase rules even when CAS returns clean",
+          "self-review supplies evidence without a CAS receipt, independent confirmation, or clean credit",
           "unavailable provider quota is not a clean verdict",
           "six-lens inventory and five-standard-clean convergence are preserved"
         ],
         "failure_signals": [
           "custom instructions replace the default standard review",
           "live provider finding omitted while dependent action proceeds",
+          "self-discovered material evidence omitted from adjudication before convergence",
           "absence in incomplete history proves first occurrence or elimination"
         ],
         "rationale": "Review supplies falsification evidence; it neither chooses repairs nor silently adds requirements."
