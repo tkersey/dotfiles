@@ -74,7 +74,8 @@ requires owner investigation, not broader repair permissions.
 Run `uv run python -m unittest discover -s codex/skills/learnings/tests -p
  'test_retired_import.py' -v` (on one shell line). Set `LEDGER_BIN` to a released
 native binary to run conformance as well as constructor tests. The focused CI
-workflow verifies the Ledger 1.3.0 release checksum before executing native tests.
+workflow verifies its pinned native Ledger release checksum before executing
+native tests.
 Mock tests alone do not qualify this protocol for production custody.
 
 The earlier local recovery emitted version-0 `learning.capture` events with

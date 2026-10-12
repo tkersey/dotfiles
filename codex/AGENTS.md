@@ -67,24 +67,26 @@
 - `$ledger` is the source of truth for evidence-storage location, context
   resolution, and custody maintenance. Source owners select semantic definitions
   and operations. Read and mutate canonical evidence only through those explicit
-  definitions and Ledger operations; never hand-edit records or bypass invalid
-  custody. Do not duplicate storage paths, lookup rules, or migration policy here.
+  definitions and Ledger operations; never hand-edit records or bypass an invalid
+  native store. Personal store selection does not require a Git checkout or
+  complete legacy-worktree coverage. Do not duplicate lookup or migration policy.
 - Memory-source notes are immutable derived admission snapshots. Phase 2 owns
   `memory_summary.md`, `MEMORY.md`, and memory-root `skills/*`; do not edit them
   during ordinary work. Accepted admissions from `$learnings`, `$negative-ledger`,
   or `$synesthesia` go through `$memory-source-notes` in the same turn. The
   `memory-note` CLI remains the sole immutable writer, not a skill or bypass.
-- Before any Codex-made commit, PR creation, or implementation handoff after
-  material implementation, invoke `$learnings` exactly once. Its skill owns the
-  evidence-first capture gate and disposition. Evaluation is mandatory; capture
-  is conditional. No-op, duplicate-skip, or failure to append alone never delays
-  or invalidates delivery.
+- Use `$learnings` when observed evidence changes a reusable decision, reveals a
+  durable footgun, or corrects a prior learning. Delivery alone requires no
+  invocation or receipt. The owning task selects captures after adjudicating
+  worker findings; repeated worker reports do not require separate captures.
+  No-op, duplicate-skip, or failure to append alone never invalidates delivery.
 - Activate sibling sources only for their own evidence: `$negative-ledger` for a
   witnessed failed/no-effect/regressed/reverted/abandoned route or a request about
   prior attempts; `$synesthesia` for explicit sensory intent, documented
   representational ambiguity, or a durable mapping/boundary event. No aggregate
   packet, forced sibling evaluation, or source-memory delivery gate.
-- Inspect canonical appends/transitions. Canonical writes are independent;
+- Retain native append/transition results; repeat readback only for an uncertain
+  result, a changed consumer, or requested proof. Canonical writes are independent;
   derived note/digest or Phase 2 failures never roll them back. Keep no-ops
   internal; report writes, actionable non-durable proposals, admission
   degradation, and blockers only when they affect the user, repository state,
@@ -93,9 +95,11 @@
 ### Negative-evidence routing
 
 - Before repeating a route resembling a prior failure, load `$negative-ledger`
-  and use its current definition-bound `route-gate`. A recalled learning can
-  trigger this check, not suppress the route. Only active, witnessed, exact-enough,
-  currently artifact-applicable exclusions may block selection.
+  and discover current `route-candidates` from the failure mechanism, component,
+  and invariant. Check material candidates against the current artifact and their
+  declared identities before using the exact `route-gate`. A route-name miss is
+  not evidence that no relevant failure is known. Only active, witnessed,
+  exact-enough, currently artifact-applicable exclusions may block selection.
 - Evaluate capture at material strategy pivots, regression-confirmed reverts,
   or closeout leaving a failed route likely to recur. The skill owns durable route-shaping capture
   criteria, disposition, and lifecycle; do not run tools to manufacture a no-op.

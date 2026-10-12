@@ -78,11 +78,18 @@ class AdmissionTests(unittest.TestCase):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
         self.home = Path(self.temp.name) / "home"
+        memory_root = self.home / "memories_v2"
+        extension_root = memory_root / "extensions/synesthesia"
+        self.layout = A.MemoryLayout("synesthesia", self.home, "v2", memory_root, extension_root,
+                                     extension_root / "notes", extension_root / "instructions.md",
+                                     extension_root / "resources")
         self.repo = Path(self.temp.name) / "repo"
         self.repo.mkdir()
         self.records = {}
         self.serial = 0
         for name, value in (
+            ("layout_for", self.layout),
+            ("selected_layout", self.layout),
             ("find_ledger_binary", Path("/test/ledger")),
             ("_inspect_source_ledger", {"healthy": True, "status": "current", "result": {"definition": DEFINITION}}),
             ("_validate_submission_with_ledger", {"definition": DEFINITION}),

@@ -5,8 +5,17 @@ change effect authority or activate capture/admission.
 
 ## Canonical Store and CLI
 
-Load `$ledger` and complete `$ledger ensure` before the first native command.
-Require Ledger 1.3.0 or newer within major version 1 and `ledger-artifact-abi/v1`.
+Load `$ledger` and complete its owner-specific bootstrap before the first native
+command. Require Ledger 1.5.0 or newer within major version 1 and `ledger-artifact-abi/v1`:
+
+```bash
+ledger_skill_root="$(realpath "${CODEX_HOME:-$HOME/.codex}/skills/ledger")"
+"$ledger_skill_root/scripts/ensure-ledger" --min-version 1.5.0
+```
+
+When installation is already authorized, add `--install` to that same command.
+Candidate discovery composes the current keyed fold with native relevance and
+sorting; earlier binaries cannot compile any projection in this definition.
 Reuse unchanged readiness; recheck for changed executable/environment or selected
 definition requirements.
 
@@ -14,25 +23,38 @@ definition requirements.
 negative_ledger_definition="$(realpath "${CODEX_HOME:-$HOME/.codex}/skills/negative-ledger/definitions/ledger/negative-evidence-protocol.json")"
 ```
 
-Resolve the verified workspace through `$ledger`. Retain `store_root`, `store_id`,
-`repository_id`, and `workspace_root`. Every canonical doctor, transaction, and
-projection uses that managed selector, including memory admission. Only an
-authorized first capture may initialize; reads cannot silently create a new
-history. Legacy binding, rebinding, and cold adoption follow the Ledger skill's
-exact maintenance policy, not per-worktree initialization or fallback readers.
+On upgrade or selection of a changed definition, verify the complete definition
+with `ledger definition check --definition "$negative_ledger_definition" --format json`.
+A healthy store doctor does not establish projection compatibility. Reuse this
+check while the definition and executable are unchanged.
+
+Resolve the intended personal store through `$ledger`: `--store-id` requires no
+Git workspace; `--repo` can resolve a cataloged workspace alias. Retain
+`store_root`, `store_id`, and stable `repository_id`; `workspace_root` is optional
+provenance. All canonical operations use that selector, including admission.
+Only an explicitly requested new store may initialize. Reads do not create
+history, scan unavailable worktrees, or require migration-coverage certification.
+Legacy import and binding repair are separate owner-controlled maintenance.
 
 Native surface:
 
 ```text
 ledger definition check --definition DEFINITION
 ledger transact --definition DEFINITION --operation capture|promote|transition|bind-existing|rebind-existing --store-root ROOT --store-id ID
-ledger project --definition DEFINITION --projection current-records|route-gate|memory-note --store-root ROOT --store-id ID
+ledger project --definition DEFINITION --projection current-records|route-candidates|route-gate|memory-note --store-root ROOT --store-id ID
 ledger doctor --definition DEFINITION --store-root ROOT --store-id ID
 ```
 
 `memory-note` is the authoritative admission payload. Never reconstruct it from
 a summary projection. Do not use rebinding to select a divergent history or bless
 an unknown replacement; preserve lineages for explicit owner reconciliation.
+
+Capture requires `--param capture_key=<stable-operation-token>`; reuse the same
+token, input bytes, and selector on transport retries. Native transaction results
+already establish append validation and binding. Use doctor for a diagnosed
+store problem or requested maintenance, not before and after every operation.
+Keep identity qualified by store, owner, and `NEG-*`; numeric IDs alone are not
+globally unique.
 
 ## Proof Lines
 

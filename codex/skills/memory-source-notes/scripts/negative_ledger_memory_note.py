@@ -13,6 +13,9 @@ import subprocess
 import sys
 from typing import Any
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from memory_layout import LayoutError, selected_layout
+
 
 ALLOWED_KINDS = {
     "ledger-projection",
@@ -85,10 +88,11 @@ def _parse_json(raw: bytes, stage: str) -> Any:
         raise AdapterError(f"{stage}: invalid JSON: {exc}") from exc
 
 
-def resolve_custody(repo: Path) -> dict[str, Any]:
+def resolve_custody(repo: Path | None, store_id: str | None = None) -> dict[str, Any]:
     """Consume the Ledger owner's read-only context; never duplicate its policy."""
+    selector = ["--store-id", store_id] if store_id else ["--repo", str(repo or Path.cwd())]
     raw = _require_success(
-        _run([sys.executable, str(CONTEXT_SCRIPT), "--repo", str(repo)], cwd=repo),
+        _run([sys.executable, str(CONTEXT_SCRIPT), *selector], cwd=repo or Path.cwd()),
         "ledger context",
     )
     context = _parse_json(raw, "ledger context")
@@ -186,7 +190,7 @@ def inspect_projection(args: argparse.Namespace) -> tuple[bytes, dict[str, Any]]
     repo = Path(args.repo).expanduser().resolve()
     if not repo.is_dir():
         raise AdapterError(f"repo: not a directory: {repo}")
-    context = resolve_custody(repo)
+    context = resolve_custody(repo, getattr(args, "store_id", None))
     ledger = _resolve_binary(args.ledger_bin, "LEDGER_BIN", "ledger")
     doctor_argv = [
         ledger,
@@ -264,8 +268,8 @@ def cmd_admit(args: argparse.Namespace) -> int:
         "--json",
         "-",
     ]
-    if args.codex_home:
-        argv.extend(["--codex-home", args.codex_home])
+    layout = selected_layout(args, "negative-ledger")
+    argv.extend(layout.writer_args())
     if args.dry_run:
         argv.append("--dry-run")
     proc = _run(argv, cwd=repo, input_bytes=export_raw)
@@ -291,10 +295,12 @@ def build_parser() -> argparse.ArgumentParser:
             "--kind", choices=sorted(ALLOWED_KINDS), default="ledger-projection"
         )
         command.add_argument("--repo", default=".", help="Evidence workspace; $ledger resolves canonical custody")
+        command.add_argument("--store-id", help="Select a registered personal store without a workspace")
         command.add_argument("--ledger-bin")
         if name == "admit":
             command.add_argument("--memory-note-bin")
             command.add_argument("--codex-home")
+            command.add_argument("--memory-version", choices=("v1", "v2"))
             command.add_argument("--dry-run", action="store_true")
         command.set_defaults(func=handler)
     return parser
@@ -304,7 +310,7 @@ def main() -> int:
     args = build_parser().parse_args()
     try:
         return int(args.func(args))
-    except AdapterError as exc:
+    except (AdapterError, LayoutError) as exc:
         print(
             json.dumps(
                 {

@@ -1,8 +1,8 @@
 #!/usr/bin/env -S uv run python
-"""Resolve caller-owned Ledger custody; never select a semantic operation.
+"""Resolve personal Ledger custody; never select a semantic operation.
 
-This module is the single storage-location policy for the Ledger skill. Normal
-resolution is read-only. Initialization and cold adoption require explicit flags.
+The personal catalog owns store identity and optional workspace associations.
+Normal resolution is read-only and independent of migration completeness.
 """
 from __future__ import annotations
 
@@ -26,11 +26,17 @@ REGISTRATION_SCHEMA = "ledger-repository-registration/v1"
 MARKER = ".ledger-root.json"
 MARKER_SCHEMA = "ledger-storage-root/v1"
 CONTEXT_SCHEMA = "ledger-workspace-context/v1"
+CATALOG = "catalog.json"
+CATALOG_SCHEMA = "ledger-personal-catalog/v1"
 CONTROL_ARCHIVES = {".bindings", ".definitions", ".revisions"}
 TRANSIENT_CONTROLS = {".transactions", ".fencing.counter"}
 
 
 class ContextError(RuntimeError):
+    pass
+
+
+class UnregisteredContext(ContextError):
     pass
 
 
@@ -70,19 +76,23 @@ def unique_object(pairs: list[tuple[str, object]]) -> dict:
     return result
 
 
-def read_json(path: Path, keys: set[str]) -> dict:
+def read_document(path: Path, *, max_bytes: int = 4096) -> object:
     no_symlinks(path)
     fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
     with os.fdopen(fd, "rb") as handle:
         if not stat.S_ISREG(os.fstat(handle.fileno()).st_mode):
             raise ContextError(f"Expected regular metadata file: {path}")
-        raw = handle.read(4097)
-    if len(raw) > 4096:
+        raw = handle.read(max_bytes + 1)
+    if len(raw) > max_bytes:
         raise ContextError(f"Oversized metadata: {path}")
     try:
-        value = json.loads(raw, object_pairs_hook=unique_object)
+        return json.loads(raw, object_pairs_hook=unique_object)
     except (ValueError, UnicodeError) as exc:
         raise ContextError(f"Invalid metadata: {path}") from exc
+
+
+def read_json(path: Path, keys: set[str]) -> dict:
+    value = read_document(path)
     if not isinstance(value, dict) or set(value) != keys or not all(isinstance(v, str) for v in value.values()):
         raise ContextError(f"Unexpected metadata shape: {path}")
     return value
@@ -113,8 +123,8 @@ def write_json(path: Path, value: dict) -> None:
 
 
 def storage_home() -> Path:
-    # Only this module defines the default location. Existing registration always
-    # wins over environment changes; changing CODEX_HOME cannot fork a history.
+    # An explicitly selected home is a catalog namespace. Read-only resolution
+    # never creates a replacement when that namespace lacks a known store.
     override = os.environ.get("LEDGER_HOME")
     codex = Path(os.environ.get("CODEX_HOME", str(Path.home() / ".codex"))).expanduser()
     selected = Path(override).expanduser() if override else codex / "ledger"
@@ -123,6 +133,147 @@ def storage_home() -> Path:
     # Check the configured spelling before resolve() hides existing links.
     no_symlinks(selected)
     return selected.resolve()
+
+
+def valid_store_id(store_id: str) -> None:
+    if not isinstance(store_id, str) or len(store_id) != 32 or any(c not in "0123456789abcdef" for c in store_id):
+        raise ContextError("Invalid registered store identity")
+
+
+def read_catalog(home: Path) -> dict:
+    path = home / CATALOG
+    no_symlinks(path)
+    if not os.path.lexists(path):
+        return {"schema": CATALOG_SCHEMA, "stores": {}, "aliases": {}, "workspace_identities": {}}
+    value = read_document(path, max_bytes=1048576)
+    if (not isinstance(value, dict) or set(value) not in ({"schema", "stores", "aliases"},
+            {"schema", "stores", "aliases", "workspace_identities"})
+            or value["schema"] != CATALOG_SCHEMA
+            or not isinstance(value["stores"], dict) or not isinstance(value["aliases"], dict)):
+        raise ContextError("Invalid personal Ledger catalog")
+    for store_id, root in value["stores"].items():
+        valid_store_id(store_id)
+        if not isinstance(root, str) or not Path(root).is_absolute():
+            raise ContextError("Catalog custody roots must be absolute")
+    for alias, store_id in value["aliases"].items():
+        kind, separator, path = alias.partition(":")
+        if (kind not in {"workspace", "git-common-dir"} or not separator
+                or not Path(path).is_absolute() or not isinstance(store_id, str)
+                or store_id not in value["stores"]):
+            raise ContextError("Invalid personal Ledger workspace association")
+    identities = value.setdefault("workspace_identities", {})
+    if not isinstance(identities, dict):
+        raise ContextError("Invalid catalog workspace identities")
+    for alias, common in identities.items():
+        if (alias not in value['aliases'] or not alias.startswith('workspace:')
+                or (common is not None and (not isinstance(common, str) or not Path(common).is_absolute()
+                    or value['aliases'].get('git-common-dir:' + common) != value['aliases'][alias]))):
+            raise ContextError("Invalid catalog workspace identity")
+    return value
+
+
+@contextmanager
+def catalog_lock(home: Path) -> Iterator[None]:
+    no_symlinks(home)
+    home.mkdir(parents=True, exist_ok=True, mode=0o700)
+    lock = home / "catalog.lock"
+    no_symlinks(lock)
+    fd = os.open(lock, os.O_RDWR | os.O_CREAT | os.O_NOFOLLOW, 0o600)
+    try:
+        if not stat.S_ISREG(os.fstat(fd).st_mode):
+            raise ContextError("Expected regular catalog lock")
+        fcntl.flock(fd, fcntl.LOCK_EX)
+        yield
+    finally:
+        os.close(fd)
+
+
+def workspace_associations(repo: Path | None) -> tuple[Path | None, Path | None, list[str]]:
+    if repo is None:
+        return None, None, []
+    selected = repo.expanduser().absolute()
+    root = selected.resolve()
+    common = None
+    # Git can supply an association for a live worktree, but it never supplies
+    # custody or enumerates sibling worktrees during normal use.
+    if root.is_dir():
+        try:
+            root, common = workspace(root)
+        except (ContextError, FileNotFoundError):
+            pass
+    aliases = ["workspace:" + str(root)]
+    if common is not None:
+        aliases.append("git-common-dir:" + str(common))
+    return root, common, aliases
+
+
+def catalog_selection(catalog: dict, aliases: list[str], store_id: str | None,
+                      *, attach_workspace: bool = False) -> str | None:
+    if store_id is not None:
+        valid_store_id(store_id)
+        if store_id not in catalog["stores"]:
+            raise ContextError("Selected store is not cataloged; import its existing registration or register its root explicitly")
+    associated = {catalog["aliases"][key] for key in aliases if key in catalog["aliases"]}
+    if len(associated) > 1 or (store_id is not None and associated and associated != {store_id}):
+        raise ContextError("Conflicting workspace associations; reconcile explicitly without merging histories")
+    workspace_ids = {catalog['aliases'][key] for key in aliases
+                     if key.startswith('workspace:') and key in catalog['aliases']}
+    if not attach_workspace and workspace_ids and any(
+            key.startswith('git-common-dir:') and catalog['aliases'].get(key) not in workspace_ids
+            for key in aliases):
+        raise ContextError("Workspace alias has an unregistered Git common directory; select the intended --store-id and --attach-workspace explicitly")
+    live_common = next((key[len('git-common-dir:'):] for key in aliases
+                        if key.startswith('git-common-dir:')), None)
+    for alias in aliases:
+        if not alias.startswith('workspace:') or alias not in catalog['aliases']:
+            continue
+        identities = catalog['workspace_identities']
+        if alias in identities:
+            expected_common = identities[alias]
+            if (expected_common is not None and expected_common != live_common
+                    and (live_common is None or not attach_workspace)):
+                raise ContextError("Registered Git common directory identity is unavailable or changed; use direct --store-id access")
+        elif live_common is None and any(
+                key.startswith('git-common-dir:') and selected == catalog['aliases'][alias]
+                for key, selected in catalog['aliases'].items()):
+            # Old catalogs did not retain per-workspace provenance. A Git-bound
+            # store cannot safely authenticate a surviving plain path.
+            raise ContextError("Legacy workspace Git common directory identity cannot be verified; use direct --store-id access")
+    return store_id or next(iter(associated), None)
+
+
+def associate(catalog: dict, aliases: list[str], store_id: str) -> None:
+    for alias in aliases:
+        existing = catalog["aliases"].get(alias)
+        if existing is not None and existing != store_id:
+            raise ContextError("Workspace is already associated with another store; refusing replacement")
+    catalog["aliases"].update({alias: store_id for alias in aliases})
+    common = next((alias[len('git-common-dir:'):] for alias in aliases
+                   if alias.startswith('git-common-dir:')), None)
+    for alias in aliases:
+        if alias.startswith('workspace:'):
+            catalog['workspace_identities'][alias] = common
+
+
+def publish_catalog(home: Path, catalog: dict) -> None:
+    if len((json.dumps(catalog, sort_keys=True) + '\n').encode('utf-8')) > 1048576:
+        raise ContextError("Personal Ledger catalog size bound exceeded")
+    write_json(home / CATALOG, catalog)
+
+
+def list_stores() -> dict:
+    catalog = read_catalog(storage_home())
+    return {
+        'schema': 'ledger-personal-store-list/v1',
+        'stores': [
+            {'store_id': store_id, 'repository_id': 'ledger-repository:' + store_id,
+             'store_root': root,
+             'aliases': sorted(alias for alias, selected in catalog['aliases'].items() if selected == store_id)}
+            for store_id, root in sorted(catalog['stores'].items())
+        ],
+        'storage_mutated': False,
+        'authority_granted': False,
+    }
 
 
 @contextmanager
@@ -165,13 +316,16 @@ def legacy_roots(root: Path) -> list[Path]:
 
 
 def checked_registration(root: Path, common: Path, *, mutated: bool = False) -> dict:
+    """Inspect an explicitly selected legacy registration for maintenance only."""
     registration = read_json(common / REGISTRATION, {"schema", "store_id", "store_root"})
     if registration["schema"] != REGISTRATION_SCHEMA:
         raise ContextError("Unknown repository registration schema")
-    store_id = registration["store_id"]
-    if len(store_id) != 32 or any(c not in "0123456789abcdef" for c in store_id):
-        raise ContextError("Invalid registered store identity")
-    custody = Path(registration["store_root"])
+    return checked_root(Path(registration["store_root"]), registration["store_id"], root, common, mutated=mutated)
+
+
+def checked_root(custody: Path, store_id: str, root: Path | None = None,
+                 common: Path | None = None, *, mutated: bool = False) -> dict:
+    valid_store_id(store_id)
     if not custody.is_absolute():
         raise ContextError("Registered custody root must be absolute")
     no_symlinks(custody)
@@ -184,8 +338,8 @@ def checked_registration(root: Path, common: Path, *, mutated: bool = False) -> 
         raise ContextError("Established custody is missing; refusing empty reinitialization")
     return {
         "schema": CONTEXT_SCHEMA,
-        "workspace_root": str(root),
-        "git_common_dir": str(common),
+        "workspace_root": str(root) if root is not None else None,
+        "git_common_dir": str(common) if common is not None else None,
         "repository_id": f"ledger-repository:{store_id}",
         "store_id": store_id,
         "store_root": str(custody),
@@ -193,6 +347,44 @@ def checked_registration(root: Path, common: Path, *, mutated: bool = False) -> 
         "storage_mutated": mutated,
         "authority_granted": False,
     }
+
+
+def register_root(custody: Path, store_id: str, repo: Path | None = None) -> dict:
+    """Catalog an existing identity without moving, rebinding, or merging data."""
+    home = storage_home()
+    with catalog_lock(home):
+        return _register_root_locked(custody, store_id, repo, home)
+
+
+def _register_root_locked(custody: Path, store_id: str, repo: Path | None, home: Path) -> dict:
+    """Publish while the caller holds the catalog lock through its effects."""
+    root, common, aliases = workspace_associations(repo)
+    checked_root(custody, store_id, root, common)
+    custody = custody.resolve(strict=True)
+    if common is not None and os.path.lexists(common / REGISTRATION):
+        legacy = checked_registration(root, common)
+        if legacy['store_id'] != store_id or Path(legacy['store_root']).resolve(strict=True) != custody:
+            raise ContextError("Selected workspace has a different legacy registration; reconcile explicitly")
+    catalog = read_catalog(home)
+    catalog_selection(catalog, aliases, None, attach_workspace=True)
+    existing = catalog["stores"].get(store_id)
+    if existing is not None and existing != str(custody):
+        raise ContextError("Store identity is already cataloged at another root; refusing replacement")
+    before = json.dumps(catalog, sort_keys=True)
+    catalog["stores"][store_id] = str(custody)
+    associate(catalog, aliases, store_id)
+    checked_root(custody, store_id, root, common)
+    changed = json.dumps(catalog, sort_keys=True) != before
+    if changed:
+        publish_catalog(home, catalog)
+    return checked_root(custody, store_id, root, common, mutated=changed)
+
+
+def import_registration(path: Path, repo: Path | None = None) -> dict:
+    registration = read_json(path, {"schema", "store_id", "store_root"})
+    if registration["schema"] != REGISTRATION_SCHEMA:
+        raise ContextError("Unknown repository registration schema")
+    return register_root(Path(registration["store_root"]), registration["store_id"], repo)
 
 
 def native_doctor(binary: str, repo: Path, definitions: list[Path], native_args: list[str] | None = None) -> None:
@@ -310,87 +502,151 @@ def cold_adopt(source: Path, destination: Path, candidates: list[Path], definiti
 
 
 def resolve(
-    repo: Path,
+    repo: Path | None = None,
     *,
+    store_id: str | None = None,
     initialize: bool = False,
+    attach_workspace: bool = False,
     adopt_from: Path | None = None,
     definitions: list[Path] | None = None,
     confirm_no_writers: bool = False,
     ledger_bin: str = "ledger",
 ) -> dict:
-    root, common = workspace(repo)
-    registration = common / REGISTRATION
-    if os.path.lexists(registration):
+    root, common, aliases = workspace_associations(repo)
+    if attach_workspace and (repo is None or store_id is None or initialize or adopt_from is not None):
+        raise ContextError("--attach-workspace requires --repo and --store-id without initialization")
+    if adopt_from is not None and (not initialize or repo is None or not definitions or not confirm_no_writers):
+        raise ContextError("Cold adoption requires --initialize, --repo, all owner definitions, and --confirm-no-writers")
+    if definitions and adopt_from is None:
+        raise ContextError("Definitions require --adopt-from")
+    home = storage_home()
+    catalog = read_catalog(home)
+    selected_id = catalog_selection(catalog, aliases, store_id, attach_workspace=attach_workspace)
+    if selected_id is not None:
         if adopt_from is not None:
-            raise ContextError("A store is already registered; adoption is not reconciliation")
-        return checked_registration(root, common)
+            raise ContextError("A store is already cataloged; adoption is not reconciliation")
+        custody = Path(catalog["stores"][selected_id])
+        if attach_workspace:
+            return register_root(custody, selected_id, repo)
+        return checked_root(custody, selected_id, root, common)
     if not initialize:
-        raise ContextError("Repository custody is unregistered; authorize initialization or cold adoption through $ledger")
-    if not confirm_no_writers:
-        raise ContextError("Initialization requires --confirm-no-writers after quiescing legacy writers")
-    if adopt_from is not None and not definitions:
-        raise ContextError("Cold adoption requires all owner definitions")
-    with registration_lock(common):
-        if os.path.lexists(registration):
+        raise UnregisteredContext("No cataloged workspace association; select --store-id, import an existing registration, or explicitly initialize new custody")
+
+    def reject_known_history(*, check_catalog: bool = False) -> None:
+        if check_catalog and not os.path.lexists(home / CATALOG):
+            prior_roots = home / 'repos'
+            no_symlinks(prior_roots)
+            if os.path.lexists(prior_roots) and (not prior_roots.is_dir() or any(prior_roots.iterdir())):
+                raise ContextError("Existing custody roots lack a catalog; explicitly register their identities before new initialization")
+        if root is not None and not root.is_dir():
+            raise ContextError("A new workspace association requires an existing directory")
+        legacy_registration = (common if common is not None else root / '.git') / REGISTRATION if root is not None else None
+        if legacy_registration is not None and os.path.lexists(legacy_registration):
+            raise ContextError("Existing Git registration must be imported explicitly; refusing a parallel empty store")
+        if root is not None and adopt_from is None:
+            control = root / '.ledger'
+            no_symlinks(control)
+            if os.path.lexists(root / '.learnings.jsonl') or (os.path.lexists(control) and (not control.is_dir() or any(control.iterdir()))):
+                raise ContextError("Selected workspace contains legacy history; use explicit migration without declaring it recovered")
+            if common is not None:
+                # A new family association must not hide history in another
+                # checkout. This coverage check belongs only to creation;
+                # existing custody and explicit adoption never reach it.
+                candidates = legacy_roots(root)
+                if candidates:
+                    raise ContextError("Linked worktrees contain legacy history; use explicit migration: "
+                                       + ", ".join(map(str, candidates)))
+
+    reject_known_history()
+    candidates = []
+    source = None
+    if adopt_from is not None:
+        root, common = workspace(repo)
+        candidates = legacy_roots(root)
+        source, source_common = workspace(adopt_from)
+        if source_common != common or source not in candidates:
+            raise ContextError("Adoption source must be an inspected worktree in this repository family")
+    with catalog_lock(home):
+        catalog = read_catalog(home)
+        selected_id = catalog_selection(catalog, aliases, store_id)
+        if selected_id is not None:
             if adopt_from is not None:
                 raise ContextError("Concurrent registration completed; do not replace its lineage")
-            return checked_registration(root, common)
-        candidates = legacy_roots(root)
-        if candidates and adopt_from is None:
-            raise ContextError("Legacy histories exist; explicit cold adoption or reconciliation is required: " + ", ".join(map(str, candidates)))
-        if adopt_from is not None:
-            source, source_common = workspace(adopt_from)
-            if source_common != common or source not in candidates:
-                raise ContextError("Adoption source must be an inspected worktree in this repository family")
-        home = storage_home()
+            return checked_root(Path(catalog['stores'][selected_id]), selected_id, root, common)
+        reject_known_history(check_catalog=True)
         no_symlinks(home)
         repos = home / "repos"
         repos.mkdir(parents=True, exist_ok=True, mode=0o700)
         no_symlinks(repos)
-        store_id = uuid.uuid4().hex
-        custody = repos / store_id
+        new_id = uuid.uuid4().hex
+        custody = repos / new_id
         stage = Path(tempfile.mkdtemp(prefix=".initializing-", dir=repos))
         try:
             (stage / ".ledger").mkdir(mode=0o700)
-            if adopt_from is not None:
+            if source is not None:
                 cold_adopt(source, stage, candidates, [p.resolve(strict=True) for p in definitions or []], ledger_bin)
-            write_json(stage / MARKER, {"schema": MARKER_SCHEMA, "store_id": store_id})
+            write_json(stage / MARKER, {"schema": MARKER_SCHEMA, "store_id": new_id})
             sync_directory(stage / ".ledger")
             if adopt_from is None:
-                late_candidates = legacy_roots(root)
-                if late_candidates:
-                    raise ContextError("Legacy history appeared during initialization; reconcile before registration: "
-                                       + ", ".join(map(str, late_candidates)))
+                reject_known_history()
             os.rename(stage, custody)
             sync_directory(repos)
             if adopt_from is not None:
                 native_doctor(ledger_bin, custody, [p.resolve(strict=True) for p in definitions or []],
-                              ["--store-root", str(custody), "--store-id", store_id])
+                              ["--store-root", str(custody), "--store-id", new_id])
+            else:
+                # Catalog publication associates the family with this identity.
+                # Recheck after syncing its final root, before that association.
+                reject_known_history()
             # Publish only after validation at the final, identity-checked address.
-            write_json(registration, {"schema": REGISTRATION_SCHEMA, "store_id": store_id, "store_root": str(custody)})
+            catalog['stores'][new_id] = str(custody)
+            associate(catalog, aliases, new_id)
+            publish_catalog(home, catalog)
         finally:
             if stage.exists():
                 shutil.rmtree(stage)
-        return checked_registration(root, common, mutated=True)
+        return checked_root(custody, new_id, root, common, mutated=True)
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--repo", type=Path, default=Path.cwd())
+    parser.add_argument("--repo", type=Path)
+    parser.add_argument("--store-id")
+    parser.add_argument("--list-stores", action="store_true")
     parser.add_argument("--initialize", action="store_true")
+    parser.add_argument("--attach-workspace", action="store_true")
+    adoption = parser.add_mutually_exclusive_group()
+    adoption.add_argument("--register-root", type=Path)
+    adoption.add_argument("--import-registration", type=Path)
     parser.add_argument("--adopt-from", type=Path)
     parser.add_argument("--definition", type=Path, action="append", default=[])
     parser.add_argument("--confirm-no-writers", action="store_true")
     parser.add_argument("--ledger-bin", default="ledger")
     args = parser.parse_args()
     try:
+        if args.list_stores and (args.repo is not None or args.store_id is not None or args.initialize
+                                or args.attach_workspace or args.register_root or args.import_registration
+                                or args.adopt_from or args.definition or args.confirm_no_writers):
+            raise ContextError("--list-stores cannot be combined with a selector or mutation")
+        if (args.register_root or args.import_registration) and (args.initialize or args.attach_workspace or args.adopt_from or args.definition or args.confirm_no_writers):
+            raise ContextError("Catalog adoption cannot be combined with initialization or migration")
         if (args.adopt_from or args.definition or args.confirm_no_writers) and not args.initialize:
             raise ContextError("Initialization flags require --initialize")
-        if args.definition and args.adopt_from is None:
-            raise ContextError("Definitions require --adopt-from")
-        result = resolve(args.repo, initialize=args.initialize, adopt_from=args.adopt_from,
-                         definitions=args.definition, confirm_no_writers=args.confirm_no_writers,
-                         ledger_bin=args.ledger_bin)
+        if args.list_stores:
+            result = list_stores()
+        elif args.register_root:
+            if args.store_id is None:
+                raise ContextError("--register-root requires the existing --store-id")
+            result = register_root(args.register_root, args.store_id, args.repo)
+        elif args.import_registration:
+            if args.store_id is not None:
+                raise ContextError("--import-registration obtains identity from the selected registration")
+            result = import_registration(args.import_registration, args.repo)
+        else:
+            result = resolve(args.repo, store_id=args.store_id, initialize=args.initialize,
+                             attach_workspace=args.attach_workspace, adopt_from=args.adopt_from,
+                             definitions=args.definition, confirm_no_writers=args.confirm_no_writers,
+                             ledger_bin=args.ledger_bin)
     except (ContextError, OSError, ValueError) as exc:
         print(json.dumps({"schema": "ledger-workspace-context-error/v1", "status": "blocked", "error": str(exc), "authority_granted": False}), file=sys.stderr)
         return 3

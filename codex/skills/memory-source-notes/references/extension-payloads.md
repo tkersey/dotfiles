@@ -6,7 +6,7 @@
 {
   "learning_id": "lrn-...",
   "learning_status": "codify_now",
-  "repo": "owner/repo",
+  "repo": "ledger-repository:0123456789abcdef0123456789abcdef",
   "source_path": ".ledger/learnings/events.jsonl",
   "decision_delta": "What future Codex should do differently",
   "evidence_snapshot": ["Exact evidence anchor"],
@@ -16,7 +16,10 @@
 }
 ```
 
-The complete canonical row remains in `.ledger/learnings/events.jsonl`.
+The complete canonical row remains in the Learnings namespace of the native
+store selected by `$ledger`. `source_path` is relative to that selected store
+root; it does not authorize reading a similarly named file in the working
+directory. Historical `owner/repo` scopes and path strings stay byte-identical.
 
 ## Negative-ledger projection
 
@@ -25,7 +28,7 @@ The complete canonical row remains in `.ledger/learnings/events.jsonl`.
   "neg_id": "NEG-000001",
   "schema": "negative-ledger-projection/v3",
   "record_version": "NER-v2",
-  "repository_id": "owner/repo",
+  "repository_id": "ledger-repository:0123456789abcdef0123456789abcdef",
   "ledger_path": ".ledger/negative-ledger/events.jsonl",
   "projection_fingerprint": "...",
   "status": "active",
@@ -114,7 +117,7 @@ A mapping requires explicit endorsement, correction, rejection, retraction, reop
 A successful validated Synesthesia append refreshes this non-canonical materialized view:
 
 ```text
-${CODEX_HOME:-$HOME/.codex}/memories/extensions/synesthesia/resources/latest_synesthesia_digest.md
+<native-synesthesia-layout.resources_dir>/latest_synesthesia_digest.md
 ```
 
 The digest folds immutable operation chains into active mappings and boundaries. It must retain `source_note_ids`, a current source fingerprint, unresolved-chain diagnostics, and inactive states. It never becomes independent admission authority.

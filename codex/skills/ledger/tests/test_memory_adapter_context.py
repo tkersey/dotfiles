@@ -4,6 +4,7 @@ import io
 import json
 import os
 from pathlib import Path
+import shutil
 import subprocess
 import tempfile
 import unittest
@@ -21,6 +22,7 @@ def load(name, relative):
 
 context = load("adapter_test_context", "ledger/scripts/ledger_context.py")
 adapter = load("adapter_test", "memory-source-notes/scripts/negative_ledger_memory_note.py")
+from memory_layout import MemoryLayout
 
 
 class AdapterContextTests(unittest.TestCase):
@@ -74,11 +76,18 @@ class AdapterContextTests(unittest.TestCase):
 
     def test_admission_preserves_projected_bytes_exactly(self):
         stdout = io.TextIOWrapper(io.BytesIO(), encoding="utf-8")
-        with patch.object(adapter, "_run", side_effect=self.run_mock_native), patch.object(adapter, "_resolve_binary", return_value="ledger"), patch.object(adapter.sys, "stdout", stdout):
+        home = self.root / 'codex'
+        memory_root = home / 'memories_v2'
+        extension_root = memory_root / 'extensions/negative-ledger'
+        layout = MemoryLayout(extension='negative-ledger', codex_home=home, memory_version='v2',
+            memory_root=memory_root, extension_root=extension_root, notes_dir=extension_root / 'notes',
+            instructions_path=extension_root / 'instructions.md', resources_dir=extension_root / 'resources')
+        with patch.object(adapter, "_run", side_effect=self.run_mock_native), patch.object(adapter, "_resolve_binary", return_value="ledger"), patch.object(adapter.sys, "stdout", stdout), patch.object(adapter, 'selected_layout', return_value=layout):
             self.assertEqual(adapter.cmd_admit(self.args), 0)
         writer = [call for call in self.calls if call[0][1] == "append"]
         self.assertEqual(len(writer), 1)
         self.assertEqual(writer[0][2], self.raw)
+        self.assertEqual(writer[0][0][-4:], layout.writer_args())
 
     def test_missing_root_stops_before_native_read_or_memory_writer(self):
         (Path(self.selected["store_root"]) / context.MARKER).unlink()
@@ -89,10 +98,24 @@ class AdapterContextTests(unittest.TestCase):
         self.assertFalse((self.repo / ".ledger").exists())
 
     def test_unregistered_workspace_is_not_initialized_by_admission(self):
-        (self.repo / ".git" / context.REGISTRATION).unlink()
+        catalog = context.storage_home() / context.CATALOG
+        catalog.unlink()
         with self.assertRaises(adapter.AdapterError):
             adapter.resolve_custody(self.repo)
-        self.assertFalse((self.repo / ".git" / context.REGISTRATION).exists())
+        self.assertFalse(catalog.exists())
+
+    def test_direct_source_selection_survives_deleted_workspace(self):
+        shutil.rmtree(self.repo)
+        args = adapter.build_parser().parse_args(['inspect', '--store-id', self.selected['store_id'],
+                                                   '--repo', str(self.root), '--id', 'NEG-000001'])
+        with patch.object(adapter, '_run', side_effect=self.run_mock_native), patch.object(adapter, '_resolve_binary', return_value='ledger'):
+            raw, report = adapter.inspect_projection(args)
+        self.assertEqual(raw, self.raw)
+        self.assertEqual(report['storage_context']['store_id'], self.selected['store_id'])
+        self.assertIsNone(report['storage_context']['git_common_dir'])
+        context_argv = self.calls[0][0]
+        self.assertIn('--store-id', context_argv)
+        self.assertNotIn('--repo', context_argv)
 
     def test_mutating_or_fallback_context_is_rejected(self):
         for change in ({"storage_mutated": True}, {"native_args": ["--repo", str(self.repo)]}, {"authority_granted": True}):

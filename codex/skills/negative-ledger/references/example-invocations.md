@@ -1,9 +1,9 @@
 # Example Invocations
 
-Resolve the verified workspace through `$ledger` first and retain
+Resolve the intended personal store through `$ledger` first and retain
 `context.store_root` and `context.store_id` for every canonical operation below.
-The admission adapter's `--repo` names the evidence workspace; it resolves
-managed custody internally.
+Explicit `--store-id` needs no checkout; `--repo` is a cataloged workspace alias.
+The admission adapter resolves the same personal store internally.
 
 ## Implicit Route Check Before Retry
 
@@ -22,6 +22,15 @@ Expected flow:
 ```bash
 negative_ledger_definition="$(realpath "${CODEX_HOME:-$HOME/.codex}/skills/negative-ledger/definitions/ledger/negative-evidence-protocol.json")"
 
+ledger project \
+  --definition "$negative_ledger_definition" \
+  --projection route-candidates \
+  --store-root "<context.store_root>" --store-id "<context.store_id>" \
+  --param "query=parser tolerance rejected input validation" \
+  --param limit=8 \
+  --format json
+
+# Establish the relevant recorded identity and present applicability before gating.
 ledger project \
   --definition "$negative_ledger_definition" \
   --projection route-gate \
@@ -70,12 +79,13 @@ ledger transact \
   --definition "$negative_ledger_definition" \
   --operation capture \
   --store-root "<context.store_root>" --store-id "<context.store_id>" \
+  --param "capture_key=<stable-task-and-finding-token>" \
   --input capture=capture.json \
   --format json
 
 memory_source_notes_root="$(realpath "${CODEX_HOME:-$HOME/.codex}/skills/memory-source-notes")"
 uv run "$memory_source_notes_root/scripts/negative_ledger_memory_note.py" \
-  admit --repo "<workspace-root>" --id NEG-000001 --kind ledger-projection
+  admit --store-id "<context.store_id>" --id NEG-000001 --kind ledger-projection
 ```
 
 ## Reopen Old Evidence

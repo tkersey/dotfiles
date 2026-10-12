@@ -132,13 +132,19 @@ Phase 2 updates compiled memory surgically. It never deletes source notes.
 
 A note can be authoritative that Phase 2 must consider an event while remaining subordinate to its canonical domain source.
 
-- a negative-ledger note is a projected snapshot; `$negative-ledger` and its passive Negative Evidence definition own route state in `.ledger/negative-ledger/events.jsonl`;
-- a learnings note admits a row; `.ledger/learnings/events.jsonl` owns the full learning event;
+- a negative-ledger note is a projected snapshot; `$negative-ledger` and its passive Negative Evidence definition own current route state in the personal store selected through `$ledger`;
+- a learnings note admits a row; `$learnings` owns the full event in its selected personal store;
 - a Synesthesia note may itself be canonical when it records explicit endorsement, correction, rejection, retraction, reopening, or a durable boundary.
 
 ## Instruction deployment
 
 Extension `instructions.md` files in the live memory root must be regular copied files. Do not symlink them. Copy only the instruction file; leave `notes/` and `resources/` as live private state.
+
+Resolve `instructions_path`, `notes_dir`, and `resources_dir` through native
+`memory-note path`, then pin its home/version for all operations. Do not inspect
+both memory versions during normal work. Explicit native `migrate` copies
+existing envelopes unchanged; it does not create new admissions or rewrite IDs,
+fingerprints, timestamps, or scope. See [source-store-layout.md](source-store-layout.md).
 
 ## Derived Synesthesia digest
 

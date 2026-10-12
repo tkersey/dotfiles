@@ -14,9 +14,11 @@ The sole structural definition is:
 ${CODEX_HOME:-$HOME/.codex}/skills/negative-ledger/definitions/ledger/negative-evidence-protocol.json
 ```
 
-Resolve the verified workspace through `$ledger` first and retain
+Resolve the intended personal store through `$ledger` first and retain
 `context.store_root` and `context.store_id`. Every canonical command selects
 this definition and passes the paired managed selector.
+Explicit store selection needs no checkout; legacy migration is separate
+maintenance. The logical JSONL path is relative to the selected personal store.
 
 ## Generic Operations and Projections
 
@@ -44,6 +46,7 @@ ledger transact \
   --definition "$negative_ledger_definition" \
   --operation capture \
   --store-root "<context.store_root>" --store-id "<context.store_id>" \
+  --param "capture_key=<stable-task-and-finding-token>" \
   --input capture=capture.json \
   --format json
 
@@ -75,8 +78,13 @@ ledger project \
   --format json
 ```
 
-Before retrying a route, use the `route-gate` projection with the immutable
-artifact identity and the identity required by the record's declared scope.
+The doctor/bind/rebind commands above are explicit diagnostics or maintenance,
+not a checklist around each operation. Preserve a capture's key and input across
+transport retries; changed input under the same key must fail.
+
+Before retrying a resembling route, discover `route-candidates` from mechanism
+and component terms, assess current applicability, then use `route-gate` with the
+immutable artifact identity and the established identity for the declared scope.
 Exit `0` means no exact active match, `2` means an exact active/applicable
 match, and `3` means the gate could not establish a valid result.
 

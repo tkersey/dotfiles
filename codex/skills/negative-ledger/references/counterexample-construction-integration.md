@@ -7,13 +7,15 @@ a review classifier, architecture selector, or workflow authority.
 owner review or failure evidence
 -> $review-fold classifies the current evidence horizon
 -> $actuating reconstructs the incumbent architecture from Git
--> current exact Negative Ledger route-gate projection
+-> current Negative Ledger candidates and scope assessment
+-> exact Negative Ledger route-gate projection
 -> $actuating preserves, recompiles, or blocks the target architecture
 ```
 
 ## Trigger
 
-Project the canonical `route-gate` before Actuating selects an architecture
+Discover canonical `route-candidates`, assess material records, and project the
+exact `route-gate` before Actuating selects an architecture
 when:
 
 - a current accepted finding resembles a previously failed route;
@@ -22,6 +24,11 @@ when:
 - a bypass, compatibility path, fallback, parser tolerance, or proof choice
   caused a witnessed current failure; or
 - a candidate resembles an active exact route exclusion.
+
+Search by mechanism, component, or invariant before relying on a route label.
+Candidate retrieval cannot exclude a route; the current artifact, exact identity,
+and applicability conditions still control that decision. A missing label match
+is not evidence that no relevant failure was recorded.
 
 ## Ownership
 

@@ -74,6 +74,8 @@ ledger project \
   run_memory_note_tool append \
     --extension learnings \
     --kind learning-admission \
+    --codex-home "<layout.codex_home>" \
+    --memory-version "<layout.memory_version>" \
     --json -
 ```
 
@@ -82,6 +84,10 @@ validates canonical custody and fails closed for a missing/incomplete row; it
 does not decide eligibility. Definition-relative source locators are interpreted
 through `$ledger`, not as files in a retired checkout. Do not rewrite old
 provenance, fingerprints, or immutable notes during storage adoption.
+
+The writer and reader use the same configured memory root, selected by the
+memory owner. Do not hardcode the unversioned directory, dual-write versions, or
+admit a backlog wholesale. Canonical retention does not imply memory eligibility.
 
 ## Admission Proof
 
@@ -100,10 +106,15 @@ memory-note: not-attempted: cli unavailable
 ```
 
 Failed admission never rolls back or invalidates the canonical append.
+Persistence, reader visibility, and explicit compiled attribution are different
+observations. A compact summary may omit source IDs; omission alone does not
+establish failed delivery or compilation lag.
 
 ## Supersession and Withdrawal
 
 When a canonical learning is superseded or withdrawn from memory relevance,
 append the new canonical row, create a `learning-supersession` or
 `learning-withdrawal` note, reference the previous source-note ID when known,
-and let Phase 2 update compiled memory surgically. Never edit/delete old notes.
+and let Phase 2 own compiled memory. Reconcile the corrected source and note
+identity through the supported reader; a correction note alone is not proof of
+downstream invalidation. Never edit/delete old notes or compiled memory.

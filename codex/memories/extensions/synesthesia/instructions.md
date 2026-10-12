@@ -2,13 +2,10 @@
 
 Use this file only during Codex Phase 2 memory consolidation.
 
-This checked-in file must be copied as a regular file into:
-
-```text
-${CODEX_HOME:-$HOME/.codex}/memories/extensions/synesthesia/instructions.md
-```
-
-Do not symlink it. Use the copy-based synchronization command documented by the installed `memory-source-notes` skill.
+Copy this checked-in file as a regular file to `instructions_path` returned by
+native `memory-note path --extension synesthesia --format json`. Use the
+copy-based synchronization command in the installed `memory-source-notes`
+skill. Do not symlink it, infer a fixed memory version, or read both roots.
 
 ## Role
 
@@ -24,14 +21,16 @@ Process valid new or changed immutable admission snapshots under:
 extensions/synesthesia/notes/*.md
 ```
 
-When present, the Ledger-managed repo-local canonical source slot resolves to:
+Synesthesia currently retains an explicitly selected unmanaged canonical root:
 
 ```text
 <repo>/.ledger/synesthesia/events.jsonl
 ```
 
 Existing immutable notes remain valid, byte-identical source evidence. New
-repo-scoped events are admitted through Synesthesia's passive Ledger definition.
+repo-scoped events are admitted through Synesthesia's passive Ledger definition
+at the same explicit root used for capture. Do not infer another worktree as
+canonical custody or migrate it during consolidation.
 
 Prioritize notes surfaced by `phase2_workspace_diff.md` when that artifact is available.
 
@@ -217,10 +216,16 @@ Each ID must resolve to a current immutable Synesthesia source note supporting t
 
 ## Artifact targeting
 
-- `memory_summary.md`: compact cross-task activation/non-activation defaults and the requirement for reversible engineering translation;
-- `MEMORY.md`: task-group entries with scope, phrase, engineering translation, activation/non-activation boundaries, verification, and `source_note_ids`;
-- `skills/*`: only when several admitted notes prove a reusable sub-workflow beyond the installed Synesthesia skill;
-- `none`: tentative, task-local, decorative, duplicate, unsupported, superseded, retracted, or already-codified material.
+Follow the active compiler contract. V2 produces only compact
+`memory_summary.md`; select high-value activation/non-activation defaults or
+scoped retrieval routes and preserve reversible engineering translation.
+Detailed phrases, mapping evidence, verification, and operation chains remain
+in immutable notes. Include a source-note reference when useful for retrieval.
+
+V1 may additionally permit detailed `MEMORY.md` task groups or a proven
+sub-workflow in `skills/*`. Do not require or create them under v2. Select
+`none` for tentative, task-local, decorative, duplicate, unsupported,
+superseded, retracted, or already-codified material.
 
 Do not recreate the installed Synesthesia skill in memory.
 

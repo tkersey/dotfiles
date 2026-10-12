@@ -1,16 +1,16 @@
 ---
 name: learnings
-description: "Capture or recall evidence-backed execution learnings; evaluate capture at validation transitions, strategy pivots, footguns, retry loops, and material delivery or handoff. Also handle explicit learning-memory admission and supersession."
+description: "Capture or recall evidence-backed execution learnings at consequential validation transitions, strategy pivots, footguns, or retry loops. Also handle explicit learning-memory admission and supersession. Delivery alone does not require evaluation."
 metadata:
-  version: "8.3.1"
+  version: "8.4.0"
 ---
 
 # Learnings
 
 ## Mission
 
-Maintain repository-scoped, evidence-backed execution learnings in the durable
-custody resolved by `$ledger`; selectively admit only high-value snapshots to the
+Maintain project-scoped, evidence-backed execution learnings in the personal
+store resolved by `$ledger`; selectively admit only high-value snapshots to the
 global Codex memory compiler. Worktrees share history, not artifact applicability.
 
 Preserve what happened without overstating what follows. Capture the narrowest
@@ -23,10 +23,10 @@ Authority split:
 definitions/ledger/learnings-protocol.json
   canonical passive protocol; learning records live under event.record
 
-$ledger-resolved custody + the definition's events logical slot
-  canonical repository/worktree-family history
+$ledger-resolved personal store + the definition's events logical slot
+  canonical project history, independent of checkout lifetime
 
-~/.codex/memories/extensions/learnings/notes/*.md
+the selected memory root's extensions/learnings/notes/*.md
   immutable admission snapshots for Phase 2
 
 memory_summary.md / MEMORY.md / skills/*
@@ -43,18 +43,17 @@ load `$memory-source-notes` before invoking `run_memory_note_tool`.
 - `$learnings`;
 - browse, recent, search, rank, or summarize learnings;
 - "what do we already know about X";
-- lessons learned, takeaways, wrap up, or handoff;
+- a request for lessons learned or takeaways;
 - fail-to-pass, pass-to-fail, timeout-to-stable;
 - strategy pivot, footgun, gotcha, retry loop, or acceleration pattern;
-- before a Codex-made commit/PR/handoff after material implementation;
 - explicit request to promote/admit a learning to memory.
 
 ## Selected guidance
 
-At a delivery/capture trigger, evaluate Capture Gate from task evidence first.
+At a capture trigger, evaluate Capture Gate from task evidence first.
 If it fails and no recall or canonical operation was requested, retain `no-op`
 and return without loading store/admission manuals, resolving storage, or
-bootstrapping Ledger. Delivery-time evaluation is mandatory; append is conditional.
+bootstrapping Ledger. Commit, PR creation, or handoff alone is not a trigger.
 
 | Selected operation | Read before the operation |
 |---|---|
@@ -93,12 +92,14 @@ Capture only when at least one decision-shaping event occurred:
 3. hidden footgun or brittle assumption;
 4. repeated acceleration pattern;
 5. useful or failed recalled learning;
-6. delivery boundary after real implementation work.
+6. a correction to the scope or evidence of an existing learning.
 
 Require decision delta, transferability, and counterfactual cost. Prefer one
 essential learning; append at most three per turn. Evaluate from task evidence
 before bootstrap or store inspection when no recall/canonical operation is needed.
 If the gate fails, retain `no-op` internally and continue the task.
+The owning task adjudicates worker findings before capture; inherited reports and
+repeated checks do not independently qualify as new learnings.
 
 ## Disposition Invariant
 
@@ -108,7 +109,7 @@ At each material Learnings activation, retain exactly one internal outcome:
 learning-disposition: appended id=lrn-...
 learning-disposition: duplicate-skip reason=<reason>
 learning-disposition: no-op reason=<capture gate not met>
-learning-disposition: blocked reason=<context, doctor, binding, or capture failure>
+learning-disposition: blocked reason=<store selection, binding, or capture failure>
 ```
 
 Do not claim Learnings closeout without a disposition. Keep `no-op` and
@@ -129,7 +130,7 @@ Promote witnessed failed hypotheses through the Negative Evidence definition's
 
 - Ground every row in observed evidence.
 - Write bounded rules, not changelog bullets or unsupported universal claims.
-- Do not append from an unverified non-repo cwd.
+- Select the intended personal store explicitly when no cataloged workspace applies.
 - Do not force-add private canonical source stores.
 - Do not bypass Ledger, edit persistent records, or fall back to checkout storage.
 - Do not admit every learning to memory or write compiled memory directly.
