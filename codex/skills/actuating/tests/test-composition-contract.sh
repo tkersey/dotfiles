@@ -16,12 +16,13 @@ const sha256 = s => createHash('sha256').update(s).digest('hex');
 const canonical = v => Array.isArray(v) ? v.map(canonical) : v && typeof v === 'object'
   ? Object.fromEntries(Object.keys(v).sort().map(k => [k,canonical(v[k])])) : v;
 const policy = JSON.parse(text('references/review-contract.json'));
-// Protect the accepted review process, not just one count or flag. These
-// identities are pinned to the audited policy at a6499e818910; intentional
-// policy changes must explicitly update these regression expectations.
+// Protect the accepted review process, not just one count or flag.
+// Extend the policy at 1cf6baa6d14a only with the user-requested waiting_work
+// self-review instruction. All other protected policy entries remain unchanged;
+// intentional policy changes must explicitly update these expectations.
 const reviewKeys = ["required_lenses", "review_scheduling", "candidate_lifecycle", "review_epoch", "review_entry", "evidence_acquisition", "standard_convergence", "material_change", "transport_recovery", "attempt_quality"];
 assert.equal(sha256(JSON.stringify(canonical(Object.fromEntries(reviewKeys.map(k => [k,policy[k]]))))),
-  '7a45af557a2c21095e49146d8458990fa3b0ecc87c59f11f2b65a653a2104545', 'review process changed');
+  'cac08cd7f3eada2a97dc1a9629716de84803e4fecbcf57b1d2f3e2c2db94fe6d', 'review process changed');
 const skill = text('SKILL.md');
 const protectedSections = {
   "Public routes": "8e2aec586fe33dfc69d573c15a9fdc425547bf8bdf8c4952e5f0fbdd8fb6c222",
