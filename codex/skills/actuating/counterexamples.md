@@ -81,23 +81,37 @@ in this same causal compilation. Check whether individually lawful operations
 violate an accepted system obligation; the explanation may span more owners than
 the eventual construction. Keep Goal authority and the existing discriminator.
 
+When sanctioned phases or representations disagree under one law, identify the
+judgment that must survive and the first transition that loses its premises.
+Distinguish a fact absent from authoritative state from one discarded by an
+interpretation; inspect existing evidence before adding stored metadata. Derive
+from source the relevant operations that transport, substitute, or activate those
+facts. The repair domain is their required relationship, not just the reported
+consumer. Use the [saved-computation derivation](references/counterexample-guided-normalization.md#derive-judgment-preservation-across-saved-computation)
+when this distinction needs a concrete example.
+
 From that source-derived domain, choose the smallest discriminator before
-implementation that could refute the explanation. Seek a supported operation
-outside the reported path that retains the same freedom, or a case separating
-notions the semantic model conflates. If the model treats two cases alike but
-the law requires different observations, retain or derive the missing distinction;
-more checks on the unchanged proxy cannot recover it. Also challenge a dependency
-the law does not require. A decisive source argument can suffice; no paired-case
-quota or forced redesign.
+implementation that could refute the explanation. Seek a supported operation or
+composition outside the reported path that retains the same freedom, or a case
+separating notions the semantic model conflates. If the model represents two cases
+alike but the law requires different judgments, no predicate on that representation
+alone can decide both: retain or derive the missing distinction. Also challenge a
+dependency the law does not require. A decisive source argument can suffice; no
+paired-case quota or forced redesign.
 
 Distinguish model adequacy, required semantic content, and operation coverage.
 Correcting a predicate does not prove every path uses it; applying it everywhere
 does not prove it expresses the law or that all required records exist. Derive
 such records from retained obligations rather than only checking supplied members.
-For lifetime, aliasing, or composition, exercise permitted transitions from valid
-state and preserve required-valid counterparts. Prefer making an equivalent
-omission unavailable to other operations over teaching each branch another check.
-A helper, exhaustive switch, or new type alone proves neither meaning nor coverage.
+For lifetime, aliasing, or composition, establish what each relevant primitive
+operation means and how permitted combinations preserve the judgment from valid
+state; bind that argument to the actual code. Prefer making an equivalent omission
+unavailable to other operations over teaching each branch another check. A sibling
+challenges the derivation; it does not establish operation closure. Distinguish a
+missing semantic rule from a transcription defect in an already-adequate rule.
+Preserve required-valid counterparts: conservative rejection may exclude invalid
+states while also rejecting required recovery or progress. A helper, exhaustive
+switch, or new type alone proves neither meaning nor coverage.
 
 Compare adequate candidates under the same laws, observations, compatibility,
 resources, and proof bar. Remove, derive, or lawfully control the enabling freedom;

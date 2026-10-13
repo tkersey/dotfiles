@@ -48,9 +48,11 @@ selection, mutation, proof, and closure authority stays with Actuating.
 Only when architecture is live, give `$universalist` one independently governed
 axis, one typed hole, and source-derived domain evidence. The axis is a required
 relationship and may span modules; it is not bounded by the reported function.
-Derive its semantic obligations and operation surface before choosing the typed
-hole. Preserve authoritative facts, derived projections, and distinct historical
-facts according to their actual roles. Require `candidate`, `preserve-incumbent`,
+For disagreeing phases under one law, nominate the judgment-preserving relationship,
+not a separate local repair for each consumer. Derive its semantic obligations and
+operation surface before choosing the typed hole. Preserve authoritative facts,
+derived projections, and distinct historical facts according to their actual roles.
+Require `candidate`, `preserve-incumbent`,
 `unresolved`, or `obstructed` with a compact code-bound argument, its discriminator,
 and material migration/residual consequences. Missing evidence or incomparable
 adequate candidates remain `unresolved`, not an invented obstruction or arbitrary
@@ -71,7 +73,11 @@ choose, sequence, synchronize, or clean up, and what becomes owner-local? Prefer
 removing those obligations without weakening the common proof bar; concealing
 them is not reduction. Prefer the smallest adequate semantic boundary. Consider a
 source-supported ordinary owner change when a local patch is framed against a
-broad redesign.
+broad redesign. A cross-phase construction may extend an existing query owner
+rather than add a shared description. In the same caller comparison, identify which
+semantic choices become derived and which independent interpretations disappear.
+Shared location or mutual agreement is not preservation; retain distinct judgments
+and independent verification rather than forcing every operation through one meaning.
 Sketch its smallest complete caller-facing contract and keep it beside the interface
 when realizing it. Required implementation knowledge or avoidable choreography is
 reason to reconsider the interface, not shorten its explanation by omission.
