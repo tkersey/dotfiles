@@ -26,6 +26,7 @@ uncertainty, not a sequence, quota, or prerequisite for an adequate direct fix:
 | Only certain states or operation sequences are valid. | Tagged cases and owner-controlled transitions, with the information each case requires. | An alias revives a consumed state, or the protocol forbids a required retry. |
 | An algorithm must achieve a postcondition and progress. | Work backward into an invariant, a preserving step, and a well-founded decrease or other contract-appropriate progress argument; choose state that supports them. | The invariant holds while execution stalls, overflows, or skips a required result. |
 | Meaning is determined by recursive cases and their combination. | A native fold or transition interpreter with justified primitive meanings and composition. | Cases agree separately but combination duplicates an input, mishandles the empty case, or reorders an effect. |
+| A judgment must survive a phase or representation change. | Relate the representations through authoritative facts and preserving primitive rules; consumers instantiate rather than reconstruct their meaning. | Both phases pass local checks while a required distinction, accepted state, or subsequent observation is lost. |
 | An intermediate exists only to supply an observation. | Compute that observation directly, fuse a traversal, or scope production to consumption. | Inspection, identity, sharing, replay, early termination, effects, or resource behavior requires the discarded structure. |
 | Complex search produces a compact checkable witness. | An untrusted producer followed by a small, independently justified checker before trusted admission. | Producer and checker share a false premise; sound rejection alone does not establish required search completeness or progress. |
 
@@ -47,9 +48,12 @@ packet, or second implementation is implied.
 
 A candidate that changes the comparison domain, quotients distinctions, or
 conservatively approximates behavior must justify total interpretation, violation
-reflection, exclusion, and required-valid observation preservation. Optional safe
-behavior excluded by approximation must be disclosed; no required distinction may
-be erased. Do not invent these transformations for candidates that do not use them.
+reflection, exclusion, and required-valid observation preservation. Justify safe
+rejection and required-valid acceptance separately: an overapproximation can impose
+obligations that invalidate required recovery. Preserve enough precision for the
+source-required judgments, not exact whole-program inference by default. Optional
+safe behavior excluded by approximation must be disclosed; no required distinction
+may be erased. Do not invent these transformations for candidates that do not use them.
 
 Use the strongest adequate native evidence for the affected seam: closed types
 and their construction/operation surface, compiler IR, schemas, exports, build or
@@ -188,6 +192,61 @@ codecs can still share the wrong convention, so source-distinguishing wire cases
 remain independent deciding evidence. When a nested present-null value collapses
 to absence, revise the carrier or encoding that lost the distinction.
 
+### Derive judgment preservation across saved computation
+
+Suppose the source requires successfully published checkpoints of admitted execution
+to restore and preserve subsequent observations, under the same policy and adequate
+resources. Forged states and invalid ownership must still be rejected. The target
+relates admission, execution, publication, and restoration, not their local checks.
+
+A witness runs successfully until checkpointing, but restoration rejects an awaited
+capability as unknown. Locate the lost premise: the saved child's remaining
+computation can justify its result, but the restoration interpretation discarded
+that source. More checks on undifferentiated unknown cannot recover it. Keep a
+future result symbolic until its source is instantiated from the saved child and
+current live bindings, not stale original arguments. Inspect the existing program
+and graph before adding checkpoint fields; the information may already be present.
+
+Derive the source-permitted operations before extending another consumer:
+
+| Operation | Judgment-preserving rule to establish |
+|---|---|
+| Read or overwrite a live binding. | Use the binding at the current saved position; original arguments do not justify an overwritten value. |
+| Await a child's result. | Substitute the child's remaining result source into the parent's continuation; nested calls compose the same relation. |
+| Execute pending cleanup, then finish it. | Use derived executable sources, not merely the declared effect row; instantiate environment and supplied inputs. Finishing cleanup may resume a saved exit rather than return the cleanup's own result. |
+| Discard an owned continuation. | Activate its owned cleanup obligations; retaining a capability alone does not execute through it. |
+
+These are distinct meanings, not a demand for one generic operation. A small
+existing query owner may supply authoritative substitutions while concrete
+consumers instantiate them. Keep constructor input ordinals distinct from live
+activation slots; substitution must respect what each index denotes. Retire the
+competing interpretation only where its obligation is subsumed. Keep concrete
+attachment identity, custody, graph shape, and other independent checks; an effect
+name is not a concrete recipient.
+
+Establish admission's invariant and its preservation by the actual primitive
+transitions, then relate reached and restored states:
+
+```text
+admitted(P) and reachable(P, s) and publish(P, s) = c
+    => restore(P, c) succeeds with a state r related to s
+related(s, r) and the same permitted future inputs
+    => required continuation observations agree
+```
+
+Explain the relation and why each operation preserves it; naming an invariant or
+routing every consumer through a helper proves neither implication. Preserve
+required publication availability separately: rejecting the program or failing
+publication cannot repair restoration by eliminating a required execution.
+
+Challenge a source-supported composition, such as an awaited value crossing a
+protection boundary, against independent source/runtime observations and a related
+semantically invalid attachment or ownership control. Preserve cancellation,
+cleanup, and effects when required, not just successful return. Agreement between
+shared production interpretations can share a mistake. These disclosed examples
+illustrate the derivation; they are neither a complete operation inventory nor
+untouched evaluation data, and passing them is not a general preservation proof.
+
 A missing package allowlist entry with adequate semantic owners still deserves a
 direct allowlist correction. A refuted allegation requires no production repair.
 
@@ -213,13 +272,21 @@ comparable. Evaluate initial construction and repair generalization separately:
   siblings and required-valid controls. Permit no intervening repair.
 
 Distinguish semantic content, model adequacy, operation preservation, and path
-coverage; a matrix derived only from the incumbent model can miss an erased
-distinction. Include local defects, spurious allegations, oracle failures,
-wrong-model and missing-path cases so that blanket redesign, rejection, or extra
-checking cannot masquerade as progress. Worked cases and witnesses disclosed
-during skill design are not untouched evaluation data; use untouched cases for
-an adoption claim. These are offline comparisons, not a runtime checklist or
-mandatory evaluation pass during delivery.
+coverage. Select permitted compositions from the source operation vocabulary, not
+the candidate's case list; an incumbent-derived matrix can miss an erased
+distinction. For cross-phase laws, test required admission/publication as well as
+authentic round trips and related semantically invalid controls. Rejecting earlier
+cannot count as preserving required behavior. Mutual agreement is not an independent
+oracle. Include local defects, spurious allegations, oracle failures, wrong-model
+and missing-path cases so blanket redesign, rejection, or extra checking cannot
+masquerade as progress.
+
+Historical replays measure artifact generalization; porting a later witness must
+not import its repair, and incompatible or missing evidence stays unavailable.
+Incremental skill benefit needs a comparable credible simpler baseline. Worked
+cases and witnesses disclosed during skill design are not untouched evaluation
+data; use untouched cases for an adoption claim. These are offline comparisons,
+not a runtime checklist or mandatory evaluation pass during delivery.
 
 Distinguish outcome quality, observable decision influence, and incremental benefit.
 A useful Metanoetic reconsideration is inspectable evidence even without an isolated
