@@ -68,11 +68,14 @@ requirement, compatibility promise, or release posture needs explicit authority.
 Combine current and applicable historical witnesses under the source-required law.
 Acceptance establishes a supported disagreement, not the causal explanation.
 Locate the first loss of guarantee: what can be chosen, omitted, written, ordered,
-interpreted, or authorized independently that must agree? Follow that freedom
-through its authoritative facts, producers, consumers, and permitted transitions
-to derive the affected domain before selecting a mechanism. The reported path and
-supplied records are evidence, not the authority for that domain. Keep the law
-fixed while challenging the account; the family remains a hypothesis, not its
+interpreted, or authorized independently that must agree? Compare what the actual
+code establishes with what the next required normal or exceptional continuation
+needs. Use [initial construction](SKILL.md#initial-construction) to turn the
+unsupported implication into an edit or deciding inspection, not an assumed
+precondition. Follow that freedom through its authoritative facts, producers,
+consumers, and permitted transitions to derive the affected domain before selecting
+a mechanism. The reported path and supplied records are evidence, not the authority
+for that domain. Keep the law fixed while challenging the account; the family remains a hypothesis, not its
 observed examples. Preserve distinct laws and legitimate operation differences.
 
 When the witness involves interacting corrections, accumulation, delays, or apparent
@@ -91,11 +94,14 @@ consumer. Use the [saved-computation derivation](references/counterexample-guide
 when this distinction needs a concrete example.
 
 From that source-derived domain, choose the smallest discriminator before
-implementation that could refute the explanation. Seek a supported operation or
-composition outside the reported path that retains the same freedom, or a case
-separating notions the semantic model conflates. If the model represents two cases
-alike but the law requires different judgments, no predicate on that representation
-alone can decide both: retain or derive the missing distinction. Also challenge a
+implementation that could refute the explanation. Seek a source-supported state or
+trace where the claimed premises or evidence remain true but the required behavior
+fails. Use a supported operation or composition outside the reported path that
+retains the same freedom, or a case separating notions the semantic model conflates.
+Establish the observation's applicability: a conditional counter or local test can
+agree with the candidate while the relevant mechanism never runs. If the model
+represents two cases alike but the law requires different judgments, no predicate
+on that representation alone can decide both: retain or derive the missing distinction. Also challenge a
 dependency the law does not require. A decisive source argument can suffice; no
 paired-case quota or forced redesign.
 
@@ -109,6 +115,8 @@ state; bind that argument to the actual code. Prefer making an equivalent omissi
 unavailable to other operations over teaching each branch another check. A sibling
 challenges the derivation; it does not establish operation closure. Distinguish a
 missing semantic rule from a transcription defect in an already-adequate rule.
+A local correction can establish a reusable native scope or transition rule; a
+larger shared owner is not stronger merely because of its size or centralization.
 Preserve required-valid counterparts: conservative rejection may exclude invalid
 states while also rejecting required recovery or progress. A helper, exhaustive
 switch, or new type alone proves neither meaning nor coverage.
