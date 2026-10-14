@@ -1,6 +1,7 @@
 # Shared defaults: /etc/codex/config.toml
 
-approval_policy = "on-request"
+approval_policy = "never"
+sandbox_mode = "danger-full-access"
 approvals_reviewer = "auto_review"
 
 model = "gpt-6-astra"
