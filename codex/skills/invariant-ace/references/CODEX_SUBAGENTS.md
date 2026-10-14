@@ -2,8 +2,10 @@
 
 Resolve the named specialist roles from the current runtime's available agents.
 Use its supported invocation syntax and pass the exact subject, relevant evidence,
-and assigned authority question. Do not depend on a fixed install path. Preserve
-the same-schema root-equivalent fallback below when a required worker is unavailable.
+and assigned authority question. Do not depend on a fixed install path. Dispatch
+only dimensions selected by the entry's evidence-dependent escalation conditions
+or explicitly required by the caller. Direct root evidence does not substitute
+for independently required clearance when a worker is unavailable.
 
 ## Repository workers
 
@@ -20,7 +22,7 @@ the same-schema root-equivalent fallback below when a required worker is unavail
 ## Prompt shape
 
 ```text
-Run $invariant-ace authority fanout using specialist workers when supported. Assign artifact_state_id, direction_state_id, candidate invariant IDs, relevant files, and exact scope. Require packet-native output with evidence refs. If a required worker is unavailable, emit same-schema root-equivalent packets or route to blocked. Root must synthesize an Authority Clearance Matrix and veto ledger; unresolved vetoes block enforce-now.
+Run the selected $invariant-ace independent lanes using available specialist workers. Reuse qualifying independent packets before dispatch. Supply the material unestablished premise or unresolved evidence that requires each remaining lane, artifact_state_id, direction_state_id, candidate invariant IDs, relevant files, and exact scope. Require packet-native output with evidence refs. If an independently required worker is unavailable, keep its affected result unresolved; do not claim root-equivalent evidence is independent. Root assesses the other substantive questions directly and synthesizes the clearances and vetoes. Unresolved vetoes block enforce-now.
 ```
 
 Workers are read-only. Root may downgrade freely but may not upgrade against unresolved veto.

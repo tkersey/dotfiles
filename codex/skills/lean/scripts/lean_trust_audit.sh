@@ -6,6 +6,9 @@ usage() {
 Usage: scripts/lean_trust_audit.sh [file-or-directory ...]
 
 Scans Lean files for placeholders and trust-expanding features. This is a lexical audit aid, not a substitute for `lake env lean`, `lake build`, or `#print axioms`.
+Includes hidden and ignored source files. Directory scans prune .git, .hg, .svn,
+.lake, lake-packages, build, dist, vendor, third_party, third-party, and node_modules.
+Other third-party layouts require selecting first-party file or directory targets.
 Findings are printed for review; both findings and no matches exit 0. Scan errors exit nonzero.
 EOF
 }
@@ -24,14 +27,15 @@ pattern='(^|[^[:alnum:]_])(sorry|admit|axiom|unsafe|partial|noncomputable|native
 
 if command -v rg >/dev/null 2>&1; then
   status=0
-  rg -n --glob '*.lean' --glob '!**/.lake/**' --glob '!**/lake-packages/**' --glob '!**/build/**' -- "$pattern" "$@" || status=$?
+  rg -n --hidden --no-ignore --glob '*.lean' --glob '!**/.lake/**' --glob '!**/lake-packages/**' --glob '!**/build/**' --glob '!**/{.git,.hg,.svn,dist,vendor,third_party,third-party,node_modules}/**' -- "$pattern" "$@" || status=$?
   if [[ "$status" -gt 1 ]]; then
     exit "$status"
   fi
 else
-  find "$@" -type f -name '*.lean' \
-    ! -path '*/.lake/*' ! -path '*/lake-packages/*' ! -path '*/build/*' \
-    -print0 | while IFS= read -r -d '' file; do
+  find "$@" -type d \( -name .git -o -name .hg -o -name .svn \
+    -o -name .lake -o -name lake-packages -o -name build -o -name dist \
+    -o -name vendor -o -name third_party -o -name third-party -o -name node_modules \) \
+    -prune -o -type f -name '*.lean' -print0 | while IFS= read -r -d '' file; do
       status=0
       grep -nHE -- "$pattern" "$file" || status=$?
       if [[ "$status" -gt 1 ]]; then

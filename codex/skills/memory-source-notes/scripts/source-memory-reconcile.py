@@ -17,7 +17,7 @@ from typing import Any
 from urllib.parse import urlparse
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from memory_layout import LayoutError, MemoryLayout, compiled_documents, resolve_layout
+from memory_layout import LayoutError, MemoryLayout, compiled_documents, memory_note_binary, resolve_layout
 from negative_ledger_memory_note import (
     ALLOWED_KINDS as NEGATIVE_NOTE_KINDS,
     AdapterError,
@@ -782,8 +782,8 @@ def reconcile(args: argparse.Namespace) -> dict[str, Any]:
     eligibility = load_eligibility(args.eligibility, ledger=ledger, cwd=cwd)
     memory_note, writer_error = None, None
     try:
-        memory_note = resolve_binary(args.memory_note_bin, "MEMORY_NOTE_BIN", "memory-note")
-    except ReconcileError as exc:
+        memory_note = memory_note_binary(args.memory_note_bin)
+    except LayoutError as exc:
         writer_error = str(exc)
 
     managed_context, managed_error = None, None

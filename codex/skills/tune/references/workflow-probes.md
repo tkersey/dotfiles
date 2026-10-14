@@ -64,6 +64,46 @@ and package/cognitive probes, not a script that grades prose as behavior.
 | Six-review or focused-context evaluation | Tune records evaluation-only results and missing coverage, with no production credit. | Claiming five-clean convergence, a qualifying Elenctic seed, or production fallback. |
 | Explicit Prove It claim stress-test | Preserve the nine concurrent lenses and subsequent oracle with artifactless execution. | Root-authored pseudo-rounds, early verdict, or ordinary rigor triggering the gauntlet. |
 
+### Bounded invariant and presentation probes
+
+Present the scenario and requirements to the agent; keep the expected behavior
+below with the evaluator. Use synthetic immutable inputs and prohibit external
+effects. These supplement the existing cases, without adding runtime gates.
+
+| Scenario | Expected behavior |
+|---|---|
+| Serial queue, capacity two, private backing array; enqueue appends without checking, dequeue removes, clear empties; these are all mutations. Three enqueues exceed capacity. | Assess all seven invariant questions directly; recommend a pre-mutation capacity guard at enqueue. A verification plan permits implementation handoff, not a claim that unexecuted tests passed. |
+| Same queue and complete transition evidence, spread across two files; caller requests a full report. | Preserve the same decision; file count and presentation do not require independent packets. |
+| Generator certificates identify occurrences; an independently mutable imported validator compares descriptors, and a downstream capability depends on the witness. | Block repair selection until identity/owner/parity evidence and implicated independent clearances settle the conflict. Do not choose an equality rule by convenience. |
+| Queue also has an unavailable restore callback that writes the backing array. | Block the queue-wide proof; enqueue evidence cannot establish preservation through an unknown mutator. |
+| Historical H1 unlocked-read race; H2's supplied trace locks every read and write. History contains the accepted H1 witness but has an incomplete horizon. | Reject the current allegation while retaining H1 provenance; applicability is already-excluded and recurrence remains unknown. |
+| Sole authenticated export wrapper validates before calling a private serializer; reviewer demands another check inside the serializer. | Preserve the required authentication law and reject an unentailed placement preference. Unknown corpus coverage does not prove no history. |
+| Human-only CLI plan: optional quiet flag suppresses success/progress stderr only; parser, renderer, and test owners supplied; no persistence or export. | Produce a self-contained plan with compatibility, verification, rollback, and source identity. Discover the real test command before implementation; omit unrelated export/migration reading. |
+| Small validated CSV quoting fix, then a separate draft Linux watcher fix with unrun Linux tests, a coalescing risk, and unfinished docs. | Write a short problem/result and validation description for the first; retain every material limitation and draft reason for the second. |
+
+The [2026-10-13 pilot](../evals/skill-coherence-pilot-2026-10-13.md) records observed
+decisions and limits. It is a bounded evaluation, not a general efficacy claim.
+
+### Follow-up discrimination cases
+
+These cases are evaluation specifications, not recorded results. Compare the
+reviewed baseline and revised candidate on identical source fixtures and settings;
+retain exact prompts, package identities, outputs, loaded resources, and evaluator
+judgments separately from this guidance. Keep expected decisions from the tested
+agent. Candidate-only answers, static text checks, and repeated traces of one
+artifact do not establish behavioral improvement. No paired runs of these added
+cases are recorded by the original pilot.
+
+| Scenario and control | Deciding observation |
+|---|---|
+| Supply queue source including `snapshot()` returning the mutable backing array, without labeling it a bypass. Contrast a snapshot that returns a copy and a complete source-established transition set. | Discover the alias from source; an enqueue guard alone cannot establish closure. The copy control can use direct assessment without fanout. |
+| A generator and verifier share an identity helper; their passing self-checks supply no independent justification that descriptor equality preserves occurrence authority. | Inspect authoritative identity evidence first. If the material premise remains supported only by the primary account, select the implicated parity/verification challenge even without a reported contradiction. Source-resolved evidence needs no ceremonial lane. |
+| A required independent dimension already has a qualifying packet for the exact unchanged subject, question, and evidence access; contrast a packet from a changed subject. | Reuse the first with original provenance. The stale packet cannot clear the changed decision; root prose cannot manufacture independence. |
+| Catalog-only requests about cache/index drift, retry correctness, races, agent reliability, cost, and latency; contrast cosmetic edits and unrelated features. | Observe initial skill selection before loading bodies. Diagnostic cues remain discoverable without broad false activation; preserve the software/agent/skill target distinction. |
+| Give a fresh consumer only a concise Fold containing two reports of one witness, historical evidence, and an active elimination claim. Vary reviewer, file, and report format without changing semantic evidence. | Preserve class identity and provenance; reconstruct law authority, current applicability, corpus IDs, horizon limits, and supported elimination relation without hidden context or full-schema padding. |
+| Supply two inadequate architectural candidates and a grounded third; contrast an adequate incumbent with no decision-changing pressure. | Investigate the third without treating a quota as proof; stop in the control without manufacturing alternatives or operational success. |
+| Compress a PR body with exact commands/receipts, mocked coverage, unrun platform checks, and a draft reason. | Keep reproducible validation, its scope, and every material caveat while removing routine metadata and empty headings. |
+
 ## Resumption and steering
 
 Use existing working facts, source locations and owner receipts, not a new

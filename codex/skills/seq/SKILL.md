@@ -1,6 +1,6 @@
 ---
 name: seq
-description: "Reconstruct provenance-preserving observations from Codex and OpenCode execution/session evidence with Seq 1.x. Use for explicit `$seq`, session/tool/message forensics, skill activation and outcome audits, decision provenance, `$tune` evidence, `$retrace` source observations, watched-session deltas, worker attribution, or reproducible historical reports. Use native commands only for physical session structure; use the owning passive observation definition for every higher-level question."
+description: "Reconstruct provenance-preserving observations from Codex and OpenCode execution/session evidence with Seq 1.x. Use for explicit `$seq`, session/tool/message forensics, skill activation and outcome audits, decision provenance, `$tune` evidence, watched-session deltas, worker attribution, or reproducible historical reports. Use native commands only for physical session structure; use the owning passive observation definition for every higher-level question."
 metadata:
   version: "2.0.0"
 ---
@@ -165,8 +165,9 @@ seq observe \
 ```
 
 Domain observations live with their owners. For example, `$tune` owns skill
-decision audits and `$retrace` owns decision discovery/source governance. Seq
-compiles their passive data; it does not own their vocabulary or conclusions.
+decision audits. Resolve an existing owning definition for other higher-level
+questions before querying; Seq compiles passive data and does not invent a
+missing owner's vocabulary, source governance, or conclusions.
 
 ## Evidence discipline
 

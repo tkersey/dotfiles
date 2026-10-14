@@ -96,9 +96,12 @@ strongest invariant challenge, reusing an equivalent challenge on the same decis
 surface. Source-fixed contradictions return to the affected internal specification
 decision, not another skill or a handoff packet.
 
-Read [action-contract.md](references/action-contract.md). Derive dependency-ordered,
-bounded actions with exact targets, intended changes, preserved invariants,
-observations, proof, and failure routes. Realization includes migration and retirement.
+Derive dependency-ordered, bounded actions with exact targets, intended changes,
+preserved invariants, observations, proof, and failure routes, using the ordinary
+action requirements in [human-projection.md](references/human-projection.md).
+Read [action-contract.md](references/action-contract.md) for consequential
+construction, a live boundary decision, or explicit EPG export. Realization
+includes migration and retirement.
 For consequential constructions bind the invalid family, required-valid domain,
 enforcement mechanism, independently derived coverage, preselected discriminator,
 claim strength, and residuals. Plan prepares proof; execution establishes it on code.
@@ -132,10 +135,12 @@ receipts, readiness certificates, or claims that every possible design was exhau
 
 ## Identity, revision, and persistence
 
-Read [source-binding.md](references/source-binding.md). Every complete plan names
-its stable ID, revision, authoritative objective, target, inspected repository state,
-and material invalidators. Provenance is not runtime currentness. Never manufacture
-hashes or source facts.
+Every complete plan names its stable ID, revision, authoritative objective, target,
+inspected repository state, and material invalidators. Provenance is not runtime
+currentness. Never manufacture hashes or source facts. Read
+[source-binding.md](references/source-binding.md) for revision, missing-source
+recovery, or explicit export; ordinary identity requirements are included in
+[human-projection.md](references/human-projection.md).
 
 Revision recovers the exact prior specification and identity, reconsiders the earliest
 affected decision, transports actions and proof, and emits a complete new revision.

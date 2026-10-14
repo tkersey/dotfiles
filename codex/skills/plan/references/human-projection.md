@@ -40,11 +40,16 @@ Say which mechanisms are revisable means. Accepting a plan does not turn all its
 means into hard requirements. No architecture section is needed for unchanged,
 owner-local work with no live semantic boundary decision.
 
-The implementation sequence is dependency-ordered. Each consequential action names
-its stable ID and outcome, exact paths/symbols, prerequisite actions and evidence,
-intended change, invariants, proof command or exact verifier reference, and failure
-or rollback route. Broad verbs such as "update relevant files" are not executable
-instructions. Migration and retirement belong with the mechanisms they replace.
+The implementation sequence has feasible, acyclic prerequisites. Each consequential
+action names its stable ID, accountable owner and outcome, exact paths/symbols,
+prerequisite actions and evidence, intended change, observable effects, invariants,
+proof command or exact verifier reference, failure observation, and safe successor,
+abort, or rollback route. Repository-affecting work needs nonempty paths and lock
+scope, including probes that edit files. Mutation, deployment, and stabilization
+need proof and actionable rollback, or an explicit pre-effect approval/abort
+boundary for irreversible work. Broad verbs such as "update relevant files" are
+not executable instructions. Migration and retirement belong with the mechanisms
+they replace. Probes narrow named unknowns; decisions consume named evidence.
 
 Decision points use `unknown -> exact observation -> outcome-conditioned route`.
 Include unavailable, invalid, or inconclusive evidence when material. Say what may
@@ -63,6 +68,12 @@ source authority and decisions, material invalidators, and persistence status/pa
 Hash only bytes actually available and computed. No EPG or Ledger digest is required
 for human-only output. Do not put an export digest inside the primary block: the
 optional export embeds this block and cannot hash itself.
+
+`direct` records its explicit bypass authority and accepted intent. Missing
+essential source requires recovery or explicit reconstruction from current
+authority; a digest alone cannot restore it. Expected mutations described by
+the plan do not themselves invalidate the plan. Consumers revalidate assumptions
+after transitions and distinguish expected effects from material source changes.
 
 ## Final check
 

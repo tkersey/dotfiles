@@ -215,6 +215,19 @@ Current-turn preparation uses a qualifying unchanged seed or permitted direct wo
 not a fabricated completion or a forced extra user turn. This alternative must not
 change Elenctic's own immutable-seed campaign requirements.
 
+### 15. Grounded alternatives are bounded by the decision
+
+Use Universalist's existing `third-grounded-candidate` scenario: inspection,
+replay, construction validity, and a resource bound must all survive; the
+incumbent and a supplied callback alternative each violate a requirement, while
+a grounded compact tagged representation remains to investigate.
+
+Expected: examine the remaining grounded alternative and require actual proof
+and resource evidence before claiming it succeeds. Neither a previous challenger nor
+a numerical quota ends the investigation. In the control, the incumbent meets
+all requirements and no evidence could change the nomination: stop without
+manufacturing more candidates. Reuse an equivalent prior comparison.
+
 ## Recording results
 
 For each actual run, retain subject and skill revisions, model/settings, exact

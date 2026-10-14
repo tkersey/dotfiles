@@ -1,5 +1,11 @@
 # Invariant Ace output template
 
+Use this full representation when requested by the caller. Ordinary standalone
+work may return concise decisions with the same substantive evidence and gate.
+Packet sections apply only to independently required lanes; a full report does
+not itself require fanout. Keep direct assessment visibly distinct from
+independent clearance, and omit inapplicable packet tables.
+
 ```md
 ## Review Basis
 

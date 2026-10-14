@@ -24,6 +24,8 @@ import html
 import json
 import os
 import re
+import shutil
+import tempfile
 import uuid
 import urllib.error
 import urllib.request
@@ -144,13 +146,86 @@ def nonempty_file(path: Path) -> bool:
     return path.exists() and path.is_file() and path.stat().st_size > 0
 
 
-def has_examples_cache(examples_dir: Path) -> bool:
-    if not examples_dir.exists() or not examples_dir.is_dir():
+def has_examples_cache(examples_dir: Path, gist_id: str) -> bool:
+    if examples_dir.is_symlink() or not examples_dir.is_dir():
         return False
-    for p in examples_dir.iterdir():
-        if p.is_file() and p.name != "_gist-index.json":
-            return True
-    return False
+    index = load_json_dict(examples_dir / "_gist-index.json")
+    names = index.get("files")
+    if index.get("gist_id") != gist_id or not isinstance(names, list) or not names:
+        return False
+    if not all(isinstance(name, str) and safe_example_name(name) for name in names):
+        return False
+    # A legacy manifest may name two aliases of one file, or alias itself.
+    # Require the recorded spellings to exist as actual directory entries.
+    try:
+        entries = {path.name for path in examples_dir.iterdir()}
+    except OSError:
+        return False
+    return (
+        len(names) == len(set(names))
+        and (set(names) | {"_gist-index.json"}).issubset(entries)
+        and all((examples_dir / name).is_file() and not (examples_dir / name).is_symlink()
+                for name in names)
+    )
+
+
+def safe_example_name(name: str) -> bool:
+    return name not in {"", ".", "..", "_gist-index.json"} and sanitize_filename(name) == name
+
+
+def publish_examples(
+    examples_dir: Path, files: dict[str, bytes], index: dict[str, Any], errors: list[str]
+) -> None:
+    """Publish a complete fetched bundle; roll back a failed directory install.
+
+    The two renames are not crash-atomic. Never delete an unowned directory or
+    symlink that an older refresh would have left alone.
+    """
+    if examples_dir.is_symlink() or (examples_dir.exists() and (
+        not examples_dir.is_dir()
+        or any(not p.is_file() or p.is_symlink() for p in examples_dir.iterdir())
+    )):
+        raise RuntimeError("examples cache contains unmanaged entries")
+    index_data = json.dumps(index, indent=2).encode("utf-8")
+    index_path = examples_dir / "_gist-index.json"
+    if (examples_dir.is_dir()
+        and {p.name for p in examples_dir.iterdir()} == set(files) | {"_gist-index.json"}
+        and same_json_ignoring_keys(index_path, index_data, {"refreshed_at"})
+        and all((examples_dir / name).read_bytes() == data for name, data in files.items())):
+        return
+
+    examples_dir.parent.mkdir(parents=True, exist_ok=True)
+    staged = Path(tempfile.mkdtemp(prefix=f".{examples_dir.name}.stage-", dir=examples_dir.parent))
+    backup = examples_dir.with_name(f".{examples_dir.name}.backup-{uuid.uuid4().hex}")
+    moved_old = False
+    try:
+        # Reserve the manifest first; the filesystem, not string normalization,
+        # decides whether two names alias. Fail before touching the live cache.
+        with (staged / "_gist-index.json").open("xb") as handle:
+            handle.write(index_data)
+        for name, data in files.items():
+            with (staged / name).open("xb") as handle:
+                handle.write(data)
+        if examples_dir.exists():
+            os.replace(examples_dir, backup)
+            moved_old = True
+        try:
+            os.replace(staged, examples_dir)
+        except OSError:
+            if moved_old:
+                os.replace(backup, examples_dir)
+            raise
+    finally:
+        if staged.exists():
+            try:
+                shutil.rmtree(staged)
+            except OSError as exc:
+                errors.append(f"unused examples staging cleanup failed at {staged}: {exc}")
+    if moved_old:
+        try:
+            shutil.rmtree(backup)
+        except OSError as exc:
+            errors.append(f"published examples; old backup cleanup failed at {backup}: {exc}")
 
 
 def get_github_token() -> str | None:
@@ -222,9 +297,9 @@ def fetch_docs(
         )
 
     conditional: dict[str, str] = {}
-    if isinstance(meta["etag"], str):
+    if nonempty_file(docs_path) and isinstance(meta["etag"], str):
         conditional["If-None-Match"] = meta["etag"]
-    if isinstance(meta["last_modified"], str):
+    if nonempty_file(docs_path) and isinstance(meta["last_modified"], str):
         conditional["If-Modified-Since"] = meta["last_modified"]
 
     try:
@@ -232,13 +307,14 @@ def fetch_docs(
             docs_url, timeout_sec, make_headers(conditional=conditional)
         )
         meta["http_status"] = status
-        meta["etag"] = header_get(hdrs, "ETag") or meta["etag"]
-        meta["last_modified"] = (
-            header_get(hdrs, "Last-Modified") or meta["last_modified"]
-        )
+        validators = {
+            "etag": header_get(hdrs, "ETag"),
+            "last_modified": header_get(hdrs, "Last-Modified"),
+        }
 
         if status == 304:
             if nonempty_file(docs_path):
+                meta.update({key: value or meta[key] for key, value in validators.items()})
                 return (
                     FetchResult(
                         source="cache_not_modified",
@@ -258,6 +334,7 @@ def fetch_docs(
             raise RuntimeError(f"empty response body for {docs_url}")
 
         atomic_write_if_changed(docs_path, body)
+        meta.update(validators)
         return FetchResult(
             source="network", message=f"fetched {docs_url}", ok=True
         ), meta
@@ -282,7 +359,6 @@ def fetch_gist_examples(
     github_token: str | None,
 ) -> tuple[FetchResult, dict[str, Any]]:
     api_url = f"https://api.github.com/gists/{gist_id}"
-    index_path = examples_dir / "_gist-index.json"
     meta: dict[str, Any] = {
         "http_status": None,
         "etag": prior.get("gist_etag")
@@ -295,7 +371,10 @@ def fetch_gist_examples(
         ),
     }
 
-    if within_max_age(prior, max_age_sec) and has_examples_cache(examples_dir):
+    cache_valid = has_examples_cache(examples_dir, gist_id)
+    if not cache_valid:
+        meta["etag"] = meta["last_modified"] = None
+    if within_max_age(prior, max_age_sec) and cache_valid:
         return (
             FetchResult(
                 source="cache_ttl",
@@ -320,13 +399,14 @@ def fetch_gist_examples(
             ),
         )
         meta["http_status"] = status
-        meta["etag"] = header_get(hdrs, "ETag") or meta["etag"]
-        meta["last_modified"] = (
-            header_get(hdrs, "Last-Modified") or meta["last_modified"]
-        )
+        validators = {
+            "etag": header_get(hdrs, "ETag"),
+            "last_modified": header_get(hdrs, "Last-Modified"),
+        }
 
         if status == 304:
-            if has_examples_cache(examples_dir):
+            if has_examples_cache(examples_dir, gist_id):
+                meta.update({key: value or meta[key] for key, value in validators.items()})
                 return (
                     FetchResult(
                         source="cache_not_modified",
@@ -353,15 +433,18 @@ def fetch_gist_examples(
         if not isinstance(files, dict) or not files:
             raise RuntimeError("gist files list missing or empty")
 
-        examples_dir.mkdir(parents=True, exist_ok=True)
-        written: list[str] = []
+        pending: dict[str, bytes] = {}
         raw_headers = make_headers(token=github_token)
 
         for file_info in files.values():
             if not isinstance(file_info, dict):
-                continue
-            filename = sanitize_filename(str(file_info.get("filename", "")))
-            out_path = examples_dir / filename
+                raise RuntimeError("invalid gist file entry")
+            original_name = file_info.get("filename")
+            if not isinstance(original_name, str) or not original_name.strip():
+                raise RuntimeError("invalid gist filename")
+            filename = sanitize_filename(original_name)
+            if not safe_example_name(filename) or filename in pending:
+                raise RuntimeError(f"invalid or duplicate gist filename: {filename}")
 
             truncated = file_info.get("truncated") is True
             content = file_info.get("content")
@@ -370,7 +453,7 @@ def fetch_gist_examples(
             else:
                 raw_url = file_info.get("raw_url")
                 if not isinstance(raw_url, str) or not raw_url:
-                    continue
+                    raise RuntimeError(f"gist file has no content or raw URL: {filename}")
                 raw_status, raw_body, _ = http_get(raw_url, timeout_sec, raw_headers)
                 if raw_status < 200 or raw_status >= 300:
                     raise RuntimeError(f"unexpected status {raw_status} for {raw_url}")
@@ -378,36 +461,22 @@ def fetch_gist_examples(
                     raise RuntimeError(f"empty response body for {raw_url}")
                 data = raw_body
 
-            atomic_write_if_changed(out_path, data)
-            written.append(filename)
-
-        if not written:
-            raise RuntimeError("no gist files with content were available")
-
-        # Remove stale files from previous refreshes.
-        keep = set(written) | {"_gist-index.json"}
-        for path in examples_dir.iterdir():
-            if path.is_file() and path.name not in keep:
-                path.unlink()
+            pending[filename] = data
 
         index_payload = {
             "gist_id": gist_id,
             "refreshed_at": now_utc(),
-            "files": sorted(written),
+            "files": sorted(pending),
             "source": api_url,
         }
-        index_data = json.dumps(index_payload, indent=2).encode("utf-8")
-        if not (
-            nonempty_file(index_path)
-            and same_json_ignoring_keys(index_path, index_data, {"refreshed_at"})
-        ):
-            atomic_write_if_changed(index_path, index_data)
+        publish_examples(examples_dir, pending, index_payload, errors)
+        meta.update(validators)
         return FetchResult(
             source="network", message=f"fetched gist {gist_id}", ok=True
         ), meta
     except Exception as exc:  # noqa: BLE001
         meta["http_status"] = None
-        if has_examples_cache(examples_dir):
+        if has_examples_cache(examples_dir, gist_id):
             errors.append(f"gist network fetch failed, used cache: {exc}")
             return (
                 FetchResult(

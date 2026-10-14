@@ -92,10 +92,15 @@ class TrustAuditTests(unittest.TestCase):
             ".lake/cache.lean", "lake-packages/dependency.lean", "build/output.lean",
             "nested/.lake/cache.lean", "nested/lake-packages/dependency.lean",
             "nested/build/output.lean", "notes.txt",
+            ".git/metadata.lean", ".hg/metadata.lean", ".svn/metadata.lean",
+            "vendor/dependency.lean", "third_party/dependency.lean",
+            "third-party/dependency.lean", "node_modules/dependency.lean",
+            "dist/generated.lean", "nested/vendor/dependency.lean",
         ):
             target = self.sources / relative
             target.parent.mkdir(parents=True, exist_ok=True)
             target.write_text("sorry\n")
+        (self.sources / ".ignore").write_text("vendor/\ndist/\n")
         own_file = self.sources / "nested/source.lean"
         own_file.write_text("bv_decide\n")
         for backend in self.environments:
@@ -116,6 +121,20 @@ class TrustAuditTests(unittest.TestCase):
                 self.assertEqual(0, result.returncode, result.stderr)
                 self.assertIn("source.lean", result.stdout)
                 self.assertIn("bv_decide", result.stdout)
+
+    def test_hidden_and_ignored_first_party_directories_in_both_backends(self):
+        (self.sources / ".ignore").write_text("ignored/\n")
+        for relative in (".private/proof.lean", "ignored/proof.lean"):
+            target = self.sources / relative
+            target.parent.mkdir(parents=True)
+            target.write_text("theorem unfinished : True := by sorry\n")
+        for backend in self.environments:
+            with self.subTest(backend=backend):
+                for path in (self.sources, Path(".")):
+                    result = self.run_scan(backend, path)
+                    self.assertEqual(0, result.returncode, result.stderr)
+                    self.assertIn(".private/proof.lean", result.stdout)
+                    self.assertIn("ignored/proof.lean", result.stdout)
 
     def test_help(self):
         for flag in ("-h", "--help"):
