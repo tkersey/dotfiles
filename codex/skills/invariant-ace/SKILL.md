@@ -1,6 +1,6 @@
 ---
 name: invariant-ace
-description: "Design and challenge owned invariants, transition preservation, and enforcement boundaries. Use for impossible states, validation sprawl, identity/witness drift, policy exceptions, or invariant-first hardening; not generic refactors or architecture essays."
+description: "Design and challenge owned invariants, transition preservation, and enforcement boundaries for invalid states, validation sprawl, cache/index drift, retries/idempotency, races, policy exceptions, or generator/validator witness disagreement. Not generic refactors or architecture essays."
 ---
 
 # Invariant Ace
@@ -41,8 +41,14 @@ Authority-Gated v1 requires:
 - evidence for all seven authority questions, with independent packet receipts only when the escalation conditions below apply;
 - an Invariant Gate before implementation, review adjudication handoff, proof closure, or fixed-point routing.
 
-For bounded standalone work with one established semantic owner and an inspectable
-transition set, assess the seven questions directly: counterexample, owner/scope,
+For bounded standalone work, establish a closed proof boundary from inspected
+source: one semantic owner, permitted transitions, and relevant alias, callback,
+restore, import, and bypass paths. Derive coverage from the accepted law and
+required-valid behavior, not solely from the proposed repair's path inventory or
+its own test expectations. No observed conflict is not proof of closure;
+uninspected scope is not conflict-free scope.
+
+With that basis, assess the seven questions directly: counterexample, owner/scope,
 induction, boundary, witness/fixture parity, verification, and the strongest
 non-enforcement countercase. Cite the evidence and state any uncertainty. Do not
 manufacture worker packets or full report sections for this path. Prospective
@@ -57,7 +63,7 @@ Operate in **OWNER-FIRST**, **COUNTEREXAMPLE-DRIVEN**, **INDUCTIVE**, **AUTHORIT
 - **OWNER-FIRST**: if you cannot name the state owner and mutation boundary, you do not yet have an enforceable invariant.
 - **COUNTEREXAMPLE-DRIVEN**: every accepted invariant needs a concrete bad trace, or an explicit proof-only reason why no current trace exists.
 - **INDUCTIVE**: accepted invariants must hold initially and be preserved by every allowed transition in scope.
-- **AUTHORITY-GATED**: concrete unresolved conflicts require the independent clearances selected below; unresolved vetoes always block `enforce-now`.
+- **AUTHORITY-GATED**: material unestablished premises and unresolved conflicts require the independent clearances selected below; unresolved vetoes always block `enforce-now`.
 - **SOURCE-OF-TRUTH-SEEKING**: enforce at the owner/source of truth, not at downstream local shortcuts.
 - **POLICY-OWNED**: exceptions must be encoded in the policy owner, allowlist, capability, ACL, flag, or protocol that owns the invariant.
 - **WITNESS-PARITY**: validation, generation, projection, certificate, source-map, replay, and proof paths must use the same identity/witness semantics or a named stricter refinement.
@@ -90,15 +96,21 @@ Operate in **OWNER-FIRST**, **COUNTEREXAMPLE-DRIVEN**, **INDUCTIVE**, **AUTHORIT
 
 ## Authority fanout mode
 
-Require independent review for implicated dimensions when concrete unresolved
-evidence could change the decision: competing semantic or exception owners, a law
-crossing independently mutable boundaries, disputed transition coverage or
-enforcement, generator/validator identity or witness disagreement, conflicting
-proof, or an unanswered material non-enforcement countercase. Inspect decisive
-available evidence first; a resolved concern does not require ceremonial fanout.
+Inspect decisive available source evidence first. Require independent review for
+implicated dimensions when a material ownership, identity, enforcement, coverage,
+or proof premise remains supported only by the primary agent's account and an
+independent challenge could change the decision. This includes competing semantic
+or exception owners, a law crossing independently mutable boundaries, disputed
+transition coverage, generator/validator witness disagreement, a shared unverified
+oracle assumption, conflicting proof, or an unanswered non-enforcement countercase.
+A recognized contradiction is not a prerequisite; confidence and agreement among
+checks sharing one premise do not establish it. Missing source remains an evidence
+gap, not something extra agents may invent. Source-resolved concerns need no fanout.
 
-Name the required dimensions and their evidence basis, then dispatch only those
-lanes. Assess the remaining questions directly. File count, a full-report request,
+Name the required dimensions and their evidence basis. Reuse a qualifying existing
+independent packet when its exact subject, question, evidence access, and validity
+still cover this decision; preserve its provenance. Dispatch only the remaining
+required lanes. Assess the remaining questions directly. File count, a full-report request,
 or a future implementation handoff does not itself establish a need for independent
 review. An explicit caller requirement for particular independent lanes remains
 binding.
@@ -284,8 +296,9 @@ Required fields:
 `invariant_gate_complete` may be `pass` only when all preceding required gate fields pass. `implementation_handoff_allowed: yes` requires at least one `enforce-now` row whose authority status is `cleared-for-enforcement` and no unresolved veto exists for that ID.
 
 `authority_packet_coverage` passes when all independently required packets exist,
-or when the bounded-scope evidence establishes that no independent lane is required.
-State that basis without inventing packets. `authority_clearance_coverage` still
+or when the source-established closed proof boundary and escalation assessment
+establish that no independent lane is required. State that basis without inventing
+packets; absence of recognized conflict alone cannot pass coverage. `authority_clearance_coverage` still
 requires evidence for all seven questions, whether assessed directly or by a
 required independent lane. Compact output cannot waive missing proof or a veto.
 

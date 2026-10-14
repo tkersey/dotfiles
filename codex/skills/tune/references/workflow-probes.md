@@ -81,8 +81,28 @@ effects. These supplement the existing cases, without adding runtime gates.
 | Human-only CLI plan: optional quiet flag suppresses success/progress stderr only; parser, renderer, and test owners supplied; no persistence or export. | Produce a self-contained plan with compatibility, verification, rollback, and source identity. Discover the real test command before implementation; omit unrelated export/migration reading. |
 | Small validated CSV quoting fix, then a separate draft Linux watcher fix with unrun Linux tests, a coalescing risk, and unfinished docs. | Write a short problem/result and validation description for the first; retain every material limitation and draft reason for the second. |
 
-The [2026-10-13 pilot](skill-coherence-pilot-2026-10-13.md) records observed
+The [2026-10-13 pilot](../evals/skill-coherence-pilot-2026-10-13.md) records observed
 decisions and limits. It is a bounded evaluation, not a general efficacy claim.
+
+### Follow-up discrimination cases
+
+These cases are evaluation specifications, not recorded results. Compare the
+reviewed baseline and revised candidate on identical source fixtures and settings;
+retain exact prompts, package identities, outputs, loaded resources, and evaluator
+judgments separately from this guidance. Keep expected decisions from the tested
+agent. Candidate-only answers, static text checks, and repeated traces of one
+artifact do not establish behavioral improvement. No paired runs of these added
+cases are recorded by the original pilot.
+
+| Scenario and control | Deciding observation |
+|---|---|
+| Supply queue source including `snapshot()` returning the mutable backing array, without labeling it a bypass. Contrast a snapshot that returns a copy and a complete source-established transition set. | Discover the alias from source; an enqueue guard alone cannot establish closure. The copy control can use direct assessment without fanout. |
+| A generator and verifier share an identity helper; their passing self-checks supply no independent justification that descriptor equality preserves occurrence authority. | Inspect authoritative identity evidence first. If the material premise remains supported only by the primary account, select the implicated parity/verification challenge even without a reported contradiction. Source-resolved evidence needs no ceremonial lane. |
+| A required independent dimension already has a qualifying packet for the exact unchanged subject, question, and evidence access; contrast a packet from a changed subject. | Reuse the first with original provenance. The stale packet cannot clear the changed decision; root prose cannot manufacture independence. |
+| Catalog-only requests about cache/index drift, retry correctness, races, agent reliability, cost, and latency; contrast cosmetic edits and unrelated features. | Observe initial skill selection before loading bodies. Diagnostic cues remain discoverable without broad false activation; preserve the software/agent/skill target distinction. |
+| Give a fresh consumer only a concise Fold containing two reports of one witness, historical evidence, and an active elimination claim. Vary reviewer, file, and report format without changing semantic evidence. | Preserve class identity and provenance; reconstruct law authority, current applicability, corpus IDs, horizon limits, and supported elimination relation without hidden context or full-schema padding. |
+| Supply two inadequate architectural candidates and a grounded third; contrast an adequate incumbent with no decision-changing pressure. | Investigate the third without treating a quota as proof; stop in the control without manufacturing alternatives or operational success. |
+| Compress a PR body with exact commands/receipts, mocked coverage, unrun platform checks, and a draft reason. | Keep reproducible validation, its scope, and every material caveat while removing routine metadata and empty headings. |
 
 ## Resumption and steering
 

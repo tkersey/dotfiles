@@ -22,7 +22,7 @@ for independently required clearance when a worker is unavailable.
 ## Prompt shape
 
 ```text
-Run the selected $invariant-ace independent lanes using available specialist workers. Supply the unresolved evidence that requires each lane, artifact_state_id, direction_state_id, candidate invariant IDs, relevant files, and exact scope. Require packet-native output with evidence refs. If an independently required worker is unavailable, keep its affected result unresolved; do not claim root-equivalent evidence is independent. Root assesses the other substantive questions directly and synthesizes the clearances and vetoes. Unresolved vetoes block enforce-now.
+Run the selected $invariant-ace independent lanes using available specialist workers. Reuse qualifying independent packets before dispatch. Supply the material unestablished premise or unresolved evidence that requires each remaining lane, artifact_state_id, direction_state_id, candidate invariant IDs, relevant files, and exact scope. Require packet-native output with evidence refs. If an independently required worker is unavailable, keep its affected result unresolved; do not claim root-equivalent evidence is independent. Root assesses the other substantive questions directly and synthesizes the clearances and vetoes. Unresolved vetoes block enforce-now.
 ```
 
 Workers are read-only. Root may downgrade freely but may not upgrade against unresolved veto.

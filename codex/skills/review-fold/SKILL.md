@@ -292,6 +292,10 @@ Duplicate reports are not independent witnesses; grouping requires compatible la
 authority, applicability, discrepancy, and supported causal evidence. Classes and
 family hypotheses do not select architecture or define a family's whole extension.
 
+Class IDs derive from law, boundary, discrepancy, and supported family
+hypothesis—not attempt, thread, file, reviewer, current owner, or proposed patch.
+This semantic identity rule applies to concise and structured folds alike.
+
 Read [history-and-classes.md](references/history-and-classes.md) before grouping
 whose causal identity is uncertain, asserting recurrence or first occurrence, or
 relating evidence to an active eliminated claim. Actuating owns revocation,

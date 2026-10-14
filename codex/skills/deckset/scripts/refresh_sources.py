@@ -155,9 +155,17 @@ def has_examples_cache(examples_dir: Path, gist_id: str) -> bool:
         return False
     if not all(isinstance(name, str) and safe_example_name(name) for name in names):
         return False
-    return len(names) == len(set(names)) and all(
-        (examples_dir / name).is_file() and not (examples_dir / name).is_symlink()
-        for name in names
+    # A legacy manifest may name two aliases of one file, or alias itself.
+    # Require the recorded spellings to exist as actual directory entries.
+    try:
+        entries = {path.name for path in examples_dir.iterdir()}
+    except OSError:
+        return False
+    return (
+        len(names) == len(set(names))
+        and (set(names) | {"_gist-index.json"}).issubset(entries)
+        and all((examples_dir / name).is_file() and not (examples_dir / name).is_symlink()
+                for name in names)
     )
 
 
@@ -191,9 +199,13 @@ def publish_examples(
     backup = examples_dir.with_name(f".{examples_dir.name}.backup-{uuid.uuid4().hex}")
     moved_old = False
     try:
+        # Reserve the manifest first; the filesystem, not string normalization,
+        # decides whether two names alias. Fail before touching the live cache.
+        with (staged / "_gist-index.json").open("xb") as handle:
+            handle.write(index_data)
         for name, data in files.items():
-            (staged / name).write_bytes(data)
-        (staged / "_gist-index.json").write_bytes(index_data)
+            with (staged / name).open("xb") as handle:
+                handle.write(data)
         if examples_dir.exists():
             os.replace(examples_dir, backup)
             moved_old = True

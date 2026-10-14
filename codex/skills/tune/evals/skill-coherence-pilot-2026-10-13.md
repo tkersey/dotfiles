@@ -1,11 +1,16 @@
 # Skill coherence pilot — 2026-10-13
 
 This is a small authoring evaluation using the existing
-[workflow probes](workflow-probes.md), [review economy](review-economy.md), and
+[workflow probes](../references/workflow-probes.md), [review economy](../references/review-economy.md), and
 [Universalist contribution comparison](../../universalist/references/efficacy-evaluation.md).
 It adds no production gate or review credit.
 
 ## Scope and controls
+
+This retained report describes the original pilot, not later revisions of PR #338.
+The follow-up changes to direct-assessment eligibility, catalog wording, and class
+identity disclosure have not received paired model trials in this report. Moving
+this record into `evals/` does not rerun or strengthen its historical evidence.
 
 The candidate started from Dotfiles `b0fbdf72` with the skill changes in this PR.
 Publication was subsequently rebased by applying only the skill patch to
@@ -67,7 +72,8 @@ before changing architecture guidance.
 
 ## Workflow decisions
 
-The scenarios are repeatable from the matching table in `workflow-probes.md`.
+The scenarios are repeatable from the matching table in
+[workflow-probes.md](../references/workflow-probes.md).
 
 | Probe | Observed decision |
 |---|---|

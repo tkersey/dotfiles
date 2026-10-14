@@ -145,6 +145,96 @@ class RefreshTests(unittest.TestCase):
             self.assertEqual(meta["etag"], "old")
             self.assertEqual(self.snapshot(), before)
 
+    def test_case_aliases_fail_before_publication_under_simulated_filesystem(self):
+        # Simulate ASCII case-insensitive path lookup, not an APFS implementation.
+        # Real exclusive-open behavior then decides whether an alias overwrites.
+        original_open = Path.open
+
+        def alias_open(path, mode="r", *args, **kwargs):
+            if ".stage-" in path.parent.name:
+                for existing in path.parent.iterdir():
+                    if existing.name.lower() == path.name.lower():
+                        path = existing
+                        break
+            return original_open(path, mode, *args, **kwargs)
+
+        for names in (("A.md", "a.md"), ("_GIST-INDEX.JSON",)):
+            for cached in (False, True):
+                with self.subTest(names=names, cached=cached), \
+                     tempfile.TemporaryDirectory(dir=self.root) as parent:
+                    self.examples = Path(parent) / "examples"
+                    if cached:
+                        self.seed()
+                    before = self.snapshot()
+                    files = {name: {"filename": name, "content": f"content {i}"}
+                             for i, name in enumerate(names)}
+                    with patch.object(R, "http_get", return_value=self.response(files)), \
+                         patch.object(Path, "open", alias_open):
+                        result, meta = self.fetch()
+                    self.assertEqual(result.source, "cache_fallback" if cached else "none")
+                    self.assertEqual(result.ok, cached)
+                    self.assertEqual(self.snapshot(), before)
+                    self.assertEqual((meta["etag"], meta["last_modified"]),
+                                     ("old", "old-date") if cached else (None, None))
+                    self.assertEqual({p.name for p in Path(parent).iterdir()},
+                                     {"examples"} if cached else set())
+
+    def test_legacy_aliased_cache_cannot_qualify_for_ttl_304_or_fallback(self):
+        original_is_file = Path.is_file
+
+        def alias_is_file(path):
+            if path.parent == self.examples:
+                for existing in self.examples.iterdir():
+                    if existing.name.lower() == path.name.lower():
+                        path = existing
+                        break
+            return original_is_file(path)
+
+        for names in (("A.md", "a.md"), ("_GIST-INDEX.JSON",)):
+            with self.subTest(names=names), tempfile.TemporaryDirectory(dir=self.root) as parent:
+                self.examples = Path(parent) / "examples"
+                self.seed(files={"A.md": "overwritten contents"})
+                index = self.examples / "_gist-index.json"
+                payload = json.loads(index.read_text())
+                payload["files"] = list(names)
+                index.write_text(json.dumps(payload))
+                before = self.snapshot()
+                self.prior["refreshed_at"] = R.now_utc()
+                for response in ((304, b"", {}), TimeoutError("fixture")):
+                    with patch.object(Path, "is_file", alias_is_file), \
+                         patch.object(R, "http_get", side_effect=[response]) as http:
+                        result, meta = self.fetch(max_age=3600)
+                    self.assertFalse(result.ok)
+                    self.assertNotIn("If-None-Match", http.call_args.args[2])
+                    self.assertIsNone(meta["etag"])
+                    self.assertEqual(self.snapshot(), before)
+
+    def test_case_distinct_names_follow_native_filesystem_identity(self):
+        # Run without filesystem mocks; accept distinct names where supported.
+        probe = self.root / "CaseProbe"
+        probe.write_bytes(b"probe")
+        aliases = (self.root / "caseprobe").exists()
+        probe.unlink()
+        for names in (("A.md", "a.md"), ("_GIST-INDEX.JSON",)):
+            with self.subTest(names=names), tempfile.TemporaryDirectory(dir=self.root) as parent:
+                self.examples = Path(parent) / "examples"
+                self.seed()
+                before = self.snapshot()
+                files = {name: {"filename": name, "content": f"content {i}"}
+                         for i, name in enumerate(names)}
+                with patch.object(R, "http_get", return_value=self.response(files)):
+                    result, meta = self.fetch()
+                self.assertEqual(result.source, "cache_fallback" if aliases else "network")
+                self.assertEqual(meta["etag"], "old" if aliases else "new")
+                if aliases:
+                    self.assertEqual(self.snapshot(), before)
+                else:
+                    for name, info in files.items():
+                        self.assertEqual((self.examples / name).read_text(), info["content"])
+                    self.assertEqual(json.loads((self.examples / "_gist-index.json").read_text())["files"],
+                                     sorted(names))
+                self.assertEqual({p.name for p in Path(parent).iterdir()}, {"examples"})
+
     def test_unmanaged_directory_is_preserved(self):
         self.seed()
         (self.examples / "private").mkdir()

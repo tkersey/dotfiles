@@ -1,6 +1,6 @@
 ---
 name: tune
-description: "Create, edit, and tune Codex skills; optimize software and agent performance from measured evidence. Use for skill-package work or performance diagnosis and improvement, not unrelated features or cosmetic edits."
+description: "Create, edit, and tune Codex skills; diagnose and improve software and agent latency, throughput, memory, cost, reliability, and task quality from measured evidence. Not unrelated feature development or cosmetic edits."
 ---
 
 # Tune

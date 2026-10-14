@@ -2,10 +2,13 @@
 
 Use authority fanout only for the independently required dimensions selected by
 the [entry's escalation conditions](../SKILL.md#authority-fanout-mode), or an
-explicit caller requirement. One bounded owner and an inspectable transition set
-can be assessed directly without packets; all seven substantive questions and
-the Invariant Gate remain required. Do not infer independent review from file
-count, report length, or implementation intent alone.
+explicit caller requirement. Direct assessment requires the entry's source-established
+closed proof boundary, including relevant escape and bypass coverage; absence of
+recognized conflict is insufficient. Material unestablished premises can require
+independent challenge before any disagreement is observed. All seven substantive
+questions and the Invariant Gate remain required. File count, report length, and
+implementation intent alone do not require fanout. Reuse qualifying independent
+packets on the exact unchanged subject and question instead of relaunching lanes.
 
 ## Roles
 
