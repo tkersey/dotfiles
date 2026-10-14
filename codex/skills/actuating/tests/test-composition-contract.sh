@@ -55,6 +55,44 @@ for (const [name, digest] of Object.entries(lensBlobs)) {
   assert.equal(createHash('sha1').update(`blob ${bytes.length}\0`).update(bytes).digest('hex'),
     digest,`review instruction bytes changed: ${name}`);
 }
+// Premise-directed construction source contracts; not native-runtime or model-efficacy tests.
+{
+  const normalized = path => text(path).replace(/\s+/g, ' ');
+  const initial = section(text('SKILL.md'), 'Initial construction').replace(/\s+/g, ' ');
+  const causal = section(text('counterexamples.md'), 'Compile the first loss of guarantee').replace(/\s+/g, ' ');
+  const guide = normalized('references/counterexample-guided-normalization.md');
+  for (const rule of [
+    'including exceptional outcomes and required subsequent behavior',
+    'Work forward from the actual code and authoritative state to what is established',
+    'Let the first unsupported implication select the next edit or deciding inspection',
+    'Missing proof is not a witnessed defect',
+    'inspect the owner and reachability before inventing a repair',
+    'deriving it from existing authority',
+    'preserving a necessary distinction',
+    'giving its owner the inputs and operation to establish and preserve it',
+    'changing the algorithm or decomposition so it no longer needs that premise',
+    'Do not silently assume it, transfer it to callers, or strengthen admission against required-valid behavior',
+    'derive the invariant and progress argument needed by the contract',
+    'These choices refine the current construction, not a new proof packet'
+  ]) assert(initial.includes(rule), 'missing premise derivation: ' + rule);
+  for (const rule of [
+    'Use [initial construction](SKILL.md#initial-construction)',
+    'claimed premises or evidence remain true but the required behavior fails',
+    "Establish the observation's applicability",
+    'missing semantic rule from a transcription defect in an already-adequate rule',
+    'A local correction can establish a reusable native scope or transition rule',
+    'no paired-case quota or forced redesign'
+  ]) assert(causal.includes(rule), 'missing premise discriminator: ' + rule);
+  assert(guide.includes('### Derive the missing premise at its owner'));
+  assert(guide.includes('[owner examples](#derive-the-missing-premise-at-its-owner)'));
+  assert(guide.includes('try self.persist(value, previous, "task.cancel"); errdefer self.store().fence();'));
+  assert(guide.includes('Swallowed errors, other scopes, and process crashes are not covered by this rule'));
+  assert(guide.includes('Transaction-scoped import/audit views still validate without minting reusable committed-state facts'));
+  assert(guide.includes('Snapshot lifetime and invalidation remain obligations'));
+  assert(guide.includes('Zero ancestry bytes alone cannot distinguish reuse from bypassing the cache'));
+  assert(guide.includes('not native runs performed by reading this guide or untouched evidence of skill efficacy'));
+}
+// End premise-directed construction source contracts.
 // Source-contract checks below validate the declared handoffs. They do not
 // simulate an agent, execute Ledger/CAS, or prove model effectiveness.
 const nominationResults = ['candidate','preserve-incumbent','unresolved','obstructed'];

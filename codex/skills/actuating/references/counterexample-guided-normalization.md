@@ -15,10 +15,12 @@ subsumes tests.
 
 ## Constructive derivation
 
-Work backward from required observations and continuations to sufficient facts,
-cases, and operation rules; choose native representations and algorithms that
-make those premises hold. These are optional design moves selected by a real
-uncertainty, not a sequence, quota, or prerequisite for an adequate direct fix:
+Use the [initial-construction derivation](../SKILL.md#initial-construction): compare
+what the next required observation needs with what the code and authority establish.
+Let the unsupported implication choose a native construction or deciding inspection.
+The moves below and the [owner examples](#derive-the-missing-premise-at-its-owner)
+are alternatives selected by that uncertainty, not a sequence, quota, or prerequisite
+for an adequate direct fix:
 
 | Law or premise to establish | Native construction to derive | Deciding countercase |
 |---|---|---|
@@ -156,6 +158,52 @@ These illustrate domain selection and derivation, not required implementation pa
 | Check every supplied acquisition attempt has a capture. | Derive acquisitions from retained occurrence semantics whose completeness is established for the claim. | Omit attempt and capture together; the obligation survives. Legitimate occurrences requiring neither remain admissible. |
 | Free scratch inside the reported artifact method. | The public call owns independent temporary storage, deep-copies returned values into response storage, and releases scratch before the next batch member. | Completed and failed decoding through another method releases scratch while required results survive. |
 | Add schema specialization to registry matching. | Carry complete identity through declaration, emitted metadata, admission, and selection using a shared typed association. | Equal semantic names with distinct required schema specializations remain distinct; equivalent identities still match. |
+
+### Derive the missing premise at its owner
+
+These historical Protean changes illustrate different adequate responses, not a
+requirement to add an owner, fence, or registry to unrelated work.
+
+**Postcommit cancellation.** A durable receipt does not establish that its required
+interruption has taken effect. After cancellation commits, a later error must not
+leave affected recovery dispatchable without that interruption. Before the commit,
+failed admission must retain its rollback and retry behavior. Protean's existing
+fail-stop owner and restart recovery made this scoped repair sufficient for the
+reported gap ([3444a70](https://github.com/tkersey/protean/commit/3444a70ab2ffd4750bbf66d26cb97ea9f33bdaa9)):
+
+```zig
+try self.persist(value, previous, "task.cancel");
+errdefer self.store().fence();
+```
+
+The placement derives from the phase-dependent consequence, not a list of error
+names. Subsequent error returns through that scope invoke the fence, including a
+new fallible step that propagates its error there. Swallowed errors, other scopes,
+and process crashes are not covered by this rule; justify their required behavior
+separately. The source test varies allocation failure across publication, checks
+precommit retry and postcommit fencing, then reopens and checks receipt replay.
+It challenges the missing implication while the durable receipt still exists.
+A small correction is constructive when the native rule supplies the generality.
+
+**Validation before projection.** A read snapshot alone does not establish reusable
+retention-validation facts. After import, callers could reach projection without
+those facts; reopening happened to restore them but was not required by the API.
+Protean gave `Store.project` the registry needed to establish missing cold facts
+before sealed projection ([b68778a](https://github.com/tkersey/protean/commit/b68778a41a9051319d6359cdaacad8b521c7096d)).
+The condition binds those facts to transaction state, sealed generation, integrity
+epoch, and application identity. Transaction-scoped import/audit views still
+validate without minting reusable committed-state facts. Snapshot lifetime and
+invalidation remain obligations; a label saying "validated" cannot replace them.
+
+The added input supplies legitimate means; it removes the caller's separate duty
+to recognize and repair a stale prerequisite. Supplying a registry is not the same
+burden as remembering a warm-up sequence. Challenge same-service continuation
+through import and repeated projection, observing required output and actual cache
+reuse. Zero ancestry bytes alone cannot distinguish reuse from bypassing the cache.
+
+Both examples select code from the missing premise while retaining different phase
+semantics and independent checks. Their source tests are inspectable evidence, not
+native runs performed by reading this guide or untouched evidence of skill efficacy.
 
 ### Derive complete frame representability
 

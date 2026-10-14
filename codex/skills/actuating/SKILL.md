@@ -154,13 +154,20 @@ identity is required. A summary or digest never replaces the source or proves co
 ## Initial construction
 
 Use the law to generate the implementation. Work backward from required results
-and permitted continuations to the facts, distinctions, and operation rules that
-would establish them. For a proposed step, derive when it establishes the required
-result; let those conditions determine its algorithm, inputs, or guards. For
-iteration or recursion, derive the invariant and progress argument needed by the
-contract. Work forward through the resulting operations to check that the
-premises actually hold. A missing premise directs the next design or deciding
-experiment; it is not discharged by implementing more cases.
+and permitted continuations, including exceptional outcomes and required subsequent
+behavior, to the premises the next operation needs. Work forward from the actual
+code and authoritative state to what is established. Let the first unsupported
+implication select the next edit or deciding inspection. Missing proof is not a
+witnessed defect; inspect the owner and reachability before inventing a repair.
+
+Resolve a missing premise by deriving it from existing authority, preserving a
+necessary distinction, giving its owner the inputs and operation to establish and
+preserve it, or changing the algorithm or decomposition so it no longer needs that
+premise. Do not silently assume it, transfer it to callers, or strengthen admission
+against required-valid behavior. For a proposed step, derive when it establishes
+the required result; let those conditions determine its algorithm, inputs, or guards.
+For iteration or recursion, derive the invariant and progress argument needed by
+the contract. These choices refine the current construction, not a new proof packet.
 
 Treat the representation, operation vocabulary, algorithm, and interpretation as
 design variables within source-fixed constraints. Distinguish authoritative
