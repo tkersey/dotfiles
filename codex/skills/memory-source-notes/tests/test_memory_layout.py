@@ -50,6 +50,15 @@ class WriterResolutionTests(unittest.TestCase):
         path.chmod(0o755)
         return path
 
+    def test_command_overrides_use_path_and_missing_override_does_not_fall_back(self):
+        command = self.executable("bin/custom-memory-note")
+        with patch.dict(os.environ, {"PATH": str(command.parent)}):
+            self.assertEqual(L.memory_note_binary("custom-memory-note"), str(command))
+            with patch.dict(os.environ, {"MEMORY_NOTE_BIN": "custom-memory-note"}):
+                self.assertEqual(L.memory_note_binary(), str(command))
+            with self.assertRaises(L.LayoutError):
+                L.memory_note_binary("missing-memory-note")
+
     def test_precedence_and_explicit_failure(self):
         explicit, environment = self.executable("explicit"), self.executable("environment")
         with patch.object(L.shutil, "which", return_value="/installed/memory-note"):

@@ -39,6 +39,11 @@ class MemoryLayout:
 def memory_note_binary(explicit: str | Path | None = None) -> str:
     selected = explicit or os.environ.get("MEMORY_NOTE_BIN")
     if selected:
+        if isinstance(selected, str) and os.sep not in selected:
+            command = shutil.which(selected)
+            if command:
+                return str(Path(command).absolute())
+            raise LayoutError(f"memory-note: unavailable: {selected}")
         path = Path(selected).expanduser()
         if path.is_file() and os.access(path, os.X_OK):
             return str(path.absolute())

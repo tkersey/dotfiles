@@ -92,10 +92,15 @@ class TrustAuditTests(unittest.TestCase):
             ".lake/cache.lean", "lake-packages/dependency.lean", "build/output.lean",
             "nested/.lake/cache.lean", "nested/lake-packages/dependency.lean",
             "nested/build/output.lean", "notes.txt",
+            ".git/metadata.lean", ".hg/metadata.lean", ".svn/metadata.lean",
+            "vendor/dependency.lean", "third_party/dependency.lean",
+            "third-party/dependency.lean", "node_modules/dependency.lean",
+            "dist/generated.lean", "nested/vendor/dependency.lean",
         ):
             target = self.sources / relative
             target.parent.mkdir(parents=True, exist_ok=True)
             target.write_text("sorry\n")
+        (self.sources / ".ignore").write_text("vendor/\ndist/\n")
         own_file = self.sources / "nested/source.lean"
         own_file.write_text("bv_decide\n")
         for backend in self.environments:
