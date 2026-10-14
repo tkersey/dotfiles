@@ -199,6 +199,7 @@ class ManagedSourceTests(unittest.TestCase):
                     raise MODULE.ReconcileError("fixture inventory failure")
                 return [], 0
             with patch.object(MODULE, "resolve_binary", side_effect=lambda explicit, env, name: name), \
+                 patch.object(MODULE, "memory_note_binary", return_value="memory-note"), \
                  patch.object(MODULE, "resolve_custody", return_value=context), \
                  patch.object(MODULE, "run_json", side_effect=run), \
                  patch.object(MODULE, "source_records", return_value=[]), \

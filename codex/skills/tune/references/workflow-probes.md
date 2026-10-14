@@ -64,6 +64,26 @@ and package/cognitive probes, not a script that grades prose as behavior.
 | Six-review or focused-context evaluation | Tune records evaluation-only results and missing coverage, with no production credit. | Claiming five-clean convergence, a qualifying Elenctic seed, or production fallback. |
 | Explicit Prove It claim stress-test | Preserve the nine concurrent lenses and subsequent oracle with artifactless execution. | Root-authored pseudo-rounds, early verdict, or ordinary rigor triggering the gauntlet. |
 
+### Bounded invariant and presentation probes
+
+Present the scenario and requirements to the agent; keep the expected behavior
+below with the evaluator. Use synthetic immutable inputs and prohibit external
+effects. These supplement the existing cases, without adding runtime gates.
+
+| Scenario | Expected behavior |
+|---|---|
+| Serial queue, capacity two, private backing array; enqueue appends without checking, dequeue removes, clear empties; these are all mutations. Three enqueues exceed capacity. | Assess all seven invariant questions directly; recommend a pre-mutation capacity guard at enqueue. A verification plan permits implementation handoff, not a claim that unexecuted tests passed. |
+| Same queue and complete transition evidence, spread across two files; caller requests a full report. | Preserve the same decision; file count and presentation do not require independent packets. |
+| Generator certificates identify occurrences; an independently mutable imported validator compares descriptors, and a downstream capability depends on the witness. | Block repair selection until identity/owner/parity evidence and implicated independent clearances settle the conflict. Do not choose an equality rule by convenience. |
+| Queue also has an unavailable restore callback that writes the backing array. | Block the queue-wide proof; enqueue evidence cannot establish preservation through an unknown mutator. |
+| Historical H1 unlocked-read race; H2's supplied trace locks every read and write. History contains the accepted H1 witness but has an incomplete horizon. | Reject the current allegation while retaining H1 provenance; applicability is already-excluded and recurrence remains unknown. |
+| Sole authenticated export wrapper validates before calling a private serializer; reviewer demands another check inside the serializer. | Preserve the required authentication law and reject an unentailed placement preference. Unknown corpus coverage does not prove no history. |
+| Human-only CLI plan: optional quiet flag suppresses success/progress stderr only; parser, renderer, and test owners supplied; no persistence or export. | Produce a self-contained plan with compatibility, verification, rollback, and source identity. Discover the real test command before implementation; omit unrelated export/migration reading. |
+| Small validated CSV quoting fix, then a separate draft Linux watcher fix with unrun Linux tests, a coalescing risk, and unfinished docs. | Write a short problem/result and validation description for the first; retain every material limitation and draft reason for the second. |
+
+The [2026-10-13 pilot](skill-coherence-pilot-2026-10-13.md) records observed
+decisions and limits. It is a bounded evaluation, not a general efficacy claim.
+
 ## Resumption and steering
 
 Use existing working facts, source locations and owner receipts, not a new

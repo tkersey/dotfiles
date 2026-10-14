@@ -6,6 +6,7 @@ usage() {
 Usage: scripts/lean_trust_audit.sh [file-or-directory ...]
 
 Scans Lean files for placeholders and trust-expanding features. This is a lexical audit aid, not a substitute for `lake env lean`, `lake build`, or `#print axioms`.
+Includes hidden and ignored first-party files; excludes .lake, lake-packages, and build directories.
 Findings are printed for review; both findings and no matches exit 0. Scan errors exit nonzero.
 EOF
 }
@@ -24,7 +25,7 @@ pattern='(^|[^[:alnum:]_])(sorry|admit|axiom|unsafe|partial|noncomputable|native
 
 if command -v rg >/dev/null 2>&1; then
   status=0
-  rg -n --glob '*.lean' --glob '!**/.lake/**' --glob '!**/lake-packages/**' --glob '!**/build/**' -- "$pattern" "$@" || status=$?
+  rg -n --hidden --no-ignore --glob '*.lean' --glob '!**/.lake/**' --glob '!**/lake-packages/**' --glob '!**/build/**' -- "$pattern" "$@" || status=$?
   if [[ "$status" -gt 1 ]]; then
     exit "$status"
   fi

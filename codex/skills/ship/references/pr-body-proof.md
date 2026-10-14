@@ -4,33 +4,22 @@
 
 ```md
 <!-- ship-proof:start -->
-## Summary
-- What changed and why.
+Describe the concrete problem and resulting behavior in one or two sentences.
 
-## Proof
-- `<command>`: pass/fail/blocked/not-run
-
-## Scope
-- repository:
-- branch:
-- head:
-- base:
-- base SHA:
-
-## Risks
-- None identified, or concise residual risks.
-
-## Follow-ups
-- None, or explicitly deferred work.
-
-## Readiness
-- Operation: create | update | update-and-promote | blocked
-- Final state: ready | draft | preserve
-- SHIP-v1 compatibility mode: ready | draft | update-existing | promote-draft | blocked
-- Reason:
-- Caveats:
+Validation: `<command>` — pass/fail/blocked/not-run, with relevant scope or limits.
 <!-- ship-proof:end -->
 ```
+
+Scale the prose to the change and follow a repository PR template when present.
+Use headings or lists only when they help a reviewer. Include material risks,
+deferred work, incomplete validation, and draft/readiness caveats when applicable;
+omit empty sections and routine "none" statements. Preserve consequential scope
+and compatibility changes in the human description.
+
+Keep operation enums, compatibility modes, and routine repository/branch/SHA
+fields in the [Ship record](ship-record.md), rather than repeating them in every
+PR body. Include an exact identity in prose when it is needed to interpret the
+validation or the change. A record does not replace reviewer-relevant evidence.
 
 For an existing PR, read the current body and replace exactly one complete
 managed block. Append the block when neither marker exists. Preserve everything

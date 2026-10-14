@@ -81,8 +81,10 @@ Supply the incumbent, attributed requirements and observations, constraints,
 pressure, and any already derived challenger. The assigned nomination owner runs
 one bounded comparison; do not manufacture alternatives for settled seams.
 
-Seek the smallest adequate ordinary construction and at most one grounded
-law-derived challenger under Universalist's existing discipline. Establish a
+Seek the smallest adequate ordinary construction and reuse grounded law-derived
+challengers under Universalist's existing discipline. Consider another only when
+a live requirement, material tradeoff, or evidence could change the nomination;
+stop at decision sufficiency, without a numerical quota. Establish a
 material object-level difference: an illegal public composition excluded, a
 correctness obligation eliminated or owned, caller choreography removed, or a
 source-supported change localized. A more general encoding can be warranted;

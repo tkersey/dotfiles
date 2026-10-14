@@ -2,9 +2,9 @@ policy:
   allow_implicit_invocation: true
 interface:
   display_name: "Tune"
-  short_description: "Optimize code and agents; create and tune skills"
+  short_description: "Create and tune skills; optimize code and agents"
   default_prompt: >
-    Use $tune to improve the requested software, agent system, or skill package.
+    Use $tune to create, edit, or tune skills and optimize software or agents.
     Select the target before the procedure; keep create, edit, and tune intent
     separate from inspect/apply and publication authority. Inspection protects
     the target; disposable observations need their own existing permission,

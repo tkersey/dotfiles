@@ -1,6 +1,11 @@
 # Authority fanout for invariant-ace
 
-Use authority fanout when an invariant result can drive implementation, review adjudication, closure, or fixed-point routing.
+Use authority fanout only for the independently required dimensions selected by
+the [entry's escalation conditions](../SKILL.md#authority-fanout-mode), or an
+explicit caller requirement. One bounded owner and an inspectable transition set
+can be assessed directly without packets; all seven substantive questions and
+the Invariant Gate remain required. Do not infer independent review from file
+count, report length, or implementation intent alone.
 
 ## Roles
 
@@ -16,7 +21,12 @@ Use authority fanout when an invariant result can drive implementation, review a
 
 ## Root authority
 
-Root may downgrade any row. Root may not upgrade a vetoed or unresolved row to `enforce-now` without clearing the veto through a fresh authority packet or same-schema root-equivalent packet.
+Root may downgrade any row. Root may not upgrade a vetoed or unresolved row to
+`enforce-now` without fresh evidence clearing the objection, including any
+independently required clearance. A root-equivalent packet records direct
+assessment; it cannot replace independently required evidence. If a required
+worker is unavailable, keep the affected result unresolved and continue permitted
+evidence gathering rather than manufacturing independence.
 
 ## Packet requirements
 

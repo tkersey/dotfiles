@@ -1,6 +1,6 @@
 ---
 name: invariant-ace
-description: "Turn should-never-happen into cannot-happen with authority-gated invariant design: owned inductive invariants, counterexample traces, source-of-truth proof, transition preservation, exception authority, witness parity, enforcement boundary, and verification. Use for invariants, impossible states, validation sprawl, cache/index drift, idempotency/versioning, retries/duplicates/out-of-order events, races, loop correctness, policy exceptions, generator/validator parity, descriptor identity, witness drift, fixture preconditions, or invariant-first hardening. Not for generic refactors, architecture essays, or implementation without an invariant gate."
+description: "Design and challenge owned invariants, transition preservation, and enforcement boundaries. Use for impossible states, validation sprawl, identity/witness drift, policy exceptions, or invariant-first hardening; not generic refactors or architecture essays."
 ---
 
 # Invariant Ace
@@ -38,10 +38,17 @@ Authority-Gated v1 requires:
 - generator/validator/witness parity checks;
 - fixture precondition alignment;
 - verification plan tied to predicates;
-- authority packet receipts and veto handling when the task is non-trivial or consequential;
+- evidence for all seven authority questions, with independent packet receipts only when the escalation conditions below apply;
 - an Invariant Gate before implementation, review adjudication handoff, proof closure, or fixed-point routing.
 
-Compact mode is allowed only for exploratory invariant sketches, and it must block implementation handoff unless the Invariant Gate passes.
+For bounded standalone work with one established semantic owner and an inspectable
+transition set, assess the seven questions directly: counterexample, owner/scope,
+induction, boundary, witness/fixture parity, verification, and the strongest
+non-enforcement countercase. Cite the evidence and state any uncertainty. Do not
+manufacture worker packets or full report sections for this path. Prospective
+implementation alone does not require fanout; the same substantive Invariant Gate
+still applies before handoff. An exploratory sketch with missing evidence cannot
+pass it merely because its presentation is compact.
 
 ## Core doctrine
 
@@ -50,7 +57,7 @@ Operate in **OWNER-FIRST**, **COUNTEREXAMPLE-DRIVEN**, **INDUCTIVE**, **AUTHORIT
 - **OWNER-FIRST**: if you cannot name the state owner and mutation boundary, you do not yet have an enforceable invariant.
 - **COUNTEREXAMPLE-DRIVEN**: every accepted invariant needs a concrete bad trace, or an explicit proof-only reason why no current trace exists.
 - **INDUCTIVE**: accepted invariants must hold initially and be preserved by every allowed transition in scope.
-- **AUTHORITY-GATED**: consequential invariants require independent clearances; unresolved vetoes block `enforce-now`.
+- **AUTHORITY-GATED**: concrete unresolved conflicts require the independent clearances selected below; unresolved vetoes always block `enforce-now`.
 - **SOURCE-OF-TRUTH-SEEKING**: enforce at the owner/source of truth, not at downstream local shortcuts.
 - **POLICY-OWNED**: exceptions must be encoded in the policy owner, allowlist, capability, ACL, flag, or protocol that owns the invariant.
 - **WITNESS-PARITY**: validation, generation, projection, certificate, source-map, replay, and proof paths must use the same identity/witness semantics or a named stricter refinement.
@@ -83,9 +90,20 @@ Operate in **OWNER-FIRST**, **COUNTEREXAMPLE-DRIVEN**, **INDUCTIVE**, **AUTHORIT
 
 ## Authority fanout mode
 
-For consequential invariant work, use custom Codex authority agents. They solve both bandwidth and authority: independent lanes gather evidence in parallel, and each lane owns a decision dimension.
+Require independent review for implicated dimensions when concrete unresolved
+evidence could change the decision: competing semantic or exception owners, a law
+crossing independently mutable boundaries, disputed transition coverage or
+enforcement, generator/validator identity or witness disagreement, conflicting
+proof, or an unanswered material non-enforcement countercase. Inspect decisive
+available evidence first; a resolved concern does not require ceremonial fanout.
 
-Required lanes when an invariant can become implementation work or block closure:
+Name the required dimensions and their evidence basis, then dispatch only those
+lanes. Assess the remaining questions directly. File count, a full-report request,
+or a future implementation handoff does not itself establish a need for independent
+review. An explicit caller requirement for particular independent lanes remains
+binding.
+
+Available lanes:
 
 | Role | Owns |
 |---|---|
@@ -101,12 +119,14 @@ Authority rules:
 
 - Each required lane returns a packet; packets are not votes.
 - Root remains the final synthesizer but may only downgrade without re-clearance.
-- `enforce-now` requires all required authority lanes clear and the skeptic lane defeated.
+- `enforce-now` requires all seven questions settled, all required independent lanes clear, and the material non-enforcement countercase defeated.
 - Any unresolved or veto packet blocks `enforce-now`.
-- Missing authority packets require `blocked` unless a same-schema root-equivalent packet is emitted.
+- Missing independently required packets leave the affected result `blocked`; direct root evidence is useful but cannot be relabeled independent clearance.
 - Rejected packets are logged and cannot support accepted invariants.
 
-See `references/authority-fanout.md` and `references/CODEX_SUBAGENTS.md`.
+Read [authority-fanout.md](references/authority-fanout.md) and
+[CODEX_SUBAGENTS.md](references/CODEX_SUBAGENTS.md) only when independent lanes are
+required. Continue authorized evidence gathering while an affected result is blocked.
 
 ## Immediate scan
 
@@ -144,12 +164,12 @@ Then ask:
 
 Classify each candidate:
 
-- `accepted`: owned, inductive, enforceable, currently material, and cleared by authority lanes.
+- `accepted`: owned, inductive, enforceable, currently material, supported across all seven questions, and cleared by any independently required lanes.
 - `candidate`: plausible but missing route-changing evidence.
 - `downgraded`: useful property, but it is a pre/postcondition, liveness goal, derived check, test-only guard, or non-material convention.
 - `rejected`: wrong owner, wrong scope, wrong identity rule, ungrounded, duplicate boundary, or direction-conflicting.
 - `unresolved`: material uncertainty; validation or artifact search required.
-- `blocked`: missing artifact state, direction state, authority packet, identity proof, or verification path prevents safe routing.
+- `blocked`: missing artifact state, direction state, independently required packet, identity proof, or verification path prevents safe routing.
 
 Allowed routes:
 
@@ -163,9 +183,11 @@ Allowed routes:
 ## Output contract: Authority-Gated v1
 
 For standalone work, report actionable invariant decisions, concrete traces,
-owners, proof, and unresolved vetoes concisely. Preserve all seven authority
-clearances, inventory coverage, and Invariant Gate evaluation in working evidence.
-Use the complete sections below when the caller requires Authority-Gated v1 or
+owners, proof, and unresolved vetoes concisely. Preserve evidence for all seven
+questions, inventory coverage, and Invariant Gate evaluation in working evidence.
+Distinguish direct assessments from independently required clearances; a request
+for a full report changes presentation, not the fanout threshold.
+Use the applicable sections below when the caller requires Authority-Gated v1 or
 the user requests the full audit report; omit no required packet from that handoff:
 
 1. `Review Basis`
@@ -260,6 +282,12 @@ Required fields:
 - `proof_only_handoff_allowed`: `yes` / `no`
 
 `invariant_gate_complete` may be `pass` only when all preceding required gate fields pass. `implementation_handoff_allowed: yes` requires at least one `enforce-now` row whose authority status is `cleared-for-enforcement` and no unresolved veto exists for that ID.
+
+`authority_packet_coverage` passes when all independently required packets exist,
+or when the bounded-scope evidence establishes that no independent lane is required.
+State that basis without inventing packets. `authority_clearance_coverage` still
+requires evidence for all seven questions, whether assessed directly or by a
+required independent lane. Compact output cannot waive missing proof or a veto.
 
 ## Hard rules
 

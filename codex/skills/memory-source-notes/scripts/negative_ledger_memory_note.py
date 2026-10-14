@@ -14,7 +14,7 @@ import sys
 from typing import Any
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from memory_layout import LayoutError, selected_layout
+from memory_layout import LayoutError, memory_note_binary, selected_layout
 
 
 ALLOWED_KINDS = {
@@ -255,9 +255,8 @@ def cmd_inspect(args: argparse.Namespace) -> int:
 def cmd_admit(args: argparse.Namespace) -> int:
     export_raw, _ = inspect_projection(args)
     repo = Path(args.repo).expanduser().resolve()
-    memory_note = _resolve_binary(
-        args.memory_note_bin, "MEMORY_NOTE_BIN", "memory-note"
-    )
+    memory_note = memory_note_binary(args.memory_note_bin)
+    args.memory_note_bin = memory_note
     argv = [
         memory_note,
         "append",

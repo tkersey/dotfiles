@@ -117,6 +117,20 @@ class TrustAuditTests(unittest.TestCase):
                 self.assertIn("source.lean", result.stdout)
                 self.assertIn("bv_decide", result.stdout)
 
+    def test_hidden_and_ignored_first_party_directories_in_both_backends(self):
+        (self.sources / ".ignore").write_text("ignored/\n")
+        for relative in (".private/proof.lean", "ignored/proof.lean"):
+            target = self.sources / relative
+            target.parent.mkdir(parents=True)
+            target.write_text("theorem unfinished : True := by sorry\n")
+        for backend in self.environments:
+            with self.subTest(backend=backend):
+                for path in (self.sources, Path(".")):
+                    result = self.run_scan(backend, path)
+                    self.assertEqual(0, result.returncode, result.stderr)
+                    self.assertIn(".private/proof.lean", result.stdout)
+                    self.assertIn("ignored/proof.lean", result.stdout)
+
     def test_help(self):
         for flag in ("-h", "--help"):
             with self.subTest(flag=flag):

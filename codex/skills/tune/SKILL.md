@@ -1,6 +1,6 @@
 ---
 name: tune
-description: "Optimize software and agentic systems from measured bottlenecks, latency, throughput, memory, cost, reliability, or task-quality evidence; create, edit, and diagnose Codex skill packages, including activation and behavioral regressions. Use for performance optimization, profiling, algorithmic improvements, agent effectiveness, or skill-package work, not unrelated feature development or cosmetic application edits."
+description: "Create, edit, and tune Codex skills; optimize software and agent performance from measured evidence. Use for skill-package work or performance diagnosis and improvement, not unrelated features or cosmetic edits."
 ---
 
 # Tune
@@ -9,8 +9,11 @@ description: "Optimize software and agentic systems from measured bottlenecks, l
 
 Improve the measured effectiveness and efficiency of software, agentic systems,
 and skill packages. Preserve protected contracts, identify the limiting mechanism,
-make an attributable intervention, and verify the result. `$tune` remains the sole owner
-of skill creation, direct editing, and evidence-backed behavioral tuning.
+make an attributable intervention, and verify the result. For this personal skill
+collection, `$tune` owns creation, direct editing, and evidence-backed behavioral
+tuning. The bundled Skill Creator supplies reusable scaffolding and validation
+helpers; using those helpers does not start a second authoring workflow. Explicit
+user selection of a skill still governs.
 
 One skill owns diagnosis, selection, and authorized mutation. Keep those phases
 distinct; do not hand off merely because the target is code rather than a skill.

@@ -82,10 +82,21 @@ class AdapterContextTests(unittest.TestCase):
         layout = MemoryLayout(extension='negative-ledger', codex_home=home, memory_version='v2',
             memory_root=memory_root, extension_root=extension_root, notes_dir=extension_root / 'notes',
             instructions_path=extension_root / 'instructions.md', resources_dir=extension_root / 'resources')
-        with patch.object(adapter, "_run", side_effect=self.run_mock_native), patch.object(adapter, "_resolve_binary", return_value="ledger"), patch.object(adapter.sys, "stdout", stdout), patch.object(adapter, 'selected_layout', return_value=layout):
+        binary = self.root / "skills-zig/zig-out/bin/memory-note"
+        binary.parent.mkdir(parents=True)
+        binary.write_text("#!/bin/sh\nexit 99\n")
+        binary.chmod(0o755)
+        with patch.dict(os.environ, {"MEMORY_NOTE_BIN": "", "SKILLS_ZIG_REPO": str(self.root / "skills-zig")}), \
+             patch("memory_layout.shutil.which", return_value=None), \
+             patch.object(adapter, "_run", side_effect=self.run_mock_native), \
+             patch.object(adapter, "_resolve_binary", return_value="ledger"), \
+             patch.object(adapter.sys, "stdout", stdout), \
+             patch.object(adapter, 'selected_layout', return_value=layout) as select:
             self.assertEqual(adapter.cmd_admit(self.args), 0)
+        self.assertEqual(select.call_args.args[0].memory_note_bin, str(binary))
         writer = [call for call in self.calls if call[0][1] == "append"]
         self.assertEqual(len(writer), 1)
+        self.assertEqual(writer[0][0][0], str(binary))
         self.assertEqual(writer[0][2], self.raw)
         self.assertEqual(writer[0][0][-4:], layout.writer_args())
 

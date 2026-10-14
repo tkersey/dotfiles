@@ -2,5 +2,5 @@ policy:
   allow_implicit_invocation: true
 interface:
   display_name: "Invariant Ace"
-  short_description: "Authority-gated invariant design with counterexamples, owner/scope, induction, boundary, witness parity, and verification gates"
-  default_prompt: "Use $invariant-ace to evaluate concrete counterexamples, owners, transitions, enforcement, witness parity, and proof. Preserve every required authority clearance and unresolved veto; report concise standalone decisions unless the caller requires the full Authority-Gated v1 handoff."
+  short_description: "Check invariants, owners, transitions, and proof"
+  default_prompt: "Use $invariant-ace to assess all seven substantive questions directly for bounded single-owner work. Require independent review only for dimensions with concrete unresolved owner, transition, enforcement, witness, proof, or countercase conflicts, or when the caller expressly requires it. Preserve the same Invariant Gate, every required clearance, and unresolved veto. A full report changes presentation, not the fanout threshold; Actuating's evidence-only composition still takes precedence."

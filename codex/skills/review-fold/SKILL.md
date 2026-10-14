@@ -225,77 +225,20 @@ not a second packet. An all-accepted wave is legitimate when every claim earns i
 
 ## Output
 
+Return the disposition, law-authority basis, decisive evidence and countercase,
+original witness subject, current applicability, unresolved premises, and exact
+projected/captured corpus IDs. Keep allegations separate from established facts:
+
 ```yaml
-review_fold:
-  current_head:
-  evidence_horizon:
-    complete_for_claims: true | false
-    missing_sources: []
-  counterexample_corpus:
-    projected_ids: []
-    captured_ids: []
-    blocked_sources: []
-  classes:
-    - class_id:
-      class_kind: observational
-      law:
-      law_provenance: goal | public-contract | type-invariant | protocol |
-        test-law | derived | hypothesized
-      law_authority: entailed | strengthening | preference |
-        new-requirement | underdetermined
-      authority_basis:
-      authority_action: none | follow-up | reject | reopen-goal | seek-authority
-      law_boundary:
-      current_owner_set: []
-      owner_status: canonical | distributed | absent | contested | unknown
-      discrepancy: excess | deficit | incoherence | partiality | misbinding
-      severity: critical | high | medium | low
-      disposition: accepted | rejected | blocked | follow-up
-      post_elimination_relation: none | same-claim |
-        same-law-different-family | outside-horizon | different-law | unknown
-      post_elimination_basis:
-      witnesses:
-        - reported_claim:
-          observed_fact: # established only; omit when unresolved
-          admission_basis: # decisive evidence, countercase result, limiting premise
-          # Optional, only when the source challenges a positive judgment:
-          challenged_judgment:
-          earliest_failed_premise:
-          claim_strength_consequence:
-          witness_subject:
-            repository:
-            git_head_or_build:
-            schema_or_environment:
-            input_state_or_trace:
-          detection_boundary:
-          evidence_ref:
-          current_applicability:
-            subject_head:
-            status: still-present | transformed-applicable | already-excluded |
-              not-comparable | unknown
-            basis:
-          independence_basis:
-      family_hypothesis:
-        predicate_or_generator:
-        domain:
-        predicted_sibling_classes: []
-        prediction_basis:
-        claim_strength: proved | exhaustive-finite | bounded |
-          property-tested | sampled | hypothesized | unknown
-        family_basis:
-      quotient_basis:
-      recurrence:
-        status: first-observed | recurring | unknown
-        prior_evidence_refs: []
-      causal_hypothesis:
-  unresolved_questions: []
-  handoff:
+reported_claim:
+observed_fact: # established only; omit when unresolved
+admission_basis: # decisive evidence, countercase result, limiting premise
 ```
 
-Class IDs derive from law, boundary, discrepancy, and supported family
-hypothesis—not attempt, thread, file, reviewer, current owner, or proposed patch.
-Counterexample IDs derive from repository, Goal digest, accepted law, original
-witness subject, and observed fact.
+For a judgment challenge retain `challenged_judgment`, `earliest_failed_premise`,
+and `claim_strength_consequence`. Read [fold-output.md](references/fold-output.md)
+when the caller requires the full structured handoff. A concise return preserves
+all decision-relevant evidence without populating inapplicable schema fields.
 
 ## Procedure
 
@@ -330,121 +273,29 @@ A clean source may return an empty `classes` list and performs no capture.
 
 ## Counterexample corpus boundary
 
-The owner definition is:
+The [corpus owner reference](references/counterexample-corpus.md) defines storage,
+projection, capture, immutable fields, and semantic identity. Project the available
+basis before classification under the existing Input and Effect authority rules.
+Persist only independent accepted, current, entailed witnesses with original
+subject and provenance; never persist current applicability, class/family, owner,
+repair, review credit, or closure as authority. Capture failure leaves the current
+evidence intact but makes dependent historical claims incomplete.
 
-```text
-review-fold/counterexample-corpus
-```
+## History and classes
 
-The repo-local append-only store is:
+Re-evaluate every historical witness against the current Goal and head. Only
+`still-present` and `transformed-applicable` establish current pressure;
+`already-excluded` is historical, and unknown or incomparable evidence cannot
+establish recurrence or a post-elimination falsifier. An incomplete history yields
+`recurrence.status = unknown`, never first occurrence or family completeness.
+Duplicate reports are not independent witnesses; grouping requires compatible law,
+authority, applicability, discrepancy, and supported causal evidence. Classes and
+family hypotheses do not select architecture or define a family's whole extension.
 
-```text
-.ledger/review-fold/counterexamples/events.jsonl
-```
-
-Persist only immutable semantic admissions and provenance:
-
-```text
-repository and Goal digest
-accepted law and authority basis
-source-owner references
-original witness subject
-observed fact and detection boundary
-evidence and independence basis
-```
-
-Never persist as authority:
-
-```text
-current applicability
-observational class or final family
-causal generator or recurrence status
-canonical owner, cut, carrier, or repair
-review credit, candidate state, or closure
-```
-
-These are current projections. Duplicate reviewer reports of one semantic
-witness do not become independent counterexamples. Store bounded summaries and
-exact references, not transcripts, logs, credentials, secrets, or suggested
-patches.
-
-A capture failure does not rewrite the source evidence or make the current fold
-false. Report it as an incomplete historical horizon. Actuating may not use
-absence from that horizon to claim first occurrence, disjointness, or
-elimination.
-
-## Current applicability
-
-Only `still-present` and `transformed-applicable` establish current pressure.
-`already-excluded` is historical explanation. `not-comparable` and `unknown`
-cannot establish current recurrence, family coverage, or a post-elimination
-falsifier.
-
-A corpus row proves only that its original witness was admitted under its
-recorded Goal and subject. Re-evaluate validity and relevance before using it
-against current code; a spurious historical admission gains no current authority.
-Preserve the historical admission and provenance rather than rewriting them.
-
-## Evidence horizon
-
-Use every currently available owner source relevant to the Goal, including the
-counterexample basis projection. When evidence needed to distinguish first
-occurrence from recurrence is unavailable:
-
-```text
-recurrence.status = unknown
-```
-
-Do not infer `first-observed`, `recurring`, disjointness, or family completeness
-from absence in an incomplete corpus, memory, or summary.
-
-## Observational classes
-
-Group witnesses only when evidence supports:
-
-```text
-same proposed law
-same law-authority classification
-compatible applicability and discrepancy
-plausible shared causal relation
-```
-
-Observed witnesses support a family hypothesis; they do not define its complete
-extension.
-
-Independent witnesses differ materially in input partition, state or
-transition, admission path, producer or consumer, external incident, generator,
-or temporal trace. Duplicate reports, copied tests, repeated prose, and several
-failures from one root execution are not independent.
-
-## Post-elimination relation
-
-When the input supplies an active `eliminated` claim:
-
-```text
-same accepted law, inside the validity horizon, with exact evidence that the
-witness belongs to the claimed family or satisfies its reconsideration falsifier
-  -> same-claim
-
-same accepted law and horizon, with exact disjoint-family evidence
-  -> same-law-different-family
-
-same accepted law outside the horizon
-  -> outside-horizon
-
-different accepted law
-  -> different-law
-
-insufficient authority, applicability, family, or horizon evidence
-  -> unknown or non-current
-```
-
-A strengthening or preference does not falsify the current Goal's claim. A new
-requirement reopens Goal authority rather than retroactively falsifying the old
-Goal.
-
-Review Fold reports the relation. Actuating revokes and adjudicates only a
-current `entailed` `same-claim` falsifier.
+Read [history-and-classes.md](references/history-and-classes.md) before grouping
+whose causal identity is uncertain, asserting recurrence or first occurrence, or
+relating evidence to an active eliminated claim. Actuating owns revocation,
+architecture, and closure; Review Fold reports the supported relation only.
 
 ## Guardrails
 

@@ -31,6 +31,74 @@ def fixture_layout(home: Path, extension="learnings", version="v2"):
     return L.MemoryLayout(extension, home, version, root, ext, ext / "notes", ext / "instructions.md", ext / "resources")
 
 
+class WriterResolutionTests(unittest.TestCase):
+    def setUp(self):
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        self.root = Path(temporary.name).resolve()
+        self.development = self.executable("skills-zig/zig-out/bin/memory-note")
+        environment = patch.dict(os.environ, {
+            "MEMORY_NOTE_BIN": "", "SKILLS_ZIG_REPO": str(self.root / "skills-zig"),
+        })
+        environment.start()
+        self.addCleanup(environment.stop)
+
+    def executable(self, relative):
+        path = self.root / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("#!/bin/sh\nexit 99\n")
+        path.chmod(0o755)
+        return path
+
+    def test_precedence_and_explicit_failure(self):
+        explicit, environment = self.executable("explicit"), self.executable("environment")
+        with patch.object(L.shutil, "which", return_value="/installed/memory-note"):
+            with patch.dict(os.environ, {"MEMORY_NOTE_BIN": str(environment)}):
+                self.assertEqual(L.memory_note_binary(explicit), str(explicit))
+                self.assertEqual(L.memory_note_binary(), str(environment))
+                with self.assertRaises(L.LayoutError):
+                    L.memory_note_binary(self.root / "missing")
+            self.assertEqual(L.memory_note_binary(), "/installed/memory-note")
+        with patch.object(L.shutil, "which", return_value=None):
+            self.assertEqual(L.memory_note_binary(), str(self.development))
+            self.development.chmod(0o644)
+            with self.assertRaises(L.LayoutError):
+                L.memory_note_binary()
+
+    def test_reconciliation_uses_development_writer_and_preserves_canonical_results_on_failure(self):
+        home = self.root / "codex"
+        layout = fixture_layout(home)
+        context = {"native_args": [], "repository_id": "ledger-repository:" + "a" * 32}
+        args = R.build_parser().parse_args([
+            "--repo", str(self.root), "--source", "learnings", "--ledger-bin", "ledger",
+        ])
+        doctor = {"schema": "ledger-doctor-result/v1", "healthy": True,
+                  "definition": {"id": R.SOURCE_DEFINITION_IDS["learnings"], "abi": R.LEDGER_ABI},
+                  "authority_granted": False, "storage_mutated": False}
+        def run(argv, **kwargs):
+            return doctor if argv[0] == "ledger" else {"command": "doctor", "issues": 0}
+        with patch.object(L.shutil, "which", return_value=None), \
+             patch.object(R, "resolve_custody", return_value=context), \
+             patch.object(R, "run_json", side_effect=run) as commands, \
+             patch.object(R, "source_records", return_value=[{"id": "lrn-fixture"}]), \
+             patch.object(R, "resolve_layout", return_value=layout) as select, \
+             patch.object(R, "load_compiled_corpus", return_value=([], [])), \
+             patch.object(R, "load_notes", return_value=([], 0)) as notes, \
+             patch.object(R, "instruction_status", return_value={"status": "current"}), \
+             patch.object(R, "source_report", return_value={}):
+            result = R.reconcile(args)
+            self.assertEqual(result["sources"]["learnings"]["diagnostics"], [])
+            self.assertEqual(select.call_args.kwargs["memory_note_bin"], str(self.development))
+            self.assertEqual(notes.call_args.args[0], str(self.development))
+            self.assertTrue(any(call.args[0][0] == str(self.development) for call in commands.call_args_list))
+            args.memory_note_bin = str(self.root / "missing-override")
+            failed = R.reconcile(args)
+        self.assertEqual(failed["verdict"], "incomplete")
+        source = failed["sources"]["learnings"]
+        self.assertEqual(source["canonical_records"], 1)
+        self.assertEqual(source["diagnostics"][0]["stage"], "memory-layout")
+
+
 class SelectedArtifactTests(unittest.TestCase):
     def setUp(self):
         temporary = tempfile.TemporaryDirectory()
