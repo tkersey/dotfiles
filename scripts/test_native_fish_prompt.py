@@ -65,6 +65,10 @@ class NativePromptTests(unittest.TestCase):
             f"set --prepend fish_function_path {quote(ROOT / 'fish/functions')}; "
             f"source {quote(ROOT / 'fish/conf.d/native-prompt.fish')}; "
             "set -g native_prompt_context_items; "
+            # Direct render tests inspect a completed snapshot at a wide width.
+            # Reader-driven async repaint is exercised separately under a PTY.
+            "set -g native_prompt_async 0; "
+            "set -g COLUMNS 240; "
             "set -g fish_term24bit 1; "
             "function fish_is_root_user; return 1; end; "
         )
@@ -108,9 +112,9 @@ class NativePromptTests(unittest.TestCase):
     def test_native_files_parse(self) -> None:
         files = [ROOT / "fish/conf.d/native-prompt.fish"]
         files += [ROOT / f"fish/functions/{name}.fish" for name in (
-            "fish_prompt", "fish_right_prompt", "fish_mode_prompt",
-            "__native_prompt_pwd", "__native_prompt_context", "__native_prompt_segment",
+            "fish_prompt", "fish_right_prompt", "fish_mode_prompt", "fish_user_key_bindings",
         )]
+        files += sorted((ROOT / "fish/functions").glob("__native_prompt*.fish"))
         for file in files:
             with self.subTest(file=file.name):
                 result = subprocess.run(
@@ -130,7 +134,7 @@ class NativePromptTests(unittest.TestCase):
             output = self.run_fish(f"set -g fish_bind_mode {mode}; true; fish_prompt")
             self.assertEqual(plain(output), plain(success))
 
-    def test_right_prompt_retains_pipeline_failure(self) -> None:
+    def test_prompt_retains_pipeline_failure(self) -> None:
         self.assertIn("✔ 1|0", plain(self.run_fish("false | true; fish_prompt; fish_right_prompt")))
         self.assertIn("✘ 0|1", plain(self.run_fish("true | false; fish_prompt; fish_right_prompt")))
         output = plain(self.run_fish(
@@ -172,6 +176,109 @@ class NativePromptTests(unittest.TestCase):
         self.assertIn("feature", second)
         for indicator in (" +1", " !1", " ?1"):
             self.assertIn(indicator, second)
+
+    def test_detached_head_has_distinct_amber_color(self) -> None:
+        repo = self.repository()
+        branch = self.run_fish("true; fish_prompt", cwd=repo)
+        self.assertIn("\x1b[38;2;95;215;0mmain", branch)
+        self.assertNotIn("\x1b[38;2;215;175;0m", branch)
+        self.git(repo, "checkout", "--detach", "HEAD")
+        detached = self.run_fish("true; fish_prompt", cwd=repo)
+        self.assertIn("\x1b[38;2;215;175;0m", detached)
+        self.assertNotIn("main", plain(detached))
+        # The status-colored chevron remains green; only Git identity changes.
+        self.assertIn("\x1b[38;2;95;215;0m ❯ ", detached)
+
+    def test_transient_render_keeps_context_and_failure_without_collection(self) -> None:
+        repo = self.repository()
+        self.stub("node", "v22.5.1")
+        (repo / "package.json").write_text("{}\n")
+        output = plain(self.run_fish(
+            "set -g native_prompt_context_items node; "
+            "set -g CMD_DURATION 65000; false | true; fish_prompt >/dev/null; "
+            # Neither final prompt function may invoke a fresh collector.
+            "function __native_prompt_refresh; printf 'UNEXPECTED-COLLECTION'; end; "
+            "fish_prompt --final-rendering; printf '\\n'; "
+            "fish_right_prompt --final-rendering",
+            cwd=repo,
+        ))
+        self.assertEqual(output.count("\n"), 1)
+        left, right = output.split("\n")
+        for expected in ("project", "main", "✔ 1|0", " ❯ "):
+            self.assertIn(expected, left)
+        for absent in ("UNEXPECTED-COLLECTION", "22.5.1", "09:30:00 AM", "", "", ""):
+            self.assertNotIn(absent, output)
+        self.assertEqual(right, "")
+
+    def test_narrow_prompt_preserves_identity_and_failure_on_left(self) -> None:
+        for identity in ("ssh", "root"):
+            with self.subTest(identity=identity):
+                setup = "set -g SSH_CONNECTION fixture; " if identity == "ssh" else (
+                    "function fish_is_root_user; return 0; end; "
+                )
+                output = plain(self.run_fish(
+                    "set -g COLUMNS 45; set -g USER operator; "
+                    + setup + "true | false; fish_prompt; printf '\\n'; fish_right_prompt"
+                ))
+                left, right = output.split("\n")
+                self.assertIn("operator@" + os.uname().nodename.split(".")[0], left)
+                self.assertIn("✘ 0|1", left)
+                self.assertEqual(right, "")
+
+    def test_narrow_prompt_drops_details_before_cloud_jobs_and_duration(self) -> None:
+        self.stub("node", "v22.5.1")
+        self.stub("kubectl", "cluster/team")
+        (self.home / "package.json").write_text("{}\n")
+        setup = (
+            # Put the runtime first to verify priority is independent of config order.
+            "set -g native_prompt_context_items node kubectl; "
+            "function jobs; "
+            "if contains -- --query $argv; return 0; "
+            "else if contains -- --pid $argv; printf '4242\\n'; end; end; "
+            "set -g CMD_DURATION 65000; true; fish_prompt >/dev/null; "
+        )
+        wide = plain(self.run_fish(setup + "fish_right_prompt"))
+        for expected in ("cluster/team", "", " 1m 5s", "22.5.1", "09:30:00 AM"):
+            self.assertIn(expected, wide)
+        narrow = plain(self.run_fish(setup + "set -g COLUMNS 72; fish_right_prompt"))
+        for expected in ("cluster/team", "", " 1m 5s"):
+            self.assertIn(expected, narrow)
+        self.assertNotIn("22.5.1", narrow)
+        self.assertNotIn("09:30:00 AM", narrow)
+
+    def test_details_binding_and_toggle_preserve_saved_command_result(self) -> None:
+        self.stub("node", "v22.5.1")
+        self.stub("kubectl", "cluster/team")
+        (self.home / "package.json").write_text("{}\n")
+        output = self.run_fish(
+            "function fzf_key_bindings; end; fish_user_key_bindings; "
+            "for mode in insert default visual; bind --mode $mode ctrl-alt-p; end; "
+            "set -g native_prompt_context_items node kubectl; set -g CMD_DURATION 65000; "
+            "false | true; fish_prompt >/dev/null; "
+            # Stand in only for the reader's repaint request, unavailable without
+            # a TTY; keep the actual toggle and rendering behavior under test.
+            "function commandline; set -g requested_repaint $argv; end; "
+            "__native_prompt_toggle_details; "
+            "printf 'OFF:%s;STATUS:%s;PIPE:%s;DURATION:%s;REPAINT:%s\\n' "
+            "$native_prompt_show_details $__native_prompt_last_status "
+            "(string join '|' $__native_prompt_last_pipestatus) "
+            "$__native_prompt_last_duration (string join ' ' -- $requested_repaint); "
+            "fish_right_prompt; printf '\\n'; "
+            "__native_prompt_toggle_details; printf 'ON:%s\\n' $native_prompt_show_details; "
+            "fish_right_prompt"
+        )
+        self.assertEqual(output.count("ctrl-alt-p __native_prompt_toggle_details"), 3)
+        self.assertIn("OFF:0;STATUS:0;PIPE:1|0;DURATION:65000;REPAINT:--function repaint", output)
+        lines = plain(output).splitlines()
+        off_index = next(index for index, line in enumerate(lines) if line.startswith("OFF:"))
+        compact = lines[off_index + 1]
+        self.assertIn("cluster/team", compact)
+        self.assertIn(" 1m 5s", compact)
+        self.assertNotIn("22.5.1", compact)
+        self.assertNotIn("09:30:00 AM", compact)
+        self.assertEqual(lines[off_index + 2], "ON:1")
+        self.assertIn("22.5.1", lines[off_index + 3])
+        self.assertIn("09:30:00 AM", lines[off_index + 3])
 
     def test_node_activation_in_ancestor_and_not_unrelated_directory(self) -> None:
         self.stub("node", "v22.5.1")
@@ -244,4 +351,6 @@ class NativePromptTests(unittest.TestCase):
 if __name__ == "__main__":
     if not FISH:
         raise SystemExit("Fish is required: install Fish, then rerun this check.")
+    from test_native_fish_prompt_async import AsyncPromptTests
+
     unittest.main(verbosity=2)

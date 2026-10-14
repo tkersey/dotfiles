@@ -1,4 +1,4 @@
-# Native Fish prompt. No plugin manager or background renderer required.
+# Native Fish prompt with a cancellable background context snapshot.
 status is-interactive; or return
 
 # config.fish already enables fish_vi_key_bindings. Fish owns editing modes;
@@ -15,7 +15,11 @@ set -g native_prompt_context_items node python rustc java ruby go zig kubectl aw
 set -g native_prompt_duration_threshold 3000
 set -g native_prompt_time_format '%r'
 set -g native_prompt_min_input_columns 34
-set -g fish_transient_prompt 0
+set -g native_prompt_show_details 1
+# Set to 0 for synchronous collection when diagnosing a runtime or Git command.
+set -g native_prompt_async 1
+set -g native_prompt_async_timeout_seconds 5
+set -g fish_transient_prompt 1
 # Tide removes this on uninstall; keep virtualenv from wrapping our prompt.
 set -gx VIRTUAL_ENV_DISABLE_PROMPT 1
 
@@ -25,7 +29,8 @@ set -g __fish_git_prompt_showdirtystate true
 set -g __fish_git_prompt_showuntrackedfiles true
 set -g __fish_git_prompt_showstashstate true
 set -g __fish_git_prompt_showupstream informative
-set -g __fish_git_prompt_shorten_branch_len 24
+# Show full branch names; the prompt budgets the path and right-side details.
+set -g __fish_git_prompt_shorten_branch_len ''
 set -g __fish_git_prompt_showcolorhints true
 set -g __fish_git_prompt_char_stateseparator ''
 set -g __fish_git_prompt_char_cleanstate ''
@@ -40,7 +45,7 @@ set -g __fish_git_prompt_char_upstream_prefix ''
 set -g __fish_git_prompt_color_branch 5FD700
 set -g __fish_git_prompt_color_branch_dirty 5FD700
 set -g __fish_git_prompt_color_branch_staged 5FD700
-set -g __fish_git_prompt_color_branch_detached 5FD700
+set -g __fish_git_prompt_color_branch_detached D7AF00
 set -g __fish_git_prompt_color_merging FF0000
 set -g __fish_git_prompt_color_dirtystate D7AF00
 set -g __fish_git_prompt_color_stagedstate D7AF00
