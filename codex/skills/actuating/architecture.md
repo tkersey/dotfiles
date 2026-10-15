@@ -45,13 +45,19 @@ read-only technique is discretionary, not a new mode, default pass, or review
 lane. It neither replaces nor gates Glaze, Metanoetic, or Universalist; all
 selection, mutation, proof, and closure authority stays with Actuating.
 
-Only when architecture is live, give `$universalist` one independently governed
-axis, one typed hole, and source-derived domain evidence. The axis is a required
-relationship and may span modules; it is not bounded by the reported function.
-For disagreeing phases under one law, nominate the judgment-preserving relationship,
-not a separate local repair for each consumer. Derive its semantic obligations and
-operation surface before choosing the typed hole. Preserve authoritative facts,
-derived projections, and distinct historical facts according to their actual roles.
+Use `$universalist` within initial construction or subsequent task-relevant
+semantic inquiry, not only after architecture reconsideration has been named.
+Supply required behavior, observations, concrete evidence, constraints, and any
+provisional formulation. Let algebraic and categorical reasoning discover or revise
+the model-owned carrier, operations, interpretation, axis, typed hole, and proof.
+A fixed interface does not settle an internal algorithm or representation. Reuse
+adequate derivations; mechanical realization alone needs no renewed invocation.
+
+Keep interacting laws together across their causal extent, not the reported
+function. For disagreeing phases under one law, derive the judgment-preserving
+relationship rather than separate local repairs. An unknown owner or typed hole
+is investigable, not an admission failure. Preserve source-fixed choices,
+authoritative facts, derived projections, and distinct history in their actual roles.
 Require `candidate`, `preserve-incumbent`,
 `unresolved`, or `obstructed` with a compact code-bound argument, its discriminator,
 and material migration/residual consequences. Missing evidence or incomparable
@@ -64,8 +70,11 @@ needs derivation, have that nomination use Universalist's existing
 [domain algebra discovery](../universalist/references/domain-algebra/algebra-driven-design.md).
 Derive operations from required uses, use contradictions to revise the carrier,
 and look for a sufficient interpretation whose composition preserves the required
-meaning. Reuse the current decision and discriminator; do not add a discovery
-pass or load advanced machinery for an already-adequate ordinary construction.
+meaning. Relevant theory may suggest the question before a construction is named;
+its hypotheses must be earned before acceptance. Reuse the current argument and
+discriminator; do not add a discovery stage, mandatory model, reference quota, or
+framework when native lowering suffices. Actuating still owns all experiments,
+review-epoch freezes, selection, mutation, and closure.
 
 In that existing selection, compare adequate interfaces through a representative
 caller and a source-supported change. What must a new producer or consumer know,

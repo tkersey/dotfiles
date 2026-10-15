@@ -50,7 +50,7 @@ domain. Untrusted bytes may exist; acquiring trusted status must enforce the law
 | Review attempt, target, verdict, and provenance | CAS |
 | Finding authority, applicability, duplicates, and admitted witnesses | `$review-fold` and `review-fold/counterexample-corpus` |
 | Causal explanation, candidate selection, realization, and closure | `$actuating` |
-| Mechanism challenger / boundary nomination / redundant factors | `$metanoetic` / `$universalist` / `$reduce`, interpreted by Actuating |
+| Mechanism challenger / generative construction nomination / redundant factors | `$metanoetic` / `$universalist` / `$reduce`, interpreted by Actuating |
 | Public effects and readback | `$ship` and the provider |
 
 Supporting skills do not grant mutation or closure. Actuating owns no Ledger
@@ -93,7 +93,7 @@ not optional background. Do not load every workflow at entry.
 | Initial/local `implement` | Source binding, initial construction, proof acceptance, realization, and completion below; no review campaign is required. |
 | `analyze` | The same source and claim discipline, read-only. Load the relevant evidence or architecture guidance; do not execute realization, persist a corpus, publish, or grant closure. |
 | A finding, failed check, or counterexample-driven selection | [counterexamples.md](counterexamples.md), before admitting a liability or selecting its response. |
-| A live boundary decision or an existing Metanoetic trigger, including a suspect explanation or oracle | [architecture.md](architecture.md), before that decision; Universalist remains live-architecture-only. |
+| Task-relevant semantic derivation, a live boundary decision, or an existing Metanoetic trigger, including a suspect explanation or oracle | [architecture.md](architecture.md), within the existing inquiry before selecting the affected construction; do not wait for a named boundary defect to use Universalist. |
 | An elimination claim meets a current witness, a broader Goal obligation remains unresolved after a narrow repair, or efficacy is being assessed | [recurrence.md](recurrence.md), before retaining the claim or selecting a successor. |
 | `review-closeout`, or bare Actuating reaching review | [review-closeout.md](review-closeout.md) and its required review contract, before the first CAS request; use the complete frozen-subject and convergence rules. |
 | Bare Actuating reaching publication | `$ship`; publication does not replace subsequent review-closeout. |
@@ -194,13 +194,17 @@ For delegated work, bind the shared laws and operation/interpretation contracts
 before dividing realization, then establish their actual composition. Use the
 existing source argument and verifier; a partial slice remains work in progress.
 
-Reuse an adequate existing boundary. Open the architecture path only for a live
-semantic decision; no counterexample, review wave, new document, or mandatory
-Universalist pass is needed to begin. Use a model, solver, or proof tool when it
-resolves the actual uncertainty; neither a second implementation nor a formal
-proof framework is a default prerequisite. Stop expanding when further
-source-supported cases cannot change the construction or deciding proof. A direct
-correction remains adequate when the existing construction already owns the law.
+Use `$universalist` within this construction reasoning when semantic derivation
+is needed, under [architecture.md](architecture.md). A grounded Goal and required
+behavior suffice; no counterexample, review wave, named boundary defect, typed
+hole, or existing implementation is required. Algebraic and categorical knowledge
+may derive a new carrier, operation, algorithm, interpretation, or proof before
+an architectural question is apparent. Actuating retains selection authority.
+Reuse sufficient supplied derivations and adequate boundaries rather than running
+a duplicate pass. Purely mechanical realization needs no renewed inquiry. Use a
+model, solver, or proof tool when it resolves an actual question, not as a mandatory
+second implementation or proof framework. A direct correction remains adequate
+when the existing construction already owns the law.
 
 ## Proof acceptance
 

@@ -1,6 +1,10 @@
 # Artifact Selection by Unknown Location
 
-Choose the artifact by asking where the unknown lives.
+Use this map to ask where the unknown lives, including while discovering the
+formulation. A task-grounded question is sufficient to consult a relevant row;
+its proof signal is an acceptance obligation, not an admission prerequisite.
+The table is neither exhaustive nor a required scan. Use unlisted constructions
+and combinations under the same evidence standards.
 
 | Unknown location | Construction | Code artifact | Proof signal |
 | --- | --- | --- | --- |
@@ -43,6 +47,9 @@ Choose the artifact by asking where the unknown lives.
 | Query/projection sprawl | Yoneda-style observation vocabulary | `Observation` + `runObservation` | representation change preserves observations |
 | Callbacks cross boundary | Defunctionalized IR | constructors + `apply` | encoded case equals old callback behavior |
 
+The following restrictions govern claiming or retaining the named structures,
+not using their theory to generate a hypothesis or deciding question.
+
 Use pullback only when there is a real shared target/observation and an agreement equation. Use pushout only when there is a real overlap object and explicit maps into both sources. A plain pair is not automatically a pullback; a plain merge is not automatically a pushout.
 
 Use comonadic spatiality only when locality changes correctness, points/patches can be named, center and coherence laws are meaningful, and an effective halo/basis representation changes code or tests. A plain dependency graph, contextual wrapper, or fixture set is not automatically a comonadic space or basis.
@@ -53,4 +60,8 @@ Use Tambara mechanics only when a real context world acts on both endpoint world
 
 Use a double category only when horizontal and vertical arrow families have independent architectural meaning and composition, squares are typed artifacts, both pasting operations matter, and interchange/coherence changes proof or implementation. One commuting square, two unrelated categories, a PROP diagram, or DPO rewriting is not automatically a double category. Equipment additionally requires effective companions, conjoints, or restrictions.
 
-If the unknown location is unclear, do not escalate. First pick a smaller seam and a concrete witness.
+If the unknown location is unclear, derive it from required uses, operations,
+observations, and relevant mathematical hypotheses. Inspect a concrete witness
+when it can discriminate; narrow the inquiry only without discarding interacting
+laws. Do not accept a construction until its prerequisites and native realization
+are supported. An unresolved formulation is not a reason to prohibit inquiry.

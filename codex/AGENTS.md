@@ -16,10 +16,11 @@
 - Ground inquiry in the accepted objective and available evidence. Model-owned assumptions, representations, and evaluation methods are revisable with justification; user requirements, authorized effects, resource ceilings, and proof obligations remain binding. Develop comparisons and discriminators as needed before selection; do not change expectations merely to agree with a candidate.
 - Apply the canonical line unchanged; do not repeat its injection without a new task-relevant purpose. One activation is not a cap on reasoning, evidence gathering, or useful revision; a new derivation can matter without a code change. Follow useful discoveries within task limits. The receiving workflow retains final selection, execution, and closure authority; retaining the incumbent is valid. Return the resulting work, not an invocation report.
 
-## Universalist architecture-decision mandate
+## Universalist generative-abstraction mandate
 
-- Invoke `$universalist` for an evidenced live semantic boundary decision, a law distributed across owners, an invalidated prior boundary disposition, or an explicit request. Its skill and machine-readable decision contract own detailed semantics. For implicit use, skip routine work under accepted architecture without new semantic boundary evidence.
-- Within `$actuating`, Actuating owns the invocation point during architecture reconsideration; never run a duplicate root pass. Team/subagent mode remains explicit-request only.
+- Invoke `$universalist` within task-relevant semantic design, implementation, review, or simplification. Use algebraic and categorical knowledge to formulate and derive the construction, algorithm, representation, composition, or proof; do not wait for duplication, a failed ordinary design, a named boundary defect, or a preidentified typed hole. Its skill and decision contract own detailed semantics.
+- Ground inquiry in required behavior and concrete evidence. Model-owned formulations are revisable; accepted requirements, authority, effects, resource ceilings, and proof obligations remain binding. A theory may suggest a hypothesis, not certify it. Prefer the least burdensome adequate realization, not the least sophisticated derivation.
+- Reuse adequate derivations and skip purely mechanical work without unresolved semantic questions. Within `$actuating` or `$architectonic`, use the receiving workflow's existing inquiry and authority; never run a duplicate root pass or create a separate report. Team/subagent mode remains explicit-request only.
 
 ## Tooling standards
 

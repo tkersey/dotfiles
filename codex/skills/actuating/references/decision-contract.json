@@ -4,7 +4,7 @@
     "skill": {
       "name": "actuating",
       "kind": "mixed",
-      "source_fingerprint": "actuating-construction-compiler-v19"
+      "source_fingerprint": "actuating-construction-compiler-v20"
     },
     "triggers": [
       {
@@ -351,7 +351,7 @@
         ],
         "prohibited_routes": [],
         "required_artifacts": [
-          "live independently governed axis and typed hole",
+          "grounded requirements, observations, evidence, and constraints; axis and typed hole may be derived during inquiry",
           "source-derived domain evidence and compact code-bound nomination",
           "verifier selected before implementation and executed on the actual exact head",
           "admission, transition, coverage, preservation, migration, retirement, residuals, and claim ceiling",
@@ -359,12 +359,14 @@
           "total interpretation, violation reflection, exclusion, and preservation when a candidate changes the comparison domain or its abstraction"
         ],
         "success_signals": [
+          "grounded semantic inquiry begins without a preidentified owner, axis, or typed hole",
           "source authority determines the domain instead of a model-authored list",
           "independent seams are split and recomposed with proof",
           "new unaccounted sanctioned source elements invalidate coverage under either proof representation",
           "adequate native evidence discharges obligations without duplicate topology or Working Set reports"
         ],
         "failure_signals": [
+          "a preidentified owner, axis, or typed hole is required before semantic inquiry",
           "compact nomination substitutes for executed construction proof",
           "an ordinary or restoration label waives applicable changed-boundary obligations",
           "native proof assumed from opacity or a passing build without coverage and transition evidence",

@@ -7,9 +7,9 @@ user-facing essay.
 artifact_state_id: "branch=<name> head=<sha-or-id> diff=<digest-or-path-set> phase=<phase>"
 role: "<custom-agent-name>"
 scope:
-  boundary: "<owned seam>"
-  axis: "<one architectural axis>"
-  typed_hole: "<one compatible hole>"
+  boundary: "<owned seam or bounded task-grounded question>"
+  axis: "<evidenced axis, provisional hypothesis, or not-yet-identified>"
+  typed_hole: "<compatible hole, provisional hypothesis, not-yet-identified, or not-applicable>"
 observations:
   - claim: "<verified observation>"
     evidence_ref: "<file:line, command, trace, or not-inspected>"
@@ -45,7 +45,11 @@ final_call: "<one-line recommendation>"
 Rules:
 
 - observations are evidence-backed; proposals are not observations;
-- one packet covers one axis and one typed hole;
+- one packet covers one bounded question; axis and typed hole may be derived or
+  revised during inquiry rather than supplied as admission prerequisites;
+- distinguish provisional scope from evidenced conclusions; do not invent an
+  incumbent, axis, or hole to fill the packet;
+- split independently governed axes once identified and preserve their interactions;
 - a category name never substitutes for encoding relation or discriminator;
 - no raw logs, transcript dumps, or long essays;
 - no root-only Echo or user-facing preamble;

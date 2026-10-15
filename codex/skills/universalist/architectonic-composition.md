@@ -1,18 +1,22 @@
 # Architectonic composition
 
-Inside `$architectonic`, Universalist is a read-only nominator for one evidenced
-live semantic boundary decision, not a second architectural review. Architectonic
+Inside `$architectonic`, Universalist is a read-only nominator for a task-grounded
+semantic question, including discovering a better formulation before a boundary
+defect or typed hole is named. It is not a second architectural review. Architectonic
 owns scope, assignment, adjudication, recommendation, and coverage. This binding
 adds no trigger, route, proof profile, or standalone decision authority; all
 applicable entry and decision-contract obligations remain.
 
 Read this binding instead of the Actuating composition or standalone disposition
 format. Reuse the supplied source-bound context and any equivalent challenger.
-The assigned nomination owner supplies the incumbent, accepted requirements and
-observations, current constraints, and semantic pressure. Missing premises remain
+The assigned nomination owner supplies the question, accepted requirements and
+observations, current constraints, evidence, and incumbent when one exists.
+Owner, axis, operations, and typed hole may be provisional or derived during inquiry.
+Missing premises remain
 evidence debt; an architectural review is not authority to invent domain laws.
 For a proposed design, treat attributed design evidence as proposed, not realized
-repository enforcement. No live boundary pressure means no implicit invocation.
+repository enforcement. Reuse adequate arguments; purely mechanical work without
+an unresolved semantic question needs no implicit invocation.
 
 Return `candidate`, `preserve-incumbent`, `unresolved`, or `obstructed` with the
 smallest argument Architectonic can adjudicate: owner and operation, law and
@@ -23,17 +27,19 @@ This presentation rule takes precedence over templates in every loaded reference
 reuse evidence without omitting applicable proof obligations.
 These supporting results do not create or rename Universalist routes.
 
-Start with the incumbent and ordinary repository-native candidate. Reuse grounded
-law-derived alternatives, including first-use boundaries justified by actual laws.
-Consider another only for a live requirement, material tradeoff, or evidence that
-could overturn the nomination; stop when further alternatives cannot change the
-decision, not at a fixed quota. Load recognition, consequential comparison, advanced
-mechanics, and theory references only at their existing evidence gates. A review
-with no mutations still needs consequential comparison before recommending a
-materially different candidate; absence of a write does not waive that obligation.
+Use the incumbent and ordinary native candidates as comparison baselines, not
+limits on mathematical inquiry. A baseline may fail; name its unmet obligations
+rather than require an adequate competitor. Derive carriers, operations, interpretations, and
+proofs from requirements; reuse sufficient supplied arguments. Consult focused
+theory to formulate or resolve a task-relevant question without waiting for the
+finished discovery. Stop when the assessment is adequately supported and no
+material question remains, not at a candidate quota. A review with no mutations
+still needs complete consequential comparison and claim-appropriate proof before
+recommending a materially different candidate. Absence of a write waives neither.
 
-Nominate preservation only against real change pressure and after checking the
-incumbent's allocated laws. Return `unresolved` for missing evidence or incomparable
+Nominate preservation when it resolves the live semantic question or defeats
+change pressure after checking the incumbent's allocated laws. Return `unresolved`
+for missing evidence or incomparable
 adequate candidates. Obstruction requires the evidence in
 [the entry contract](SKILL.md#evidence-and-obstruction), not merely a failed attempt,
 a missing universal proof, an unavailable test, or unranked tradeoffs.
