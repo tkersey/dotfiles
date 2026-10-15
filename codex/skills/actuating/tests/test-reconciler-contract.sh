@@ -27,7 +27,7 @@ const names = ['standard','soundness-skeptic','footgun-finder','invariant-ace','
 assert.equal(c.schema, 'actuating-review-contract/v17');
 assert.equal(c.contract_id, 'actuating-review-contract-v21');
 assert.equal(d.contract_version, 'SKDC-v1');
-assert.equal(d.skill.source_fingerprint, 'actuating-construction-compiler-v19');
+assert.equal(d.skill.source_fingerprint, 'actuating-construction-compiler-v20');
 assert.deepEqual(c.required_lenses.map(l => l.name), names);
 assert.deepEqual(c.required_lenses[0], {name:'standard',role:'standard',instruction_source:'codex-default',custom_instructions:false});
 assert.deepEqual(c.review_scheduling.initial_lens_order, names);
@@ -70,6 +70,9 @@ for (const key of ['strongest_repository_native_authority_required','independent
   'factorization_closure_verifier_selected_before_mutation','claim_strength_may_not_increase'])
   assert.equal(c.universalist_compilation[key], true, key);
 const compilation = c.universalist_compilation;
+assert.equal(compilation.one_axis_and_typed_hole_per_invocation, false);
+assert.equal(compilation.grounded_semantic_inquiry_before_axis_and_typed_hole, true);
+assert.equal(compilation.axis_and_typed_hole_may_be_derived, true);
 assert.equal(compilation.self_authored_omission_list_sufficient, false);
 assert.equal(compilation.nomination_is_executed_proof, false);
 assert(!Object.hasOwn(compilation, 'complete_actuating_projection_required'));
@@ -209,7 +212,29 @@ assert(rootStep.includes('Encouragement changes neither admissibility nor the pr
 assert(rootStep.includes('Add no separate Glaze report or adjudication stage'));
 assert(rootStep.includes('Let the inquiry discover which premises and evidence need reinspection'));
 assert(rootStep.includes('Keep the accepted Goal fixed'));
-assert(rootStep.includes('Only when architecture is live'));
+assert(rootStep.includes('Use `$universalist` within initial construction or subsequent task-relevant semantic inquiry'));
+assert(rootStep.includes('An unknown owner or typed hole is investigable, not an admission failure'));
+assert(rootStep.includes('mechanical realization alone needs no renewed invocation'));
+assert(!rootStep.includes('Only when architecture is live'));
+const inquiry = d.clauses.find(cl => cl.clause_id === 'ACT-UNIVERSALIST-COMPILATION-001');
+assert(inquiry.success_signals.includes('grounded semantic inquiry begins without a preidentified owner, axis, or typed hole'));
+assert(inquiry.failure_signals.includes('a preidentified owner, axis, or typed hole is required before semantic inquiry'));
+// Follow the mandatory composed paths, including first-use and explicit-team entry.
+const investigation = text('../architectonic/references/investigation.md').replace(/\s+/g, ' ');
+assert(investigation.includes('including first-use proposed designs before a boundary defect is named'));
+assert(investigation.includes('Include an incumbent, pressure, or challenger only when present'));
+assert(investigation.includes('Stay read-only under the entry contract'));
+const team = text('../universalist/references/workflow/subagent-orchestration.md').replace(/\s+/g, ' ');
+assert(team.includes('the user explicitly asks for subagents'));
+assert(team.includes('An architectural axis and typed hole may be provisional or not yet identified'));
+assert(team.includes('Child agents do not choose routes, authorize mutation'));
+const packet = text('../universalist/references/workflow/subagent-packet-contract.md').replace(/\s+/g, ' ');
+assert(packet.includes('axis and typed hole may be derived or revised during inquiry'));
+assert(packet.includes('do not invent an incumbent, axis, or hole'));
+const categorical = text('../../agents/universalist-categorical-architect.toml');
+assert(categorical.includes('focused theory lookup before ordinary comparison'));
+assert(categorical.includes('theory suggests hypotheses but does not certify applicability'));
+assert(!categorical.includes('Only when ordinary comparison leaves a concrete typed hole'));
 assert(text('counterexamples.md').includes('never changed expectations merely to agree with the candidate'));
 assert(causal.includes('Prefer making an equivalent omission unavailable to other operations'));
 assert(text('references/counterexample-guided-normalization.md').includes('required-valid observation preservation'));

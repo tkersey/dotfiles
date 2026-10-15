@@ -75,11 +75,15 @@ or a quota of findings. Do not let existing boundaries hide missing behavior.
 
 ## Constructive challenge
 
-On live semantic boundary pressure, read the installed Universalist entry and its
+For task-grounded semantic inquiry, including first-use proposed designs before a
+boundary defect is named, read the installed Universalist entry and its
 [Architectonic composition](../../universalist/architectonic-composition.md).
-Supply the incumbent, attributed requirements and observations, constraints,
-pressure, and any already derived challenger. The assigned nomination owner runs
-one bounded comparison; do not manufacture alternatives for settled seams.
+Supply attributed requirements, observations, actual code or proposed design,
+constraints, and any provisional formulation. Include an incumbent, pressure, or
+challenger only when present; do not invent them as admission prerequisites.
+Owner, carrier, operations, axis, and typed hole may be derived during inquiry.
+The assigned nomination owner runs one bounded comparison; reuse adequate
+arguments and do not manufacture alternatives for settled seams.
 
 Seek the smallest adequate ordinary construction and reuse grounded law-derived
 challengers under Universalist's existing discipline. Consider another only when

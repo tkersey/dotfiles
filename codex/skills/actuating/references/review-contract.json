@@ -264,7 +264,9 @@
   },
   "universalist_compilation": {
     "owner": "actuating",
-    "one_axis_and_typed_hole_per_invocation": true,
+    "one_axis_and_typed_hole_per_invocation": false,
+    "grounded_semantic_inquiry_before_axis_and_typed_hole": true,
+    "axis_and_typed_hole_may_be_derived": true,
     "source_domain_owner": "actuating",
     "strongest_repository_native_authority_required": true,
     "model_authored_path_list_exhaustive_forbidden": true,

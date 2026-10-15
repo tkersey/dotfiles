@@ -1,6 +1,6 @@
 {
   "schema": "universalist-routing-evaluation/v1",
-  "skill_fingerprint": "universalist-generative-derivation-v18.0-v1",
+  "skill_fingerprint": "universalist-generative-derivation-v18.0-v2",
   "purpose": "Evaluate task-grounded discovery separately from acceptance and model efficacy. Present only scenario/requirements to the agent; keep expected outcomes and discriminators evaluator-only. Skip means no new invocation, route, record, or receipt.",
   "expectations": {
     "skip": "No unresolved task-relevant semantic question remains; reuse adequate derivations silently.",

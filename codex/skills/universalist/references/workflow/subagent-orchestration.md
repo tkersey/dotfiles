@@ -31,9 +31,13 @@ or recursively spawn agents.
 Read `team-routing.md` and use the smallest sufficient roster. Prefer read-only
 specialists. Do not fan out merely because several agents exist.
 
-Give each agent one architectural axis and one typed hole. Independent axes
-receive independent packets. Include a `square` hole only when repository
-evidence has already established two independently compositional directions.
+Give each agent one bounded task-grounded question with required behavior,
+observations, evidence, and constraints. An architectural axis and typed hole may
+be provisional or not yet identified; agents may derive or revise them during
+inquiry without inventing an incumbent. Once identified, independently governed
+axes receive independent packets with their interactions preserved. Include a
+`square` hole only when evidence establishes two independently compositional
+directions; a provisional label cannot waive that acceptance obligation.
 
 ## Recommended phases
 
