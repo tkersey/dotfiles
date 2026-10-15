@@ -4,13 +4,15 @@
     "skill": {
       "name": "universalist",
       "kind": "mixed",
-      "source_fingerprint": "universalist-boundary-decision-v17.10-claim-evidence-and-systems-context-v1"
+      "source_fingerprint": "universalist-generative-derivation-v18.0-v1"
     },
     "triggers": [
       {
         "trigger_id": "UNI-BOUNDARY",
-        "description": "Current evidence makes an owned boundary a live semantic decision, reveals one law distributed across owners, or fires an invalidator of a prior boundary disposition.",
+        "description": "A grounded task needs semantic derivation of behavior, representation, algorithms, composition, observations, effects, ownership, or proof; a boundary problem or typed hole need not already be named.",
         "cue_literals": [
+          "semantic derivation",
+          "required uses",
           "live boundary decision",
           "semantic owner",
           "trigger evidence",
@@ -18,10 +20,10 @@
         ],
         "cue_regexes": [],
         "exclusions": [
-          "mere boundary presence, crossing, preservation, validation, publication, merge, or mechanical transport",
-          "routine implementation, review bookkeeping, rebasing, Ship, or Land against an accepted architecture",
-          "work wholly internal to one unchanged boundary with no distributed law",
-          "category theory exposition without a concrete seam unless explicitly invoked"
+          "mere boundary presence or crossing without an unresolved semantic question",
+          "purely mechanical realization of a settled construction, unchanged check execution, review bookkeeping, rebasing, Ship, or Land",
+          "unrelated theoretical browsing or an invented task",
+          "category theory exposition without a concrete task unless explicitly invoked"
         ]
       },
       {
@@ -41,8 +43,10 @@
       },
       {
         "trigger_id": "UNI-RECOGNIZE",
-        "description": "After boundary activation, repeated semantic obligations or a grounded law-derived challenger require discrimination of one law-bearing structure; a first-use boundary need not have duplication.",
+        "description": "A task-grounded question calls for discovering, deriving, or discriminating law-bearing structure. May coincide with UNI-BOUNDARY; a named boundary, existing encoding, duplicated implementation, or completed challenger is not required.",
         "cue_literals": [
+          "required uses",
+          "candidate equations",
           "current encoding",
           "nearest false friend",
           "discriminating law",
@@ -50,8 +54,9 @@
         ],
         "cue_regexes": [],
         "exclusions": [
-          "surface resemblance without a discriminating law",
-          "one local helper with no material law-derived alternative or repeated obligation"
+          "accepting resemblance as proof",
+          "unrelated theory without a task-grounded question",
+          "repeating a sufficient derivation without a new material question"
         ]
       },
       {
@@ -70,7 +75,7 @@
       },
       {
         "trigger_id": "UNI-DURABLE",
-        "description": "A consequential Universalist decision must remain independently addressable outside an active Actuating run.",
+        "description": "A consequential standalone Universalist decision must remain independently addressable outside an active Actuating or Architectonic run.",
         "cue_literals": [
           "independently durable",
           "cross-session handoff",
@@ -79,27 +84,28 @@
         ],
         "cue_regexes": [],
         "exclusions": [
-          "Actuating can reconstruct and adjudicate the decision within its current run",
-          "decision materiality without an independent durability need"
+          "The receiving workflow can reconstruct and adjudicate the decision within its current run.",
+          "Actuating or Architectonic composition; neither adopts a standalone durable decision.",
+          "Decision materiality without an independent durability need."
         ]
       }
     ],
     "routes": [
       {
         "route_id": "UNI-PRESERVE",
-        "description": "Preserve an already exact boundary against live change pressure.",
+        "description": "Preserve an adequate incumbent that resolves the live semantic question or survives change pressure; do not emit ambient preservation ceremony.",
         "aliases": [],
         "terminal": true
       },
       {
         "route_id": "UNI-ORDINARY",
-        "description": "Nominate the smallest ordinary repository-native construction.",
+        "description": "Nominate the smallest adequate native construction or transformation, including results derived with sophisticated mathematics.",
         "aliases": [],
         "terminal": false
       },
       {
         "route_id": "UNI-CANONICAL",
-        "description": "Nominate an advanced construction because it materially strengthens the ordinary candidate with a claim-appropriate witness; the route does not itself assert universality.",
+        "description": "Nominate a retained advanced construction with a material native dividend and claim-appropriate effective witness; registry membership is not required and the route does not assert universality.",
         "aliases": [],
         "terminal": false
       },
@@ -125,43 +131,42 @@
         "prohibited_routes": [],
         "required_artifacts": [
           "trigger evidence",
-          "boundary",
-          "incoming incumbent or ordinary candidate",
-          "owner",
+          "resulting construction or transformation and its boundary when applicable",
+          "incumbent when present and native comparison baseline",
+          "owner of the retained result",
           "required observations",
           "law",
           "falsifier",
-          "material decision delta",
+          "material decision consequence or explicit unresolved question",
           "mechanic",
           "invalidators"
         ],
         "success_signals": [
-          "trigger evidence identifies a live choice, distributed law, fired invalidator, Actuating reconsideration handoff, or explicit invocation",
-          "the incoming incumbent or ordinary candidate is explicit",
-          "preservation defeats live change pressure without adding abstraction",
+          "a grounded semantic task activates inquiry before a boundary defect, typed hole, or candidate is named",
+          "owner, carrier, operations, axis, and typed hole may be outputs of inquiry",
+          "an accepted interface does not suppress discovery of an internal algorithm or representation",
           "Actuating owns its invocation point and receives one nomination",
-          "ordinary-first supplies a baseline rather than suppressing grounded law-derived alternatives",
-          "an equivalent receiving-workflow challenger is reused without a second pass",
+          "native simplicity governs realization rather than limiting mathematical derivation",
+          "an equivalent sufficient receiving-workflow derivation is reused without a second pass",
           "applicable evidence is conveyed once using the receiving workflow representation without duplicate packets",
           "completion follows the authorized task; one coherent seam bounds reasoning rather than ending a multi-seam request",
           "feedback-dependent claims trace the necessary causal extent and can close with an ordinary owner without another route or report"
         ],
         "failure_signals": [
-          "boundary presence or crossing is treated as sufficient activation",
-          "routine implementation, publication, landing, or mechanical rebase receives a disposition",
-          "preservation is emitted without live change pressure",
-          "duplicate root and Actuating passes",
-          "boundary without owner",
+          "boundary presence or crossing alone causes ceremonial activation",
+          "purely mechanical work receives an unnecessary disposition",
+          "a named defect, failed ordinary candidate, complete challenger, or typed hole is required before inquiry",
+          "duplicate root and receiving-workflow passes",
+          "a retained construction lacks an actual enforcement or residual owner",
           "symptom-only patch",
-          "missing falsifier or material decision delta",
-          "a first-use boundary is denied law-derived alternatives solely because no duplicate exists",
-          "a challenger or extra packet is manufactured when evidence is already dispositive",
+          "invented incumbent, law, delta, or final route",
+          "candidate hypotheses are credited as established requirements or proofs",
           "a fixed candidate quota truncates a grounded decision-changing alternative",
           "a first witness is reported as completion despite remaining authorized callers or migration",
           "available authorized evidence is returned as unavailable without inspection",
           "a wider causal explanation automatically merges enforcement owners or requires consequential or advanced mechanics"
         ],
-        "rationale": "Activation is useful only when semantic pressure exists and yields one exact disposition."
+        "rationale": "Ground inquiry in the task; derive the formulation and earn the conclusion. Required artifacts are conclusion evidence, not admission prerequisites or mandatory reports."
       },
       {
         "clause_id": "UNI-MINIMAL-001",
@@ -178,7 +183,7 @@
         "required_artifacts": [
           "ordinary candidate",
           "comparison universe",
-          "one primary axis and typed hole with necessary interacting laws",
+          "derived or justified primary axis and typed hole when applicable, with necessary interacting laws",
           "alternatives",
           "material delta",
           "resource impact"
@@ -188,7 +193,8 @@
           "Universalist nominates while Actuating selects",
           "required-valid behavior is preserved as well as invalid behavior excluded",
           "a complete sufficient interface removes evidenced caller knowledge or lifecycle work and localizes a supported change",
-          "representative use and change evidence refine the existing comparison without new activation or artifacts"
+          "representative use and change evidence refine the existing comparison without new artifacts",
+          "a sophisticated derivation may lower to an ordinary construction without a framework"
         ],
         "failure_signals": [
           "Universalist selects or reopens Actuating target architecture",
@@ -198,7 +204,7 @@
           "lower caller burden is treated as a universal property or permits weaker laws, observations, authority, effects, or resource constraints",
           "an unranked material tradeoff is reported as dominance"
         ],
-        "rationale": "Minimality is relative to one complete current obligation set."
+        "rationale": "Minimality is relative to one complete current obligation set, not sophistication of the derivation."
       },
       {
         "clause_id": "UNI-RECOGNITION-001",
@@ -213,24 +219,32 @@
         ],
         "prohibited_routes": [],
         "required_artifacts": [
-          "current encoding",
-          "representative instances or a first-use requirement-bound derivation",
+          "current encoding when present or requirement-bound first-use derivation",
+          "carriers, operations, and observations relevant to the question",
+          "candidate laws distinguished from requirements and known non-laws",
           "nearest false friend",
-          "discriminating law",
-          "generalization dividend",
+          "discriminating law or counterexample",
+          "generalization or preservation dividend",
           "transition witness when material"
         ],
         "success_signals": [
-          "recognition begins from repository operations and observations",
-          "a retained pattern removes or centralizes an obligation, enables a lawful transformation, or strengthens a reusable proof with a material delta",
-          "a disputed abstraction separates an omitted behavior-changing premise from a broader unclaimed generalization"
+          "requirements and concrete evidence suggest structures while mathematical knowledge suggests task-relevant hypotheses",
+          "focused references may formulate a question before a construction or its prerequisites are established",
+          "a retained pattern removes or centralizes an obligation, derives an algorithm, enables a lawful transformation, or strengthens a reusable proof",
+          "a disputed abstraction separates an omitted behavior-changing premise from a broader unclaimed generalization",
+          "unlisted constructions and combinations can be investigated under the same claim standards",
+          "an adequate incumbent survives without a manufactured alternative"
         ],
         "failure_signals": [
           "pattern selected by name",
-          "generalization without dividend",
-          "a relevant narrower premise is erased or a useful shared law is rejected because a broader unclaimed law fails"
+          "generalization accepted without dividend",
+          "a relevant narrower premise is erased or a useful shared law is rejected because a broader unclaimed law fails",
+          "discovery is withheld until its result is already known",
+          "a catalogue is treated as the limit of available mathematical knowledge",
+          "hypothesis generation is treated as acceptance or authority to mutate",
+          "the entire corpus or a fixed candidate inventory is required for every task"
         ],
-        "rationale": "Recognition matters only when it changes ownership, legal composition, or proof."
+        "rationale": "Generative reasoning may discover the problem formulation; retention requires supported correspondence, laws, consequences, and native realization."
       },
       {
         "clause_id": "UNI-CONTEXT-001",
@@ -277,7 +291,7 @@
         ],
         "prohibited_routes": [],
         "required_artifacts": [
-          "repository-native carrier",
+          "repository-native carrier or transformation",
           "owner",
           "operations",
           "observations",
@@ -286,13 +300,14 @@
           "proof"
         ],
         "success_signals": [
-          "the nomination lowers to one honest repository-native artifact"
+          "the nomination lowers to one honest repository-native artifact or transformation",
+          "intermediate mathematical structure can disappear during specialization"
         ],
         "failure_signals": [
           "theorem nomination treated as final architecture",
           "ceremonial surface invented"
         ],
-        "rationale": "Architecture exists only after effective repository-native lowering."
+        "rationale": "Accepted constructions require effective native realization; inquiry may precede that realization."
       },
       {
         "clause_id": "UNI-ENFORCEMENT-001",
@@ -342,19 +357,21 @@
           "falsifier"
         ],
         "success_signals": [
-          "ordinary dominance explicitly rejects advanced mechanics",
-          "selected mechanics change the artifact and proof",
+          "ordinary dominance explicitly rejects unnecessary advanced machinery",
+          "selected mechanics change the artifact or deciding proof",
           "structure claims use laws and preservation without invented universality",
           "universal claims identify a diagram, competitors, maps, factorization equations, and a uniqueness argument",
           "realization strength and proof kind remain independent; bounded and sampled evidence is labelled",
           "universal comparisons respect the named structure and distinguish construction, mediation, and uniqueness failures",
           "transport uses explicit witnesses and preservation laws at the claimed direction and evidence strength",
           "stronger equality inferences have adequate determination; lifting and distinguishability claims use the relevant endpoint correspondence",
-          "derived obligations retain their actual sufficient hypotheses without requiring a separate evidence packet"
+          "derived obligations retain their actual sufficient hypotheses without requiring a separate evidence packet",
+          "an unregistered retained construction uses derived:<name> and the same proof obligations without fabricating a card",
+          "focused theoretical inquiry may precede ordinary comparison; acceptance compares available native candidates, including their unmet requirements"
         ],
         "failure_signals": [
           "decorative terminology",
-          "mechanics without evidenced prerequisites",
+          "retained mechanics without evidenced prerequisites",
           "opacity or a single interpreter is treated as a uniqueness proof",
           "a coalgebra is assumed final or finite observations are called Yoneda without the correspondence",
           "a missing universal proof obstructs an otherwise adequate structure-only artifact",
@@ -363,9 +380,10 @@
           "canonical IDs, normalization, or factory count replaces structure-respecting mediation and uniqueness",
           "an arbitrary interpreter is assumed to preserve universal properties or reflect equality without the corresponding argument",
           "global operation names hide an empty source hom-set or erased required endpoint index",
-          "full faithfulness or literal representation equality is required for an intentionally lossy observation without a stronger claim"
+          "full faithfulness or literal representation equality is required for an intentionally lossy observation without a stronger claim",
+          "a missing registry card blocks task-relevant inquiry or excuses unsupported acceptance"
         ],
-        "rationale": "Advanced mechanics remain evidence-bound."
+        "rationale": "Inquiry is question-led; retained advanced mechanics remain claim-bound."
       },
       {
         "clause_id": "UNI-DOUBLE-001",
@@ -450,7 +468,7 @@
           "changed hypotheses reopen affected derivations while required laws remain binding and unaffected proofs are reused"
         ],
         "failure_signals": [
-          "routine refinement creates a new Universalist pass",
+          "mechanical refinement creates a new Universalist pass",
           "mutation continues under a stale nomination",
           "Universalist independently reopens Actuating architecture"
         ],
@@ -485,7 +503,7 @@
     ],
     "instrumentation": {
       "decision_receipt": "optional",
-      "rationale": "Only independently durable standalone decisions need a plan-bound receipt; ordinary activations carry trigger and material-delta evidence in the receiving context, while nonactivation remains silent. Required artifacts name evidence obligations, not mandatory headings; an actual consumer alone requires exact serialization. Unresolved evidence or incomparable adequate candidates do not force a final route or terminal receipt."
+      "rationale": "Only independently durable standalone decisions need a plan-bound receipt. Inquiry may begin before an owner, typed hole, candidate, or final route exists. Required artifacts name applicable conclusion evidence, not admission prerequisites, mandatory headings, or extra reports. Reuse adequate arguments silently; unresolved evidence and incomparable candidates do not force a final route or receipt. Existing trigger and route identifiers are retained; historical receipts keep their original fingerprints. Mechanic attribution is ordinary, card:<id>, or derived:<name>, without changing proof strength."
     }
   }
 }

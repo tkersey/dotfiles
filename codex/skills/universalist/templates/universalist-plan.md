@@ -12,6 +12,14 @@ candidates are incomparable. A claim-scoped canonical obstruction does not obstr
 an adequate weaker construction; record the scope and constructive alternatives.
 A first witness is a checkpoint, not completion of remaining authorized migration.
 
+Discovery may begin from a task-grounded semantic question before an incumbent,
+owner, carrier, axis, typed hole, law, or final route is known. Record a first-use
+derivation rather than inventing prior code. Complete applicable conclusion fields
+as evidence develops; these headings are not admission prerequisites or mandatory
+runtime packets. Required source choices remain binding. New decisions bind the
+current contract fingerprint; historical receipts keep their original attribution.
+The existing schema, root-receipt/status anchors, and Ledger operations are unchanged.
+
 ## Track:
 ## Composition context: standalone / Actuating-composed
 ## Decision owner:
@@ -20,7 +28,7 @@ A first witness is a checkpoint, not completion of remaining authorized migratio
 ## Incoming incumbent or ordinary candidate:
 ## Boundary disposition:
 ## Material decision delta: preservation / owner / admitted-domain / representation / composition / compatibility / migration / effects / failure-semantics / proof / obstruction
-## Mechanic: ordinary / card:<id>
+## Mechanic: ordinary / card:<id> / derived:<name>
 ## Disposition rationale and evidence:
 ## Owner:
 ## Source / target worlds:
@@ -79,7 +87,13 @@ material cost tradeoffs. Count genuine information hiding, not concealed obligat
 Preserve required laws and observations; interface depth establishes no universal
 property or representation-independence proof. Reuse the existing comparison.
 ## Primary architectural axis, typed hole, and necessary interacting law family:
+Derive or revise the model-owned formulation during inquiry; do not force a typed
+hole when an ordinary algorithm or transformation suffices. Preserve interacting
+laws and source-fixed choices.
 ## Relevant cards and dispositions:
+Use `none` when no card is needed. An unregistered retained construction may use
+`derived:<name>` with the same hypotheses, interpretation, discriminator, native
+comparison, and claim-appropriate proof; no invented card or registry expansion.
 ## Alternatives considered (reuse the grounded law-derived challenger, if any):
 ## Material architectural delta:
 ## Selected route:

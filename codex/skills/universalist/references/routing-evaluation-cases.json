@@ -1,10 +1,10 @@
 {
   "schema": "universalist-routing-evaluation/v1",
-  "skill_fingerprint": "universalist-boundary-decision-v17.10-claim-evidence-and-systems-context-v1",
-  "purpose": "Evaluate implicit activation separately from route selection. Skip means no Universalist invocation, disposition, route, record, or receipt.",
+  "skill_fingerprint": "universalist-generative-derivation-v18.0-v1",
+  "purpose": "Evaluate task-grounded discovery separately from acceptance and model efficacy. Present only scenario/requirements to the agent; keep expected outcomes and discriminators evaluator-only. Skip means no new invocation, route, record, or receipt.",
   "expectations": {
-    "skip": "No live semantic boundary decision is evidenced.",
-    "activate": "UNI-BOUNDARY is live; the skill must derive an evidence-bound disposition.",
+    "skip": "No unresolved task-relevant semantic question remains; reuse adequate derivations silently.",
+    "activate": "UNI-BOUNDARY is live for semantic derivation; the formulation and its evidence may be discovered during inquiry. Do not force a final route before acceptance is supported.",
     "reclassify": "New evidence fires a prior invalidator; UNI-RECLASSIFY is live."
   },
   "cases": [
@@ -31,10 +31,10 @@
     },
     {
       "id": "accepted-api-realization",
-      "scenario": "Implement an already selected API shape under the same owner, law, falsifier, obligations, and invalidators.",
+      "scenario": "Mechanically realize an already selected API, fully derived internal algorithm and representation, and settled proof obligations, with no new semantic question.",
       "expected": "skip",
       "expected_route": null,
-      "reason": "Realization reuses the accepted disposition silently."
+      "reason": "Reuse the adequate derivation; an API shape alone would not establish that its algorithm and representation are settled."
     },
     {
       "id": "ship-publication",
@@ -59,10 +59,10 @@
     },
     {
       "id": "owner-local-repair",
-      "scenario": "Repair an isolated implementation mistake while the incumbent owner and admission law already exclude the invalid family.",
+      "scenario": "Correct an isolated transcription mistake whose exact repair and invariant-preservation argument are already established; no semantic choice remains.",
       "expected": "skip",
       "expected_route": null,
-      "reason": "A direct owner-local repair under a stable architecture does not reopen the boundary."
+      "reason": "Mechanical repair needs no renewed inquiry. Owner locality alone would not exclude useful semantic derivation."
     },
     {
       "id": "distributed-validator-law",
@@ -143,7 +143,7 @@
     },
     {
       "id": "accepted-law-derived-realization",
-      "scenario": "Implement a selected law-derived representation with unchanged owner, law family, observations, and invalidators.",
+      "scenario": "Mechanically realize a selected law-derived construction whose algorithm, operations, representation, and proof are already sufficient, with unchanged required behavior and no new uncertainty.",
       "expected": "skip",
       "expected_route": null,
       "reason": "Categorical origin does not justify another boundary pass during routine realization."
@@ -158,9 +158,9 @@
     {
       "id": "fixed-policy-hotspot",
       "scenario": "Speed up an equivalent pure function under unchanged demand and an accepted owner. No ownership, admitted behavior, interaction law, or proof assumption changes.",
-      "expected": "skip",
+      "expected": "activate",
       "expected_route": null,
-      "reason": "A performance objective or possible system context alone is not semantic boundary pressure."
+      "reason": "An open optimization question may call for a law-preserving algorithm or transformation inside the same boundary. Preserve the contract and require workload evidence for speed claims."
     },
     {
       "id": "saturation-invalidates-response",
@@ -168,6 +168,55 @@
       "expected": "reclassify",
       "expected_route": null,
       "reason": "The prior response assumption is invalidated; reconsider only the affected claim and retain any independently supported local bound."
+    },
+    {
+      "id": "first-use-composable-accounting",
+      "scenario": "Implement resource-trace validation so ordered chunks can be recombined without rescanning their elements, while detecting every prefix underflow or capacity violation. No implementation exists.",
+      "expected": "activate",
+      "expected_route": null,
+      "reason": "Derive the carrier and composition from required observations without requesting a named abstraction, duplicate, or typed hole."
+    },
+    {
+      "id": "fixed-interface-open-algorithm",
+      "scenario": "Keep the public query API unchanged while designing how updates and queries can share work under documented resource limits. The internal representation and algorithm are not selected.",
+      "expected": "activate",
+      "expected_route": null,
+      "reason": "A settled interface is not a settled construction; algebraic derivation can change the internals without widening the API."
+    },
+    {
+      "id": "semantic-oracle-design",
+      "scenario": "Design tests that distinguish implementations preserving current displayed status from ones also preserving required retry behavior. The deciding observation is not yet settled.",
+      "expected": "activate",
+      "expected_route": null,
+      "reason": "Deriving a semantic oracle is not unchanged test execution; future observations may expose a missing distinction."
+    },
+    {
+      "id": "theory-led-question-before-candidate",
+      "scenario": "Required chunk combination and final observations are known, but the sufficient retained state is not. No candidate or named boundary defect has been supplied.",
+      "expected": "activate",
+      "expected_route": null,
+      "reason": "Relevant mathematical knowledge may formulate and derive a candidate before its applicability is established."
+    },
+    {
+      "id": "unlisted-construction-inquiry",
+      "scenario": "A task-grounded composition question suggests a construction not named in the installed registry; its hypotheses and native form still require investigation.",
+      "expected": "activate",
+      "expected_route": null,
+      "reason": "Missing a card is not an inquiry veto. Acceptance still requires actual laws, correspondence, feasibility, and dividend."
+    },
+    {
+      "id": "settled-mechanical-replacement",
+      "scenario": "Replace one deprecated symbol with its prescribed equivalent; the complete semantic equivalence and caller migration were already established and no new evidence appears.",
+      "expected": "skip",
+      "expected_route": null,
+      "reason": "Reuse adequate reasoning rather than manufacturing another discovery report."
+    },
+    {
+      "id": "unrequested-hypothetical-capability",
+      "scenario": "An unrelated potential future runtime feature inspires mathematical exploration, but the current task is a spelling correction and no required behavior depends on that feature.",
+      "expected": "skip",
+      "expected_route": null,
+      "reason": "Do not invent relevance or expand scope to demonstrate abstraction knowledge."
     }
   ],
   "artifact_cases": [
@@ -363,6 +412,54 @@
         "centralizing execution solely to name one semantic authority"
       ],
       "claim_check": "Separate the stable law from the variable policy; adaptation itself supplies no proof of improved quality or control."
+    },
+    {
+      "id": "compositional-prefix-accounting",
+      "scenario": "Validate finite ordered integer resource traces, including every prefix, and combine chunks without rescanning their elements.",
+      "must_preserve": [
+        "final net change, prefix underflow and peak usage",
+        "empty trace and arbitrary ordered chunk boundaries",
+        "actual arithmetic and overflow assumptions"
+      ],
+      "must_reject": [
+        "net-change-only acceptance",
+        "commuting or sorting the trace without authority",
+        "generic framework or a new public abstraction required merely to name the algebra",
+        "claiming concurrent effect correctness or measured speedup from summary laws alone",
+        "requiring an already-adequate ordinary competitor before considering a construction that closes its unmet chunk-composition requirement"
+      ],
+      "claim_check": "Accept an equivalent lawful construction; a derived (delta, minimum prefix, maximum prefix) summary is one valid realization. Check concatenation preservation against an independent direct scan and state the valid summary carrier."
+    },
+    {
+      "id": "prefix-summary-false-friends",
+      "scenario": "With initial usage zero and capacity four, compare [+5,-5], [-1,+1], and [+3,-2,+1,-2]. All end at zero.",
+      "must_preserve": [
+        "rejecting overflow and underflow despite net-zero totals",
+        "accepting the valid trace",
+        "order-sensitive observations and the empty-prefix convention"
+      ],
+      "must_reject": [
+        "accepting every zero-total trace",
+        "clamping negative prefixes",
+        "claiming (0,0,0) is an identity for arbitrary unchecked triples"
+      ],
+      "claim_check": "A net-total-only or clamped-summary implementation must fail. Verify composition and identity on the actual valid carrier rather than a larger unjustified domain."
+    },
+    {
+      "id": "unlisted-native-derivation",
+      "scenario": "A task-grounded construction outside the catalogue has a candidate compositional law and native lowering, but one required failure observation has not yet been shown to agree.",
+      "must_preserve": [
+        "investigation despite no registered card",
+        "preservation of the required failure observation",
+        "unresolved acceptance until the missing correspondence is established"
+      ],
+      "must_reject": [
+        "inventing a card identifier",
+        "accepting the law from its name",
+        "rejecting all investigation because the construction is unlisted",
+        "dropping the failure observation to obtain a simpler proof"
+      ],
+      "claim_check": "Permit discovery, demand claim-appropriate evidence, and accept an adequate native alternative. derived:<name> is attribution rather than proof or a new route."
     }
   ],
   "status": "authored_not_model_replayed",
@@ -463,6 +560,37 @@
         "Treating fewer headings as permission to omit evidence."
       ],
       "claim_check": "Inspect evidence references, actual actions, authority, and duplicate artifacts; do not score field-name repetition."
+    },
+    {
+      "id": "actuating-first-use-without-hole",
+      "scenario": "Actuating begins a read-only analysis of a new capability with required behavior and constraints but no owner, operation vocabulary, candidate, or typed hole.",
+      "must_preserve": [
+        "one task-grounded derivation and nomination within the existing inquiry",
+        "provisional model-owned formulation and explicit evidence gaps",
+        "Actuating authority and read-only scope"
+      ],
+      "must_reject": [
+        "waiting for a preidentified architecture defect or typed hole",
+        "inventing an incumbent or a required law",
+        "experiments, mutation, standalone plans, or root receipts without authority"
+      ],
+      "claim_check": "Inspect whether useful semantics are derived from the supplied task, not whether a fixed set of packet headings is emitted."
+    },
+    {
+      "id": "architectonic-provisional-formulation",
+      "scenario": "Architectonic reviews a proposed design with fixed external requirements and a provisional internal representation; no boundary defect is established.",
+      "must_preserve": [
+        "a read-only constructive nomination that may improve the formulation",
+        "distinction between proposed and implemented guarantees",
+        "Architectonic adjudication and scope"
+      ],
+      "must_reject": [
+        "suppressing inquiry until a defect is named",
+        "selecting or implementing the alternative",
+        "nested teams or standalone durability",
+        "claiming a better option proves the incumbent defective"
+      ],
+      "claim_check": "Discovery can improve a proposed design without granting mutation or manufacturing a blocker. Reuse sufficient arguments without duplicate review."
     }
   ]
 }

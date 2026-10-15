@@ -1,245 +1,126 @@
-# Universalist 17.10.0
+# Universalist 18.0.0
 
-Universalist is an implicitly invocable **boundary-decision** lens with
-evidence-indexed progressive disclosure.
+Universalist uses algebraic and categorical knowledge to **formulate and derive**
+solutions, not only recognize abstractions after a boundary decision is named.
 
-```text
-live semantic boundary pressure
--> incoming incumbent or ordinary candidate
--> owner
--> required observations
--> law
--> falsifier
--> preserve, ordinary nomination, or evidence-backed escalation
-```
-
-Category theory is a hidden recognizer and source of lawful transformations. Advanced constructions load only
-after repository evidence identifies a consequential typed hole that the
-ordinary candidate does not close.
-
-## Activation
-
-Implicit activation requires a live semantic decision, a law distributed across
-owners, a materially different competing route, a fired invalidator, or an
-Actuating architecture-reconsideration handoff.
-
-Routine implementation, validation, review bookkeeping, mechanical rebasing,
-Ship, and Land against an accepted architecture do not activate Universalist.
-A boundary being present or crossed is insufficient.
-
-Explicit `$universalist` invocation always runs.
+> Generalize in the reasoning. Specialize in the realization. Prove the connection.
 
 ```text
-no live semantic pressure
--> no activation, route, record, or receipt
-
-live pressure + exact incumbent
--> UNI-PRESERVE
+required uses and concrete evidence <-> relevant mathematical hypotheses
+-> derived carriers, operations, observations, composition, and proof
+-> supported native construction or transformation
 ```
 
-Preservation is therefore a decision against live change pressure, not ceremony
-for rediscovering an ambient boundary.
+## Discovery is ordinary; acceptance is earned
 
-## Common path
+Invoke for task-relevant semantic design, implementation, review, or simplification.
+A grounded question is enough. Do not require duplicated code, a failed ordinary
+candidate, a named boundary defect, an already-derived alternative, or a typed hole.
+A fixed public interface can leave an internal algorithm or representation open.
+A first-use construction needs requirements, not a fabricated incumbent.
 
-`SKILL.md` supplies the ordinary path for an exact incumbent or an uncontested
-repository-native boundary. Load supporting references only for their material
-claim, including feedback-dependent behavior on an ordinary route. An actual activation
-conveys the following evidence once; the headings are an example, not a required
-packet. Reuse the receiving workflow's fields and proof references. Unresolved
-evidence or incomparable adequate candidates do not force a final disposition:
+The common path in `SKILL.md` makes discovery part of existing reasoning, not a
+new stage. Evidence suggests structures; mathematical knowledge suggests hypotheses
+and discriminating questions. Candidate laws cannot silently replace accepted
+requirements. The carrier, operation vocabulary, interpretation, decomposition,
+and model-owned proof strategy may change; source-fixed choices and authority may not.
 
-```text
-Trigger evidence:
-Boundary:
-Disposition: preserve | ordinary | escalate
-Incoming incumbent or ordinary candidate:
-Owner:
-Required observations:
-Law:
-Falsifier:
-Material decision delta:
-Mechanic: ordinary | card:<id>
-Invalidates when:
-```
+An ordinary implementation is a comparison baseline, not a required first attempt
+or a ceiling on the derivation. Mathematics can disappear in specialization: a
+native loop, count map, transition, summary, or preserved incumbent can be success.
+Consult focused references to formulate or resolve questions; establish actual
+correspondence, laws, valid behavior, effects, feasibility, and dividend before
+retaining a candidate. The entrypoint owns inquiry eligibility when supporting
+references use narrower acceptance language.
 
-Ordinary-first is a baseline, not an intellectual ceiling. On an activated
-boundary, consider grounded law-derived alternatives capable of changing the
-decision; no duplication is required at a first-use boundary. Reuse supplied
-candidates. Expand only for a live requirement, material tradeoff, or evidence that
-could overturn the nomination. There is no fixed candidate/card quota and no
-license for speculative enumeration. Keep the smallest interacting law family
-together and preserve required-valid behavior.
+Reuse sufficient derivations. Purely mechanical realization, unchanged checks,
+formatting, review bookkeeping, rebasing, Ship, and Land need no renewed inquiry.
+No no-op receipts, fixed candidate quotas, mandatory theory scans, new framework,
+extra review lane, or separate discovery report are introduced.
 
-Activation is narrow; disclosure and escalation remain proportional. One coherent
-seam bounds reasoning, not completion: authorized implementation continues through
-the requested verification, callers, and migration. A first witness is a checkpoint.
-Standalone work resolves available authorized evidence before returning debt; missing
-access or authority remains unresolved without unauthorized experiments. Continue
-independent work. Inside Actuating, return the bounded nomination and discriminator;
-Actuating owns experiments, selection, mutation, and closure.
+## Focused knowledge
 
-## Evidence-indexed disclosure
-
-| Evidence | Module |
+| Question | Guidance |
 |---|---|
-| Repeated obligations or a grounded law-derived challenger needs discrimination | `references/latent-structure-recognition.md` |
-| A boundary claim depends on accumulation, feedback, adaptive policy, or recovery | `references/system-dynamics.md` |
-| At least two routes materially differ | `references/consequential-boundary.md` |
-| A concrete typed hole remains | artifact selector, registry, and matching card fragments |
-| One advanced card remains live | only that card's exact `theory_refs` |
-| Representation independence, universal construction, lawful transformation, or bounded approximation is claimed | applicable sections of `references/claim-appropriate-proof.md` |
-| A decision needs independent durability outside an active Actuating run | `references/durable-decision.md` |
-| User explicitly requests team mode | `references/workflow/` |
+| What law-bearing formulation could simplify the task? | `references/latent-structure-recognition.md` |
+| What carrier, operations, equations, or observation should be derived? | `references/domain-algebra/algebra-driven-design.md` |
+| Which mathematical construction might resolve the question? | `advanced-mechanics.md`, the selector, and relevant registry/theory fragments |
+| Which materially different native realization should be retained? | `references/consequential-boundary.md` |
+| What proof does the actual claim need? | `references/claim-appropriate-proof.md` |
+| Do accumulation, feedback, adaptation, or recovery change the claim? | `references/system-dynamics.md` |
+| Should data be materialized or eliminated directly? | `references/syntax-semantics-pivot.md` |
 
-The runtime must not browse the complete reference corpus to discover a reason
-to escalate.
+The 56 construction cards and 12 architectural axes remain available. They are
+retrieval aids, not an exhaustive list of permitted ideas. Unlisted constructions
+and combinations need the same evidence, not a new card. Corpus expansion remains
+frozen pending incremental efficacy evidence; that maintenance policy does not
+prohibit using relevant knowledge outside the corpus.
 
-## Actuating composition
+Existing material on claim strength, exact context, effects, future observations,
+Church-style representations, Day convolution, Tambara modules, comonadic context,
+double categories, and universal constructions remains available. The ADD reference
+adds an ordered resource-trace derivation: concatenation determines a three-field
+summary and its combination law. This illustrates deriving an algorithm without
+a generic framework; it is not a required architecture for unrelated tasks.
 
-Inside `$actuating`, Actuating owns the Universalist invocation point and calls
-it only when architecture reconsideration is live. Universalist nominates only:
+## Routes and compatibility
 
-```text
-candidate
-preserve-incumbent
-unresolved
-obstructed
-```
+The five trigger identifiers and four route identifiers are retained. The existing
+`UNI-BOUNDARY` identifier now includes semantic derivation; `UNI-RECOGNIZE` may
+coincide with it instead of requiring a previously named boundary decision.
 
-`unresolved` reports missing evidence or incomparable adequate candidates. It is
-a nomination result, not a new mode or evidence of obstruction. Actuating owns
-any further authorized discrimination under its review-epoch rules. The adapter's
-presentation rule takes precedence over all loaded reference templates without
-weakening evidence obligations. A demonstrated obstruction to a demanded canonical
-choice is limited to that claim, not an adequate weaker construction.
+| Route | Meaning |
+|---|---|
+| `UNI-PRESERVE` | An adequate incumbent resolves a live question or survives change pressure. |
+| `UNI-ORDINARY` | A native construction or transformation is adequate, however sophisticated its derivation. |
+| `UNI-CANONICAL` | A retained advanced construction has a material dividend and complete claim-appropriate witness; no universality is implied by the name. |
+| `UNI-OBSTRUCT` | Constructive alternatives close for a specified required claim under attributed evidence. |
 
-Do not run a duplicate root or worker pass merely because realization crosses an
-already accepted boundary. Actuating reconstructs the incumbent from the
-current Git tree, adjudicates the nomination, and retains the selected target
-only in its ephemeral Architecture Working Set. Git becomes the realized
-construction after implementation.
+Missing evidence and incomparable adequate candidates remain unresolved. A failed
+attempt is not nonexistence. A weaker adequate construction does not discharge an
+obstructed stronger requirement.
 
-Universalist must not:
+Mechanic attribution is `ordinary`, `card:<id>`, or `derived:<name>` for an
+unregistered retained construction. This adds no route or proof exemption. Existing
+SKDC-v1/SDR-v1 identifiers, plan schema, root-receipt/status anchors, and Ledger
+operations are unchanged. Bind new runs to the current source fingerprint; do not
+rewrite historical receipts or imply that earlier evidence evaluated this version.
 
-- select or reopen Actuating's target architecture;
-- grant mutation or closure;
-- convert Review Fold evidence directly into a design;
-- allocate a durable plan or receipt for Actuating;
-- treat a prior nomination as stronger than current repository evidence.
+## Workflow authority
 
-Execution-time evidence may invalidate a nomination. `UNI-RECLASSIFY` runs only
-when material new evidence fires a prior invalidator; unchanged decisions are
-reused silently.
+Actuating invokes Universalist within its initial construction or subsequent
+semantic inquiry. Architectonic invokes it within its existing read-only assessment.
+Both supply required behavior, observations, evidence, constraints, and any
+provisional formulation; owner, axis, operations, and typed hole may be outputs.
 
-## Independent durability
+The adapters retain `candidate`, `preserve-incumbent`, `unresolved`, and `obstructed`.
+Universalist nominates; the receiving workflow selects or adjudicates and retains
+its experiment, mutation, review-epoch, and closure authority. No duplicate root
+pass, nested team, standalone plan, or root receipt is added. Team mode remains
+explicit-request only. Independently durable standalone decisions continue to use
+the existing durability module only when independent addressing is actually needed.
 
-Consequentiality alone does not justify storage.
+## Evaluation, not assumed efficacy
 
-Load `references/durable-decision.md` only when the decision must remain
-independently addressable across sessions, actors, migration, or supersession
-outside an active Actuating run. That standalone module may still use Ledger and
-`SDR-v1`; it never loads during Actuating composition.
+`references/efficacy-evaluation.md` separates routing, artifact correctness,
+workflow authority, prompt dependence, and incremental reference contribution.
+The routing corpus now has 30 routing cases, 18 artifact cases, and nine workflow
+cases. The unchanged representation corpus adds 16 artifact cases and retains its
+17.8.0 authoring baseline; it is not evidence that 18.0.0 has been evaluated.
+All 61 existing cases across those corpora remain present, with activation scenarios
+updated to distinguish mechanical realization from unresolved semantic reasoning.
+Twelve new cases cover unprompted synthesis, fixed-interface algorithms, semantic
+oracles, unlisted constructions, false friends, negative controls, and both callers.
 
-## Advanced mechanics
+Present only ordinary task scenarios to evaluated agents; keep expected patterns,
+falsifiers, and scoring criteria evaluator-only. Reserve independently selected
+holdouts that do not reproduce the worked example. Compare previous and revised
+instructions with and without a targeted hint under the same model and budgets.
+Success is better unprompted artifacts and proofs, not more invocations, theorem
+names, or `UNI-CANONICAL` results.
 
-The 56 cards nominate structures or universal constructions. They do not select
-routes or authorize mutation. Proof profiles follow the actual claim: laws and
-interpretation for `structure`; a diagram, factorization, and uniqueness argument
-in addition for `universal`. Literal, effective, and bounded realization strengths
-remain independent. One interpreter or opaque constructor does not prove
-universality, and `UNI-CANONICAL` is not a theorem assertion.
-
-```text
-ordinary candidate
--> one primary axis, typed hole, and necessary interacting laws
--> relevant card fragment
--> exact theory references
--> repository-native lowering
-```
-
-Signals, registry order, evidence count, and categorical sophistication never
-prove prerequisites. Ordinary dominance is a successful rejection.
-
-Card expansion is frozen pending evidence that the full categorical path
-improves a concrete artifact or proof beyond the routine kernel. Use
-`references/efficacy-evaluation.md` and
-`references/routing-evaluation-cases.json` only while tuning or auditing the
-skill; neither belongs in ordinary runtime context. The corpus includes 23
-routing cases and 31 artifact-level discriminators: 15 in that corpus plus 16
-in `references/representation-evaluation-cases.json` (eight eliminator-first and
-eight algebra-derived cases). Seven additional `workflow_cases` in the routing
-corpus discriminate unresolved tradeoffs, claim-scoped canonical obstruction,
-available evidence, missing authority, a grounded third candidate, multi-seam
-completion, and Actuating presentation/authority. All are audit-only.
-
-The routing fingerprint matches the current decision contract. The unchanged
-representation corpus's `skill_version: 17.8.0` is its authoring baseline, not a
-current replay result. Bind every run to the actual source commit and effective
-instructions. Written fixtures and static checks are not paired Astra results or
-evidence of improved efficacy. See `references/efficacy-evaluation.md` for the
-repair-only versus procedural-ablation contrast and the separate A/B/C comparison.
-
-Worked derivations live in existing references: compatible-pair adequacy in
-latent recognition; continuation-sensitive state distinctions, ordered phases,
-and indexed transitions in effects/coalgebras; and fold/interpreter fusion in
-property-test derivation. They should produce simpler repository-native artifacts,
-not more theorem names or framework code.
-
-`references/domain-algebra/algebra-driven-design.md` supplies a conditional
-derivation from required uses to interacting equations, observation carriers,
-and a native realization. It includes multiplicity versus order, unified
-observations with residual behavior, and optional reference-model replacement.
-Property-test derivation adds law-adequacy countermodels and generator/observer
-checks. These sharpen existing decisions without new routes, mandatory models,
-or an additional common-path pass.
-
-## Claim evidence and assumption changes
-
-`references/claim-appropriate-proof.md` distinguishes construction, mediation,
-and uniqueness failures; carries explicit witnesses through lawful interpreters;
-and checks determination before stronger equality inferences. Lifting and
-distinguishability claims use endpoint-specific correspondences, including empty
-source hom-sets. Intentional forgetting requires only its actual preservation
-contract. Older construction references now use the same structure-respecting
-uniqueness standard instead of treating API ownership or canonical IDs as proof.
-
-Latent recognition separates a missing narrower premise from an objection to a
-broader unclaimed abstraction. Domain algebra retains the hypotheses behind a
-derived obligation and revisits only affected implications when those hypotheses
-change. The identity/idempotent and rounded-key examples supply concrete
-countermodels. These engineering applications of Cheng's *The Joy of Abstraction*
-include printed-page citations and reuse existing proof, recognition, and
-reclassification fields. They add no trigger, route, card, or runtime gate.
-
-## Eliminator-first representation
-
-Church-style reasoning extends the existing syntax/semantics pivot in both
-directions: reify behavior for inspection, or remove temporary materialization
-when only its lawful fold is required. `references/syntax-semantics-pivot.md`
-compares native data/folds, Church-style producers, one-layer elimination, and
-hybrid boundaries. `references/domain-algebra/property-test-derivation.md` adds
-round trips, algebra-morphism preservation, and fold/build fusion with effectful
-and mutable-capture counterexamples.
-
-Native data, folds, and loops remain the baseline. Reconstruction is not
-confidentiality; polymorphic-looking callbacks are not proof of parametricity,
-initiality, or induction. Keep inspection, authorization, persistence, identity,
-and replay where required, and measure complete workloads before claiming speed.
-This adds examples and claim-specific evidence within the existing contracts,
-not a new trigger, route, construction card, proof profile, or runtime framework.
-
-## Package invariants
-
-- implicit semantic-pressure activation remains enabled;
-- explicit invocation always runs;
-- nonactivation creates no route or receipt;
-- routine Ship, Land, review bookkeeping, and mechanical rebase work skip;
-- Actuating owns its Universalist invocation point;
-- team mode remains explicit-request only;
-- all five triggers and all four routes remain live;
-- all 56 cards and 12 axes remain available;
-- no runtime script or skill-local executable test is added;
-- durable Ledger mechanics never load in Actuating composition;
-- routine preservation and ordinary nomination use `SKILL.md`, with supporting
-  references only for their material claim.
+Authored fixtures, source/JSON checks, finite witness checks, paired agent runs,
+and host benchmarks are distinct evidence. The corpus remains
+`authored_not_model_replayed`; no efficacy, latency, or performance gain follows
+from this instruction change alone. No runtime scripts, dependencies, or executable
+skill-local test framework are introduced.

@@ -1,6 +1,7 @@
 # Latent Structure Recognition
 
-Universalist should recognize category theory in ordinary code before it reaches for category-theory vocabulary.
+Use algebraic and categorical knowledge to derive and recognize structure.
+The result is repository-native meaning and behavior, not mathematical vocabulary.
 
 The goal is not:
 
@@ -11,11 +12,11 @@ code resemblance -> impressive name
 The goal is:
 
 ```text
-concrete implementations
-  -> shared carriers, operations, observations, laws, and non-laws
+required uses and concrete evidence <-> relevant mathematical hypotheses
+  -> derived carriers, operations, observations, laws, and non-laws
   -> one evidenced general pattern
   -> one repository-native realization
-  -> one observation-preserving transition
+  -> one observation-preserving transition when needed
 ```
 
 Recognition nominates. Existing comparison, theorem-card, route, authority, and obstruction rules still decide whether anything changes.
@@ -23,16 +24,25 @@ Recognition nominates. Existing comparison, theorem-card, route, authority, and 
 ## Governing rule
 
 ```text
-Recognize by laws, not labels.
-Generalize only for a material dividend.
-Transition through an executable witness.
+Let theory suggest hypotheses; establish structure by laws, not labels.
+Derive the formulation as well as recognizing an existing encoding.
+Retain a generalization only for a material dividend.
+Justify the native realization and any required transition.
 ```
 
 A general pattern may be useful even when no advanced construction card is selected. Products, coproducts, monoids, actions, homomorphisms, folds, state machines, adapters, and checked witnesses often remain `UNI-ORDINARY`.
 
-## When to run the pass
+## When this guidance helps
 
-After boundary activation, run a lightweight recognition pass when repository evidence contains at least one of:
+Use within task-relevant semantic inquiry, including before a boundary decision
+or candidate is named. A required use may call for deriving the carrier, operations,
+composition, or proof from scratch; no existing encoding or duplicate is required.
+`UNI-RECOGNIZE` can coincide with `UNI-BOUNDARY`. Reuse the common inquiry, not a
+second mandatory pass. The following cues are examples, not exhaustive prerequisites:
+
+- required behavior whose carrier, operations, observations, or composition needs derivation;
+- a fixed public contract whose internal algorithm or representation remains open;
+- a task-grounded mathematical hypothesis that suggests a useful discriminator;
 
 - the same invariant checked at several creation or boundary paths;
 - repeated branches that differ only by a case or parameter;
@@ -80,7 +90,9 @@ Do not erase effects, authority, provenance, ordering, failure, locality, or res
 
 ## Encoding relations
 
-Classify the current implementation as exactly one of:
+When a current implementation exists, classify its evidenced relation as one of
+the following. Leave an uninspected or undecided relation unknown; first-use
+synthesis records its requirement-bound derivation rather than inventing an encoding:
 
 - **literal instance** — the relevant structure and laws are explicitly represented;
 - **observational realization** — representation differs, but the laws hold under sanctioned observations;
@@ -103,7 +115,8 @@ bounded approximation
 
 ### 1. Excavate the concrete encoding
 
-Inspect the code before naming a pattern:
+Inspect available code or attributed first-use requirements before accepting a
+pattern. Theory may already suggest a hypothesis or deciding question:
 
 ```text
 representations
@@ -154,7 +167,10 @@ Ask:
 - which operations preserve the same law across representations?
 - is one owner missing, or is the distribution intentional?
 
-Anti-unify behavior and proof obligations, not merely shared syntax. At a first-use boundary, derive from the required carrier, observations, and operations instead; anti-unification is inapplicable without neighboring instances.
+Anti-unify behavior and proof obligations, not merely shared syntax. At first use,
+derive the carrier and operation vocabulary from required uses and observations;
+neither needs to be fixed on entry. Anti-unification is inapplicable without
+neighboring instances.
 
 When a shared abstraction is disputed, state the exact common principle and the
 distinctions it forgets. Determine whether the objection exposes an omitted,
@@ -176,11 +192,12 @@ an engineering application.
 
 ### 4. Nominate a small candidate family
 
-Discriminate supplied candidates against the ordinary baseline. Consider another
-interpretation only when grounded evidence addresses a live requirement, separates
-a material tradeoff, or could overturn the nomination. Stop expanding when further
-alternatives cannot change the decision; neither a fixed count nor speculative
-enumeration is a reason to stop or continue.
+Develop task-relevant hypotheses from evidence and mathematical knowledge, then
+discriminate them against ordinary native candidates, including unmet requirements
+of an inadequate baseline. Reuse sufficient supplied
+derivations. A candidate need not arrive with the proof its investigation is meant
+to discover. Stop when the result is adequately supported and no material question
+remains; neither a fixed count nor speculative enumeration establishes sufficiency.
 
 For each candidate record:
 
@@ -250,6 +267,8 @@ A recognized pattern survives only when it materially provides at least one of:
 - a future variant becomes new data or a new interpreter instead of new control flow;
 - migration becomes a structure-preserving map rather than per-case repair;
 - a lawful fusion, specialization, or interpreter transformation removes work without changing required behavior;
+- a derived algorithm or sufficient compositional summary eliminates rescanning or coordination;
+- a preservation argument resolves a live question without changing an adequate incumbent;
 - reusable property tests or proof obligations become possible;
 - a genuine obstruction becomes visible.
 
@@ -275,7 +294,9 @@ Stop condition:
 Invalidation triggers:
 ```
 
-The transition should normally be staged:
+For a changed existing representation, the transition should normally be staged.
+At first use, derive and verify the construction directly; do not manufacture a
+legacy path, migration, or second implementation:
 
 1. introduce the generalized core behind the current boundary;
 2. translate one representative existing case;
@@ -296,7 +317,7 @@ Compare:
 ```text
 ordinary candidate
 recognized repository-native realization
-other relevant theorem-card candidates
+other relevant registered or unlisted constructions
 preserve, unresolved comparison, or witnessed obstruction
 ```
 
@@ -326,7 +347,10 @@ The existing comparison universe, dominance relation, current-context contract, 
 | transitions expose observable ongoing behavior | coalgebra / state machine | step and observation determine traces | explicit transition and observation API |
 | runtime processes compose and architecture changes compose separately | double-category candidate | both directions compose; compatibility squares paste; interchange is observable | typed arrows, squares, pasting, and interpreter |
 
-The atlas is abductive guidance, not a replacement registry. If a row's discriminator is absent, leave the candidate unresolved or reject it.
+The atlas and registry are abductive retrieval aids, not limits on available
+knowledge. Investigate unlisted structures and combinations when they address the
+task. A missing discriminator is a question to resolve, not proof of applicability;
+leave acceptance unresolved or reject the candidate when it cannot be established.
 
 For the contextual-extension row, use the focused-view derivation in
 [`effects-and-coalgebras.md`](effects-and-coalgebras.md#co-kleisli-extension--context-consuming-rules).
@@ -386,14 +410,14 @@ supplies no reason to replace an already adequate datatype.
 
 ## False-positive guardrails
 
-Do not generalize when:
+Do not adopt a generalization when:
 
 - only names or surface syntax match;
 - the proposed law is contradicted by required behavior;
 - the domain rule is unstable;
 - the representation would erase an observable distinction;
 - the generalized API adds more obligations than it removes;
-- callers need only one local helper;
+- an adequate local helper already resolves the question and the proposed machinery adds no dividend;
 - the transition cannot preserve compatibility;
 - the host cannot enforce the claimed structure;
 - resource or effect costs make the realization dishonest.

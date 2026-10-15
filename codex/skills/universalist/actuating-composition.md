@@ -2,10 +2,19 @@
 
 ## Actuating composition
 
-Inside `$actuating`, Universalist is a nominator only. Actuating owns the
-invocation point and calls Universalist only after architecture reconsideration
-is live. Do not run a duplicate root or worker pass merely because Actuating
-will cross a boundary while realizing an already selected architecture.
+Inside `$actuating`, Universalist is a nominator only. Actuating owns invocation
+within initial construction, review, or reconsideration whenever semantic derivation
+is needed; a previously named boundary problem is not required. Supply the task,
+required behavior and observations, concrete evidence, constraints, and any
+provisional formulation. Owner, axis, operation vocabulary, and typed hole may be
+outputs of inquiry rather than required inputs. Preserve source-fixed choices;
+return improvements to model-owned formulations for Actuating to adjudicate.
+
+Reuse sufficient supplied derivations. Do not run a duplicate root or worker pass
+for mechanical realization of a settled construction. Mathematical inquiry and
+focused reference consultation do not authorize experiments, successor mutation,
+or review-epoch violations. Native algorithms and transformations can be useful
+nominations without changing a public boundary or introducing a framework.
 
 Return `candidate`, `preserve-incumbent`, `unresolved`, or `obstructed` with the smallest
 code-bound argument that changes Actuating's decision: trigger evidence, owner

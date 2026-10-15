@@ -1,5 +1,11 @@
 # Universalist Report
 
+Optional presentation aid, not a discovery prerequisite or mandatory report.
+Use the receiving workflow's existing evidence instead when composed. Omit fields
+that do not apply: first-use synthesis need not invent an incumbent, boundary
+change, migration, or typed hole. Show useful consequences rather than theories
+considered; acceptance still needs the applicable laws and proof.
+
 ## Track
 
 ## Trigger evidence
@@ -10,7 +16,7 @@
 
 ## Material decision delta
 
-## Mechanic: ordinary / card:<id>
+## Mechanic: ordinary / card:<id> / derived:<name>
 
 ## Signal
 

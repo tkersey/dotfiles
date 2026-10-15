@@ -12,9 +12,10 @@ Do not accept the existing file, module, service, or team decomposition as the
 partition of the problem. A better architecture is not evidence that the current
 one is unacceptable; a passing implementation is not proof of adequate structure.
 
-Elenctic reviews a change and its causal consequences. Universalist nominates a
-construction for one live semantic boundary. Architectonic reviews the allocation
-and interaction of those boundaries, including constructive alternatives, without
+Elenctic reviews a change and its causal consequences. Universalist formulates
+and nominates constructions or transformations for task-relevant semantic questions.
+Architectonic reviews the allocation and interaction of those boundaries, including
+constructive alternatives, without
 becoming an implementation workflow.
 
 ## Invocation and subject
@@ -73,8 +74,9 @@ current coverage explicitly incomplete. Do not invent hashes or deployment facts
    shared context as independent judgment or a failed fork as completed review.
 3. **Investigate and construct.** Apply [investigation.md](references/investigation.md)
    to every selected obligation. Challenge both the incumbent and its strongest
-   admissible alternative. Invoke the installed sibling `$universalist` only for
-   evidenced live boundary pressure, through its
+   admissible alternative. Invoke the installed sibling `$universalist` within
+   task-grounded semantic inquiry, including deriving a better carrier, operation
+   vocabulary, composition, or proof before a boundary defect is named, through its
    [Architectonic composition](../universalist/architectonic-composition.md).
    Assign one nomination owner per decision; reuse equivalent existing arguments.
    Unchanged adequate boundaries need no ceremonial Universalist pass.
@@ -93,8 +95,9 @@ current coverage explicitly incomplete. Do not invent hashes or deployment facts
    absence of findings does not establish coverage.
 
 Resolve sibling references from the installed skills tree, not a similarly named
-file in the subject repository. Read deeper Universalist modules only at their
-existing evidence gates. Do not invoke the public Elenctic campaign, load its file
+file in the subject repository. Use Universalist's question-led disclosure for
+inquiry and claim-bound evidence requirements before retaining a nomination. Do not
+invoke the public Elenctic campaign, load its file
 worker as this workflow, or import Actuating execution/review-credit machinery.
 
 ## Architectural assessment

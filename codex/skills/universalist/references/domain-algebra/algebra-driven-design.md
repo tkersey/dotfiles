@@ -1,9 +1,11 @@
 # Domain Algebra Discovery
 
-Use at an already-live semantic decision when the operation vocabulary,
-interacting equations, or observation carrier needs derivation. Reuse the
-existing nomination or recognition fields; this is not another pass, report,
-activation trigger, or prerequisite for an already-dispositive ordinary design.
+Use to formulate and derive task-relevant operations, equations, carriers,
+observations, algorithms, and proofs, including before a boundary problem or
+candidate abstraction is named. A grounded required use is enough to begin.
+Let mathematical knowledge suggest hypotheses and concrete evidence discriminate
+them. Reuse the existing inquiry and adequate derivations; this is not another
+stage, report, trigger identifier, or prerequisite for mechanical realization.
 
 The techniques below adapt Sandy Maguire's *Algebra-Driven Design*, especially
 "What Makes a Good Algebra?", "Tiles", "Scavenger Hunt", and "Deriving
@@ -32,7 +34,8 @@ operation, accidental constraint, or false law. Investigate the interactions
 that decide this seam, not an exhaustive operation-pair matrix.
 
 Keep the vocabulary compositional, task-relevant, parsimonious, and orthogonal.
-Generalize only where the equations and a material dividend support it. A
+Investigate task-grounded generalizations; retain them only where the equations
+and a material dividend support their actual realization. A
 convenient derived operation can stay when its relation to the smaller basis is
 clear and it reduces caller knowledge; parsimony does not require forcing callers
 to reconstruct every useful operation. Compare complete caller contracts and
@@ -182,15 +185,59 @@ For law-adequacy countermodels, generator/observer coverage, and discovered-law
 admission, use [property-test derivation](property-test-derivation.md) only when
 that proof is live. Reuse the existing discriminator and required-valid control.
 
+## Derive a compositional summary, not a framework
+
+Consider an ordered integer trace of resource acquisitions and releases. Required
+observations are final usage and whether any prefix violates the bounds `0..C`,
+given initial usage `u`. Chunks must be summarized and recombined without rescanning
+their elements. This is an engineering derivation, not an example from the book.
+
+A chunk's net change alone loses intermediate violations. Derive the information
+needed by concatenation: `S = (delta, low, high)`, where `low` and `high` are the
+minimum and maximum prefix sums, including the empty prefix. Every prefix of
+`a ++ b` is in `a`, or in `b` after adding `a.delta`; therefore derive:
+
+```text
+combine(a,b) = (
+  a.delta + b.delta,
+  min(a.low,  a.delta + b.low),
+  max(a.high, a.delta + b.high)
+)
+empty = (0,0,0)
+summarize(a ++ b) = combine(summarize(a), summarize(b))
+valid(u,C,s) = (u + s.low >= 0) and (u + s.high <= C)
+```
+
+The carrier is summaries of finite traces, not arbitrary unchecked triples.
+Concatenation supplies closure, identity, and associativity on that carrier;
+the prefix decomposition proves the homomorphism. Native constructors should
+produce valid summaries or validate imported summaries before trusting them.
+For `[+3,-2]` and `[+4,-1]`, the summaries are `(1,0,3)` and `(3,0,4)`;
+their combination is `(4,0,5)`. At `u=0, C=4`, the final usage is acceptable
+but the trace is not. Prefix minima likewise preserve underflow detection.
+
+Three fields and one native operation may suffice. Ordered chunk summaries can
+be recombined or maintained incrementally; associativity does not license
+permuting chunks. Use exact arithmetic or account for the host's overflow behavior.
+The summary proves the supplied trace's accounting property, not that concurrent
+external effects follow that trace. Keep per-event identity, audit, and failure
+observations separately when required. Compare workload and storage costs before
+claiming a speedup; a direct loop can remain better for a single scan.
+
+The mathematical structure derives what must be retained and how to compose it.
+No generic algebra interface, new public boundary, or construction card is required.
+
 ## Return to the existing decision
 
 Algebra discovery supplies carriers, operations, observations, laws, non-laws,
 interpreters, and falsifiers to the current nomination. It does not select a
 route by itself. Keep `UNI-ORDINARY` available for a count map, local fold, or
-transition function; preserve an adequate incumbent under live change pressure.
-Use `UNI-CONSEQUENTIAL` only for materially different live candidates, and the
-existing typed-hole/card gate only when ordinary comparison leaves a real hole.
-Unknown evidence is not `UNI-OBSTRUCT`.
+transition function; preserve an adequate incumbent that resolves the question.
+Use `UNI-CONSEQUENTIAL` before accepting materially different live candidates.
+Focused theory may help discover the formulation; actual card prerequisites and
+claim-appropriate evidence govern retention, not permission to inquire. Unlisted
+constructions need the same proof, not registry expansion. Unknown evidence is
+not `UNI-OBSTRUCT`.
 
 A lawful structure requires its laws and interpretation. A claimed universal
 construction additionally requires the relevant diagram, admissible maps and

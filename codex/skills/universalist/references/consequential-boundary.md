@@ -1,6 +1,8 @@
 # Consequential Boundary Decision
 
-This module is normative only for a consequential Universalist seam.
+Use this module for materially different native candidates, including algorithms
+and transformations within an unchanged public boundary. It governs comparison
+and acceptance, not permission to discover the candidates or formulate the question.
 
 ## Disclosure contract
 
@@ -9,13 +11,15 @@ behavior, owner or authority, admitted domain, representation, compatibility,
 migration, enforcement, information retention, legal composition, effects,
 resources, invalidation, or proof obligations.
 
-**Required evidence before loading:** one owned seam, the incumbent and ordinary
-candidate, required observations, at least one alternative, and a reason the
-routes are materially different.
+**Carry into comparison:** the task, required observations, available candidates,
+constraints, evidence, and the material difference to decide. Derive missing
+model-owned owners, carriers, axes, and typed holes during inquiry rather than
+requiring them on entry. At first use, do not invent an incumbent.
 
-**Do not load when:** the incumbent is already exact, one ordinary artifact
-clearly dominates, the evidence is only syntactic duplication, or the task is
-wholly internal to one unchanged boundary.
+**Do not repeat comparison when:** an adequate argument already resolves the
+question, or the work is purely mechanical with no new semantic uncertainty.
+An unchanged owner or public boundary does not exclude algorithmic or
+representational alternatives. Syntactic resemblance alone proves no law.
 
 **Return:** one decision-changing argument using the receiving workflow's evidence:
 comparison, native artifact, enforcement and residual ownership, transition when
@@ -76,11 +80,12 @@ layer, deployment topology, or external authority cannot provide it.
 
 ## Ordinary candidate and comparison universe
 
-Carry forward the incumbent, ordinary native candidate, and grounded alternatives
-from the common path. Do not rediscover them. First-use requirements can justify an
-alternative without duplicated code. Expand only for a live requirement, material
-tradeoff, or evidence capable of overturning the nomination; stop when further
-alternatives cannot change the decision, not at a fixed candidate count.
+Carry forward the incumbent when present, native baseline, and useful hypotheses
+from the common inquiry. Reuse sufficient derivations. Mathematical knowledge may
+suggest a hypothesis before its applicability is established; investigate the
+correspondence and deciding laws before retention. First-use synthesis needs no
+duplicate or failed ordinary attempt. Stop when the decision is adequately
+supported and no material question remains, not at a fixed candidate count.
 
 Then define the comparison universe:
 
@@ -136,11 +141,15 @@ tradeoffs do not establish dominance.
 
 When several candidates are incomparable minima, return `underdetermined`.
 
-## One axis and one typed hole
+<a id="one-axis-and-one-typed-hole"></a>
 
-Name one primary architectural axis and one compatible hole per packet.
-The unit of reasoning is the smallest interacting law family needed to decide
-that hole, not an isolated equation. Constructor validity plus permitted mutation,
+## Derive the axis and typed hole when useful
+
+An axis or typed hole may clarify a candidate's obligation; it need not be fixed
+before discovery or fabricated for an ordinary algorithm. Revise the model-owned
+formulation when a better one removes the original hole. The unit of reasoning
+is the smallest interacting law family needed to decide the question, not an
+isolated equation or a mandatory packet. Constructor validity plus permitted mutation,
 state equivalence plus future transitions, and description composition plus
 effect interpretation must be checked together when they interact.
 
@@ -172,7 +181,7 @@ holes:
   proof
 ```
 
-Independent pressures become linked packets. Necessary cross-axis interactions
+Independent questions remain separately attributable in the existing argument. Necessary cross-axis interactions
 remain in this argument; do not split them into individually valid but jointly
 unsound certificates. Do not force unrelated axes into one global winner.
 
@@ -186,9 +195,12 @@ informs comparison but does not select; `analogy only` remains explanatory metad
 
 ## Construction-card evaluation
 
-Use `references/universal-construction-registry.yaml` only after the axis and
-typed hole are known. Read only card fragments relevant to evidenced signals,
-requirements, and the ordinary comparison.
+Consult `universal-construction-registry.yaml` or exact theory references to
+formulate or resolve a task-grounded question, including discovery of the axis
+or typed hole. Read focused fragments, not the full corpus. An unlisted construction
+is investigable without registry expansion; retain it only with the same actual
+hypotheses, interpretation, discriminator, native comparison, feasibility, and
+claim-appropriate proof. Use `derived:<name>` instead of inventing a card identifier.
 
 Construction cards nominate structures or universal constructions. They do not
 authorize mutation. Select the proof profile from the actual claim as specified
@@ -250,9 +262,9 @@ Legal composition must be explicit and closed over valid artifacts. Illegal
 composition should be unrepresentable where possible; otherwise one
 owner-controlled combinator rejects it.
 
-When a selected mechanic introduces specialized composition witnesses, follow
-that card's exact boundary-typing, composition, coherence, interpretation,
-resource, and invalidation obligations. Do not infer effect commutativity,
+When a selected mechanic introduces specialized composition witnesses, establish
+its actual boundary-typing, composition, coherence, interpretation, resource, and
+invalidation obligations; use the exact card when the construction is registered. Do not infer effect commutativity,
 authority preservation, safe parallelism, or resource independence from
 structural coherence alone.
 
@@ -260,7 +272,7 @@ structural coherence alone.
 
 One explicit interpreter, projection, serializer, compiler, handler, renderer,
 or lowering owns semantics. It preserves required observations, effect order,
-compatibility, resources, and every specialized witness selected by the card.
+compatibility, resources, and every witness required by the selected construction.
 
 ## Enforcement allocation
 
@@ -469,7 +481,7 @@ Assign a route after lowering:
 - `UNI-PRESERVE` — an exact incumbent survives comparison.
 - `UNI-ORDINARY` — the ordinary artifact closes the seam without material
   advanced-construction delta.
-- `UNI-CANONICAL` — an advanced card materially strengthens the ordinary
+- `UNI-CANONICAL` — a registered or unlisted advanced construction strengthens the ordinary
   candidate and has a complete claim-appropriate effective witness. The route
   name itself does not assert a universal property.
 - `UNI-OBSTRUCT` — no honest representable or effective artifact remains.
@@ -489,8 +501,8 @@ Use the smallest profile that matches the requested work:
 - **One-seam refactor** — implement one narrow owner-controlled artifact.
 - **Staged migration** — strengthen internals behind stable wire, API, or
   storage shapes.
-- **Canonical boundary artifact** — use an evidence-bound card to strengthen one
-  typed hole.
+- **Canonical boundary artifact** — use an evidence-bound construction to resolve
+  the derived obligation; registry membership is not a prerequisite.
 - **Composition certification** — make one-dimensional composition or a
   selected specialized compatibility calculus explicit.
 - **Exact context** — prepare certified context before semantic consumption.
