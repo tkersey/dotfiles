@@ -54,7 +54,7 @@ These are claim-specific parts of the transfer law, not another certificate.
 | functions and relations/queries are conflated | double category of functions and relations | strict functional maps and generalized relational semantics coexist |
 | resource/permission logic | resource category / separation model | ownership, disjointness, capability transfer |
 | partial/nondeterministic specs | relation / profunctor world | backward reasoning, compatibility, bidirectional views |
-| generated outputs | Coyoneda-like payload + path | provenance and lowering laws |
+| generated outputs | deferred-map representation, with separate provenance when required | lowering laws; Coyoneda only with its actual reindexing equivalence |
 
 ## Indexed-description pivot
 
@@ -263,22 +263,24 @@ When two spatial worlds compose, Day convolution may lift product patch composit
 
 ## Track H protocol
 
-1. Name the current world.
-2. Name the hard operation.
-3. Name the easy world.
-4. Explain what becomes easy there.
-5. Define the transfer/encoding into the easy world.
-6. Define interpretation/transport back.
-7. State what is forgotten, approximated, quotiented, or made syntax.
-8. Add preservation law and falsifier.
-9. When spatiality is used, add effective halo/basis and continuity/resource law.
-10. When convolution is used, add index tensor/kernel, decomposition/quotient policy, representable law, and effectivity bound.
-11. When Tambara is used, add ambient and endpoint actions, profunctor, frame, laws, representability, and effect/resource owner.
-12. When double categories are used, add both arrow families and laws, typed square boundaries, both pastings, interchange/coherence, double-functor interpretation, normalization/invalidation, and an effect/resource falsifier.
+Develop the current and proposed worlds, the hard operation, what becomes easier,
+encoding, interpretation back, preserved/forgotten distinctions, transfer law, and
+falsifier in the existing inquiry. These can be discovered together; they are not
+entry prerequisites or an additional sequence of workflow stages.
+
+For the retained mechanics, establish the applicable laws above and their actual
+hypotheses, effects, resources, and required observations. Claim-specific proof
+obligations belong to [claim-appropriate-proof.md](claim-appropriate-proof.md),
+not to a mandatory report attached for every technique considered. A composed
+construction needs its interaction law as well as valid components.
 
 ## Certificate fields
 
-Use `templates/category-pivot-certificate.md`. For spatiality attach the spatial report; for Day attach the Day report; for Tambara attach the Tambara report. For double categories complete the two-dimensional sections of the Category Pivot and Composition Certificates and link the double-category doctrine/mechanics.
+Reuse the receiving workflow's argument and evidence. Its adapter owns authority
+and presentation; this reference does not require a Category Pivot, spatial, Day,
+Tambara, or double-category report. A template is optional guidance unless an
+actual authorized consumer requires that format. Preserve applicable proof detail
+without duplicate certificates or a new storage obligation.
 
 ## Guardrail
 

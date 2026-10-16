@@ -46,6 +46,29 @@ The implementation must realize the required representation and equations,
 not merely carry arbitrary provenance metadata. A bounded path vocabulary may
 remain an adequate ordinary artifact without claiming the full correspondence.
 
+### Intensional provenance does not generally descend to the quotient
+
+Consider the small category with one object `B = {0,1}` and all four functions
+`B -> B`, with its inclusion functor into `Set`. Let `id` be identity and `flip`
+exchange 0 and 1. The reindexing equation with `x = 0`, `h = flip`, and `f = id`
+identifies:
+
+```text
+(1, id) ~ (0, flip)
+lower(1, id) = 1 = lower(0, flip)
+```
+
+An observer returning the deferred function distinguishes these representatives,
+so it is not well-defined on this Coyoneda quotient. The correspondence preserves
+the functor's extensional meaning, not arbitrary representative/path history.
+
+When audit or replay requires that history, retain intensional path syntax or
+provenance separately and relate its interpretation to the extensional result.
+Alternatively, justify a richer model with its own actions and observations.
+Do not silently alter the reindexing relation and claim the original theorem.
+A plain deferred-map structure with explicitly retained history remains useful;
+neither raw provenance metadata nor finite sample agreement proves Coyoneda.
+
 ## With Kan lifts
 
 Use public observations in `C0` and deferred realization paths in `B` when those

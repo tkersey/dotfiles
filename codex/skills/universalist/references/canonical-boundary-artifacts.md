@@ -1,6 +1,10 @@
 # Canonical Boundary Artifacts
 
-Use this catalogue after naming the worlds, boundary kind, unknown location, witness slice, law, and falsifier. Select the smallest artifact that makes the seam exact. A category-theory label is justified only when it changes code shape or proof obligations.
+Use these examples to develop a task-grounded construction, not to restrict inquiry
+to an already-named boundary. The entrypoint owns activation and evidence states;
+[claim-appropriate-proof.md](claim-appropriate-proof.md) owns claim obligations.
+Code shapes below are possible realizations, not universal implementation requirements.
+Select the least burdensome adequate artifact; a label alone establishes nothing.
 
 Ordinary and `structure` artifacts need their applicable construction and
 preservation laws. Add the
@@ -8,11 +12,27 @@ preservation laws. Add the
 only when claiming universality; ownership and representation control do not
 establish that stronger claim.
 
+## Validated subtype without normalization
+
+A stable predicate can define a checked value without changing its representation:
+
+```text
+makeNonZero(x) = Error when x == 0, otherwise Ok(x)
+value(makeNonZero(x)) = x                         when x != 0
+```
+
+Admission excludes zero, preserves every required nonzero value, and retains its
+observations. Any permitted operation on trusted values must preserve the predicate
+or return an explicit checked result. No normalization operation is needed.
+When a chosen realization introduces normalization, establish its actual meaning,
+observation preservation, and any claimed idempotence separately. An equalizer
+claim additionally names the parallel maps and its factorization/uniqueness law.
+
 ## Pullback witness / compatibility object
 
 Use when two source values, models, requests, configurations, or evidence objects must agree through a shared projection.
 
-Code shape:
+One possible code shape for independently supplied sources:
 
 ```text
 data CompatiblePair A B C = ...
@@ -31,10 +51,10 @@ g : B -> C
 Proof signals:
 
 - `f(projectA(p)) == g(projectB(p))`;
-- mismatches are rejected at construction;
-- both original values remain recoverable;
+- mismatches cannot acquire trusted status, by representation or checked admission;
+- both required source projections remain recoverable;
 - for a universal claim, every admissible producer with compatible views has a mediator preserving both projections, unique under the declared lawful equivalence;
-- no public bypass can create an unchecked pair.
+- sanctioned construction and permitted operations preserve agreement; opacity is one technique, not a pullback axiom.
 
 Typical uses:
 
@@ -43,6 +63,29 @@ Typical uses:
 - wire/domain compatibility witnesses;
 - evidence attached to the exact required claim;
 - synchronized model/view or configuration/deployment pairs.
+
+### Derive away duplicate coordinates
+
+For immutable value-like sources `A = T x X` and `B = T x Y`, with first-coordinate
+projections to `T`, the set-theoretic pullback has a transparent realization:
+
+```text
+P = T x X x Y
+left(t,x,y)  = (t,x)
+right(t,x,y) = (t,y)
+((t,x),(t,y)) <-> (t,x,y)
+```
+
+Every value agrees by construction and both source projections are recovered.
+For any compatible producer with outputs `(t(z),x(z))` and `(t(z),y(z))`, the
+mediator `z -> (t(z),x(z),y(z))` exists; both projections determine all three
+coordinates, so it is unique. Public construction does not admit a mismatched
+pair. An adapter accepting two independent source values still checks agreement.
+
+This derivation preserves value observations, not automatically original object
+identity, independent mutation, authorization, or provenance. Retain those when
+required; an opaque checked pair may then be appropriate. A native representation
+can discharge agreement without inventing a generic categorical framework.
 
 ## Pushout integration artifact
 
@@ -103,7 +146,7 @@ Proof signals:
 - deleted structure is absent;
 - added structure is present;
 - dangling and forbidden-identification conditions are rejected;
-- failed pushout complement becomes an obstruction report;
+- a witnessed failure of the gluing conditions obstructs that match in the stated category; an unsuccessful search or implementation alone does not;
 - rewrite traces retain provenance.
 
 Use for typed graph rewriting, AST/IR graph transformations, model-driven engineering, dependency-graph refactors, and architecture evolution. Prefer adhesive or adhesive-like categories when local rewrites must compose predictably.
@@ -200,24 +243,30 @@ project(free(required(case))) satisfies required(case)
 
 ## Obstruction report behind a projection
 
-Use when public behavior determines internals but no exact/free lifted implementation can honestly exist.
+Use only for a scoped claim whose admissible constructive alternatives are ruled
+out by evidence and an argument, under [the entrypoint's obstruction contract](../SKILL.md#evidence-and-obstruction).
+Missing evidence, access, or authority remains unresolved; failed attempts are
+counterevidence to those attempts, not a proof that no implementation exists.
 
-Code shape:
-
-```text
-data Obstruction
-  = MissingEvidence(...)
-  | MissingCapability(...)
-  | InconsistentRequirement(...)
-  | UnboundedTemplates(...)
-explainObstruction : RequiredBehavior -> Obstruction
-```
-
-Proof signal:
+The argument must establish, over the actual admissible construction domain:
 
 ```text
-project(free(required(case))) fails because missing evidence/template/constraint is named
+Every admissible realization violates a specified required obligation.
 ```
+
+Name the claim, fixed assumptions, reproducible witness, effectivity account,
+falsifier, and reopening condition in the existing decision. These are evidence
+obligations, not a new failure hierarchy or mandatory report.
+
+For example, if a fixed observation erases a bit that the required output must
+recover, two bit-distinct sources with the same observation refute every realizer
+that can depend only on that observation. Access to an additional distinguishing
+observation can reopen the claim. By contrast, an uninspected decoder supplies
+no such argument. A missing capability matters only after proving its necessity
+under the fixed host constraints; an unbounded or failed template search does
+not rule out a different effective representation. An obstruction to a demanded
+free/canonical choice leaves adequate weaker constructions available without
+pretending they discharge that stronger requirement.
 
 ## Residual obligations
 

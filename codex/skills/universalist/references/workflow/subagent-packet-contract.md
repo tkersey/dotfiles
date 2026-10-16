@@ -12,11 +12,11 @@ scope:
   typed_hole: "<compatible hole, provisional hypothesis, not-yet-identified, or not-applicable>"
 observations:
   - claim: "<verified observation>"
-    evidence_ref: "<file:line, command, trace, or not-inspected>"
+    evidence_ref: "<inspected file:line, executed command, or observed trace>"
 candidate:
   summary: "<role-specific candidate or none>"
   repository_native_artifact: "<artifact or none>"
-  current_encoding_relation: "<relation or not-material>"
+  current_encoding_relation: "<material correspondence, scope, law strength, and placement; or not-material>"
   nearest_false_friend: "<candidate or not-material>"
   discriminating_law: "<law/counterexample or not-material>"
   generalization_dividend: "<material delta or none>"
@@ -29,14 +29,14 @@ countercase:
   summary: "<strongest ordinary or neighboring challenge>"
   disposition: "defeats | narrows | survives | unresolved"
 proof_obligations:
-  - "<required check>"
+  - "<required check, unresolved evidence, and next discriminator>"
 residual_obligations:
   - "<requirement + owner + check time; or none>"
 invalidators:
   - "<proof-lease invalidator; or none>"
 resource_bound: "<effective bound or unresolved>"
 obstructions:
-  - "<missing effectivity, evidence, primitive, law, or resource constraint; or none>"
+  - "<claim-scoped impossibility argument with witness and reopening condition; or none>"
 agreement_pressure: "confirms | challenges | narrows | conflicts | none"
 stale: false
 final_call: "<one-line recommendation>"
@@ -44,7 +44,13 @@ final_call: "<one-line recommendation>"
 
 Rules:
 
-- observations are evidence-backed; proposals are not observations;
+- observations are evidence-backed; proposals and uninspected claims are not observations;
+- `candidate` describes the actual construction, including composite or unregistered
+  constructions. Use `card_dispositions: []` when no card is used; never invent a
+  card to fill the packet. Catalogue membership changes neither acceptance nor proof;
+- missing evidence or authority belongs in `proof_obligations` or owned
+  `residual_obligations` and the unresolved recommendation, not `obstructions`.
+  The entrypoint owns evidence states and claim-scoped obstruction requirements;
 - one packet covers one bounded question; axis and typed hole may be derived or
   revised during inquiry rather than supplied as admission prerequisites;
 - distinguish provisional scope from evidenced conclusions; do not invent an

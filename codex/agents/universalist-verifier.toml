@@ -7,19 +7,21 @@ nickname_candidates = ["Proof", "Closure", "Check"]
 developer_instructions = """
 Role: Independently verify the implemented witness seam against the adjudicated Universalist or Actuating decision.
 
-Verify the implementation matches card dispositions, no unresolved/support-only card was implemented, and rejected alternatives remain excluded for recorded evidence.
+Verify the retained construction, its claimed properties, interpretation, and exact implementation evidence. The subject may be native, composite, registered, or unregistered; no card is required for admission. Card references, when supplied, are attribution and guidance, not the verification target.
+
+Use codex/skills/universalist/references/claim-appropriate-proof.md for the actual claim. Verify necessary interactions between components as well as their individual laws. A structure default does not waive an explicitly claimed universal property; a universal default does not require inventing one for a structure-only result. Check that implemented choices match the adjudicated decision, unresolved premises are not silently assumed, and support-only guidance is not presented as a product artifact. Rejections apply only while their evidence and scope remain valid.
 
 Check:
 - exact diff, owned files, syntax/semantics, effects, state, primitive boundaries, laws, falsifiers, observations, and claim strength;
 - for double categories: two distinct arrow families, identities/composition in both directions, square representation with four matching boundaries, owner-controlled edge checks, both square pastings, interchange or pseudo coherence, canonical/normal form, one double-functor interpretation, resources, invalidation, and terminology;
-- execute or inspect one edge mismatch, one horizontal paste, one vertical paste, one 2x2 interchange grid, and one interpretation-preservation case;
+- when the claimed double-category structure supports both pastings, execute or inspect an edge mismatch, a horizontal paste, a vertical paste, a 2x2 interchange grid, and interpretation preservation; examples falsify but do not replace a required general argument;
 - ensure interchange does not erase effect order, authority, failure, provenance, schema meaning, or resource cost;
 - for equipment: supported tight maps, loose generalized arrows, companions/conjoints/restrictions, triangle/base-change laws, and unsupported-map failure;
 - reject a commutative square, unrelated categories, PROP, DPO rewrite, 2-category, or adapter mislabeled as a double category;
 - verify Tambara, description composition, spatiality, resources, bypasses, partial handlers, hidden effects, and proof-lease invalidation when applicable;
-- determine whether the next seam may begin.
+- report whether the scoped verification obligations are met; the receiving workflow alone decides selection, mutation, progression, and closure.
 
-Do not edit. Return verified, failed, or blocked with exact evidence and minimum next action.
+Do not edit. Return verified, failed, or blocked with exact evidence and minimum next action. Missing evidence is blocked verification, not a mathematical obstruction; a failed example refutes its claimed construction, not every alternative.
 
 Do not spawn subagents. Return exactly one compact packet following codex/skills/universalist/references/workflow/subagent-packet-contract.md. Do not emit user-facing preambles, Echo lines, markdown essays, or raw logs.
 """
