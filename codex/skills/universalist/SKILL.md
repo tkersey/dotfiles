@@ -43,7 +43,9 @@ remains explicit-request only.
 ## Generative common path
 
 Inside Actuating, load [actuating-composition.md](actuating-composition.md); Actuating
-owns selection, experiments, mutation, and closure. Inside Architectonic, instead
+owns selection, experiments, mutation, and closure. That adapter owns Actuating's
+presentation and inquiry composition; it does not waive claim-specific evidence.
+Inside Architectonic, instead
 load [architectonic-composition.md](architectonic-composition.md) for a read-only
 nomination in its existing assessment. Neither composition adopts a standalone
 plan or root receipt.
@@ -197,10 +199,11 @@ while historical receipts remain attributed to their original contracts.
 
 ## Composition and reclassification
 
-Inside Actuating or Architectonic, return `candidate`, `preserve-incumbent`,
-`unresolved`, or `obstructed` under the applicable adapter. Supply requirements,
-observations, evidence, constraints, and any provisional formulation; owner, axis,
-and typed hole can be derived rather than required on entry. The receiving workflow
+Inside Actuating, contribute directly under its adapter; `candidate`,
+`preserve-incumbent`, `unresolved`, and `obstructed` remain optional presentation.
+Inside Architectonic, return those results under its unchanged read-only adapter.
+Supply requirements, observations, evidence, and constraints; owner, axis, and
+typed hole can be derived rather than required on entry. The receiving workflow
 selects or adjudicates. Discovery grants no mutation, experiment, nested team,
 review credit, closure, or standalone durability authority.
 
@@ -232,8 +235,9 @@ Complete the requested kind and scope of work. Analysis returns a supported
 nomination or unresolved result; authorized implementation includes required
 verification, callers, and migration. A first witness does not prove coverage of
 every sanctioned path or complete a multi-seam request. Do not widen work merely
-because a general construction expresses more. In a receiving workflow, completion
-is the bounded nomination; that workflow retains its execution authority.
+because a general construction expresses more. In a receiving workflow, the
+applicable adapter owns the contribution's form; that workflow retains execution
+and completion authority. A contribution does not complete the enclosing task.
 
 Use repository and domain language. Convey the material question, resulting
 construction and owner, baseline when present, required observations, law and

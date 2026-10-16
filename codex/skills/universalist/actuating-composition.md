@@ -2,69 +2,38 @@
 
 ## Actuating composition
 
-Inside `$actuating`, Universalist is a nominator only. Actuating owns invocation
-within initial construction, review, or reconsideration whenever semantic derivation
-is needed; a previously named boundary problem is not required. Supply the task,
-required behavior and observations, concrete evidence, constraints, and any
-provisional formulation. Owner, axis, operation vocabulary, and typed hole may be
-outputs of inquiry rather than required inputs. Preserve source-fixed choices;
-return improvements to model-owned formulations for Actuating to adjudicate.
+Inside `$actuating`, contribute algebraic and categorical derivation directly to
+its [construction core](../actuating/SKILL.md#initial-construction). Supply or reuse
+required behavior, observations, evidence, and constraints; owner, axis, carrier,
+operations, and typed hole may emerge during inquiry. Reuse adequate derivations
+instead of a duplicate root or worker pass.
 
-Reuse sufficient supplied derivations. Do not run a duplicate root or worker pass
-for mechanical realization of a settled construction. Mathematical inquiry and
-focused reference consultation do not authorize experiments, successor mutation,
-or review-epoch violations. Native algorithms and transformations can be useful
-nominations without changing a public boundary or introducing a framework.
+Actuating owns selection, experiments, mutation, and closure. Universalist supplies
+knowledge and supported conclusions, not a separate decision stage. A direct
+algorithm, representation, proof, corrected explanation, or preservation argument
+can suffice. The existing `candidate`, `preserve-incumbent`, `unresolved`, and
+`obstructed` classifications remain interpretable but are optional presentation,
+not required output or a new route or mode. Missing evidence or incomparable
+adequate candidates remain unresolved; do not invent an obstruction or winner.
+Obstruction still requires the [entry's evidence](SKILL.md#evidence-and-obstruction).
 
-Return `candidate`, `preserve-incumbent`, `unresolved`, or `obstructed` with the smallest
-code-bound argument that changes Actuating's decision: trigger evidence, owner
-and operation, required law/observations, discriminator, and material migration,
-residual, or invalidation consequences. For counterexample-driven work, identify
-the enabling freedom removed or lawfully controlled. Reuse supplied facts and proof references. No fixed field projection
-or second Working Set report is required. This presentation rule takes precedence
-over packet and field templates in every loaded Universalist reference. Applicable
-evidence and proof obligations still hold; satisfy them by reusing the receiving
-workflow's evidence rather than repeating it. Standalone serialization never applies
-here, and its plan/receipt machinery remains unloaded.
+This adapter owns Actuating's presentation and inquiry composition. It takes
+precedence over generic nomination, route-reporting, and packet instructions in
+the entry and loaded references; it does not relax their applicable evidence,
+comparison, or claim-strength requirements. Keep substantive conclusions and
+limitations in the existing work, without a second report. Standalone plans,
+receipts, and durability stay unloaded; Architectonic's adapter is unchanged.
 
-Return `unresolved` when evidence is missing or adequate candidates remain
-incomparable; name that reason and the smallest available discriminator. This
-is a supporting result, not a new route or mode. Do not convert uncertainty into
-`obstructed`, preserve an unjustified incumbent, or invent a winner. Actuating
-owns any authorized experiment outside an open review epoch and blocks only the
-affected decision. Obstruction still requires the [evidence specified in the entry](SKILL.md#evidence-and-obstruction).
+Use Actuating's [proof acceptance](../actuating/SKILL.md#proof-acceptance) and
+[common proof obligations](../actuating/SKILL.md#realization-and-common-proof-obligations)
+for the realized result. The existing [construction argument](../actuating/references/counterexample-guided-normalization.md)
+supplies applicable domain, transformation, coverage, migration, and preservation
+obligations. A direct contribution is not executed proof. Do not erase required
+history, evidence independence, legitimate operations, or optional-safe-behavior
+limits through consolidation or approximation.
 
-An ordinary nomination can be direct: derive the receipt subject from the
-execution-owned evidence instead of accepting both independently; retire the
-unchecked constructor, migrate callers, and identify the mismatch witness and
-required-valid counterpart. This nominates work; it is not proof of a successor.
-Admission, preservation under permitted operations, and sanctioned-path coverage
-remain distinct obligations. Adequate native evidence may discharge them without
-a duplicate topology account. When route or migration coverage needs explicit
-accounting, return the relevant source-derived topology obligations to Actuating.
-
-A candidate may improve the causal explanation. Return the material delta and
-its discriminator for Actuating's existing selection decision; do not silently
-redefine the family or require a separate co-refinement pass. The family is not
-just its observed examples, and a local correction may still be the adequate
-construction.
-
-When a candidate changes the comparison domain, quotients distinctions, or
-conservatively approximates behavior, justify total interpretation over that
-domain, reflection of every concrete violation, exclusion of invalid behavior,
-and preservation of required valid behaviors and observations at an explicit
-evidence strength. Do not underapproximate danger or erase required distinctions.
-Report any optional safe behavior excluded by a conservative approximation;
-diagnostic exactness is separate from safety. Do not invent these transformations
-or their reporting fields for a candidate that does not use them.
-
-Keep primary enforcement distinct from derived trust-boundary, compatibility,
-observability, and compensating guards. Do not nominate a construction as adequate
-while a sanctioned escape or permitted transition still admits its claimed family.
-
-Universalist never selects or reopens Actuating's target, adjudicates its causal
-alternatives, grants mutation or closure, allocates a plan/root receipt, or persists
-an Actuating architecture artifact. Actuating alone adjudicates the nomination
-and any interpretation delta in its active Working Set. Git and actual proof own
-the realized result. Standalone selection remains subject to its applicable
-consequential and durability contracts.
+The enclosing route governs every effect. `analyze` remains read-only; mathematical
+inquiry cannot authorize experiments, successor mutation during a review epoch,
+new teams, corpus writes, publication, or closure. New runs bind Actuating's current
+contract and exact loaded sources; historical results retain their original
+attribution. No standalone Universalist policy or serialization change is implied.

@@ -1,6 +1,6 @@
 {
   "schema": "actuating-review-contract/v17",
-  "contract_id": "actuating-review-contract-v21",
+  "contract_id": "actuating-review-contract-v22",
   "required_lenses": [
     {
       "name": "standard",
@@ -157,13 +157,14 @@
     "local_repair_first_required": false,
     "incumbent_preservation_is_dominance": false,
     "pre_mutation_theorem_equality_required": false,
-    "metanoetic_before_universalist_when_triggered": true,
+    "metanoetic_before_universalist_when_triggered": false,
     "live_boundary_not_route_label_triggers_universalist": true,
     "plausible_subtractive_comparison_when_redundancy_evidenced": true,
     "two_complete_implementations_required": false,
     "source_size_only_after_constructional_adequacy": true,
     "causal_target": "first sanctioned construction or transition lacking the required guarantee",
-    "discriminator_target": "the enabling independent choice, write, ordering, or authority; a valid-state transition when implicated"
+    "discriminator_target": "the enabling independent choice, write, ordering, or authority; a valid-state transition when implicated",
+    "reasoning_sequence_required": false
   },
   "candidate_acceptance": {
     "actual_exact_head_required": true,
@@ -278,7 +279,7 @@
     ],
     "independently_governed_axes_require_split": true,
     "boundary_contract_compiled_before_selection": true,
-    "nomination": "compact code-bound construction argument; reuse supplied facts instead of a fixed projection",
+    "nomination": "direct contribution to the current construction; named result and separate handoff are optional",
     "required_obligation_classes": [
       "owner",
       "required observations",
@@ -317,7 +318,8 @@
     "open_domain_generator_and_preservation_required_for_complete_claim": true,
     "self_authored_omission_list_sufficient": false,
     "nomination_is_executed_proof": false,
-    "ephemeral_working_set_only": true
+    "ephemeral_working_set_only": true,
+    "nomination_result_required": false
   },
   "owner_source_frontier": {
     "derived_from_current_owner_facts": true,
@@ -347,6 +349,7 @@
     "counterexample_count_is_distance_to_correctness": false,
     "policy_unit_tests_prove_model_efficacy": false,
     "held_out_requires_witness_not_supplied_to_implementing_run": true,
-    "new_review_lane_or_runtime_score_required": false
+    "new_review_lane_or_runtime_score_required": false,
+    "comparison_ref": "codex/skills/actuating/tests/construction-comparison.md"
   }
 }

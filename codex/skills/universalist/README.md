@@ -117,10 +117,14 @@ semantic inquiry. Architectonic invokes it within its existing read-only assessm
 Both supply required behavior, observations, evidence, constraints, and any
 provisional formulation; owner, axis, operations, and typed hole may be outputs.
 
-The adapters retain `candidate`, `preserve-incumbent`, `unresolved`, and `obstructed`.
-Universalist nominates; the receiving workflow selects or adjudicates and retains
-its experiment, mutation, review-epoch, and closure authority. No duplicate root
-pass, nested team, standalone plan, or root receipt is added. Team mode remains
+Actuating accepts direct contributions; `candidate`, `preserve-incumbent`,
+`unresolved`, and `obstructed` are optional presentation under its adapter.
+Architectonic's read-only nomination contract is unchanged. Each receiving workflow
+retains selection, experiment, mutation, review-epoch, and closure authority.
+Actuating binds its composition changes to its own current contract and exact
+loaded sources; this changes no standalone route, proof requirement, or durable
+serialization. No duplicate root pass, nested team, plan, or root receipt is added.
+Team mode remains
 explicit-request only. Independently durable standalone decisions continue to use
 the existing durability module only when independent addressing is actually needed.
 

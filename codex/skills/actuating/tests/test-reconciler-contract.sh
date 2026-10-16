@@ -25,9 +25,9 @@ const c = json('references/review-contract.json');
 const d = json('references/decision-contract.json').skill_decision_contract;
 const names = ['standard','soundness-skeptic','footgun-finder','invariant-ace','complexity-mitigator','fresh-eyes'];
 assert.equal(c.schema, 'actuating-review-contract/v17');
-assert.equal(c.contract_id, 'actuating-review-contract-v21');
+assert.equal(c.contract_id, 'actuating-review-contract-v22');
 assert.equal(d.contract_version, 'SKDC-v1');
-assert.equal(d.skill.source_fingerprint, 'actuating-construction-compiler-v20');
+assert.equal(d.skill.source_fingerprint, 'actuating-construction-core-v21');
 assert.deepEqual(c.required_lenses.map(l => l.name), names);
 assert.deepEqual(c.required_lenses[0], {name:'standard',role:'standard',instruction_source:'codex-default',custom_instructions:false});
 assert.deepEqual(c.review_scheduling.initial_lens_order, names);
@@ -57,10 +57,11 @@ assert.equal(c.counterexample_corpus.current_applicability_recomputed, true);
 assert.equal(c.counterexample_corpus.actuating_copy_or_store_forbidden, true);
 assert.equal(c.construction_selection.objective, 'required-law-realization-with-family-exclusion-and-required-valid-preservation');
 for (const key of ['cumulative_causal_basis_before_candidate_selection','discriminator_selected_before_implementation',
-  'mechanical_defect_requires_no_invented_sibling_quota','metanoetic_before_universalist_when_triggered',
+  'mechanical_defect_requires_no_invented_sibling_quota',
   'live_boundary_not_route_label_triggers_universalist']) assert.equal(c.construction_selection[key], true, key);
 for (const key of ['local_repair_first_required','incumbent_preservation_is_dominance',
-  'pre_mutation_theorem_equality_required','two_complete_implementations_required']) assert.equal(c.construction_selection[key], false, key);
+  'pre_mutation_theorem_equality_required','two_complete_implementations_required',
+  'metanoetic_before_universalist_when_triggered','reasoning_sequence_required']) assert.equal(c.construction_selection[key], false, key);
 assert.equal(c.review_entry.common_candidate_proof_regardless_of_label, true);
 assert.equal(c.review_entry.actual_semantic_diff_authority_required, true);
 assert.equal(c.candidate_acceptance.labels_grant_mutation_or_weaker_proof, false);
@@ -185,7 +186,7 @@ assert(text('SKILL.md').includes('[counterexamples.md](counterexamples.md)'), 'c
 const causal = text('counterexamples.md').split('## Compile the first loss of guarantee\n')[1].split('\n## ')[0].replace(/\s+/g, ' ');
 for (const rule of [
   'Acceptance establishes a supported disagreement, not the causal explanation',
-  'From that source-derived domain, choose the smallest discriminator before implementation that could refute the explanation',
+  'Before realizing a selected candidate, choose a source-supported mechanism discriminator',
   'retain or derive the missing distinction',
   'Distinguish model adequacy, required semantic content, and operation coverage',
   'without merging away independent verification',
@@ -205,12 +206,13 @@ assert(construction.failure_signals.includes('a shared predicate, exhaustive swi
 assert(text('SKILL.md').includes('[architecture.md](architecture.md)'), 'architecture guide not routed');
 const rootStep = text('architecture.md').split('## Architecture compilation')[1].split('\n## ')[0].replace(/\s+/g, ' ');
 assert(rootStep.includes('When the existing Metanoetic trigger fires'));
-assert(rootStep.includes('apply `$glaze` then `$metanoetic` verbatim in one shared activation, before `$universalist`'));
+assert(rootStep.includes('apply `$glaze` then `$metanoetic` verbatim in one shared activation'));
+assert(rootStep.includes('This pairing does not impose an order relative to Universalist'));
 assert(rootStep.includes('One activation is not a cap on reasoning, evidence gathering, or useful revision'));
 assert(rootStep.includes('Reuse applicable findings rather than reinjecting the passages'));
 assert(rootStep.includes('Encouragement changes neither admissibility nor the proof bar'));
 assert(rootStep.includes('Add no separate Glaze report or adjudication stage'));
-assert(rootStep.includes('Let the inquiry discover which premises and evidence need reinspection'));
+assert(text('SKILL.md').includes('No fixed order of'));
 assert(rootStep.includes('Keep the accepted Goal fixed'));
 assert(rootStep.includes('Use `$universalist` within initial construction or subsequent task-relevant semantic inquiry'));
 assert(rootStep.includes('An unknown owner or typed hole is investigable, not an admission failure'));
@@ -242,11 +244,11 @@ assert(text('agents/openai.yaml').includes('Glaze then Metanoetic verbatim in on
 const challenger = d.clauses.find(cl => cl.clause_id === 'ACT-METANOETIC-ADMISSIBILITY-001');
 // Preserve the resource obligation in the existing decision, not a new artifact.
 assert(challenger.required_artifacts.includes('resource account, smallest witness, and falsifier'));
-assert(rootStep.includes('Supply the resource account in the existing decision: justify feasibility against those ceilings using applicable evidence or a concrete bound'));
-assert(rootStep.includes('leave unestablished feasibility unresolved'));
+assert(rootStep.includes('feasibility against authorized resource ceilings using applicable evidence or a concrete bound'));
+assert(rootStep.includes('Leave unestablished feasibility unresolved'));
 assert(rootStep.includes('Reuse evidence only while its subject and assumptions remain applicable'));
-assert(rootStep.includes('add no separate report or benchmark stage'));
-assert(challenger.success_signals.includes('one shared Glaze-primed Metanoetic activation under the existing trigger, before Universalist'));
+assert(rootStep.includes('No separate comparison packet or benchmark stage is required'));
+assert(challenger.success_signals.includes('one shared Glaze-primed Metanoetic activation under the existing trigger, with no required order relative to Universalist'));
 assert(challenger.success_signals.includes('canonical Glaze then Metanoetic instructions share one context; encouragement does not change admissibility or proof'));
 assert(challenger.failure_signals.includes('Glaze adds a trigger, separate stage, report, review, or acceptance authority'));
 // Canonical byte preservation and wrapper boundaries; not model-efficacy evidence.
@@ -266,15 +268,16 @@ assert(mandate.includes('no identified incumbent, advance challenger, or finishe
 assert(mandate.includes('user requirements, authorized effects, resource ceilings, and proof obligations remain binding'));
 assert(mandate.includes('The receiving workflow retains final selection, execution, and closure authority'));
 assert(!mandate.includes('It generates candidates only'));
-assert(rootStep.includes('no identified incumbent, advance alternative, or finished comparison is required'));
+assert(text('SKILL.md').replace(/\s+/g,' ').includes('a named defect, owner, axis, or typed hole is not a prerequisite'));
 assert(rootStep.includes('Task resource limits, read-only routes, and review-epoch freezes still apply'));
-assert(rootStep.includes('Develop comparisons and discriminators as needed before selection, not as prerequisites for inquiry'));
+assert(text('SKILL.md').includes('does not demand a finished causal account before authorized'));
 assert(challenger.success_signals.includes('inquiry needs no identified incumbent, advance challenger, or finished comparison'));
 assert(challenger.success_signals.includes('selection obligations are developed during inquiry, not demanded as entry artifacts'));
 assert(challenger.failure_signals.includes('evaluation expectations changed merely to agree with the candidate'));
 // End pairing source-contract regressions.
 console.log('actuating: contract, routing, proof ownership, challenger pairing, retired surfaces, and reference links passed');
 JS
+node "$skill_root/tests/test-construction-core.mjs"
 node "$skill_root/tests/test-review-credit.mjs"
 sh "$skill_root/tests/test-construction-cycle-scenarios.sh"
 sh "$skill_root/tests/test-post-elimination-scenarios.sh"
