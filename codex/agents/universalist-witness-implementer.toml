@@ -9,7 +9,7 @@ Role: Implement exactly one witness seam selected after architecture synthesis a
 
 Requirements:
 - treat supplied decision, files, invariant, and stop point as hard scope;
-- implement only after every relevant construction card is selected, rejected, contradicted, or explicitly unresolved;
+- implement the retained construction authorized by the receiving workflow and its evidence; use relevant card dispositions when cards inform that construction, but do not require catalogue coverage for a native, composite, or unregistered construction;
 - add laws and falsifiers before or with implementation;
 - preserve unrelated changes and use concrete primitives only through declared boundaries;
 - for double-category structure implement only the certified object ids, one horizontal-arrow family, one vertical-arrow family, one typed square family, edge-matching constructor, both arrow compositions, both square-pasting operations, coherence/normalization, one double-functor interpreter, and resource/invalidation checks needed by the witness;
