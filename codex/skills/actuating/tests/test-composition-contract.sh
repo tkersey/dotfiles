@@ -55,34 +55,9 @@ for (const [name, digest] of Object.entries(lensBlobs)) {
   assert.equal(createHash('sha1').update(`blob ${bytes.length}\0`).update(bytes).digest('hex'),
     digest,`review instruction bytes changed: ${name}`);
 }
-// Premise-directed construction source contracts; not native-runtime or model-efficacy tests.
+// Historical examples remain available techniques, not mandatory derivation steps.
 {
-  const normalized = path => text(path).replace(/\s+/g, ' ');
-  const initial = section(text('SKILL.md'), 'Initial construction').replace(/\s+/g, ' ');
-  const causal = section(text('counterexamples.md'), 'Compile the first loss of guarantee').replace(/\s+/g, ' ');
-  const guide = normalized('references/counterexample-guided-normalization.md');
-  for (const rule of [
-    'including exceptional outcomes and required subsequent behavior',
-    'Work forward from the actual code and authoritative state to what is established',
-    'Let the first unsupported implication select the next edit or deciding inspection',
-    'Missing proof is not a witnessed defect',
-    'inspect the owner and reachability before inventing a repair',
-    'deriving it from existing authority',
-    'preserving a necessary distinction',
-    'giving its owner the inputs and operation to establish and preserve it',
-    'changing the algorithm or decomposition so it no longer needs that premise',
-    'Do not silently assume it, transfer it to callers, or strengthen admission against required-valid behavior',
-    'derive the invariant and progress argument needed by the contract',
-    'These choices refine the current construction, not a new proof packet'
-  ]) assert(initial.includes(rule), 'missing premise derivation: ' + rule);
-  for (const rule of [
-    'Use [initial construction](SKILL.md#initial-construction)',
-    'claimed premises or evidence remain true but the required behavior fails',
-    "Establish the observation's applicability",
-    'missing semantic rule from a transcription defect in an already-adequate rule',
-    'A local correction can establish a reusable native scope or transition rule',
-    'no paired-case quota or forced redesign'
-  ]) assert(causal.includes(rule), 'missing premise discriminator: ' + rule);
+  const guide = text('references/counterexample-guided-normalization.md').replace(/\s+/g, ' ');
   assert(guide.includes('### Derive the missing premise at its owner'));
   assert(guide.includes('[owner examples](#derive-the-missing-premise-at-its-owner)'));
   assert(guide.includes('try self.persist(value, previous, "task.cancel"); errdefer self.store().fence();'));
@@ -92,7 +67,7 @@ for (const [name, digest] of Object.entries(lensBlobs)) {
   assert(guide.includes('Zero ancestry bytes alone cannot distinguish reuse from bypassing the cache'));
   assert(guide.includes('not native runs performed by reading this guide or untouched evidence of skill efficacy'));
 }
-// End premise-directed construction source contracts.
+// The reduced construction contract is checked by test-construction-core.mjs.
 // Source-contract checks below validate the declared handoffs. They do not
 // simulate an agent, execute Ledger/CAS, or prove model effectiveness.
 const nominationResults = ['candidate','preserve-incumbent','unresolved','obstructed'];
@@ -104,8 +79,9 @@ for (const path of ['SKILL.md',
 }
 assert(text('../universalist/SKILL.md').includes('[actuating-composition.md](actuating-composition.md)'), 'composition guide not routed');
 const universalist = section(text('../universalist/actuating-composition.md'),'Actuating composition');
-assert.match(universalist,/Return `unresolved` when evidence is missing or adequate candidates remain\s+incomparable/);
-assert.match(universalist,/not a new route or mode/);
+assert.match(universalist,/Missing evidence or incomparable\s+adequate candidates remain unresolved/);
+assert.equal(policy.universalist_compilation.nomination_result_required,false);
+assert.match(universalist,/not required output or a new route or mode/);
 const fold = text('../review-fold/SKILL.md');
 const corpus = text('../review-fold/references/counterexample-corpus.md');
 assert.match(fold,/corpus_write_authorized: true \| false # enclosing task; omitted means false/);
@@ -135,5 +111,6 @@ assert(!text('../complexity-mitigator/SKILL.md').includes('complexity_evidence:'
 assert.match(text('references/closure.md'),/\.\.\/SKILL\.md#realization-and-common-proof-obligations/);
 console.log('actuating: composition source contracts, unchanged modes, review policy, proof bar, and exact lens bytes passed');
 JS
+node "$skill_root/tests/test-construction-core.mjs"
 node "$skill_root/../review-fold/tests/test-counterexample-admission.mjs"
 node "$skill_root/tests/test-auxiliary-discovery.mjs"

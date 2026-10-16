@@ -2,101 +2,46 @@
 
 ## Architecture compilation
 
-At a live boundary decision, use `$first-principles` with the cumulative evidence
-to separate accepted obligations from inherited means. Reuse adequate derivations;
-source-fixed outcomes remain binding even when not derived from technical premises.
-No pre-mutation theorem-identity certificate is needed to reconsider a mechanism.
-
-When the existing Metanoetic trigger fires, read both skills and apply `$glaze`
-then `$metanoetic` verbatim in one shared activation, before `$universalist`.
-A grounded task or question is enough; no identified incumbent, advance alternative,
-or finished comparison is required. Let the inquiry discover which premises and
-evidence need reinspection and follow useful discoveries through investigation and
-revision, not candidate generation alone. An incumbent may be the construction,
-causal explanation, oracle/proof interpretation, or assessment of progress; a code
-rewrite or live architecture change is not a prerequisite for reconsideration.
-Reuse applicable findings rather than reinjecting the passages for a new label,
-commit, reviewer, or review wave alone. One activation is not a cap on reasoning,
-evidence gathering, or useful revision; a new derivation can matter without a code
-change. Task resource limits, read-only routes, and review-epoch freezes still apply.
-
-Keep the accepted Goal fixed. Model-owned proxies and evaluation methods may be
-revised with source-grounded justification, never by changing expectations merely
-to agree with a candidate. Develop comparisons and discriminators as needed before
-selection, not as prerequisites for inquiry. At selection, supplied boundaries must
-be `preserved`, `made irrelevant by mechanism change`, or `requires new authority`;
-required observations, compatibility, effects, host capabilities, and authorized
-resource ceilings still govern selection. Supply the resource account in the existing
-decision: justify feasibility against those ceilings using applicable evidence or
-a concrete bound; leave unestablished feasibility unresolved. Reuse evidence only
-while its subject and assumptions remain applicable; add no separate report or
-benchmark stage. Incumbent representations and lifecycle burdens are evidence, not
-immutable constraints. Retaining a sound construction or refuting an allegation can
-be the right outcome. Actuating retains final selection, execution, and closure
-authority. Encouragement changes neither admissibility nor the proof bar. Add no
-separate Glaze report or adjudication stage, and no mandatory second review of the review.
-
-Use independent reconstruction when explicitly requested or when Actuating judges
-that deriving a design or explanation without the accumulated rationale could
-materially improve a task-relevant decision. Follow
-[independent-reconstruction.md](references/independent-reconstruction.md) before
-delegating, within existing delegation, privacy, and resource limits. This
-read-only technique is discretionary, not a new mode, default pass, or review
-lane. It neither replaces nor gates Glaze, Metanoetic, or Universalist; all
-selection, mutation, proof, and closure authority stays with Actuating.
+Use the [construction core](SKILL.md#initial-construction); this guide composes
+supporting capabilities, not a second design procedure. Keep the accepted Goal
+fixed. Model-owned assumptions, representations, explanations, and evaluation
+methods may change with evidence, never by changing expectations merely to agree
+with a candidate. Design opportunities remain nonblocking unless an accepted
+obligation is violated or their realization is part of the accepted task.
 
 Use `$universalist` within initial construction or subsequent task-relevant
-semantic inquiry, not only after architecture reconsideration has been named.
-Supply required behavior, observations, concrete evidence, constraints, and any
-provisional formulation. Let algebraic and categorical reasoning discover or revise
-the model-owned carrier, operations, interpretation, axis, typed hole, and proof.
-A fixed interface does not settle an internal algorithm or representation. Reuse
-adequate derivations; mechanical realization alone needs no renewed invocation.
+semantic inquiry. Its [Actuating composition](../universalist/actuating-composition.md)
+feeds the current work directly, without a required nomination label or report.
+An unknown owner or typed hole is investigable, not an admission failure;
+mechanical realization alone needs no renewed invocation. Algebraic and categorical
+knowledge, including [domain algebra discovery](../universalist/references/domain-algebra/algebra-driven-design.md),
+remains available; it does not prescribe a particular representation or framework.
 
-Keep interacting laws together across their causal extent, not the reported
-function. For disagreeing phases under one law, derive the judgment-preserving
-relationship rather than separate local repairs. An unknown owner or typed hole
-is investigable, not an admission failure. Preserve source-fixed choices,
-authoritative facts, derived projections, and distinct history in their actual roles.
-Require `candidate`, `preserve-incumbent`,
-`unresolved`, or `obstructed` with a compact code-bound argument, its discriminator,
-and material migration/residual consequences. Missing evidence or incomparable
-adequate candidates remain `unresolved`, not an invented obstruction or arbitrary
-winner. Split independent seams and prove their composition. Universalist
-nominates; Actuating selects and proves.
+When the existing Metanoetic trigger fires, read both skills and apply `$glaze`
+then `$metanoetic` verbatim in one shared activation. This pairing does not impose
+an order relative to Universalist or require an advance challenger. Reuse applicable
+findings rather than reinjecting the passages. One activation is not a cap on
+reasoning, evidence gathering, or useful revision. Encouragement changes neither
+admissibility nor the proof bar. Add no separate Glaze report or adjudication stage.
 
-When the operation vocabulary, interacting equations, or observation carrier
-needs derivation, have that nomination use Universalist's existing
-[domain algebra discovery](../universalist/references/domain-algebra/algebra-driven-design.md).
-Derive operations from required uses, use contradictions to revise the carrier,
-and look for a sufficient interpretation whose composition preserves the required
-meaning. Relevant theory may suggest the question before a construction is named;
-its hypotheses must be earned before acceptance. Reuse the current argument and
-discriminator; do not add a discovery stage, mandatory model, reference quota, or
-framework when native lowering suffices. Actuating still owns all experiments,
-review-epoch freezes, selection, mutation, and closure.
+Use `$first-principles` or `$reduce` when their methods resolve a material question,
+not as compulsory construction stages. Independent reconstruction remains
+discretionary; read [its effect and isolation rules](references/independent-reconstruction.md)
+before using a separate context. No automatic fan-out or standing architecture
+worker is introduced. Supporting skills cannot expand the task's authority.
 
-In that existing selection, compare adequate interfaces through a representative
-caller and a source-supported change. What must a new producer or consumer know,
-choose, sequence, synchronize, or clean up, and what becomes owner-local? Prefer
-removing those obligations without weakening the common proof bar; concealing
-them is not reduction. Prefer the smallest adequate semantic boundary. Consider a
-source-supported ordinary owner change when a local patch is framed against a
-broad redesign. A cross-phase construction may extend an existing query owner
-rather than add a shared description. In the same caller comparison, identify which
-semantic choices become derived and which independent interpretations disappear.
-Shared location or mutual agreement is not preservation; retain distinct judgments
-and independent verification rather than forcing every operation through one meaning.
-Sketch its smallest complete caller-facing contract and keep it beside the interface
-when realizing it. Required implementation knowledge or avoidable choreography is
-reason to reconsider the interface, not shorten its explanation by omission.
-Reuse supplied comparisons; add no design pass, report, review lane, or mandatory
-second implementation. Design opportunities remain nonblocking unless an accepted
-obligation is violated.
+Before selecting a changed construction, justify required observations,
+compatibility, effects, host capabilities, and feasibility against authorized
+resource ceilings using applicable evidence or a concrete bound. Leave
+unestablished feasibility unresolved. Preserve independent judgments and evidence
+where they establish different facts; fewer exports or relocated duties alone
+are not reduced responsibility. Reuse evidence only while its subject and
+assumptions remain applicable. No separate comparison packet or benchmark stage
+is required.
 
-Choose the exact-head verifier before implementation and realize the mechanism,
-migrations, and retirements together under the common proof obligations. Use `$reduce`
-only for material retirement or smaller-construction challenges, not another audit.
-An adopted change to an owner, representation, interpretation, or proof updates the
-affected obligations regardless of its label. Native evidence may discharge coverage;
-use explicit topology only where route or migration accounting requires it.
+Actuating owns selection, experiments, mutation, and closure. Task resource limits,
+read-only routes, and review-epoch freezes still apply. The root's
+[proof acceptance](SKILL.md#proof-acceptance) and
+[common proof obligations](SKILL.md#realization-and-common-proof-obligations)
+govern every selected change, including its migrations, retirements, and residuals.
+A direct derivation grants no proof credit or exemption from claim-specific evidence.

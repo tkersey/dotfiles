@@ -7,38 +7,15 @@ description: "Implement accepted goals, analyze counterexamples, or close out re
 
 ## Mission
 
-Actuating is a **requirements-to-construction compiler** with a
-counterexample-to-construction feedback path. Use the required behavior to derive
-representations, operations, algorithms, and interpretations whose construction
-explains their correctness. Develop the code and its argument together; use
-witnesses to revise the model, domain, or realization. Preserve required-valid
-behavior while removing what permits the supported failure family.
+Realize the accepted behavior, not the incumbent design. Derive and implement
+constructions whose guarantees establish the required relationships, including
+required-valid behavior. A repaired example or excluded family does not discharge
+a broader accepted Goal.
 
-```text
-accepted Goal -> required observations and laws
--> derive the construction and its correctness argument together
--> exact code + law implication + preservation proof
-
-frozen reviewed candidate -> cumulative accepted counterexamples
--> causal explanation -> discriminating sibling predictions
--> law-preserving construction -> sanctioned-path migration
--> family exclusion + required-valid preservation -> adversarial review
-```
-
-The accepted law remains the completion target; an excluded family alone cannot
-establish it. For admitted observations and traces `B'`, the source-required law
-`L`, and any supported invalid family `Phi`, establish:
-
-```text
-B' satisfies L throughout the source-required domain
-B' intersect Phi = empty
-required-valid subset B'
-every sanctioned path to trusted behavior crosses a law-preserving boundary
-```
-
-A checked constructor is not sufficient by its name. Its admission, ownership,
-transitions, lifetime, and bypass closure must make the law hold in the declared
-domain. Untrusted bytes may exist; acquiring trusted status must enforce the law.
+The [construction core](#initial-construction) governs initial implementation and
+repair. [Source binding](#source-binding), [proof acceptance](#proof-acceptance),
+and the [common proof obligations](#realization-and-common-proof-obligations)
+remain binding; a method, label, or narrative cannot replace their evidence.
 
 ## Authority and fact ownership
 
@@ -50,7 +27,7 @@ domain. Untrusted bytes may exist; acquiring trusted status must enforce the law
 | Review attempt, target, verdict, and provenance | CAS |
 | Finding authority, applicability, duplicates, and admitted witnesses | `$review-fold` and `review-fold/counterexample-corpus` |
 | Causal explanation, candidate selection, realization, and closure | `$actuating` |
-| Mechanism challenger / generative construction nomination / redundant factors | `$metanoetic` / `$universalist` / `$reduce`, interpreted by Actuating |
+| Mechanism reconsideration / generative derivation / redundant factors | `$metanoetic` / `$universalist` / `$reduce`, interpreted by Actuating |
 | Public effects and readback | `$ship` and the provider |
 
 Supporting skills do not grant mutation or closure. Actuating owns no Ledger
@@ -84,16 +61,16 @@ These change scheduling only. They do not change authority or the review invento
 
 ## Selected guidance
 
-Read only the guidance selected by the route or current evidence, before its
-first governed decision or effect. A linked workflow is mandatory when selected,
-not optional background. Do not load every workflow at entry.
+Read the applicable source, evidence, claim, and effect rules before their governed
+decision or effect. Construction techniques are selectable aids, not a required
+reasoning sequence. Do not load every workflow or reference at entry.
 
 | Selected work | Required guidance |
 |---|---|
 | Initial/local `implement` | Source binding, initial construction, proof acceptance, realization, and completion below; no review campaign is required. |
 | `analyze` | The same source and claim discipline, read-only. Load the relevant evidence or architecture guidance; do not execute realization, persist a corpus, publish, or grant closure. |
 | A finding, failed check, or counterexample-driven selection | [counterexamples.md](counterexamples.md), before admitting a liability or selecting its response. |
-| Task-relevant semantic derivation, a live boundary decision, or an existing Metanoetic trigger, including a suspect explanation or oracle | [architecture.md](architecture.md), within the existing inquiry before selecting the affected construction; do not wait for a named boundary defect to use Universalist. |
+| Using supporting construction skills or a selected architecture technique | [architecture.md](architecture.md) for composition and effect boundaries; its techniques do not add a construction stage. |
 | An elimination claim meets a current witness, a broader Goal obligation remains unresolved after a narrow repair, or efficacy is being assessed | [recurrence.md](recurrence.md), before retaining the claim or selecting a successor. |
 | `review-closeout`, or bare Actuating reaching review | [review-closeout.md](review-closeout.md) and its required review contract, before the first CAS request; use the complete frozen-subject and convergence rules. |
 | Bare Actuating reaching publication | `$ship`; publication does not replace subsequent review-closeout. |
@@ -104,8 +81,9 @@ selected contract rather than repairing mid-wave. Use available waiting time for
 of the frozen candidate; route self-discovered findings through Review Fold.
 `corpus_write_authorized: false` always applies to `analyze`; supporting skills
 cannot enlarge effect authority.
-Universalist may return `candidate`, `preserve-incumbent`, `unresolved`, or
-`obstructed`; Actuating retains selection and proof authority.
+Universalist's existing `candidate`, `preserve-incumbent`, `unresolved`, and
+`obstructed` results remain interpretable; their labels are not required output.
+Actuating retains selection and proof authority.
 
 <a id="observe-and-adjudicate"></a>
 Counterexample adjudication is in [counterexamples.md](counterexamples.md#observe-and-adjudicate).
@@ -153,66 +131,52 @@ identity is required. A summary or digest never replaces the source or proves co
 
 ## Initial construction
 
-Use the law to generate the implementation. Work backward from required results
-and permitted continuations, including exceptional outcomes and required subsequent
-behavior, to the premises the next operation needs. Work forward from the actual
-code and authoritative state to what is established. Let the first unsupported
-implication select the next edit or deciding inspection. Missing proof is not a
-witnessed defect; inspect the owner and reachability before inventing a repair.
+This is the construction core for initial work and accepted counterexample repair.
+Treat representations, algorithms, operation boundaries, and decomposition as
+design variables wherever the source permits. Use mathematical and domain knowledge
+to derive the construction, including `$universalist` for task-relevant semantic
+work; a named defect, owner, axis, or typed hole is not a prerequisite. Reuse
+adequate derivations rather than running a duplicate pass.
 
-Resolve a missing premise by deriving it from existing authority, preserving a
-necessary distinction, giving its owner the inputs and operation to establish and
-preserve it, or changing the algorithm or decomposition so it no longer needs that
-premise. Do not silently assume it, transfer it to callers, or strengthen admission
-against required-valid behavior. For a proposed step, derive when it establishes
-the required result; let those conditions determine its algorithm, inputs, or guards.
-For iteration or recursion, derive the invariant and progress argument needed by
-the contract. These choices refine the current construction, not a new proof packet.
+Work directly between required observations, concrete code, and deciding evidence.
+Choose the next inspection, derivation, or authorized experiment because it resolves
+an actual uncertainty or establishes a required relationship. No fixed order of
+diagnosis, algebraic derivation, prototyping, or proof attempts is required. This
+freedom changes neither effect authority nor the proof required for acceptance.
 
-Treat the representation, operation vocabulary, algorithm, and interpretation as
-design variables within source-fixed constraints. Distinguish authoritative
-facts, derived projections, and separately retained history. Change the carrier
-when it invents irrelevant distinctions or erases required ones. Derive a shared
-meaning when production observations repeat it; remove materialization when its
-inspection, identity, sharing, and persistence roles are unnecessary or preserved.
-Use the [construction moves](references/counterexample-guided-normalization.md#constructive-derivation)
-when a law has not yet suggested an adequate native realization.
+Missing proof is not a witnessed defect. A counterexample can challenge the
+implementation, its model, an oracle, or a claimed justification; establish which
+before treating its proposed remedy as necessary. Do not silently assume a missing
+premise, transfer it to callers, or reject required-valid behavior to avoid it.
 
-Derive a small useful set of constructors, operations, and lawful combinations
-that expresses the required uses. Establish the primitive meanings and how
-composition preserves them, so supported variants reuse the construction's
-argument. Relate the concrete implementation to the required observations,
-including failures and subsequent behavior; equality, refinement, and required
-progress have different obligations. A hard or repetitive proof can expose a
-better representation, operation, or decomposition. Preserve independent deciding
-evidence even when production interpretations are unified.
+Prefer constructions that make required relationships consequences of permitted
+operations over ones that repeatedly ask callers to reconstruct them. Preserve
+authoritative facts, derived observations, and distinct history in their actual
+roles. A local correction remains adequate when the existing construction already
+establishes the general relationship; neither local-repair-first nor redesign is
+compulsory. A larger owner, extra type, or relocated check is not itself a gain.
 
-Realize the smallest complete affected path before multiplying its variants:
-identity includes production and consumption; recovery includes the promised
-restored observations; validity includes subsequent permitted transitions.
-For delegated work, bind the shared laws and operation/interpretation contracts
-before dividing realization, then establish their actual composition. Use the
-existing source argument and verifier; a partial slice remains work in progress.
+Develop the implementation and its argument together. Hard or repetitive proof may
+justify changing the representation, algorithm, or decomposition. Establish the
+required behavior of primitives and their composition, including exceptional
+outcomes and subsequent behavior. Complete the affected producers, consumers,
+migrations, and retirements; a partial slice remains work in progress. Preserve
+independent evidence even when production meanings are shared.
 
-Use `$universalist` within this construction reasoning when semantic derivation
-is needed, under [architecture.md](architecture.md). A grounded Goal and required
-behavior suffice; no counterexample, review wave, named boundary defect, typed
-hole, or existing implementation is required. Algebraic and categorical knowledge
-may derive a new carrier, operation, algorithm, interpretation, or proof before
-an architectural question is apparent. Actuating retains selection authority.
-Reuse sufficient supplied derivations and adequate boundaries rather than running
-a duplicate pass. Purely mechanical realization needs no renewed inquiry. Use a
-model, solver, or proof tool when it resolves an actual question, not as a mandatory
-second implementation or proof framework. A direct correction remains adequate
-when the existing construction already owns the law.
+Use the [construction repertoire](references/counterexample-guided-normalization.md#constructive-derivation)
+and [supporting skills](architecture.md) when useful. Their examples are not
+required architectures or intermediate deliverables. Keep the applicable
+[common proof obligations](#realization-and-common-proof-obligations) and
+[completion contract](#completion) fixed, not a prescribed account of how to think.
 
 ## Proof acceptance
 
-Before implementation, identify the mechanism's actual guarantee and why it
-implies the source-required observation. Could that guarantee hold while the
-requirement fails? Challenge the implication with a source-supported state or
-trace; a decisive source argument can suffice. Choose the exact-head verifier and
-realize the mechanism, migrations, and retirements under the common proof obligations.
+Before realizing a selected candidate, identify its actual guarantee, why it
+implies the source-required observation, and a source-supported falsifier or
+decisive source argument. Choose the exact-head verifier before that realization.
+This selection rule does not demand a finished causal account before authorized
+exploration; experiments remain subject to the common proof and effect rules.
+Acceptance requires the actual mechanism, migrations, and retirements, not intent.
 
 At entry and after material change, bind the Goal, immutable base, exact head,
 current construction, proof inventory, and any publication state. Read the

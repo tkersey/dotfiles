@@ -4,7 +4,7 @@
     "skill": {
       "name": "actuating",
       "kind": "mixed",
-      "source_fingerprint": "actuating-construction-compiler-v20"
+      "source_fingerprint": "actuating-construction-core-v21"
     },
     "triggers": [
       {
@@ -167,12 +167,13 @@
           "initial implementation may mutate without review dispatch",
           "existing evidence may inform implementation without opening review",
           "local completion needs no CAS convergence or publication",
-          "required relationships distinguish authoritative facts, derived projections, and independently retained history before implementation breadth expands",
+          "required relationships preserve authoritative facts, derived projections, and independently retained history",
           "required results and continuations determine native representations, algorithms, primitive operations, and lawful combinations",
           "primitive meanings and their composition are established under the required observation or refinement relation",
           "a difficult or repetitive proof can revise the representation, algorithm, or decomposition instead of adding per-case obligations",
           "a source argument or requirement-derived deciding observation establishes why the mechanism guarantee implies the required law",
-          "source-derived operation coverage and required-content completeness remain separate obligations"
+          "source-derived operation coverage and required-content completeness remain separate obligations",
+          "the construction core permits useful derivation, inspection, and authorized experiments without a fixed reasoning sequence"
         ],
         "failure_signals": [
           "a review wave or counterexample is required before initial implementation",
@@ -180,7 +181,8 @@
           "typed records, a shared owner, or a weaker guarantee substitute for the required relationship",
           "initial construction requires a speculative framework or a separate architecture packet",
           "requirement narration or a proof template substitutes for deriving and realizing the program",
-          "lawful composition is credited as intended primitive meaning without establishing that meaning"
+          "lawful composition is credited as intended primitive meaning without establishing that meaning",
+          "a prescribed intermediate narrative or nomination is required before inquiry can begin"
         ],
         "rationale": "The accepted law guides discovery of the native program and its composition argument; counterexamples refine the derivation."
       },
@@ -310,11 +312,11 @@
         "required_artifacts": [
           "current task or question and available evidence",
           "Goal-bound comparison developed as needed before selection",
-          "boundary dispositions and changed mechanism when selecting a changed construction",
+          "required boundaries preserved, made irrelevant, or explicitly reauthorized for a changed construction",
           "resource account, smallest witness, and falsifier"
         ],
         "success_signals": [
-          "one shared Glaze-primed Metanoetic activation under the existing trigger, before Universalist",
+          "one shared Glaze-primed Metanoetic activation under the existing trigger, with no required order relative to Universalist",
           "canonical Glaze then Metanoetic instructions share one context; encouragement does not change admissibility or proof",
           "inquiry needs no identified incumbent, advance challenger, or finished comparison",
           "one activation limits duplicate injection, not investigation or useful revision within task limits",
@@ -352,7 +354,7 @@
         "prohibited_routes": [],
         "required_artifacts": [
           "grounded requirements, observations, evidence, and constraints; axis and typed hole may be derived during inquiry",
-          "source-derived domain evidence and compact code-bound nomination",
+          "source-derived domain evidence and a supported direct contribution to the current construction",
           "verifier selected before implementation and executed on the actual exact head",
           "admission, transition, coverage, preservation, migration, retirement, residuals, and claim ceiling",
           "T0, K, tau, F, and independently derived T1 when native evidence cannot otherwise establish route or migration coverage",
@@ -363,7 +365,8 @@
           "source authority determines the domain instead of a model-authored list",
           "independent seams are split and recomposed with proof",
           "new unaccounted sanctioned source elements invalidate coverage under either proof representation",
-          "adequate native evidence discharges obligations without duplicate topology or Working Set reports"
+          "adequate native evidence discharges obligations without duplicate topology or Working Set reports",
+          "named nomination results and separate handoff reports are optional presentation, not additional stages"
         ],
         "failure_signals": [
           "a preidentified owner, axis, or typed hole is required before semantic inquiry",
