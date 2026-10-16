@@ -1,4 +1,4 @@
-# Universalist 18.0.0
+# Universalist 18.0.1
 
 Universalist uses algebraic and categorical knowledge to **formulate and derive**
 solutions, not only recognize abstractions after a boundary decision is named.
@@ -62,6 +62,30 @@ double categories, and universal constructions remains available. The ADD refere
 adds an ordered resource-trace derivation: concatenation determines a three-field
 summary and its combination law. This illustrates deriving an algorithm without
 a generic framework; it is not a required architecture for unrelated tasks.
+
+## Claim-consistent references in 18.0.1
+
+This patch aligns retrieval cards, examples, and explicit-team verification with
+the existing generative and claim-appropriate contract. It does not narrow discovery.
+Structure-only constructions no longer default to unrelated universal proofs;
+actual universal claims still require their diagrams and witnesses. Validation
+need not normalize, and compatibility can follow from shared-coordinate data
+rather than constructor privacy. Coyoneda preserves its extensional meaning,
+not arbitrary path history; the mechanics include a concrete counterexample.
+
+Verification targets the actual construction, including necessary component
+interactions and unregistered constructions. Encoding descriptions retain their
+material correspondence, scope, law strength, and placement together. Missing
+evidence is unresolved in both examples and team packets. Pivot guidance reuses
+the receiving workflow's evidence rather than demanding additional certificates.
+
+Activation, the decision contract and its fingerprint, route/trigger identifiers,
+Ledger definitions, and machine-readable evaluation corpora are unchanged. New
+runs must still bind the exact source commit and loaded references; the unchanged
+contract fingerprint is not evidence that different source versions were replayed.
+Nine additional audit-only disclosure scenarios are specified in
+[efficacy evaluation](references/efficacy-evaluation.md#reference-depth-and-claim-consistency).
+They are authored expectations, not model results or a new runtime evaluation gate.
 
 ## Routes and compatibility
 

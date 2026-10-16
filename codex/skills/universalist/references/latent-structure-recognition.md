@@ -90,20 +90,32 @@ Do not erase effects, authority, provenance, ordering, failure, locality, or res
 
 ## Encoding relations
 
-When a current implementation exists, classify its evidenced relation as one of
-the following. Leave an uninspected or undecided relation unknown; first-use
-synthesis records its requirement-bound derivation rather than inventing an encoding:
+When a current implementation exists, describe the material aspects of its
+relation together. Correspondence, scope, law strength, and placement are not
+mutually exclusive labels. Reuse the existing `Encoding relation` field; do not
+add a mandatory matrix or invent uninspected properties. First-use synthesis
+records its requirement-bound derivation rather than inventing an encoding.
 
-- **literal instance** — the relevant structure and laws are explicitly represented;
-- **observational realization** — representation differs, but the laws hold under sanctioned observations;
-- **partial or degenerate instance** — only a restricted fragment or special case is represented;
-- **lax / pseudo / normalized instance** — laws hold only through an explicit comparison, coherence map, or normal form;
-- **distributed encoding** — the structure exists across several owners or code paths rather than one artifact;
-- **lawless approximation** — the implementation resembles the pattern but violates a defining law;
-- **analogy only** — the resemblance changes no artifact, ownership, composition, migration, or proof;
-- **contradicted** — attributed evidence falsifies the proposed pattern.
+A relation may be literal or observational, hold on the full claimed domain or
+only a named restricted/degenerate fragment, and be concentrated or distributed.
+For example: **a distributed observational realization on immutable snapshots**.
+Retain each qualifier needed for the decision and its evidence; distribution
+alone neither proves nor refutes the laws.
 
-This relation describes the current code. It is separate from the proposed artifact's claim strength:
+Distinguish strict equations from lax comparison maps and pseudo/invertible
+coherence, with the actual structure's coherence laws. A normal form is a
+realization technique whose correspondence needs proof, not automatically a lax
+or pseudo structure. Do not call violated strict equations lawful merely by
+renaming them lax; establish the weaker structure or leave it unresolved.
+
+Unknown evidence remains unknown. A counterexample contradicts the scoped claim
+it addresses, not every weaker or differently scoped interpretation. Reserve
+**analogy only** for resemblance without an established structural correspondence;
+a lawful structure with no engineering dividend is still lawful and need not
+produce new machinery. Explain a law-violating approximation at its actual scope.
+
+This characterization describes the current code. It remains separate from the
+proposed artifact's realization strength and actual proof kind:
 
 ```text
 literal
@@ -256,7 +268,7 @@ Examples:
 
 ### 6. Require a generalization dividend
 
-A recognized pattern survives only when it materially provides at least one of:
+Adopting new abstraction machinery requires a material dividend such as:
 
 - one owner replaces scattered validation or policy;
 - invalid states or illegal compositions become unrepresentable;
@@ -272,11 +284,13 @@ A recognized pattern survives only when it materially provides at least one of:
 - reusable property tests or proof obligations become possible;
 - a genuine obstruction becomes visible.
 
-No material dividend means `analogy only`; keep the ordinary candidate.
+No material dividend means no additional abstraction machinery is justified;
+keep the adequate native candidate. It does not falsify an established mathematical
+correspondence or require relabeling a lawful structure as an analogy.
 
 ### 7. Construct the transition witness
 
-When recognition changes the route, record:
+When changing an existing representation or path, account for the transition even if the route label is unchanged:
 
 ```text
 Current encoding:
@@ -328,8 +342,8 @@ The existing comparison universe, dominance relation, current-context contract, 
 | Concrete encoding | Candidate pattern | Discriminating evidence | Typical transition |
 |---|---|---|---|
 | flag matrix with rejected combinations | coproduct / explicit cases | impossible mixtures are semantically invalid | tagged union behind legacy decoder |
-| stable predicate checked in many places | refined type / equalizer | one predicate remains stable after construction | opaque checked constructor |
-| two values repeatedly compared through one shared projection | pullback-shaped compatibility object | both originals remain observable and shared views must agree | checked aggregate plus preserved projections |
+| stable predicate checked in many places | refined type / equalizer when claimed | one predicate remains stable under permitted operations | native invariant-preserving value or checked constructor; normalization is optional |
+| two values repeatedly compared through one shared projection | pullback-shaped compatibility object | both required projections are recovered and shared views agree | shared-coordinate representation or checked aggregate |
 | merges identify an explicit common overlap | pushout-shaped integration | source injections agree only on declared overlap | one provenance-preserving integration owner |
 | callbacks need replay, audit, authorization, or multiple execution modes | free syntax or defunctionalized IR | cases are finite/effective and one interpreter preserves behavior | encode one callback family and add `apply` / interpreter |
 | operation plan is inspectable before results | free applicative / static plan | later shape does not depend on earlier values | static operation IR |
@@ -377,7 +391,12 @@ mediator preserving both projections has the same pair at every `x`, so is equal
 in this set model. That argument, not a private constructor, supplies the
 pullback property. See `mechanics/pullbacks-and-pushouts.md` for the diagram.
 
-Lower to one opaque checked aggregate, not a generic categorical framework.
+An opaque checked aggregate is one native realization, not a pullback requirement.
+When value-like sources factor through a shared coordinate, derive whether storing
+that coordinate once removes the agreement check; see
+[the transparent realization](canonical-boundary-artifacts.md#derive-away-duplicate-coordinates).
+Do not sacrifice required object identity, independent mutation, or provenance.
+No generic categorical framework is needed.
 Reject both false friends: a raw pair admits mismatches; an additional
 same-backend restriction rejects a required compatible cross-backend pair.
 Test a mismatch, a valid cross-backend pair, and both projections. One rejected

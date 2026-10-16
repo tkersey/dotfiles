@@ -181,6 +181,40 @@ Use focused contrasts for reference gating, candidate quotas, packet presentatio
 first-witness stopping, and available-evidence continuation before attributing a
 bundled gain to one change. Fewer headings cannot compensate for weaker proof.
 
+## Reference-depth and claim consistency
+
+These nine audit-only scenarios exercise the 18.0.1 corrections. They supplement,
+not renumber or relabel, the existing JSON corpora. Keep task requirements and
+independent deciding evidence fixed while comparing the root-only condition with
+applicable card/mechanics disclosure, and the explicit-team path when authorized.
+Bind all loaded bytes and source commits. Vary disclosure separately from policy
+version and card membership; disclose unavoidable coupling. Do not load the whole
+corpus or expose this evaluator guidance to the agent merely to manufacture a test.
+
+| Scenario ID | Ordinary task and relevant disclosure | Required discriminator / control (evaluator-only) |
+|---|---|---|
+| `evidence-not-nonexistence` | Decide whether a decoder can realize required behavior; consult the artifact catalogue and, in the team condition, its packet contract. | Uninspected available code is inspected; unavailable evidence stays unresolved. A genuinely information-losing fixed projection has a scoped impossibility argument. Neither a failed attempt nor a missing capability alone proves nonexistence. |
+| `structure-profile-fidelity` | Verify an ordinary typed pipeline, first-order callback encoding, or ordered effect composition with its selected card. | Establish applicable laws, preservation, effects, and coverage without invented mediation. A separate free/universal claim still needs its actual factorization and uniqueness proof despite a structure default. |
+| `checked-value-without-normalizer` | Accept every nonzero integer and preserve its sign and value through the permitted API. | No normalizer is needed. A candidate that applies absolute value is idempotent but violates required observations; a permitted operation producing zero must not retain unchecked trusted status. |
+| `transparent-shared-coordinate` | Combine immutable `(tenant,x)` and `(tenant,y)` values while preserving both projections and admitting every matching pair. | A transparent `(tenant,x,y)` is admissible, as is any adequate native realization. Mismatched ingress is rejected. Add an identity/provenance-sensitive variant where mere value reconstruction is insufficient. |
+| `deferred-map-versus-history` | Delay conversions while preserving the required result and, in a second variant, the exact audit path. | Use the identity/flip reindexing counterexample from the mechanics: extensional lowering can agree while deferred paths differ. Required intensional history must survive separately or in a justified richer model; do not reject useful ordinary deferred maps. |
+| `card-membership-invariance` | Verify the same source-bound construction once with a matching retrieval card and once without one. | Catalogue membership must not change the required laws or authority. A supported unregistered construction is admissible; an unregistered effect-changing or unproved construction is not exempt. |
+| `composite-interaction-proof` | Verify a derived pipeline whose stages each have valid local arguments, with a required end-to-end effect trace. | Check their interaction and interpretation, not only component certificates. Include a lawful composition and a variant whose fusion/reordering violates the trace. Do not require exactly one card for either subject. |
+| `encoding-aspects-preserved` | Characterize a law implemented across modules through a shared observation, valid for immutable snapshots but not unchecked aliased updates. | Retain distributed placement, observational correspondence, and restricted scope together. A known lawful relation remains lawful without a refactoring dividend; a failed strict law is not repaired by merely naming it lax. |
+| `pivot-reuses-owner-evidence` | Assess a category pivot inside an existing Actuating or Architectonic argument, then consult its specialized reference. | Preserve transfer, effect, resource, and proof obligations without adding mandatory reports, mutation, or durability. An explicitly required consumer format remains applicable; a template's existence alone is not authority. |
+
+The positive controls matter as much as the counterexamples. Accept alternative
+adequate representations and proofs. The examples embedded in these instructions
+are not independent holdouts; derive repository variants that do not reveal the
+expected construction, and keep this table and expected outcomes evaluator-only.
+
+A source audit can establish that contradictory instructions were removed. A finite
+model can validate its stated equations or counterexamples. Neither establishes
+that deeper disclosure preserves agent behavior: that conclusion requires the
+paired runs and their actual artifacts/actions. Report correctness and authority
+regressions alongside changes in unhinted quality, resource use, and reference cost.
+Do not count a larger report, card match, or statement of a law as a passing result.
+
 ## Corpus evolution and result reporting
 
 Freeze new construction-card inventory until repeated paired cases show a concrete

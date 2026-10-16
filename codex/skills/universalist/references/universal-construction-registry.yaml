@@ -1,7 +1,8 @@
 schema: universal-construction-registry/v6
-purpose: Use category theory as an active evidence-bound architectural decision table. Evaluate only cards
-  relevant to one seam, one primary axis, and its necessary interacting law family; the root workflow
-  remains the sole architecture decision authority.
+purpose: Index task-relevant constructions and their mechanics, including components of a derived construction.
+  SKILL.md and decision-contract.json own inquiry and outcomes; claim-appropriate-proof.md owns claim obligations;
+  mechanics references supply mathematical hypotheses and laws. The receiving workflow owns selection and presentation.
+  Cards are retrieval summaries, not an exhaustive theory catalogue or a second policy authority.
 plain_output_default: true
 claim_modes:
 - nomination
@@ -58,7 +59,7 @@ moves:
   generate: Construct the least syntax or structure closed under declared operations.
   observe: Characterize an artifact by sanctioned observations, traces, probes, or contexts.
   transport: Extend, restrict, or migrate semantics coherently across a boundary.
-  realize: Find a concrete implementation behind a fixed projection or return an obstruction.
+  realize: Find a concrete implementation behind a fixed projection; unresolved evidence is distinct from a proved obstruction.
   compose: Make legal sequencing, parallel context, wiring, decomposition, feedback, or two-dimensional pasting explicit.
   frame: Preserve a generalized capability when context is added around its endpoints.
   localize: Represent objects together with coherent neighborhoods, restrictions, and provenance.
@@ -104,13 +105,15 @@ axes:
 - presentation
 - proof
 proof_profile_selection:
-  rule: Select obligations from the actual retained claim, not its name, route, or a legacy card default.
+  rule: Select obligations from the actual retained claim under claim-appropriate-proof.md, not its name, route,
+    universal role, or card default. Separate mathematical hypotheses from host enforcement and optional realization techniques.
   structure: A lawful model or transformation needs its operations, laws, preservation, effectivity, and falsifier;
     mediation, uniqueness, representability, initiality, and finality are not implied.
   universal: A universal claim additionally names the diagram, admissible competitors and maps, factorization
     equations, and a uniqueness argument. A card's universal block is a nomination, never a supplied proof.
-  downgrade: When a legacy universal default is stronger than the required claim, explicitly retain only the
-    adequate structure and its laws; do not claim the theorem or fill mediation and canonicality with API ownership.
+  downgrade: When a default overstates the claim, retain the adequate structure without inventing universality.
+    Conversely, an actual universal claim must discharge the stronger obligations even on a structure-default or unregistered construction.
+    Never use API ownership for mediation or canonicality; an optional realization technique is not a theorem prerequisite.
   realization: Literal, effective_realization, and bounded_approximation are independent of claim kind.
   evidence: Distinguish a derivation, exhaustive finite check, and sampled test; one interpreter or opaque constructor
     does not prove uniqueness. Bounded claims declare their domain, exclusions, and refinement condition.
@@ -141,7 +144,9 @@ decision_discipline:
   cross_axis_signal: Split independently governed pressures; retain necessary state/effect/resource/observation
     interactions in the same bounded argument. one_axis_at_a_time names the primary axis, not proof isolation.
   unknown_signal: leave the card unresolved rather than infer applicability or obstruction
-  verification_target: verification mode names exactly one selectable construction card
+  verification_target: Verify the retained construction, claimed properties, interpretation, and exact evidence.
+    A subject may compose registered or unregistered constructions; card references are optional attribution, not admission.
+    Check necessary interactions as well as component laws. Catalogue membership changes neither proof strength nor authority.
 scope_obligations:
   literal: []
   effective_realization: []

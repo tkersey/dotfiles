@@ -203,7 +203,7 @@ constructions:
   - canonical-boundary-artifacts.md
   - claim-appropriate-proof.md
 - id: validated_subtype
-  expert_name: Equalizer / refined type
+  expert_name: Refined type / equalizer only with a specified parallel pair
   public_name: validated value object
   route: UNI-ORDINARY
   moves:
@@ -218,15 +218,16 @@ constructions:
   laws:
   - valid values are accepted
   - invalid values are rejected
-  - normalization is idempotent
+  - admission preserves required value observations
+  - permitted operations preserve the predicate
   falsifiers:
   - an invalid value crosses the owner boundary
   fallback: boundary validator
   universal:
     role: receiver
-    competitors: every admissible producer satisfying the required equations
+    competitors: only for an equalizer claim, producers equalizing the specified parallel maps
     mediator: a comparison from each equalizing producer whose composite with the subtype inclusion is its specified carrier map
-    canonicality: any two mediators satisfying that inclusion equation are equal under the declared lawful equivalence
+    canonicality: for that equalizer claim, the inclusion equation determines the mediator; validation alone asserts no universality
     effectivity: construction, comparison, interpretation, and validation fit the declared resource model
   selection_mode: selectable
   diagnostic_order: 12
@@ -246,7 +247,7 @@ constructions:
   - literal
   - effective_realization
   - bounded_approximation
-  proof_profile: universal
+  proof_profile: structure
   theory_refs:
   - structures-and-laws.md
   - canonical-boundary-artifacts.md
@@ -263,23 +264,23 @@ constructions:
   requires:
   - shared_observation
   - agreement_is_witnessable
-  - owner_can_be_opaque
   emits:
-  - checked-aggregate-or-join-witness
+  - compatibility-representation-or-join-witness
   laws:
   - shared observations agree
-  - both projections are preserved
+  - both required projections are recoverable and every required compatible pair is represented
+  - permitted operations preserve agreement
   - every compatible producer factors through the owner
   falsifiers:
   - a mismatch is accepted
-  - an unchecked pair bypasses the owner
-  fallback: checked pair
+  - a sanctioned construction or mutation admits disagreement or loses a required source observation
+  fallback: native shared-coordinate representation or checked pair, according to required observations
   universal:
     role: receiver
     competitors: every admissible producer with two maps satisfying the shared observation agreement
     mediator: a comparison from each compatible producer preserving both specified projections
     canonicality: any two mediators satisfying both projection equations are equal under the declared lawful equivalence
-    effectivity: agreement is computable or supplied by a verifiable witness
+    effectivity: agreement follows from the representation or a computable check/verifiable witness; permitted operations preserve it
   selection_mode: selectable
   diagnostic_order: 13
   hole_kinds:
@@ -304,6 +305,7 @@ constructions:
   theory_refs:
   - structures-and-laws.md
   - mechanics/pullbacks-and-pushouts.md
+  - canonical-boundary-artifacts.md
   - claim-appropriate-proof.md
 - id: canonical_quotient
   expert_name: Coequalizer / quotient

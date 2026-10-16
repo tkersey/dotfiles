@@ -1,7 +1,7 @@
 schema: universal-construction-fragment/v6
 constructions:
 - id: deferred_generation_path
-  expert_name: Coyoneda
+  expert_name: Deferred-map representation / Coyoneda only with its reindexing equivalence
   public_name: payload with deferred lowering path
   route: UNI-CANONICAL
   moves:
@@ -15,15 +15,17 @@ constructions:
   - generated-payload-path-ir
   laws:
   - lowering equals direct interpretation
-  - path provenance survives
+  - required provenance is retained explicitly and is not inferred from Coyoneda
+  - every claimed quotient observation is invariant under its reindexing equations
   falsifiers:
-  - two paths with different observable provenance are collapsed
+  - two paths with required distinct provenance are collapsed without a separate preserving representation
+  - an intensional path observer distinguishes representatives identified by the claimed Coyoneda quotient
   fallback: payload plus explicit converter
   universal:
     role: transport
-    competitors: every compatible path that extends, restricts, lowers, or repackages the source behavior
-    mediator: one observation-preserving comparison through the selected transport
-    canonicality: the comparison is unique up to the declared observations, equations, and normalization
+    competitors: for a Coyoneda claim, the specified functor, variance, and maps in its reindexing/coend presentation
+    mediator: lowering by functor action, with the identity representative as inverse modulo the stated relation
+    canonicality: prove the representation correspondence; deferred path identity does not in general descend to the quotient
     effectivity: construction, comparison, interpretation, and validation fit the declared resource model
   selection_mode: selectable
   diagnostic_order: 24
@@ -44,7 +46,7 @@ constructions:
   - literal
   - effective_realization
   - bounded_approximation
-  proof_profile: universal
+  proof_profile: structure
   theory_refs:
   - yoneda-coyoneda-defunctionalization.md
   - mechanics/yoneda-coyoneda.md
@@ -69,9 +71,9 @@ constructions:
   fallback: named callback registry
   universal:
     role: transport
-    competitors: every compatible path that extends, restricts, lowers, or repackages the source behavior
-    mediator: one observation-preserving comparison through the selected transport
-    canonicality: the comparison is unique up to the declared observations, equations, and normalization
+    competitors: not required for defunctionalization; any separately claimed universal property names its own diagram
+    mediator: encode/apply supplies the interpretation relation, not a universal mediator by itself
+    canonicality: callback agreement does not establish a unique representation or free construction
     effectivity: construction, comparison, interpretation, and validation fit the declared resource model
   selection_mode: selectable
   diagnostic_order: 25
@@ -92,7 +94,7 @@ constructions:
   - literal
   - effective_realization
   - bounded_approximation
-  proof_profile: universal
+  proof_profile: structure
   theory_refs:
   - yoneda-coyoneda-defunctionalization.md
   - mechanics/defunctionalization.md
@@ -166,9 +168,9 @@ constructions:
   fallback: ordinary function composition
   universal:
     role: composition
-    competitors: every legal composite and every nearby illegal composition
-    mediator: one explicit composition path for each legal composite
-    canonicality: the comparison is unique up to the declared observations, equations, and normalization
+    competitors: not required for the category laws; a free-category claim specifies generating graph, target categories, and generator maps
+    mediator: only a separately claimed universal construction requires its structure-preserving extension or factorization
+    canonicality: composition laws alone do not assert freeness or unique realization
     effectivity: construction, comparison, interpretation, and validation fit the declared resource model
   selection_mode: selectable
   diagnostic_order: 27
@@ -185,7 +187,7 @@ constructions:
   - literal
   - effective_realization
   - bounded_approximation
-  proof_profile: universal
+  proof_profile: structure
   theory_refs:
   - composition-geometry.md
   - mechanics/foundations.md
@@ -203,16 +205,16 @@ constructions:
   emits:
   - parallel-or-paired-composition-api
   laws:
-  - unit and associativity hold
+  - tensor functoriality and the required unit and associativity coherence hold
   - interchange preserves observations
   falsifiers:
   - supposedly independent components interfere
   fallback: explicit pair or batch
   universal:
     role: composition
-    competitors: every legal composite and every nearby illegal composition
-    mediator: one explicit composition path for each legal composite
-    canonicality: the comparison is unique up to the declared observations, equations, and normalization
+    competitors: not required for the monoidal category laws; a free-monoidal claim specifies generators, equations, target models, and structure-preserving maps
+    mediator: only a separately claimed universal construction requires its structure-preserving extension or factorization
+    canonicality: composition laws alone do not assert freeness or unique realization
     effectivity: construction, comparison, interpretation, and validation fit the declared resource model
   selection_mode: selectable
   diagnostic_order: 28
@@ -230,7 +232,7 @@ constructions:
   - literal
   - effective_realization
   - bounded_approximation
-  proof_profile: universal
+  proof_profile: structure
   theory_refs:
   - composition-geometry.md
   - mechanics/foundations.md
@@ -251,15 +253,16 @@ constructions:
   - pure-embedding-and-sequencer
   laws:
   - pure embedding preserves identity and composition
+  - the pure image satisfies the stated centrality laws
   - reordering is allowed only with observational commutativity
   falsifiers:
   - a reversed effect pair changes state trace result or failure
   fallback: explicit sequential effect pipeline
   universal:
     role: composition
-    competitors: every legal composite and every nearby illegal composition
-    mediator: one explicit composition path for each legal composite
-    canonicality: the comparison is unique up to the declared observations, equations, and normalization
+    competitors: not required for the ordered pure/effect structure laws; a separately claimed free Freyd or other universal construction specifies its models and hypotheses
+    mediator: only a separately claimed universal construction requires its structure-preserving extension or factorization
+    canonicality: composition laws alone do not assert freeness or unique realization
     effectivity: construction, comparison, interpretation, and validation fit the declared resource model
   selection_mode: selectable
   diagnostic_order: 29
@@ -280,7 +283,7 @@ constructions:
   - literal
   - effective_realization
   - bounded_approximation
-  proof_profile: universal
+  proof_profile: structure
   theory_refs:
   - composition-geometry.md
   - mechanics/freyd-categories.md
@@ -299,6 +302,7 @@ constructions:
   emits:
   - component-operation-ir
   laws:
+  - identity and associative substitution satisfy the selected colored-operad laws
   - interpretation preserves substitution
   - forbidden wiring is rejected
   falsifiers:
@@ -306,9 +310,9 @@ constructions:
   fallback: typed builder API
   universal:
     role: composition
-    competitors: every legal composite and every nearby illegal composition
-    mediator: one explicit composition path for each legal composite
-    canonicality: the comparison is unique up to the declared observations, equations, and normalization
+    competitors: not required for the colored operad laws; a free-operad claim specifies colors, generators, target operads, and generator interpretations
+    mediator: only a separately claimed universal construction requires its structure-preserving extension or factorization
+    canonicality: composition laws alone do not assert freeness or unique realization
     effectivity: construction, comparison, interpretation, and validation fit the declared resource model
   selection_mode: selectable
   diagnostic_order: 30
@@ -329,7 +333,7 @@ constructions:
   - literal
   - effective_realization
   - bounded_approximation
-  proof_profile: universal
+  proof_profile: structure
   theory_refs:
   - composition-geometry.md
   - mechanics/operads.md
@@ -347,15 +351,16 @@ constructions:
   emits:
   - network-ir
   laws:
+  - the selected network structure satisfies its applicable identity, composition, and symmetry laws
   - network composition preserves declared semantics
   falsifiers:
   - product bundling loses an output distinction
   fallback: graph of typed components
   universal:
     role: composition
-    competitors: every legal composite and every nearby illegal composition
-    mediator: one explicit composition path for each legal composite
-    canonicality: the comparison is unique up to the declared observations, equations, and normalization
+    competitors: not required for the selected network structure laws; a free PROP or properad claim specifies its generators, equations, target models, and structure-preserving maps
+    mediator: only a separately claimed universal construction requires its structure-preserving extension or factorization
+    canonicality: composition laws alone do not assert freeness or unique realization
     effectivity: construction, comparison, interpretation, and validation fit the declared resource model
   selection_mode: selectable
   diagnostic_order: 31
@@ -374,7 +379,7 @@ constructions:
   - literal
   - effective_realization
   - bounded_approximation
-  proof_profile: universal
+  proof_profile: structure
   theory_refs:
   - composition-geometry.md
   - sources.md
