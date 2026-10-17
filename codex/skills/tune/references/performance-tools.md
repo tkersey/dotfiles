@@ -13,7 +13,8 @@ The Zig implementation lives in
 The distribution remains
 [homebrew-tap/Formula/lift.rb](https://github.com/tkersey/homebrew-tap/blob/main/Formula/lift.rb),
 installed as `tkersey/tap/lift`. Keep this app and formula identity, the `lift-v*`
-release family, and its sole installed executable, `bench_stats`.
+release family, and the installed name `bench_stats`. It is Tune's sole supported
+Lift helper; older Lift packages may also contain other executables.
 
 Resolve the executable and verify its provenance through the known installation
 or source/release before running it; a matching name or help string is not a
