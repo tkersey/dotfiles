@@ -32,11 +32,11 @@ framework, dashboard, score file, or new ledger. If execution is unavailable,
 retain a concrete command/fixture plan and separate hypotheses from observations.
 An unmeasured authorized patch remains explicitly unverified, not an accepted gain.
 
-When using or maintaining `bench_stats` or `perf_report`, read
-[performance-tools.md](references/performance-tools.md) for their current CLI
-contract, provenance, and release ownership. These helpers are optional; missing
-binaries do not block an experiment supported by existing project tools. Do not
-install, rebuild, or release them merely to complete an optimization pass.
+When selecting, using, or maintaining the optional `bench_stats` helper, read
+[performance-tools.md](references/performance-tools.md) for its current CLI
+contract, provenance, and release ownership. It is the sole optional Lift CLI
+helper; its absence does not block an experiment supported by existing project
+tools. Do not install, rebuild, or release it merely to complete an optimization pass.
 
 ## Locate the limiting mechanism
 
@@ -127,3 +127,10 @@ For a requested standalone/full report, adapt
 fields and reusing existing evidence. It is an output resource, not a second
 checklist, mandatory experiment log, or compliance footer. Ordinary results stay
 in Tune's existing report without creating a file solely to fill a template.
+
+When authorized to adapt an existing report, preserve substantive evidence and
+remove obsolete generated compliance sections, score fields, and proof boilerplate
+(such as "Lift Compliance" or `lift_compliance`). Supplied headings and placeholders
+do not establish reporting policy or validation. For read-only inspection, explain
+the findings and obsolete boilerplate in the response without rewriting the report
+or creating a replacement.

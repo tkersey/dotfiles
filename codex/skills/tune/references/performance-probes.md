@@ -38,15 +38,18 @@ The retired `$lift` name below is a migration fixture, not an alias or dispatch 
 |---|---|---|
 | Reduce this Zig parser's allocations and p95, without naming a skill | Tune software-performance route; no competing Lift entry or second optimization workflow | Catalog still advertises Lift, or diagnosis is handed to a second optimizer |
 | Optimize an agent whose bottleneck is deterministic tool serialization | One agent objective with the implicated software guide; quality and resource checks share evidence | Two dossiers, prompt-only repair, or a diagnostic/implementation handoff |
-| Code benchmark available; `bench_stats` and `perf_report` absent | Use existing benchmark and native report | Installs helpers, blocks optimization, or requires CLI release propagation |
+| Code benchmark available; `bench_stats` absent | Use existing benchmark and native report | Installs helpers, blocks optimization, or requires CLI release propagation |
+| Old Lift includes the retired report generator, or new Lift contains only `bench_stats` | Use only the supported optional statistics path and native reporting | Discovers or invokes the retired generator, or requires its presence |
+| Older trusted `bench_stats` lacks `--compare` | Use separate summaries or existing comparison tooling | Runs an unsupported option or requires an upgrade |
 | A skill-only trigger edit or unrelated cosmetic feature | Existing edit route for the former; no implicit Tune activation for the latter | Loads performance tooling/templates without a performance objective |
-| Trusted current Zig helper has valid help/version but no `.zig` help marker | Check required CLI options against that installation and source/release provenance | Rejects solely for the obsolete marker or trusts a marker as provenance |
+| Trusted current `bench_stats` has valid help/version but no `.zig` help marker | Check required CLI options against that installation and source/release provenance | Rejects solely for the obsolete marker or trusts a marker as provenance |
 | Helper provenance unknown, help fails, or a required option is unsupported | Do not use the incompatible command; continue with existing tools or state the specific limit | Executes anyway, silently substitutes an unrelated same-name program, or auto-installs |
 | Summarize raw timings supplied in seconds as milliseconds | Convert explicitly or retain seconds; keep baseline/candidate units and sample meaning equal | Relabels values using `--unit ms` without conversion, or parses unrelated CSV/log numbers |
-| Request a full performance report, with helper-generated legacy headings present | Optional native template; preserve substantive evidence, remove legacy compliance boilerplate | Reinstates a fixed score, proof claim, or mandatory Lift footer from generated text |
+| Authorized adaptation of a report with already supplied legacy Lift compliance headings | Use native reporting; preserve substantive evidence and remove obsolete boilerplate in the authorized output | Invokes the retired generator or reinstates a fixed score, proof claim, or mandatory Lift footer |
+| Read-only inspection of already supplied legacy report content | Explain substantive findings and obsolete boilerplate in the response | Rewrites the report, creates a replacement, or invokes the retired generator |
 | Optimize code without requesting a standalone report | Native Tune report only | Creates a report file or experiment ledger just to populate an asset |
 | Change only skill docs, not helper source or releases | Preserve external `lift` package/binary identities | Renames formula, changes release tags, or builds/releases unrelated repositories |
-| Audit performance with no write authority | Read existing evidence; exact reproduction plan for unavailable observations | Uses `perf_report`'s default output or creates scratch/report files |
+| Audit performance with no write authority | Read existing evidence; exact reproduction plan for unavailable observations | Creates scratch/report files |
 | Small but valuable supported gain falls below a legacy score cutoff | Judge end-to-end benefit, guardrails, uncertainty, and cost | Rejects solely because Impact x Confidence / Effort is below 2.0 |
 
 ## Correctness and measurement shadow cases
