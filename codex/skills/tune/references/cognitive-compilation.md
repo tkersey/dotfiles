@@ -268,8 +268,7 @@ behavior and the target's resulting behavior when a live evaluation is practical
 Compare outcomes and intermediate decision evidence under the same task,
 accepted authority, model configuration, and available tools. Historical episodes
 can nominate a weakness; fresh matched runs are stronger evidence for an adoption
-claim when feasible. An existing `$emulator` workflow may support that comparison,
-but is not a mandatory dependency for an ordinary edit.
+claim when feasible.
 
 Distinguish authored probe expectations, structural checks, executed observations,
 and causal claims. Report what actually ran and what remains unproved through
