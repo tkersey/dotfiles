@@ -15,7 +15,8 @@ SPEC.loader.exec_module(report)
 
 # A small trusted-template fixture isolates server-side rendering/file mechanics.
 # The shared browser UI is not changed or simulated by these tests.
-TEMPLATE = ('<title>__REPORT_TITLE__ · Elenctic</title><b>ELENCTIC</b>'
+TEMPLATE = ('<title>__REPORT_TITLE__ · __REPORT_BRAND__</title><b>__REPORT_WORDMARK__</b>'
+            '<p>Elenctic merge policy</p>'
             '<pre>__REPORT_TEXT__</pre>'
             '<script id="report-data" type="application/json">__REPORT_DATA__</script>')
 
@@ -254,6 +255,7 @@ class CompositionReportTests(unittest.TestCase):
         with patch.object(Path, "read_text", return_value=TEMPLATE):
             document, prepared = report.render(raw)
         self.assertIn("ERGASTERION", document)
+        self.assertIn("Elenctic merge policy", document)
         self.assertIn("Elenctic evidence &lt;script&gt;", document)
         self.assertNotIn("</script><script>alert", document)
         self.assertIn("Elenctic source", prepared["report_text"])

@@ -481,13 +481,13 @@ def script_data(value: Any) -> str:
 def render(raw: Any, *, previous: dict[str, Any] | None = None) -> tuple[str, dict[str, Any]]:
     report = prepare(raw, previous=previous)
     template = (Path(__file__).resolve().parents[1] / "assets" / "report.html").read_text(encoding="utf-8")
-    if report["schema"] == COMPOSITION_SCHEMA:
-        # Brand the trusted shared template before inserting any report/user text.
-        template = template.replace("Elenctic", "Ergasterion").replace("ELENCTIC", "ERGASTERION")
+    # Brand only presentation slots; keep semantic source names unchanged.
+    brand = "Ergasterion" if report["schema"] == COMPOSITION_SCHEMA else "Elenctic"
     replacements = {"__REPORT_DATA__": script_data(report),
                     "__REPORT_TEXT__": html.escape(report["report_text"]),
-                    "__REPORT_TITLE__": html.escape(report["title"])}
-    output = re.sub(r"__REPORT_(?:DATA|TEXT|TITLE)__", lambda m: replacements[m[0]], template)
+                    "__REPORT_TITLE__": html.escape(report["title"]),
+                    "__REPORT_BRAND__": brand, "__REPORT_WORDMARK__": brand.upper()}
+    output = re.sub(r"__REPORT_(?:DATA|TEXT|TITLE|BRAND|WORDMARK)__", lambda m: replacements[m[0]], template)
     return output, report
 
 

@@ -388,3 +388,30 @@ The broader implementation suite results above belong to the prior revision;
 only the focused checks listed here were rerun. These two observations establish
 the intended distinction on the supplied evidence, without qualifying a full
 worker/lens bundle, native campaign, browser behavior, or general review efficacy.
+
+## 2026-10-17 pre-merge report attribution correction
+
+A focused final review found that composed-report branding replaced every
+`Elenctic` occurrence in the trusted HTML template. The newly added source-policy
+label therefore became `Ergasterion merge policy`, although only the Elenctic
+assessment supplied that policy. The rendered metadata and copied handoff share
+this label; the serialized source identity and verdict were unaffected.
+
+Restrict branding to explicit title and wordmark placeholders. The existing
+single-pass substitution continues to escape report data and leaves semantic
+source names intact. Extend the existing trusted-template regression with a
+source-policy label: it failed before the production fix and passed afterward.
+
+| Check | Observed result | Evidence scope |
+|---|---|---|
+| Elenctic report suite | 15 passed | Rendering, escaping, identity, policy, and controlled storage-script checks. |
+| Ergasterion report suite | 31 passed | Shared renderer, source boundaries, file mechanics, and the corrected branding regression. |
+| Policy-binding suite | 11 passed | Snapshot capture and verification mechanisms. |
+| Independent review and actual combined-report render | Correct source attribution; no further actionable finding in the corrective delta | Both assessments were present; only Elenctic supplied `merge_policy`. The title/wordmark remained Ergasterion and the policy label remained Elenctic. |
+| Targeted browser policy-label check | Skipped: Playwright unavailable | Browser metadata and clipboard behavior remain unrun. |
+
+The final policy/handoff source pass found no further actionable contradiction in
+the pragmatic default, additional pedantic construction obligations, or shared
+test-quality requirement. These were focused source reviews, not native Elenctic
+campaigns. The actual-document observation checks generated source; it does not
+replace browser execution or broaden the earlier efficacy claims.
