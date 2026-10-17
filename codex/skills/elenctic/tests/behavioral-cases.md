@@ -672,6 +672,37 @@ material gaps. Then accept that single file once,
 including when its final verdict is BLOCKED. Recovered/resumed attempts obey the
 same rule, with exact worker/turn provenance and no new assignment or durable store.
 
+## 35. Fair continuation does not starve untouched selected paths
+
+Set concurrency to one and select A, B and C in that order. A's first turn is
+incomplete with authorized runnable work; B and C have never started. When B
+runs, it also returns incomplete. In another variant, the oldest queued entry
+is subject to an actual provider retry delay while another entry is runnable.
+
+Expected: A joins the tail behind B and C immediately; B subsequently joins
+behind C and A. Neither waits for aggregate reconciliation, and neither takes
+its newly freed slot ahead of older ready work. Skip the delayed entry without
+losing its position or idling an otherwise available slot. Count live and
+ambiguous deliveries against capacity until their exact state is recovered.
+No fixed retry cap, concurrent duplicate attempt, scope expansion or approval
+streak. Fair opportunity depends on slots becoming available; it is not a proof
+that an arbitrary investigation terminates. A stale epoch still stops dispatch.
+
+## 36. Text-only delivery and no local writes have different consequences
+
+Provide the same capable runtime, selected PR and source access under two limits:
+first `text-only; no HTML report`, then explicit `no-file; do not write local files`.
+The first campaign needs a new private policy snapshot. Also exercise a no-file
+resume with an intact, already-bound readable policy snapshot.
+
+Expected: text-only delivery suppresses HTML while allowing authorized private
+policy/runtime work and otherwise normal review. A genuine no-local-write limit
+prevents creating a new snapshot and produces the actual dependent incompleteness,
+with available source evidence preserved. An existing snapshot may be read and
+verified on resume without recreating it; all remaining caller write limits still
+apply. Never evade a limit through a different directory, treat an output preference
+as a code defect, or claim review coverage from the absence of an HTML artifact.
+
 ## Comparing the review instructions
 
 For cases 15–22, use each case's stated domain/verification authority rather than
@@ -685,3 +716,6 @@ phrase matches, finding counts, or a synthetic mutation score. For cases 23–34
 also score immediate scheduling, exact-attempt recovery, evidence preservation,
 consolidated coverage, and justified stopping; do not reward clean verdicts.
 Record actual runs and limitations; the executable witnesses alone do not demonstrate model efficacy.
+For cases 35–36, inspect actual dispatch order, slot reservations and file effects.
+The deterministic `test_campaign_state.py` traces qualify only the helper's
+mechanical behavior; they do not stand in for these model/runtime observations.

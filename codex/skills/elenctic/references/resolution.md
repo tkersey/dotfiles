@@ -25,7 +25,13 @@ A changed evidence fingerprint reopens handling, not the finding's number.
 Record this association in the existing working set, serialize `number` on each
 finding, and preserve the report's `finding_numbers` history when regenerating.
 The renderer also merges the existing same-path report's number history and rejects
-renumbering/reuse. Do not invent missing original numbers from the current array
+renumbering/reuse. An association absent from both that report and the explicitly
+supplied `finding_numbers` history is new and must exceed the historical maximum.
+Supply genuinely recovered earlier associations in `finding_numbers`; this is a
+coordinator claim requiring actual prior evidence, not proof supplied by the map
+itself. A recovered association may fill an unused gap, never rebind an ID or reuse
+another finding's number. Do not label a new allocation as recovered history.
+Do not invent missing original numbers from the current array
 position. Legacy unnumbered comment reports remain readable; recover their original
 coordinator references before claiming original-number resolution groups. An
 unrecoverable association is a presentation gap, not a reason to fabricate numbers.

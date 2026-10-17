@@ -115,8 +115,11 @@ An accepted explicit invocation authorizes the coordinator to inspect the PR,
 adjudicate prior threads, attempt justified own-root resolution, create/observe
 review tasks, attempt epoch-checked Viewed projection from accepted complete
 selected reports, and write the private local HTML report and policy snapshot.
-Honor narrower caller limits. Read-only/report-only forbids GitHub mutations;
-explicit no-file/text-only instructions also suppress local artifact writes.
+Honor narrower caller limits. Read-only/report-only forbids GitHub mutations.
+`text-only` or `no HTML report` suppresses the presentation file while authorized
+private policy/runtime work continues. Explicit `no-file`, `no local writes`, or
+equivalent limits bind those internal writes too; follow the campaign's
+dependent-coverage rules.
 
 Workers remain read-only, including thread state and Viewed. Neither role may
 edit source or the index, implement fixes, stage, commit, post comments/replies,

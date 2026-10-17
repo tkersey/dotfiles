@@ -50,8 +50,10 @@ mutations**, and deferred presentation. This narrower effect scope disables View
 projection and own-root thread resolution, not complete discussion discovery,
 substantive counter-case adjudication, inspection or required snapshot/seed work.
 Record those writes as intentionally not attempted, not successful or failed.
-Workers stay read-only. A no-file limit still prevents policy-snapshot creation;
-report the actual dependent incompleteness rather than substituting a generic worker.
+Workers stay read-only. Text-only delivery suppresses presentation, not authorized
+private policy/runtime work. An explicit no-file/no-local-write limit still prevents
+new policy-snapshot creation; report dependent incompleteness rather than substituting
+a generic worker. An intact already-bound snapshot may be reused when readable.
 
 Elenctic runs exactly one campaign per requested round, finishes runnable selected
 work, and returns its original full findings, adjudications, source identities,

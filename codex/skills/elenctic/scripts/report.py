@@ -58,8 +58,8 @@ def number_map(value: Any) -> dict[str, int]:
     return numbers
 
 
-def bind_number_history(report: dict[str, Any], previous: dict[str, Any]) -> None:
-    """Retain retired references and reject renumbering on same-path regeneration."""
+def bind_number_history(report: dict[str, Any], previous: dict[str, Any], recovered: Any) -> None:
+    """Recover established references before checking genuinely new assignments."""
     history = number_map(previous.get("finding_numbers", {}))
     for source in previous.get("findings", []):
         if "number" in source:
@@ -67,14 +67,25 @@ def bind_number_history(report: dict[str, Any], previous: dict[str, Any]) -> Non
             if source["id"] in history and history[source["id"]] != source["number"]:
                 raise ValueError("previous finding-number history is inconsistent")
             history.update(old)
-    for key, number in report["finding_numbers"].items():
+    # Supplied history is the coordinator's explicit recovery claim, not proof
+    # that an association predates this report. It still cannot rebind any ID.
+    for key, number in number_map(recovered).items():
         if key in history and history[key] != number:
             raise ValueError(f"cannot renumber finding {key}")
         history[key] = number
-    report["finding_numbers"] = number_map(history)
+    history = number_map(history)
+    highest = max(history.values(), default=0)
     for finding in report["findings"]:
-        if finding["id"] in history:
-            finding["number"] = history[finding["id"]]
+        key = finding["id"]
+        if key in history:
+            if "number" in finding and finding["number"] != history[key]:
+                raise ValueError(f"cannot renumber finding {key}")
+            finding["number"] = history[key]
+        elif "number" in finding:
+            if finding["number"] <= highest:
+                raise ValueError("new finding numbers must follow the highest historical number")
+            history[key] = finding["number"]
+    report["finding_numbers"] = number_map(history)
 
 
 def prepare_proposal(source: Any, *, blocking: bool) -> dict[str, Any]:
@@ -155,27 +166,22 @@ def prepare_adjudications(source: Any, report: dict[str, Any], *, complete: bool
     return judgments
 
 
-def prepare_resolution(raw: dict[str, Any], report: dict[str, Any]) -> None:
+def prepare_resolution(raw: dict[str, Any], report: dict[str, Any], previous: dict[str, Any] | None = None) -> None:
     """Validate grouping as a lossless presentation, never as review adjudication."""
     workflow = raw.get("workflow", "comments")
     if workflow not in ("comments", "resolution", "construction"):
         raise ValueError("workflow must be comments, resolution or construction")
     report["workflow"] = workflow
-    numbers = number_map(raw.get("finding_numbers", {}))
     originals = {f["id"]: f for f in raw["findings"]}
     for finding in report["findings"]:
         source = originals[finding["id"]]
         if "number" in source:
-            number = number_map({finding["id"]: source["number"]})[finding["id"]]
-            if finding["id"] in numbers and numbers[finding["id"]] != number:
-                raise ValueError("finding number disagrees with its recorded identity")
-            numbers[finding["id"]] = number
-        if finding["id"] in numbers:
             # Numbering and grouping do not change the evidence fingerprint.
-            finding["number"] = numbers[finding["id"]]
-        elif workflow != "comments":
+            finding["number"] = number_map({finding["id"]: source["number"]})[finding["id"]]
+    bind_number_history(report, previous or {}, raw.get("finding_numbers", {}))
+    for finding in report["findings"]:
+        if "number" not in finding and workflow != "comments":
             raise ValueError(f"{workflow} requires the original number of every finding")
-    report["finding_numbers"] = number_map(numbers)
     for key in ("resolution", "construction"):
         if key != workflow and raw.get(key) is not None:
             raise ValueError(f"{key} data requires explicit {key} workflow")
@@ -298,8 +304,7 @@ def validate_composition(identity: dict[str, Any], *, analysis: bool) -> None:
         raise ValueError("complete composition scope requires all selected assessments")
     if "elenctic" not in assessments and identity["whole_pr_coverage"] != "not-established":
         raise ValueError("absent Elenctic evidence cannot claim whole-PR coverage")
-    if identity["whole_pr_coverage"] == "complete" and (
-            not full_pr or identity["selected_scope_coverage"] != "complete"):
+    if identity["whole_pr_coverage"] == "complete" and not full_pr:
         raise ValueError("whole-PR composition coverage cannot exceed its sources")
 
 
@@ -324,7 +329,7 @@ def composition_origins(source: dict[str, Any], identity: dict[str, Any], *, ana
     return sorted(result, key=lambda o: (o["owner"], o["reference"]))
 
 
-def prepare(raw: Any) -> dict[str, Any]:
+def prepare(raw: Any, *, previous: dict[str, Any] | None = None) -> dict[str, Any]:
     """Validate the presentation boundary, not the truth/admission of a review."""
     if not isinstance(raw, dict) or raw.get("schema") not in (SCHEMA, COMPOSITION_SCHEMA):
         raise ValueError(f"expected schema {SCHEMA} or {COMPOSITION_SCHEMA}")
@@ -363,6 +368,8 @@ def prepare(raw: Any) -> dict[str, Any]:
         expected = "complete" if identity["whole_pr_coverage"] == "complete" else "partial"
         if identity["coverage"] != expected:
             raise ValueError("coverage must conservatively represent whole-PR coverage")
+        if identity["whole_pr_coverage"] == "complete" and identity["selected_scope_coverage"] != "complete":
+            raise ValueError("complete whole-PR coverage requires complete selected-scope coverage")
         if not composed:
             # Null is a legitimate absence, never an invented provenance identifier.
             for field in ("campaign_context_id", "campaign_seed_thread_id", "campaign_policy_id"):
@@ -439,7 +446,9 @@ def prepare(raw: Any) -> dict[str, Any]:
     result["report_key"] = owner + ("-analysis:" if analysis else ":") + digest({
         k: identity[k] for k in key_fields
     })
-    prepare_resolution(raw, result)
+    if previous is not None and previous.get("report_key") != result["report_key"]:
+        raise ValueError("cannot reuse finding numbers from another campaign")
+    prepare_resolution(raw, result, previous)
     if composed and any("number" not in f for f in result["findings"]):
         raise ValueError("aggregate findings require their stable original numbers")
     return result
@@ -451,11 +460,7 @@ def script_data(value: Any) -> str:
 
 
 def render(raw: Any, *, previous: dict[str, Any] | None = None) -> tuple[str, dict[str, Any]]:
-    report = prepare(raw)
-    if previous is not None:
-        if previous.get("report_key") != report["report_key"]:
-            raise ValueError("cannot reuse finding numbers from another campaign")
-        bind_number_history(report, previous)
+    report = prepare(raw, previous=previous)
     template = (Path(__file__).resolve().parents[1] / "assets" / "report.html").read_text(encoding="utf-8")
     if report["schema"] == COMPOSITION_SCHEMA:
         # Brand the trusted shared template before inserting any report/user text.
@@ -468,8 +473,9 @@ def render(raw: Any, *, previous: dict[str, Any] | None = None) -> tuple[str, di
 
 
 def write_report(raw: Any, output: Path | None = None) -> Path:
-    document, report = render(raw)
+    document = None
     if output is None:
+        document, _ = render(raw)
         folder = Path(tempfile.mkdtemp(prefix="elenctic-"))
         folder.chmod(0o700)
         output = folder / "report.html"
@@ -483,9 +489,11 @@ def write_report(raw: Any, output: Path | None = None) -> Path:
     if output.exists():
         old = output.read_text(encoding="utf-8")
         match = re.search(r'<script id="report-data" type="application/json">(.*?)</script>', old, re.S)
-        if not match or json.loads(match[1]).get("report_key") != report["report_key"]:
+        if not match:
             raise ValueError("output belongs to another report; choose a new private directory")
-        document, report = render(raw, previous=json.loads(match[1]))
+        document, _ = render(raw, previous=json.loads(match[1]))
+    elif document is None:
+        document, _ = render(raw)
     fd, temporary = tempfile.mkstemp(prefix=".elenctic-", dir=output.parent)
     try:
         with os.fdopen(fd, "w", encoding="utf-8") as stream:

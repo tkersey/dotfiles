@@ -48,7 +48,9 @@ clickable local file link and absolute path where the client supports it. Do not
 claim a link was created based on a planned filename. Keep the terminal decision
 last. Failure to render/write produces an explicit artifact-delivery limitation
 alongside the full textual result; it changes neither review evidence nor verdict.
-Honor explicit text-only/no-file limits without turning them into code blockers.
+Honor text-only delivery by suppressing the HTML artifact; it does not disable
+authorized private policy/runtime work. Explicit no-file/no-local-write limits also
+bind internal writes under campaign.md. Neither limit is a code blocker.
 
 ## Presentation input
 
@@ -95,7 +97,13 @@ actual obligation/mechanism, not ordering, line number or title. Never derive nu
 from array positions. The optional `finding_numbers` map preserves all previously
 assigned IDs/numbers, including withdrawn findings; the renderer retains and checks
 this history when overwriting the same report. Preserve it when explicitly relocating
-a report. Duplicate numbers, renumbering and reuse of a retired number are rejected.
+a report. Same-path history is loaded before number-dependent synthesis validation,
+so established references can be recovered without inventing numbers. Duplicate
+numbers, renumbering and reuse of a retired number are rejected. New associations
+absent from both the prior report and supplied history must exceed their combined
+historical maximum. Use `finding_numbers` for genuinely recovered earlier bindings,
+including gaps; it is a trusted coordinator recovery claim, not proof of prior
+assignment or an escape for a new allocation. Initial references may be noncontiguous.
 Legacy comment input without numbers is still readable, without fabricated numbers.
 Resolution and construction input must supply or recover every original number.
 
@@ -243,7 +251,10 @@ Autosave checks and notes in browser local storage under the bound campaign or
 analysis namespace.
 Capability-check actual writes/readback. If unavailable, use session storage and
 label its narrower lifetime; with no usable storage, prominently warn that changes
-are not saved. Never silently advertise persistence after a failed write. Browser
+are not saved. On startup, merge available progress and confirm the merged payload
+through the same write/readback path before announcing local persistence. A recovered
+local provider must retain newer session progress even if the user closes the tab
+without another edit or import. Never silently advertise persistence after a failed write. Browser
 storage for `file:` URLs is implementation-dependent, private browsing is ephemeral,
 and moving the file may change its storage area. State these limits honestly.
 

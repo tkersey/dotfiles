@@ -121,6 +121,29 @@ class BrowserTests(unittest.TestCase):
         self.assertTrue(self.check().is_checked())
         self.assertIn('Session storage only', self.page.locator('#storage').inner_text())
 
+    def test_recovered_local_storage_retains_fallback_progress_after_session_end(self):
+        self.notes().fill('Old local note')
+        self.page.evaluate('''() => {
+          const setItem = Storage.prototype.setItem;
+          Storage.prototype.setItem = function(key, value) {
+            if (this === window.localStorage && key.endsWith(':handling')) {
+              throw new DOMException('Quota', 'QuotaExceededError');
+            }
+            return setItem.call(this, key, value);
+          };
+        }''')
+        self.check().check(); self.notes().fill('Latest fallback note')
+        self.assertIn('Session storage only', self.page.locator('#storage').inner_text())
+        key = report.prepare(self.raw)['report_key'] + ':handling'
+        local = self.page.evaluate('key => JSON.parse(localStorage.getItem(key))', key)
+        self.assertEqual(local['entries']['f-cancel']['note'], 'Old local note')
+        # Reload removes the temporary failure. No handling edit follows recovery.
+        self.page.reload()
+        self.assertIn('Autosaved', self.page.locator('#storage').inner_text())
+        self.page.close(); self.page = self.context.new_page(); self.page.goto(self.url(self.path))
+        self.assertTrue(self.check().is_checked())
+        self.assertEqual(self.notes().input_value(), 'Latest fallback note')
+
     def test_export_import_rejects_wrong_campaign_without_erasure(self):
         self.check().check()
         with self.page.expect_download() as download:

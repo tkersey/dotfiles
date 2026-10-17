@@ -131,8 +131,11 @@ under another policy. Hashes establish content identity, not semantic correctnes
 If capture is obstructed, inspect/report available prior-thread evidence read-only
 without claiming complete policy coverage or performing thread resolution. Return
 an honestly incomplete report (or a supported blocker with incomplete coverage),
-with null policy/context/seed fields where never created. Explicit no-file limits
-also prevent snapshot creation; do not evade them through another storage location.
+with null policy/context/seed fields where never created. Text-only delivery
+suppresses the HTML report, not this authorized private snapshot. An explicit
+no-file/no-local-write limit prevents new snapshot creation; reuse an intact
+already-bound snapshot on resume when readable, otherwise report dependent
+incompleteness. Do not evade a write limit through another storage location.
 
 ## Adjudicate prior review threads first
 
@@ -191,6 +194,7 @@ policy root/ID; brief context ID; seed ID
 base tip / review merge base / head
 worker ID / active turn ID / fork receipt or parent edge
 state / report identity / coverage / Viewed outcome
+FIFO assignment IDs / active-attempt state / runnable prerequisite status
 prior worker-turn-report references / remaining gaps / concrete obstruction
 ```
 
@@ -238,16 +242,60 @@ them. Pinned PR objects, not the checkout or brief, supply candidate bytes.
 ## Schedule a bounded sliding window
 
 Default concurrency is 20; clamp an explicit value to 1–20 and runtime task capacity.
-This is active concurrency, not a total file budget. Queue all selected files and
-replenish slots as attempts finish. Shard wait/read groups to tool limits without
-unnecessarily reducing total concurrency. Never overlap attempts for one assignment.
+This is active concurrency, not a total file budget. Initialize one FIFO queue in
+frozen inventory order. An idle, runnable continuation joins its tail immediately;
+it does not overtake untouched work or wait for final aggregation. At each free
+slot, take the oldest currently runnable assignment. Skip provider-delayed entries
+without changing their queue position; they regain their age when eligible.
+With a finite queue and continuing free slots, every runnable assignment gets an
+opportunity. This does not guarantee review convergence or recover a stalled turn.
 
-Disposition each result promptly. Runnable incomplete work gets the next available
-slot without waiting for all files or final aggregation. Continue unrelated work
-and continue after finding blockers: the goal is complete inventory, not first-fault
-exit. A permission/input request becomes `needs-input`; do not answer or authorize
-on the user's behalf. Reconcile ambiguous fork/delivery outcomes using direct IDs,
-parentage and campaign/context binding before retry; a timeout is not a failed turn.
+Reserve the selected slot as `launched` and remove that assignment from the queue
+when delivering its turn. A live or ambiguous delivery retains its reservation
+until exact runtime recovery establishes its outcome. Never overlap attempts for
+one assignment. Shard wait/read groups to tool limits without reducing concurrency
+unnecessarily. Disposition results promptly and replenish available slots, including
+after blockers. A permission/input request becomes `needs-input`; do not answer or
+authorize on the user's behalf. Reconcile ambiguous fork/delivery outcomes using
+direct IDs, parentage and campaign/context binding before retry; a timeout is not
+a failed turn.
+
+### Check the existing working set mechanically
+
+Use the frozen `scripts/campaign_state.py` for scheduling, report-binding checks,
+and selected-file counts. Pass a JSON projection of the existing working set on
+stdin; retain returned state in that same working set. The helper creates no file,
+ledger, task, GitHub effect or semantic receipt. Caller write limits also govern
+the launcher/runtime. Do not create a parallel persistent campaign store.
+
+```bash
+uv run --no-project python <policy-root>/elenctic/scripts/campaign_state.py schedule
+uv run --no-project python <policy-root>/elenctic/scripts/campaign_state.py check-report
+uv run --no-project python <policy-root>/elenctic/scripts/campaign_state.py coverage
+```
+
+All operations take `bound_epoch` and a fresh `observed_epoch`: `host`, `viewer_id`,
+`pr_node_id`, `repo`, integer `pr`, `base_tip`, `base` (merge base), and `candidate`;
+the observed object also has `state: "OPEN"`. Supply actual observations, not a
+copy of the expected values. The helper detects mismatches in supplied facts; it
+does not fetch or authenticate them and cannot make GitHub reads atomic.
+
+| Operation | Additional projection and result |
+|---|---|
+| `schedule` | `selected_paths`, `assignments`, FIFO `queue` of assignment IDs and clamped `concurrency`; optionally `requeue` one ID. Each assignment carries `assignment_id`, exact `path`, `state`, Boolean `active` (live or unreconciled delivery), and Boolean `runnable` (prerequisites permit its next turn now). It appends eligible unfinished work, preserves delayed positions, and returns capacity-bounded `dispatchable` IDs plus the resulting queue/rows. Record actual dispatch or recovery before asking for another selection. |
+| `check-report` | `expected_identity` is the canonical assignment's fixed worker-v1 fields, omitting only `coverage`/`verdict`. `active_attempt` carries the recorded `worker_id`/`turn_id`. `report` carries its directly read `worker_id`, `turn_id`, parsed unquoted `identity`, and textual `decision`. It rejects mismatched attempts/bindings and contradictory coverage/verdicts. A consistent complete BLOCKED claim is as eligible for semantic admission as a complete APPROVE claim. |
+| `coverage` | `selected_paths`, `assignments`, and the actual `campaign_id`, `campaign_context_id`, `campaign_seed_thread_id`. Every `accepted` row also carries its `expected_identity`, `active_attempt` and `accepted_report` in the shapes above. It checks their current bindings and counts each selected path once; incomplete evidence is not completion. It returns counts, no campaign verdict or whole-PR credit. Empty selected counts do not supply approval. |
+
+Obtain `active` from exact worker/turn and delivery recovery; derive `runnable`
+from adjudicated prerequisites and provider delays. Do not label uncertain attempts
+idle or blocked prerequisites runnable to make a check pass. Recover missing FIFO
+order under Resume and recover; never invent historical age. Passing
+`check-report` establishes mechanical consistency only: complete terminal-source
+provenance, policy-byte/history verification, consolidation, material-gap closure
+and semantic adjudication remain the admission gates below. Preserve evidence on
+any failed check, diagnose the actual mismatch, and continue unaffected work.
+Changed or unverifiable epochs withhold current credit; preserve historical
+evidence and its actual scope instead of supplying invented current observations.
 
 ## Continue incomplete assignments immediately
 
@@ -260,7 +308,7 @@ incomplete -> preserve evidence/gaps -> queued -> continuation -> admission
 complete  -> accepted (BLOCKED or APPROVE; never retry merely for cleanliness)
 ```
 
-Requeue the same assignment/epoch/selection/context/seed/policy promptly. No new
+Tail-requeue the same assignment/epoch/selection/context/seed/policy promptly. No new
 public resume request, review lane, durable retry ledger, clean streak or fixed
 retry budget is required. Respect provider retry delays; they are not completion.
 Before delivery, recheck epoch and exact worker/active-turn state. After a lost
@@ -442,6 +490,8 @@ exposed by admitted reports, relevant discussion or the brief, whose premises st
 need source verification. It is not another reviewer/lane or an unrelated audit.
 Return material unreviewed selected paths to the existing scheduler immediately,
 withdrawing contradicted completion credit and pending projection for those assignments.
+Record the newly exposed gap, set the affected assignment incomplete, and tail-requeue
+when idle and runnable; an accepted label alone is never a reason to retry.
 Preserve unrelated accepted work and supported findings; never undo an earlier checkbox.
 Keep affected coverage incomplete until an admissible consolidated report closes the
 gaps. A source's complete label and file counts cannot establish semantic closure.
@@ -484,11 +534,19 @@ all files were pre-Viewed and withhold that approval. Known blockers remain bloc
 ## Resume and recover
 
 Resume the identified campaign, not today's checkbox selection. Recheck its OPEN epoch,
-policy bundle and prior-thread preflight. Retain accepted work, recover active attempts
-by exact worker/turn, immediately continue runnable incomplete/retryable work, and
+policy bundle and prior-thread preflight. Retain accepted work and the FIFO order,
+recover active attempts by exact worker/turn, tail-requeue runnable incomplete/retryable work, and
 preserve old findings through consolidation. Needs-input never grants permission.
 Ambiguous deliveries require recovery before retry. Same-epoch resume preserves the
 seed/brief/policy/selection; discussion-only updates remain current evidence.
+
+Recover FIFO order from the retained queue or exact assignment/attempt receipts.
+If historical ordering is unavailable, establish a new fair order once: verified
+untouched queued paths first, then other queued unfinished paths, each in frozen
+inventory order. Record that historical age was unavailable; do not claim it was
+recovered. Preserve selected paths, IDs, accepted work and active reservations.
+Missing old queue metadata alone does not block otherwise runnable work or require
+a new campaign, seed, policy, selection or user decision.
 
 An explicit progress-only/stop request launches no tasks and performs no thread
 mutations; honor narrower Viewed and local-file limits. Provide current evidence and

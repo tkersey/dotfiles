@@ -52,8 +52,9 @@ Follow CAS's compatibility gate for the exact executable and selected transport.
 For a stateful local stream:
 
 ```bash
-cas app-server preflight --cwd <repo> --profile core --app-server-transport stdio --json
-cas app-server session --listen stdio://
+cas app-server preflight --cwd <repo> --codex-path <exact-codex-executable> \
+  --profile core --app-server-transport stdio --json
+cas app-server session --codex-path <exact-codex-executable> --listen stdio://
 ```
 
 Keep that session alive for requests, notifications, and running worker turns.
@@ -125,3 +126,39 @@ rules across either native transport.
 If the actual source is inaccessible, a native request fails, provenance is
 missing, or preparation is absent from the fork, withhold worker launch and name
 that specific failure. An absent wrapper alone is not an `INCOMPLETE` verdict.
+
+## Qualify the installed route with observable work
+
+For an authorized qualification, use a disposable representative PR under an
+explicit no-GitHub-mutations limit. This is a separate qualification run, not a
+trial reviewer inserted into a production campaign. Use the commands and native
+operations above with the exact selected executable/endpoint; inspect current
+schemas rather than copying historical request fields. A `core` compatibility
+receipt is necessary transport evidence, not proof of this complete sequence.
+
+1. Capture policy and prepare source analysis plus the exact brief in the current
+   coordinator turn. Record the source thread, current turn/item checkpoint,
+   actual brief digest, policy ID and realized model/reasoning/permissions.
+2. Read the complete observable source history, fork the seed without a cut that
+   drops this turn, and compare the retained history under the rules above. Record
+   the actual seed ID and `forkedFromId`; keep the seed untouched.
+3. Fork and assign two selected-file children directly from that seed. Read back
+   both parent edges and retained history before assignment. Collect the exact
+   returned turn IDs, terminal reports and policy-bound assignment references.
+   Verify the complete assignments arrived, not shortened messages.
+4. Exercise a continuation after one incomplete report. On a controlled lost
+   acknowledgement or connection, recover that worker/turn before retrying;
+   observe that no overlapping attempt is created. Deliver the continuation's
+   consolidated report and confirm that an older terminal turn cannot replace it.
+5. At the same PR head, observe an independently supplied new or edited discussion
+   response after seed capture. Refresh the relevant complete exchange, incorporate
+   the author's strongest response into affected adjudication/drafts, and preserve
+   prior evidence and the unchanged seed. If no such update is available, mark this
+   subcase unrun; do not mutate GitHub to manufacture the observation.
+6. Record which observations passed, failed or were unrun, with sanitized direct
+   IDs and content digests. Native history/source checks, working-set helper tests,
+   model review efficacy, and GitHub mutations are separate evidence scopes.
+
+Without `codex`, `cas`, source-thread access, or the selected transport, report
+the missing qualification explicitly. Mocked traces and passing helper tests
+cannot qualify the native route or establish semantic review efficacy.
