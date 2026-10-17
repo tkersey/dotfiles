@@ -127,8 +127,10 @@ Preserve the original findings view, adjudication outcomes, concrete proposals,
 copyable handoffs and per-finding handling state. Checks/notes are user handling,
 not verified fixes, accepted designs or authority to implement. Copying grants no
 source mutation, publication or merge authority; a later task must obtain authority
-and revalidate the exact code before execution. Text-only still permits proposals
-without artifact writes. Neither analysis nor its helpers persist a corpus or store.
+and revalidate the exact code before execution. Text-only delivery still permits
+proposals and authorized private policy/runtime work while suppressing the HTML
+artifact. Explicit no-file/no-local-write limits also bind internal writes under
+campaign.md. Neither analysis nor its helpers persist a corpus or store.
 
 Resume only the established analysis/campaign for the same PR, retaining its ID,
 source horizon, source identities, numbering and existing report path. Refresh the

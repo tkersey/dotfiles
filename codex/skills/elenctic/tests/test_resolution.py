@@ -177,6 +177,51 @@ class ResolutionTests(unittest.TestCase):
         self.assertEqual(parsed['finding_numbers'], previous['finding_numbers'])
         self.assertEqual({f['id']: f['number'] for f in parsed['findings']}, previous['finding_numbers'])
 
+    def test_new_numbers_follow_history_but_recovered_references_keep_their_numbers(self):
+        raw = sample(); previous = report.prepare(raw)
+        raw['workflow'] = 'comments'; raw.pop('resolution')
+        raw['finding_numbers'] = deepcopy(previous['finding_numbers'])
+        raw['findings'] = [f for f in raw['findings'] if f['id'] != 'f-docs']
+        raw['findings'].append({**deepcopy(raw['findings'][-1]), 'id': 'f-new', 'number': 1})
+        with self.assertRaises(ValueError): report.render(raw, previous=previous)
+        raw['findings'][-1]['number'] = 12
+        _, parsed = report.render(raw, previous=previous)
+        self.assertEqual(parsed['finding_numbers']['f-new'], 12)
+        self.assertEqual(parsed['finding_numbers']['f-docs'], 8)
+        # An explicitly recovered earlier association is history, not a new
+        # allocation. Preserve it if it does not conflict with another identity.
+        raw['findings'][-1].update(id='f-recovered', number=1)
+        raw['finding_numbers']['f-recovered'] = 1
+        _, parsed = report.render(raw, previous=previous)
+        self.assertEqual(parsed['finding_numbers']['f-recovered'], 1)
+        raw['finding_numbers']['f-recovered'] = 8
+        raw['findings'][-1]['number'] = 8
+        with self.assertRaises(ValueError): report.render(raw, previous=previous)
+
+    def test_number_binding_uses_complete_history_before_new_assignments(self):
+        raw = sample(); previous = report.prepare(raw)
+        raw['workflow'] = 'comments'; raw.pop('resolution')
+        # Additional recovered history must coexist with references already
+        # present in the old report, even if this input supplies only the delta.
+        raw['finding_numbers'] = {'f-retired': 14}
+        raw['findings'].append({**deepcopy(raw['findings'][-1]), 'id': 'f-new', 'number': 15})
+        _, parsed = report.render(raw, previous=previous)
+        self.assertEqual(parsed['finding_numbers']['f-cancel'], 2)
+        self.assertEqual(parsed['finding_numbers']['f-retired'], 14)
+        self.assertEqual(parsed['finding_numbers']['f-new'], 15)
+        raw['findings'][-1]['number'] = 13
+        with self.assertRaises(ValueError): report.render(raw, previous=previous)
+
+    def test_same_path_resolution_recovers_numbers_before_validating_groups(self):
+        raw = sample()
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory) / 'report.html'
+            report.write_report(raw, output)
+            expected = {f['id']: f.pop('number') for f in raw['findings']}
+            report.write_report(raw, output)
+            parsed = json.loads(re.search(r'<script id="report-data" type="application/json">(.*?)</script>', output.read_text(), re.S)[1])
+            self.assertEqual({f['id']: f['number'] for f in parsed['findings']}, expected)
+
     def test_provided_registry_cannot_rebind_numbers(self):
         raw = sample(); raw['finding_numbers'] = {'f-cancel': 3}
         with self.assertRaises(ValueError): report.prepare(raw)

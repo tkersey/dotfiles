@@ -4,7 +4,10 @@ from __future__ import annotations
 from copy import deepcopy
 import importlib.util
 import json
+import os
 from pathlib import Path
+import shutil
+import subprocess
 import tempfile
 import unittest
 
@@ -79,6 +82,19 @@ class ReportTests(unittest.TestCase):
         raw = sample(); raw['findings'][1]['draft'] = 'A nonblocker must not gain a draft.'
         with self.assertRaises(ValueError): report.prepare(raw)
 
+    def test_whole_pr_coverage_requires_complete_selected_scope_for_every_verdict(self):
+        for verdict in ('BLOCKED', 'INCOMPLETE', 'APPROVE'):
+            raw = sample(); raw['identity']['verdict'] = verdict
+            if verdict != 'BLOCKED': raw['findings'] = []
+            raw['identity'].update(coverage='complete', whole_pr_coverage='complete')
+            with self.subTest(verdict=verdict):
+                self.assertEqual(report.prepare(raw)['identity']['selected_scope_coverage'], 'complete')
+                raw['identity']['selected_scope_coverage'] = 'partial'
+                with self.assertRaises(ValueError): report.prepare(raw)
+                if verdict != 'APPROVE':
+                    raw['identity'].update(coverage='partial', whole_pr_coverage='partial')
+                    self.assertEqual(report.prepare(raw)['identity']['selected_scope_coverage'], 'partial')
+
     def test_seedless_incomplete_and_empty_scopes(self):
         raw = sample(); raw['findings'] = []
         raw['identity'].update(verdict='INCOMPLETE', selected_scope_coverage='partial', whole_pr_coverage='not-established',
@@ -109,6 +125,95 @@ class ReportTests(unittest.TestCase):
             with self.assertRaises(ValueError): report.write_report(raw, path)
             target = Path(directory) / 'link.html'; target.symlink_to(path)
             with self.assertRaises(ValueError): report.write_report(sample(), target)
+
+
+NODE = shutil.which('node') or shutil.which(os.environ.get('CODEX_PRIMARY_RUNTIME_NODE', ''))
+
+
+@unittest.skipUnless(NODE, 'Node unavailable; controlled storage checks unrun')
+class StorageScriptTests(unittest.TestCase):
+    """Production storage functions/startup with controlled stores; no browser claims."""
+
+    def startup(self, local, session, *, local_failure=None):
+        payload = report.prepare(sample())
+        result = subprocess.run([NODE, '-e', r'''
+          const fs = require('node:fs');
+          const input = JSON.parse(fs.readFileSync(0, 'utf8'));
+          const html = fs.readFileSync(process.argv[1], 'utf8');
+          const start = html.indexOf('  const report = JSON.parse(');
+          const end = html.indexOf('  function update(finding, changes) {');
+          const initialization = html.match(/\n  (?:status|persist)\(\); setView\(viewMode\);\n/);
+          if (start < 0 || end < start || !initialization) throw new Error('Storage harness source boundary changed');
+          const node = {textContent:'', classList:{toggle(){}}};
+          const document = {getElementById(id) {
+            if (id === 'report-data') return {textContent:JSON.stringify(input.report)};
+            if (id === 'initial-state') return {textContent:'null'};
+            if (id === 'storage') return node;
+            throw new Error('Unexpected UI access: ' + id);
+          }};
+          function storage(items, failure) {
+            return {
+              getItem:k => items[k] ?? null,
+              setItem(k,v) {
+                if (failure === 'unavailable') throw new Error('Unavailable');
+                if (!k.endsWith(':probe')) {
+                  if (failure === 'write') throw new Error('Unavailable');
+                  if (failure === 'readback') return;
+                }
+                items[k] = v;
+              },
+              removeItem:k => { delete items[k]; }
+            };
+          }
+          const window = {localStorage:storage(input.local, input.local_failure),
+                          sessionStorage:storage(input.session)};
+          // UI rendering is stubbed; execute the checked-in initialization call,
+          // including whether it persists the merged payload before its notice.
+          const execute = new Function('window', 'document', html.slice(start,end) +
+            '\nfunction setView() {}\n' + initialization[0] +
+            '\nreturn {mode, state, notice:document.getElementById("storage").textContent};');
+          console.log(JSON.stringify({...execute(window,document), local:input.local, session:input.session}));
+        ''', str(SKILL / 'assets/report.html')], input=json.dumps({
+            'report': payload, 'local': local, 'session': session, 'local_failure': local_failure,
+        }), capture_output=True, text=True, check=True, timeout=10)
+        return json.loads(result.stdout)
+
+    def progress(self, checked, updated, note):
+        payload = report.prepare(sample()); finding = payload['findings'][0]
+        return {payload['report_key'] + ':handling': json.dumps({
+            'schema': 'elenctic-handling/v1', 'report_key': payload['report_key'],
+            'entries': {finding['id']: {'checked': checked, 'updated': updated,
+                                       'note': note, 'fingerprint': finding['fingerprint']}}})}
+
+    def test_current_local_progress_survives_a_new_session(self):
+        saved = self.progress(True, 20, 'Already saved locally')
+        opened = self.startup(saved, {})
+        reopened = self.startup(opened['local'], {})
+        self.assertEqual(reopened['state'], opened['state'])
+        self.assertEqual(reopened['mode'], 'local')
+
+    def test_recovered_local_store_saves_newer_session_progress_without_an_edit(self):
+        older = self.progress(False, 10, 'Old local note')
+        newer = self.progress(True, 20, 'Latest fallback note')
+        failed = self.startup(older, newer, local_failure='unavailable')
+        self.assertEqual(failed['mode'], 'session')
+        recovered = self.startup(failed['local'], failed['session'])
+        self.assertEqual(recovered['mode'], 'local')
+        self.assertIn('Autosaved', recovered['notice'])
+        # No edit or import occurs before the tab closes and its session ends.
+        reopened = self.startup(recovered['local'], {})
+        self.assertEqual(reopened['state'], recovered['state'])
+        self.assertEqual(reopened['state']['entries']['f-cancel']['note'], 'Latest fallback note')
+        self.assertTrue(reopened['state']['entries']['f-cancel']['checked'])
+
+    def test_startup_requires_payload_readback_before_claiming_local_persistence(self):
+        older = self.progress(False, 10, 'Old local note')
+        newer = self.progress(True, 20, 'Latest fallback note')
+        opened = self.startup(older, newer, local_failure='readback')
+        self.assertEqual(opened['mode'], 'session')
+        self.assertIn('Session storage only', opened['notice'])
+        self.assertTrue(opened['state']['entries']['f-cancel']['checked'])
+        self.assertEqual(json.loads(next(iter(opened['session'].values()))), opened['state'])
 
 
 if __name__ == '__main__':

@@ -433,7 +433,9 @@
     if (event.key !== storageKey || !event.newValue) return;
     try { merge(JSON.parse(event.newValue)); filter(); } catch (_) { message("Another tab supplied unreadable progress; current state retained."); }
   });
-  status(); setView(viewMode);
+  // A usable local provider may still contain older state than the session
+  // fallback. Confirm the merged payload before promising local persistence.
+  persist(); setView(viewMode);
 })();
 </script>
 </body>
