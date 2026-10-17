@@ -4,7 +4,7 @@
     "skill": {
       "name": "actuating",
       "kind": "mixed",
-      "source_fingerprint": "actuating-construction-core-v21"
+      "source_fingerprint": "actuating-construction-core-v22"
     },
     "triggers": [
       {
@@ -316,7 +316,8 @@
           "resource account, smallest witness, and falsifier"
         ],
         "success_signals": [
-          "one shared Glaze-primed Metanoetic activation under the existing trigger, with no required order relative to Universalist",
+          "every current applicable admitted liability triggers shared Glaze-primed Metanoetic reconsideration before response selection, beginning with the first finding, with no required order relative to Universalist",
+          "applicable inquiry is reused only across witnesses covered by the same supported causal mechanism; new causal distinctions reopen the explanation",
           "canonical Glaze then Metanoetic instructions share one context; encouragement does not change admissibility or proof",
           "inquiry needs no identified incumbent, advance challenger, or finished comparison",
           "one activation limits duplicate injection, not investigation or useful revision within task limits",
@@ -329,6 +330,7 @@
         ],
         "failure_signals": [
           "pre-mutation theorem certificate required to think about a better mechanism",
+          "construction reconsideration waits for a user reminder, recurrence, a failed local repair, or a preidentified redesign",
           "hard constraints ignored or new authority silently adopted",
           "passages reinjected for a new label, commit, reviewer, or review wave alone",
           "a useful inquiry stops solely because a candidate was generated or the code did not change",

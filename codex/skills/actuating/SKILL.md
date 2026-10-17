@@ -12,6 +12,12 @@ constructions whose guarantees establish the required relationships, including
 required-valid behavior. A repaired example or excluded family does not discharge
 a broader accepted Goal.
 
+For every current applicable liability admitted by Review Fold, beginning with the
+first finding, automatically reconsider how the code can enforce the required law
+by construction before selecting its response. Apply `$metanoetic` through the
+[shared activation](architecture.md); do not wait for a user reminder, recurrence,
+a failed local repair, or a preidentified redesign. Preserve required-valid behavior.
+
 The [construction core](#initial-construction) governs initial implementation and
 repair. [Source binding](#source-binding), [proof acceptance](#proof-acceptance),
 and the [common proof obligations](#realization-and-common-proof-obligations)
@@ -69,7 +75,7 @@ reasoning sequence. Do not load every workflow or reference at entry.
 |---|---|
 | Initial/local `implement` | Source binding, initial construction, proof acceptance, realization, and completion below; no review campaign is required. |
 | `analyze` | The same source and claim discipline, read-only. Load the relevant evidence or architecture guidance; do not execute realization, persist a corpus, publish, or grant closure. |
-| A finding, failed check, or counterexample-driven selection | [counterexamples.md](counterexamples.md), before admitting a liability or selecting its response. |
+| A finding, failed check, or counterexample-driven selection | [counterexamples.md](counterexamples.md) before admission; [architecture.md](architecture.md) for automatic reconsideration before selecting a response to each admitted liability. |
 | Using supporting construction skills or a selected architecture technique | [architecture.md](architecture.md) for composition and effect boundaries; its techniques do not add a construction stage. |
 | An elimination claim meets a current witness, a broader Goal obligation remains unresolved after a narrow repair, or efficacy is being assessed | [recurrence.md](recurrence.md), before retaining the claim or selecting a successor. |
 | `review-closeout`, or bare Actuating reaching review | [review-closeout.md](review-closeout.md) and its required review contract, before the first CAS request; use the complete frozen-subject and convergence rules. |

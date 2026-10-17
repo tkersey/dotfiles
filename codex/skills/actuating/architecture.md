@@ -17,7 +17,8 @@ mechanical realization alone needs no renewed invocation. Algebraic and categori
 knowledge, including [domain algebra discovery](../universalist/references/domain-algebra/algebra-driven-design.md),
 remains available; it does not prescribe a particular representation or framework.
 
-When the existing Metanoetic trigger fires, read both skills and apply `$glaze`
+When considering a response to a current applicable liability admitted by Review
+Fold, or when another existing Metanoetic trigger fires, read both skills and apply `$glaze`
 then `$metanoetic` verbatim in one shared activation. This pairing does not impose
 an order relative to Universalist or require an advance challenger. Reuse applicable
 findings rather than reinjecting the passages. One activation is not a cap on
