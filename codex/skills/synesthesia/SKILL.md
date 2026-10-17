@@ -52,7 +52,7 @@ syntax, legal/compliance interpretation, or security sign-off.
 The owning workflow retains selection, implementation, measurement, proof, and
 closure. Return useful insight to the relevant owner: measured performance to
 the active optimization workflow, structural architecture to `$universalist`,
-local comprehension/refactoring to `$complexity-mitigator`, and accepted memory
+local comprehension/refactoring to the owning workflow, and accepted memory
 transport to `$memory-source-notes`. Do not create a dedicated Synesthesia
 subagent or activate sibling skills merely to complete this pass. In explicitly
 requested team mode, a read-only lane needs exact artifact state, evidence, a

@@ -40,15 +40,15 @@ const protectedSources = {
 assert(skill.includes('[review-closeout.md](review-closeout.md)'), 'review guide not routed');
 for (const [name, digest] of Object.entries(protectedSections))
   assert.equal(sha256(section(protectedSources[name] ?? skill,name)),digest,`protected Actuating section: ${name}`);
-// Refresh stale expectations to the unchanged lens bytes at the immutable task
-// base d3f24e515059f6517cf238084ef084a55fff2242. The source diff and Git blob
-// identities establish this oracle correction; no review instruction is changed.
+// Preserve the lens bytes at d3f24e515059f6517cf238084ef084a55fff2242, except
+// for the authorized verbatim transfer of the standalone Fresh Eyes doctrine
+// into its auxiliary lens. All other review instructions remain unchanged.
 const lensBlobs = {
   'soundness-review.md':'404d8a90ce66cd056de57b1171518e5a1b169975',
   'footgun-review.md':'1a8c3a133077a9d8e36a234687464564ad5f4180',
   'invariant-review.md':'523881241875cddae1512dfd23f1bd3a9faf2dd1',
   'complexity-review.md':'aa213ce128a1a5d6efecd15b4e4d42349cb1c320',
-  'fresh-eyes-review.md':'b0ae10f2fd0eb91d9fee2291395c2011128cbdad'
+  'fresh-eyes-review.md':'9e22e998e392ae5912d45188104a8afc98666dca'
 };
 for (const [name, digest] of Object.entries(lensBlobs)) {
   const bytes = Buffer.from(text(`references/lenses/${name}`));
@@ -98,16 +98,17 @@ const visibility = text('../cas/references/review-proof-boundary.md');
 assert.match(visibility,/does not deliver the hashed context or prove that a reviewer saw it/);
 assert.match(visibility,/parent-only conversation premises are not implicitly inherited/);
 assert.match(visibility,/adds no context packet, prompt argument, review gate, attempt/);
-for (const [name,lens] of Object.entries({
-  'invariant-ace':'invariant','footgun-finder':'footgun','complexity-mitigator':'complexity'
-})) {
-  const composition = section(text(`../${name}/SKILL.md`),'Actuating composition');
-  assert(composition.includes(`../actuating/references/lenses/${lens}-review.md`),name);
-  assert.match(composition,/takes precedence over/,name);
-  assert.match(composition,/unchanged/,name);
+const lensPrefix = 'codex/skills/actuating/';
+for (const {name,instructions_ref} of policy.required_lenses.filter(lens => lens.role === 'auxiliary')) {
+  assert(instructions_ref.startsWith(`${lensPrefix}references/lenses/`),`${name}: auxiliary source must belong to Actuating`);
+  assert(text(instructions_ref.slice(lensPrefix.length)).trim(),`${name}: empty review instructions`);
 }
-assert.match(section(text('../invariant-ace/SKILL.md'),'Actuating composition'),/Do not launch authority fanout/);
-assert(!text('../complexity-mitigator/SKILL.md').includes('complexity_evidence:'), 'duplicate composition table');
+const freshEyes = text('references/lenses/fresh-eyes-review.md');
+const outputBoundary = '\n## Native output (Actuating only)\n';
+assert.equal(freshEyes.split(outputBoundary).length,2,'Fresh Eyes must have one semantic/output boundary');
+const freshEyesDoctrine = 'Once again, check over everything again with fresh eyes looking for any blunders, mistakes, errors, oversights, omissions, problems, misconceptions, bugs, etc. Be SUPER thorough and meticulous!';
+assert(freshEyes.split(outputBoundary)[0].includes(`\n\n${freshEyesDoctrine}\n\n`),
+  'the verbatim Fresh Eyes doctrine must reach both Actuating and Elenctic semantic review inputs');
 assert.match(text('references/closure.md'),/\.\.\/SKILL\.md#realization-and-common-proof-obligations/);
 console.log('actuating: composition source contracts, unchanged modes, review policy, proof bar, and exact lens bytes passed');
 JS

@@ -305,7 +305,7 @@ verdict, treat every provisional merge blocker as a claim to falsify. Reread the
 exact base and candidate evidence, affected paths, governing authority, and
 verification results without relying on the narrative that produced the
 finding. Use a fresh-eyes stance over the blocker claim inside this investigation;
-do not invoke `$fresh-eyes`, spawn another reviewer, or reopen a whole-target
+do not invoke another skill, spawn another reviewer, or reopen a whole-target
 review. This is a mandatory adjudication cut, not another review lane.
 
 For each provisional blocker, construct the strongest evidence-backed case that

@@ -1,5 +1,7 @@
 # Fresh-Eyes Review Lens
 
+Once again, check over everything again with fresh eyes looking for any blunders, mistakes, errors, oversights, omissions, problems, misconceptions, bugs, etc. Be SUPER thorough and meticulous!
+
 Start from the accepted outcome, not the candidate's architecture or explanation.
 Using accessible requirements, independently reconstruct the actors, required
 observations, compatibility, effects, and resource constraints of the exact bound

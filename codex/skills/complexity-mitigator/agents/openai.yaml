@@ -1,6 +1,0 @@
-policy:
-  allow_implicit_invocation: true
-interface:
-  display_name: "Complexity Mitigator"
-  short_description: "Local factorization and winnowing preflight for tangled existing code."
-  default_prompt: "Use $complexity-mitigator read-only. Factor the local whole, separate essential/incidental/spec-risk factors, winnow dominated or duplicated factors, state recomposition, and hand off the smallest clarity cut."
