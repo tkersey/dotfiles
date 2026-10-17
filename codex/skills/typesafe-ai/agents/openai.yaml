@@ -1,6 +1,0 @@
-interface:
-  display_name: "TypeSafe AI"
-  short_description: "Build typed AI decisions or review documents"
-  default_prompt: "Use $typesafe-ai to build with TypeSafe or review documents with the typesafe CLI."
-policy:
-  allow_implicit_invocation: true
