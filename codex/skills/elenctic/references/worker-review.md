@@ -31,7 +31,7 @@ existing-thread links never erase a supported blocker or change worker coverage.
 
 1. Require the coordinator's repository, PR, target path, campaign and assignment
    IDs, context identity, seed thread ID, base-tip SHA, review merge-base SHA,
-   and head SHA. Bind exactly that assignment; never infer a different target
+   head SHA, and `merge_policy` (`pragmatic` or `pedantic`). Bind exactly that assignment; never infer a different target
    from the checkout or inherited invocation. If a binding is missing or
    inconsistent, report the gap to the coordinator without launching work or
    inventing an identity.
@@ -39,6 +39,9 @@ existing-thread links never erase a supported blocker or change worker coverage.
    compatibility obligations, and non-goals. Infer the changed behavior from
    evidence, not an invented specification. No Actuating Goal, proof packet,
    or repository Ledger store is required.
+   Read [merge-policy.md](merge-policy.md) and its frozen Review Fold admission
+   reference before adjudication. Use the assigned policy; never apply a worker
+   default or let inherited review rhetoric select a stricter mode.
 3. Read the full target at the assigned merge base and head, not just changed
    lines. Handle added, deleted, and renamed files; retain the old path where
    needed. Inspect the change-set file list to locate related edits, not to
@@ -158,14 +161,14 @@ selecting a successor architecture or turning the review into a repair plan.
 
 ## Engineering obligations
 
-These are mandatory Elenctic acceptance standards for new or materially changed
-tests and domain boundaries within the assigned causal scope. The installed
-contract supplies this engineering authority; the subject must still supply
-independent evidence of the domain law, supported behavior, and compatibility
-constraints. Do not invent those facts or require the repository to repeat these
-standards before applying them. They supplement the auxiliary concerns and govern
-Elenctic disposition where optional-strengthening language would otherwise hide
-a demonstrated violation. They do not impose Actuating gates or change its lenses.
+Investigate these standards for new or materially changed tests and domain
+boundaries within the assigned causal scope. Behavioral test adequacy is a merge
+requirement in both modes. The selected [merge policy](merge-policy.md) determines
+when a constructional violation also requires pre-merge resolution. The subject
+must independently establish oracle authority, the domain law, permitted
+implementation changes, supported behavior, compatibility, and material burden.
+The standard cannot invent those facts.
+They supplement the auxiliary concerns without imposing Actuating gates.
 
 ### Behavioral test adequacy
 
@@ -193,7 +196,10 @@ Source reasoning or isolated witnesses suffice; require no mutation framework,
 coverage percentage, additional suite, or universal fault-detection proof.
 
 A demonstrated assertion that merely freezes a noncontractual implementation
-choice is a test-quality violation, even when other behavioral tests are adequate.
+choice is a test-quality violation in both modes, even when other behavioral
+tests are adequate. Establish an ordinary permitted implementation change, not
+an arbitrary hypothetical rewrite. Preserve contractual effects, interactions,
+errors, compatibility, and resource conditions as well as returned values.
 State what independent obligation is absent and the concrete false confidence
 or needless change barrier. The minimum outcome is removal or contract-grounded
 verification, not necessarily another test. Existing adequate coverage can make
@@ -258,14 +264,13 @@ additional runtime dependencies or authority to invent subject requirements.
 
 ## Adjudicate before reporting
 
-Apply the engineering obligations above in both worker adjudication and
-campaign reconciliation. A concrete test counterfactual or structural witness
-can establish their violation without an observed production failure or an
-already-misusing caller. For these findings, reachability means the actual
-test or ordinary construction/operation surface, not an invented incident.
-Cite this review standard separately from the subject evidence establishing
-its applicability, delta, and material impact. Do not downgrade a supported
-violation merely because the current suite passes or no runtime bug is shown.
+Apply [merge-policy.md](merge-policy.md) in both worker adjudication and campaign
+reconciliation. Review Fold's shared admission rules establish the supported
+claim; Elenctic's bound policy establishes its merge consequence. A concrete test
+counterfactual or structural witness can establish an engineering issue without
+a production failure or an already-misusing caller. Cite the review standard
+separately from the subject evidence of applicability, delta, and impact. Preserve
+the issue's factual certainty even when it remains optional under pragmatic policy.
 
 For every related candidate, apply the prior-discussion counter-case and separate
 PR-delta relevance from discussion-delta novelty. A verified response may defeat
@@ -273,30 +278,11 @@ the finding without a patch; an unchanged genuine violation may remain blocking
 without warranting another draft. This applies to concerns and risks as well as
 blockers: do not relabel a rejected argument to repeat it.
 
-Within the same investigation, weigh current evidence, counterevidence,
-reachability, delta causality, accepted authority, and existing mitigations.
-Reject refuted, unrelated, and preference-only claims rather than relabeling
-them as concerns. Assign each retained finding exactly one disposition:
-
-| Disposition | Evidence and merge consequence |
-|---|---|
-| **Concern** | A grounded nonblocking issue or open question worth clarifying or improving, without an established material failure path or unmet merge condition. Name the observation and useful clarification or follow-up; do not assert an unproved defect. |
-| **Risk** | A credible conditional failure or exposure with a concrete trigger, mechanism, and impact, but no established material violation or unmet mandatory merge condition. State the unresolved premise, existing mitigation, and validation or risk-acceptance decision still needed; classification alone is not approval. |
-| **Merge blocker** | Current evidence establishes a material violation of an accepted requirement, invariant, or compatibility contract, or an unmet mandatory merge condition, including missing required verification or a demonstrated violation of the engineering obligations above. Cite the authority, behavioral/structural witness, test counterfactual, or missing required evidence, and obligation that must be satisfied before merge. |
-
-Disposition is not severity or confidence. Use the strongest disposition the
-evidence supports: a high-impact suspicion is not automatically a blocker, and
-an unmet mandatory condition is not softened merely because no runtime failure
-was reproduced. Conditional does not mean nonblocking: a demonstrated violation
-on a supported path remains a blocker even when rare. Missing optional tests,
-speculative redesign, and new requirements do not create merge gates. Apply the
-same standard to local and propagated findings.
-
-Explain why the disposition holds and what evidence would change it. Only an
-explicit, applicable exception from an authorized owner may alter a mandatory
-merge obligation where the governing contract permits it; never invent a
-waiver. State the minimum clarification, validation, or obligation needed,
-without choosing a repair, invoking another reviewer, or opening a new workflow.
+Use the policy's existing **Concern**, **Risk**, and **Merge blocker** dispositions
+for local and propagated findings. Explain the decisive countercase and why the
+issue does or does not need resolution before merge. Do not add a finding or
+approval gate merely to retain an imagined edge, choose a repair, or invoke a
+second workflow. Established risks need no fabricated unresolved premise.
 
 ## Falsify provisional blockers
 
@@ -315,7 +301,7 @@ it should not block merge. Determine whether:
   the violation; for a verification blocker, the requirement applies to this
   change and remains unsatisfied;
 - the cited requirement, invariant, compatibility obligation, or merge
-  condition is accepted, applicable, and mandatory before merge;
+  condition is accepted, applicable, and mandatory under the bound merge policy;
 - the triggering path is supported and reachable, a concrete test
   counterfactual or structural witness establishes an engineering violation,
   or the exact mandatory evidence is identified and genuinely absent;
@@ -324,8 +310,12 @@ it should not block merge. Determine whether:
 - the strongest substantive prior response, including one in a resolved or
   other reviewer's thread, defeats a premise or establishes a defensible choice;
   identify the actual evidence that survives it, not mere renewed disagreement;
-- the required outcome is truly a merge prerequisite rather than an optional
-  strengthening, preference, legitimate follow-up, or speculative redesign.
+- the required outcome is truly a merge prerequisite under the selected policy
+  rather than optional strengthening, preference, legitimate follow-up, or
+  speculative redesign; for pragmatic policy, establish realistic material
+  consequences or a binding condition, including the shared test-quality
+  requirement. A purely structural construction witness needs practical merge
+  necessity or independent authority under that policy.
 
 For engineering blockers, specifically test the counter-case: is the asserted
 configuration itself contractual; is the oracle independent; does an existing
@@ -344,8 +334,9 @@ Assign each provisional blocker exactly one result:
 
 - **Retained merge blocker:** delta causality, mandatory authority, concrete
   basis, and merge necessity survive the strongest counter-case.
-- **Reclassified risk:** a credible conditional mechanism remains, but an
-  unresolved premise prevents establishing a material mandatory violation.
+- **Reclassified risk:** a supported issue or credible conditional mechanism
+  remains, but no pre-merge obligation holds under the selected policy. Preserve
+  known facts and the nonblocking reason; uncertainty is not required.
 - **Reclassified concern:** a grounded nonblocking observation remains without
   an established material failure path or unmet merge condition.
 - **Rejected:** the claim is false, refuted, unrelated, preference-only, already
@@ -353,9 +344,10 @@ Assign each provisional blocker exactly one result:
   contract violation caused by this delta.
 - **Evidence pending:** an indispensable premise cannot yet be decided from
   current evidence. Preserve the question, evidence, and missing discriminator
-  in the coverage note for further investigation; neither establish nor reject
-  a blocker on that basis. This is not a finding significance or file-completion
-  judgment, and does not erase independently supported findings.
+  in the existing report; neither establish nor reject a blocker on that basis.
+  Continue when the missing evidence is required by a material review path or
+  merge decision. Optional unknowns do not withhold completion, and neither kind
+  erases independently supported findings.
 
 Run this cut once per provisional blocker on unchanged evidence. Investigating
 an unresolved premise or considering material new evidence during continuation
@@ -380,6 +372,8 @@ paths/checks, available evidence, failed or untried evidence routes, and any rea
 permission/source/runtime prerequisite. A missing read is not proof that required
 verification is absent from the PR. Do not stop at the first blocker or leave
 available work unexamined merely to request another turn.
+Apply the policy's decision-relevant stopping boundary: a bounded optional edge
+or follow-up cannot become an endless continuation through `INCOMPLETE`.
 
 On a coordinator continuation, retain the assignment and pinned candidate.
 Investigate the named gaps and their causal consequences, including material
@@ -405,12 +399,13 @@ causal defect across lenses and dispositions while retaining distinct witnesses
 and affected paths. Keep each path's uncertainty intact; one proven consequence
 does not prove another. Each finding should compactly establish:
 
-- **Disposition:** concern, risk, or merge blocker; adjudication rationale;
-  severity and confidence separately; what would resolve or reclassify it.
+- **Disposition:** concern, risk, or merge blocker; decisive admission and merge
+  rationale under the bound policy; severity and confidence separately; what
+  would resolve or reclassify it.
 - **Where and why:** target change location, affected code locations, affected
   contract or claim, and the earliest failed premise or causal mechanism.
 - **Evidence and impact:** observed fact and decision-relevant question for a
-  concern; trigger, mechanism, impact, and unresolved premise for a risk;
+  concern; trigger, mechanism, impact, and any actual unresolved premise for a risk;
   established violation or missing mandatory evidence for a merge blocker.
   Distinguish behavioral defects, test-quality violations, constructional
   violations, and verification gaps as evidence bases, not new dispositions.
@@ -428,7 +423,7 @@ and the affected location; never force it onto an unrelated changed line. For a
 soundness finding, state the positive judgment, failed premise, and honest
 claim-strength consequence. Do not duplicate it under other lens headings.
 
-Before the bottom line, give a brief scope/coverage note: reviewed base and
+Before the final decision, give a brief scope/coverage note: bound merge policy, reviewed base and
 candidate view, integration coverage where applicable, important causal paths
 inspected, checks actually run, and unresolved evidence gaps. Return supported
 findings even when other paths remain incomplete. Report **no findings in the
@@ -439,13 +434,16 @@ Immediately before this turn's final decision, emit exactly one unquoted
 machine-readable identity line using canonical one-line JSON in this shape:
 
 ```text
-Review identity: {"schema":"elenctic-review-identity/v1","mode":"single-file","repo":"<owner/name>","pr":123,"campaign_id":"<campaign-id>","assignment_id":"<assignment-id>","campaign_context_id":"<brief-digest-or-exact-content-id>","campaign_seed_thread_id":"<seed-thread-id>","target":"<path>","base":"<review-merge-base-sha>","candidate":"<head-sha>","view":"pr-head","coverage":"<complete|incomplete>","verdict":"<BLOCKED|APPROVE|INCOMPLETE>"}
+Review identity: {"schema":"elenctic-review-identity/v1","mode":"single-file","repo":"<owner/name>","pr":123,"campaign_id":"<campaign-id>","assignment_id":"<assignment-id>","campaign_context_id":"<brief-digest-or-exact-content-id>","campaign_seed_thread_id":"<seed-thread-id>","merge_policy":"<pragmatic|pedantic>","target":"<path>","base":"<review-merge-base-sha>","candidate":"<head-sha>","view":"pr-head","coverage":"<complete|incomplete>","verdict":"<BLOCKED|APPROVE|INCOMPLETE>"}
 ```
 
 All shown fields are required; replace the example PR number with the assigned
 number. Preserve `mode: "single-file"` as the v1 report-kind discriminator, not a
 public invocation mode. The identity binds the PR-head assignment; identify
 prospective-merge evidence and the assigned base-tip SHA in the coverage note.
+`merge_policy` is an additive binding, not a replacement for `mode` or the
+frozen source identity. Emit the assigned value exactly. Historic reports lacking
+it retain their original provenance; no current worker may omit or infer it.
 
 `coverage` states whether all material causal paths and required concerns for
 the assigned file were completed. It is independent of verdict: a supported
@@ -482,8 +480,9 @@ keep the comment separate from its location metadata:
 1. **<Blocker title>** — `<path>:<line or range>` (<diff side/view>; <finding>)
 
    **Why this is a real blocker:** <How this delta introduces, newly exposes, or
-   materially worsens the violation; the mandatory authority; and why the
-   strongest relevant counter-case or defense does not defeat it.>
+   materially worsens the violation; the mandatory authority and merge necessity
+   under the selected policy; and why the strongest relevant counter-case or
+   defense does not defeat it.>
 
    **Proposed inline review comment:**
    > <Subject> should <minimum required outcome>, because <failure or unmet obligation and its impact>.

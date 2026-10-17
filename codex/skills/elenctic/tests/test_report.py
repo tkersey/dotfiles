@@ -49,6 +49,26 @@ def sample() -> dict:
     }
 
 
+def composition_sample() -> dict:
+    raw = sample()
+    raw["schema"] = "ergasterion-report/v1"
+    identity = raw["identity"]
+    for field in ("campaign_context_id", "campaign_seed_thread_id", "campaign_policy_id"):
+        del identity[field]
+    identity.update(schema="ergasterion-review-identity/v1", strategy="elenctic", base_tip="c" * 40)
+    source = {field: identity[field] for field in ("repo", "pr", "base", "base_tip", "candidate")}
+    source.update(source_ref="original-elenctic-report", scope="Fixture selected scope",
+                  coverage="complete", whole_pr_coverage="partial")
+    identity["assessments"] = {"elenctic": source}
+    for finding, number in zip(raw["findings"], (2, 7, 9)):
+        finding["number"] = number
+        finding["origins"] = [{"owner": "elenctic", "reference": finding["id"],
+                               "disposition": finding["disposition"]}]
+        if finding.get("draft"):
+            finding["draft_owner"] = "elenctic"
+    return raw
+
+
 class ReportTests(unittest.TestCase):
     def test_offline_document_and_all_findings(self):
         document, payload = report.render(sample())
@@ -114,6 +134,66 @@ class ReportTests(unittest.TestCase):
         self.assertNotEqual(report.prepare(raw)['findings'][-1]['fingerprint'], first['findings'][-1]['fingerprint'])
         raw['identity']['candidate'] = 'c' * 40
         self.assertNotEqual(report.prepare(raw)['report_key'], first['report_key'])
+
+    def test_policy_is_explicit_and_historical_namespace_is_unchanged(self):
+        raw = sample(); legacy = report.prepare(raw)
+        self.assertEqual(legacy['report_key'],
+                         'elenctic:53beaaa087831a215bffb395631cfedc928fde65dbd98d0fe9ad4a97b3730221')
+        self.assertNotIn('merge_policy', legacy['identity'])
+        keys = {legacy['report_key']}
+        for policy in ('pragmatic', 'pedantic'):
+            raw['identity']['merge_policy'] = policy
+            parsed = report.prepare(raw)
+            self.assertEqual(parsed['identity']['merge_policy'], policy)
+            keys.add(parsed['report_key'])
+            self.assertEqual([f['fingerprint'] for f in legacy['findings']],
+                             [f['fingerprint'] for f in parsed['findings']])
+        self.assertEqual(len(keys), 3)
+        for value in (None, '', 'default', 'Pragmatic', True, [], {}):
+            raw['identity']['merge_policy'] = value
+            with self.subTest(value=value), self.assertRaises(ValueError):
+                report.prepare(raw)
+
+    def test_policy_cannot_be_changed_or_stripped_on_regeneration(self):
+        raw = sample(); raw['identity']['merge_policy'] = 'pragmatic'
+        previous = report.prepare(raw)
+        self.assertEqual(report.prepare(raw, previous=previous)['report_key'], previous['report_key'])
+        for policy in ('pedantic', None):
+            changed = deepcopy(raw)
+            if policy is None:
+                del changed['identity']['merge_policy']
+            else:
+                changed['identity']['merge_policy'] = policy
+            with self.subTest(policy=policy), self.assertRaises(ValueError):
+                report.prepare(changed, previous=previous)
+
+    def test_composition_binds_elenctic_source_policy_without_relabeling_other_owners(self):
+        raw = composition_sample(); legacy = report.prepare(raw)
+        keys = {legacy['report_key']}
+        for policy in ('pragmatic', 'pedantic'):
+            raw['identity']['assessments']['elenctic']['merge_policy'] = policy
+            current = report.prepare(raw)
+            self.assertEqual(current['identity']['assessments']['elenctic']['merge_policy'], policy)
+            self.assertNotIn('merge_policy', current['identity'])
+            keys.add(current['report_key'])
+        self.assertEqual(len(keys), 1)
+        for value in (None, 'default', []):
+            raw['identity']['assessments']['elenctic']['merge_policy'] = value
+            with self.subTest(value=value), self.assertRaises(ValueError):
+                report.prepare(raw)
+        raw = composition_sample(); raw['identity']['merge_policy'] = 'pragmatic'
+        with self.assertRaises(ValueError):
+            report.prepare(raw)
+
+    def test_disposition_changes_reopen_finding_evidence_within_bound_policy(self):
+        raw = sample(); raw['identity']['merge_policy'] = 'pragmatic'
+        old = report.prepare(raw)
+        raw['findings'][0].update(disposition='risk', draft='',
+                                  detail='Established edge failure retained as nonblocking under the bound policy.')
+        raw['identity']['verdict'] = 'APPROVE'
+        new = report.prepare(raw, previous=old)
+        self.assertEqual(old['report_key'], new['report_key'])
+        self.assertNotEqual(old['findings'][0]['fingerprint'], new['findings'][0]['fingerprint'])
 
     def test_atomic_private_output_and_cross_campaign_overwrite(self):
         with tempfile.TemporaryDirectory() as directory:

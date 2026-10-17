@@ -4,8 +4,10 @@ This is coordinator presentation after the ordinary campaign, not a second revie
 worker lane, public standalone workflow, or automatic fix loop. SKILL.md owns
 selection of `comments` (default) versus explicit `resolution`. Store that selection
 in the existing campaign working set and report's `workflow`; no author-based switch.
-Resume preserves it unless explicitly changed. Mode changes do not rerun complete
+Resume preserves it unless explicitly changed. Output-workflow changes do not rerun complete
 reviews or alter selection, concurrency, provenance, coverage or mutation authority.
+Preserve the campaign's merge policy and per-finding merge rationale separately;
+an explicit change of that policy follows campaign recovery, not view switching.
 
 ## Keep the original finding references
 
@@ -40,7 +42,7 @@ Use the same explicit `#2`, `#5`, `#8` references in the terminal finding headin
 blocker index, HTML cards and group handoffs. The coordinator's canonical references
 replace local list ordinals, not finding evidence. Put references in report/location
 metadata, not inside the rank-free proposed comment. Markdown auto-numbering must
-not disguise preserved gaps. Worker v1 report identities remain unchanged.
+not disguise preserved gaps. Numbering does not change worker identities.
 
 In `comments`, stop this step after number binding: no resolution groups or helper
 invocations are added by this feature. Continue normal report delivery.
@@ -54,6 +56,8 @@ its canonical passage unchanged. Do not copy the passages into Elenctic, imitate
 invocation with a label, or replace either with a summary. Both receive the complete
 reconciled findings, source evidence, counter-cases, accepted obligations, non-goals,
 compatibility constraints and eligible drafts, not only the short draft text.
+Carry the bound merge policy and each finding's mandatory or optional consequence.
+More ambitious synthesis cannot promote pragmatic follow-ups into repair prerequisites.
 
 Resolve these two skill sources from the actual installed skills root retained by
 the coordinator, not from the repository under review or the frozen review bundle's
@@ -111,7 +115,7 @@ Depends on: none identified.
 
 Deliver the original numbered report and eligible drafts unchanged, plus these
 units before the report identity/final decision. The HTML view uses the same mapping
-and can copy a handoff containing R1, #2/#5/#8, the campaign/head and their evidence.
+and can copy a handoff containing R1, #2/#5/#8, the campaign/head, merge policy and their evidence.
 The receiving implementation task must revalidate the candidate and obtain its own
 authority; producing or copying a handoff does not execute it.
 

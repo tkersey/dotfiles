@@ -32,6 +32,16 @@ def text(value: Any, name: str, *, empty: bool = False) -> str:
     return value
 
 
+def merge_policy(source: dict[str, Any]) -> str | None:
+    """Read an actual selection without manufacturing one on historical input."""
+    if "merge_policy" not in source:
+        return None
+    value = source["merge_policy"]
+    if not isinstance(value, str) or value not in ("pragmatic", "pedantic"):
+        raise ValueError("merge_policy must be pragmatic or pedantic when supplied")
+    return value
+
+
 def link(value: Any, name: str) -> str:
     value = text(value, name)
     parsed = urlsplit(value)
@@ -296,6 +306,8 @@ def validate_composition(identity: dict[str, Any], *, analysis: bool) -> None:
         if owner == "elenctic" and assessment.get("whole_pr_coverage") not in (
                 "complete", "partial", "not-established"):
             raise ValueError("Elenctic assessment needs actual whole-PR coverage")
+        if owner == "elenctic":
+            merge_policy(assessment)
     complete = (assessments.keys() == required
                 and all(a["coverage"] == "complete" for a in assessments.values()))
     full_pr = complete and assessments.get("elenctic", {}).get("whole_pr_coverage") == "complete"
@@ -383,6 +395,8 @@ def prepare(raw: Any, *, previous: dict[str, Any] | None = None) -> dict[str, An
 
     if composed:
         validate_composition(identity, analysis=analysis)
+    else:
+        merge_policy(identity)
 
     result: dict[str, Any] = {"schema": raw["schema"], "identity": identity}
     for field in ("title", "generated_at", "summary", "coverage_note", "report_text"):
@@ -443,9 +457,22 @@ def prepare(raw: Any, *, previous: dict[str, Any] | None = None) -> dict[str, An
     key_fields = ("repo", "pr", instance, "base", "candidate", "view")
     if composed:
         key_fields += ("base_tip", "strategy")
-    result["report_key"] = owner + ("-analysis:" if analysis else ":") + digest({
-        k: identity[k] for k in key_fields
-    })
+    key = {k: identity[k] for k in key_fields}
+    policy = merge_policy(identity if not composed else
+                          identity.get("assessments", {}).get("elenctic", {}))
+    if composed:
+        # Assessment availability is progress within a round, not round identity.
+        # Policy changes still require a new round once a source has arrived.
+        if previous is not None:
+            prior = previous["identity"].get("assessments", {}).get("elenctic")
+            current = identity.get("assessments", {}).get("elenctic")
+            if prior is not None and (
+                    current is None or merge_policy(prior) != policy):
+                raise ValueError("Elenctic policy changes require a new campaign")
+    elif policy is not None:
+        # Preserve standalone legacy namespaces and policy isolation.
+        key["merge_policy"] = policy
+    result["report_key"] = owner + ("-analysis:" if analysis else ":") + digest(key)
     if previous is not None and previous.get("report_key") != result["report_key"]:
         raise ValueError("cannot reuse finding numbers from another campaign")
     prepare_resolution(raw, result, previous)
@@ -462,13 +489,13 @@ def script_data(value: Any) -> str:
 def render(raw: Any, *, previous: dict[str, Any] | None = None) -> tuple[str, dict[str, Any]]:
     report = prepare(raw, previous=previous)
     template = (Path(__file__).resolve().parents[1] / "assets" / "report.html").read_text(encoding="utf-8")
-    if report["schema"] == COMPOSITION_SCHEMA:
-        # Brand the trusted shared template before inserting any report/user text.
-        template = template.replace("Elenctic", "Ergasterion").replace("ELENCTIC", "ERGASTERION")
+    # Brand only presentation slots; keep semantic source names unchanged.
+    brand = "Ergasterion" if report["schema"] == COMPOSITION_SCHEMA else "Elenctic"
     replacements = {"__REPORT_DATA__": script_data(report),
                     "__REPORT_TEXT__": html.escape(report["report_text"]),
-                    "__REPORT_TITLE__": html.escape(report["title"])}
-    output = re.sub(r"__REPORT_(?:DATA|TEXT|TITLE)__", lambda m: replacements[m[0]], template)
+                    "__REPORT_TITLE__": html.escape(report["title"]),
+                    "__REPORT_BRAND__": brand, "__REPORT_WORDMARK__": brand.upper()}
+    output = re.sub(r"__REPORT_(?:DATA|TEXT|TITLE|BRAND|WORDMARK)__", lambda m: replacements[m[0]], template)
     return output, report
 
 

@@ -158,6 +158,58 @@ class CampaignStateTests(unittest.TestCase):
             with self.subTest(field=field), self.assertRaises(ValueError):
                 campaign.check_report(data)
 
+    def test_worker_policy_is_optional_only_for_matching_legacy_bindings(self):
+        self.assertTrue(campaign.check_report(report_input())["completion_claim_consistent"])
+        for policy in ("pragmatic", "pedantic"):
+            data = report_input()
+            data["expected_identity"]["merge_policy"] = policy
+            data["report"]["identity"]["merge_policy"] = policy
+            with self.subTest(policy=policy):
+                self.assertTrue(campaign.check_report(data)["completion_claim_consistent"])
+            for missing in ("expected_identity", "report"):
+                changed = copy.deepcopy(data)
+                identity = changed[missing] if missing == "expected_identity" else changed[missing]["identity"]
+                del identity["merge_policy"]
+                with self.subTest(policy=policy, missing=missing), self.assertRaises(ValueError):
+                    campaign.check_report(changed)
+        data["expected_identity"]["merge_policy"] = "pragmatic"
+        with self.assertRaises(ValueError):
+            campaign.check_report(data)  # Report still claims pedantic.
+
+    def test_policy_must_be_an_explicit_known_string(self):
+        for value in (None, "", "default", "Pragmatic", True, [], {}):
+            data = report_input()
+            data["expected_identity"]["merge_policy"] = value
+            data["report"]["identity"]["merge_policy"] = value
+            with self.subTest(value=value), self.assertRaises(ValueError):
+                campaign.check_report(data)
+
+    def test_coverage_cannot_mix_or_strip_assignment_policies(self):
+        for policy in ("pragmatic", "pedantic"):
+            rows = [admitted("a"), admitted("b", "APPROVE")]
+            for row in rows:
+                row["expected_identity"]["merge_policy"] = policy
+                row["accepted_report"]["identity"]["merge_policy"] = policy
+            data = {**coverage_input(rows), "merge_policy": policy}
+            with self.subTest(policy=policy):
+                self.assertEqual(campaign.coverage(data)["complete_files"], 2)
+            missing = copy.deepcopy(data); del missing["merge_policy"]
+            with self.assertRaises(ValueError):
+                campaign.coverage(missing)
+            for replacement in (None, "pragmatic" if policy == "pedantic" else "pedantic"):
+                changed = copy.deepcopy(data)
+                for source in (changed["assignments"][1]["expected_identity"],
+                               changed["assignments"][1]["accepted_report"]["identity"]):
+                    if replacement is None:
+                        del source["merge_policy"]
+                    else:
+                        source["merge_policy"] = replacement
+                with self.subTest(policy=policy, replacement=replacement), self.assertRaises(ValueError):
+                    campaign.coverage(changed)
+        invalid = {**coverage_input([]), "merge_policy": None}
+        with self.assertRaises(ValueError):
+            campaign.coverage(invalid)
+
     def test_stale_epoch_blocks_admission_and_dispatch(self):
         for field in campaign.EPOCH_FIELDS:
             data = report_input()

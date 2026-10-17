@@ -104,7 +104,7 @@ blocked. The investigator must discover the discriminator; do not put the missin
 premise or expected answer into the inherited seed. Record observed outcomes and
 obstructions before making any claim of improved model performance.
 
-## 2026-10-17 revision: blind review subjects and report capture
+## 2026-10-17 PR #343 revision: blind review subjects and report capture
 
 `review_cases.py` supplies seven defective/adequate pairs with base and candidate
 file trees: retained guarantees, temporal facts, liveness, composition through an
@@ -157,7 +157,7 @@ The full native campaign and seeded three-arm comparison remain unrun until thei
 actual observable execution is recorded separately. This revision adds no production
 review lane, score, automatic finding judge, model framework, or review credit.
 
-### Executed on this revision
+### Executed on PR #343
 
 Recorded 2026-10-17 using Python 3.12.14 and Node 24.19.0:
 
@@ -214,6 +214,11 @@ visible instructions; if common inherited history already exposes that material,
 report the instruction ablation as confounded. The facts arm must retain the same
 necessary facts and author responses; removing a necessary fact is a different
 experiment. It is deliberately experimental and changes no production seed rule.
+For comparisons using the merge-policy revision, hold the actual selected policy
+constant across arms and supply the same frozen Review Fold admission, merge-policy,
+and engineering-standard sources to each. Earlier records retain their original
+contracts and unrecorded mode. Use [merge-policy-cases.md](merge-policy-cases.md) for
+the separate experiment that changes policy while holding evidence constant.
 
 The compact arm replaces semantic choreography, not native assignment binding,
 authority, identity, recovery, or report transport. Supply those unchanged carrier
@@ -227,14 +232,20 @@ worker text only in the comparison:
 > duplicated correctness responsibilities, and omitted behavior or progress. Use
 > decisive source evidence or the smallest authorized discriminator.
 >
-> Apply Elenctic's engineering authority: changed tests must distinguish relevant
+> Investigate Elenctic's engineering standards: changed tests should distinguish relevant
 > incorrect behavior without freezing noncontractual choices; changed trusted
-> boundaries must preserve stable laws through proportionate native ownership or
+> boundaries should preserve stable laws through proportionate native ownership or
 > representation. Establish applicability, material burden, and feasibility.
 > Preserve independent oracles, raw/wire/draft shapes, adequate refinements and
 > encapsulation, distinct temporal checks, required-valid behavior, compatibility,
 > and actual resource constraints. No bad production caller is required for a
 > demonstrated structural or test-quality violation; do not invent one.
+> Apply the supplied Review Fold admission and bound merge policy separately:
+> factual validity does not automatically establish a pre-merge obligation.
+> Behavioral test adequacy remains a merge requirement in both modes. Pedantic
+> adopts the additional construction commitment; pragmatic requires practical
+> merge necessity or independent mandatory authority for structural construction
+> findings. Preserve proven nonblocking risks and optional unknowns.
 >
 > Before retaining a blocker, try to defeat it with the strongest actual defense,
 > including complete relevant author responses. Distinguish accepted obligations
@@ -260,3 +271,147 @@ do not grade by phrases, preferred abstractions, or verdict extraction. These
 published subjects are calibration material for anyone who has seen their keys.
 Confirm any promising result on unseen causal structures and real pinned changes
 before claiming a general benefit or changing production preparation policy.
+
+## 2026-10-17 pragmatic/pedantic adjudication revision
+
+This is the initial record at commit `6780b808620286fb1b99862c9dfda7a583cbbf44`.
+It remains evidence of that policy's behavior. The test-quality correction below
+supersedes its treatment of brittle tests; do not count the initial pragmatic
+Concern as satisfying the clarified quality requirement.
+
+This revision composes Review Fold's shared admission semantics into the existing
+Elenctic investigation and adjudication. It defaults new work to pragmatic merge
+obligations and permits an explicit pedantic engineering commitment. It does not
+add a review lane or claim that weaker coverage produces better decisions.
+
+### Executed implementation checks
+
+Recorded with Python 3.12.14 and Node 24.19.0:
+
+| Check | Observed result | Evidence scope |
+|---|---|---|
+| Complete Elenctic unittest discovery | 92 passed, 42 skipped; 134 discovered | Existing behavior plus explicit/legacy policy binding, rejected missing or mismatched assignment modes, policy-aware report identities, analysis/composition compatibility, and frozen shared admission. |
+| Ergasterion shared-renderer suite | 31 passed | Existing composition and regeneration behavior remains compatible. |
+| Review Fold admission suite | Passed | 18 concrete fixture probes, 20 declared evaluation cases, seven discriminating pairs, preservation and handoff checks. Its model evaluation remained unrun; these are executable/source contract checks. |
+| Merge-policy fixture probes | All eight matched their factual observations | Source-bound extra test coupling, trusted carrier, subtotal, authorization revocation, mandatory verification, validated value, bounded preview, and optional durability cases. These probes do not grade model output. |
+| Skill metadata, policy capture/verification, source reference targets, whitespace | Passed | Both affected packages validate; the shared admission bytes participate in policy identity. |
+| Independent fresh source review | No material findings | Read-only review of policy authority, exact-mode continuity, historical compatibility, downstream optionality, and current implementation changes. |
+
+The 42 skips comprise 41 checks needing unavailable Python Playwright and one
+opt-in native file-origin check. Controlled JavaScript checks do not establish
+browser rendering, real storage, or native file-origin behavior. The live native
+campaign, complete worker/lens integration, and seeded three-arm comparison remain
+unrun. Do not count unavailable checks as passes or synthetic subject checks as
+evidence of native workflow execution.
+
+### First isolated adjudication observations
+
+Nine fresh reviewers examined seven distinct exported subjects. Two subjects
+received paired reviews with identical evidence and semantic instructions and
+different mode bindings. Other subjects received the one mode listed below.
+Each reviewer received one opaque subject, the frozen shared admission and merge
+policy, and the same Engineering obligations section. No reviewer received the
+authoring history, evaluator key, sibling subject, or another reviewer's result.
+There were no answer-seeking retries of an unchanged subject.
+
+| Subject | Mode | First observed judgment | Source-based adjudication |
+|---|---|---|---|
+| Extra test coupling | Pragmatic | APPROVE with Concern | Preserved the real brittle assertion and adequate independent behavioral checks; did not invent a production failure. |
+| Same extra test coupling | Pedantic | BLOCKED | An allowed inline implementation passes behavioral checks but fails the added helper-call assertion; the extra test standard supplies the merge obligation. |
+| Internal completion carrier | Pragmatic | APPROVE with Concern | All actual producers preserve the domain law. The redundant structural burden remains optional without an invented external caller. |
+| Same internal carrier | Pedantic | BLOCKED | The new trusted constructor admits forbidden combinations and independently maintains one relationship across producers; the review established a proportionate invariant-preserving construction. |
+| Revocation during export | Pragmatic | BLOCKED | A permitted event hook revokes access before the second read. The candidate releases the document anyway; rarity does not waive authorization. |
+| Bounded preview observation | Pragmatic | APPROVE with Concern | Demonstrated a split Unicode sequence while exact opening/export remained intact. The report retained factual certainty and optionality. |
+| Optional durability question | Pragmatic | APPROVE with Concern | Current atomic visibility was supported. Unknown power-loss behavior for an unaccepted future offline mode did not force INCOMPLETE. |
+| Supported value boundary | Pedantic | APPROVE with no findings | The checked, frozen owner preserves the invariant; unsafe state editing outside the explicit trust model did not establish a bypass. |
+| Mandatory codec verification | Pragmatic | Merge blocked | Preserved the known skipped mandatory check as an unmet merge condition without calling it a demonstrated codec defect or inventing a pass. |
+
+The bounded-preview evaluator hypothesis expected Risk rather than Concern.
+The first reviewer instead treated grapheme-preserving truncation as optional
+strengthening because the subject expressly permits approximate previews. That
+source-backed boundary disagreement is preserved: the observed display limitation
+was certain, its full-body containment remained explicit, and the merge consequence
+was correct. These observations do not establish an exact disposition-match score.
+
+The raw first reports and source identities were retained. Reviewers were fresh
+isolated agents with inherited runtime settings and no model/reasoning override;
+this was not a provider-version-controlled or repeated model comparison. Supplied
+semantic sources came from policy snapshot
+`sha256:345f5aa395e6b85e460702c5af802cc6db476a606ec73238ebde8eb1ec574893`.
+Later navigation and prose-formatting edits changed snapshot bytes without changing
+those adjudication rules. Only the named semantic components were supplied, not
+the complete worker/lens bundle or a prepared-history seed. This is source-only
+admission/policy evidence, not campaign provenance or a full-worker evaluation arm.
+
+The eight fixture probes include the ordinary subtotal case, which received no
+model review in this run. No general reduction in false blockers, unchanged recall,
+or real-world merge throughput has been measured. Use
+[merge-policy-cases.md](merge-policy-cases.md) to reproduce the isolated experiment;
+use unseen causal structures and actual pinned changes before claiming broad
+efficacy. Published cases become calibration material after their key is seen.
+
+## 2026-10-17 test-quality correction
+
+The user clarified that the existing test-quality rule intentionally builds
+quality into reviews and removes brittle tests. The initial pragmatic exemption
+weakened that requirement. Behavioral test adequacy now remains binding in both
+modes; the subject still supplies independent authority for expected behavior and
+permitted implementation changes. Adequate other tests can make deletion the
+minimum sufficient correction. Keep the earlier reports and their policy identity
+as historical observations, not evidence that the exemption met the user's intent.
+
+The helper-call subject and its factual probe are unchanged. Its evaluator
+expectation now requires resolution in both modes. One added contractual-delivery
+subject distinguishes a legitimate interaction assertion from private-helper
+coupling: internal delegation preserves the test, while duplicate external
+delivery fails it. No production review script, report JavaScript, identity
+format, or runtime protocol changes in this correction.
+
+| Check | Observed result | Evidence scope |
+|---|---|---|
+| Policy-binding suite | 11 passed | Frozen policy and shared admission mechanisms. |
+| Exported fixture checks | All nine factual observations matched | Source digests and compilable fixtures; the new delivery probe passes its permitted refactor and rejects duplicate delivery. |
+| Skill metadata, actual policy capture/verification, relative references, whitespace | Passed | Package and source integration. |
+| Fresh pragmatic review of the unchanged helper-call subject | BLOCKED on test quality | Established the ordinary inline counterfactual and accepted authority; retained correct production behavior and adequate independent coverage; removing the new test was sufficient. |
+| Fresh pragmatic review of the contractual-delivery subject | APPROVE with no findings | Preserved the required external call count, arguments, and receipt identity; rejected the brittle-test allegation from independent protocol authority. |
+
+Both reviewers used decisive source traces and claimed no test execution. The
+fixture probes were executed separately. Each fresh reviewer received one opaque
+subject and the shared admission, merge-policy, and Engineering obligations text,
+without authoring history, evaluator key, sibling subject, or another result.
+Preserve their first raw reports, exact delivered assignments, and source hashes.
+They used inherited runtime settings without model or reasoning overrides.
+
+The evaluated semantic sources are bound by policy identity
+`sha256:18c3bc692bfaffb4a8bae93b453ddea76b7e1b39c3f11e3f08dce9c803435700`.
+The broader implementation suite results above belong to the prior revision;
+only the focused checks listed here were rerun. These two observations establish
+the intended distinction on the supplied evidence, without qualifying a full
+worker/lens bundle, native campaign, browser behavior, or general review efficacy.
+
+## 2026-10-17 pre-merge report attribution correction
+
+A focused final review found that composed-report branding replaced every
+`Elenctic` occurrence in the trusted HTML template. The newly added source-policy
+label therefore became `Ergasterion merge policy`, although only the Elenctic
+assessment supplied that policy. The rendered metadata and copied handoff share
+this label; the serialized source identity and verdict were unaffected.
+
+Restrict branding to explicit title and wordmark placeholders. The existing
+single-pass substitution continues to escape report data and leaves semantic
+source names intact. Extend the existing trusted-template regression with a
+source-policy label: it failed before the production fix and passed afterward.
+
+| Check | Observed result | Evidence scope |
+|---|---|---|
+| Elenctic report suite | 15 passed | Rendering, escaping, identity, policy, and controlled storage-script checks. |
+| Ergasterion report suite | 31 passed | Shared renderer, source boundaries, file mechanics, and the corrected branding regression. |
+| Policy-binding suite | 11 passed | Snapshot capture and verification mechanisms. |
+| Independent review and actual combined-report render | Correct source attribution; no further actionable finding in the corrective delta | Both assessments were present; only Elenctic supplied `merge_policy`. The title/wordmark remained Ergasterion and the policy label remained Elenctic. |
+| Targeted browser policy-label check | Skipped: Playwright unavailable | Browser metadata and clipboard behavior remain unrun. |
+
+The final policy/handoff source pass found no further actionable contradiction in
+the pragmatic default, additional pedantic construction obligations, or shared
+test-quality requirement. These were focused source reviews, not native Elenctic
+campaigns. The actual-document observation checks generated source; it does not
+replace browser execution or broaden the earlier efficacy claims.

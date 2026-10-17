@@ -3,7 +3,7 @@ import json
 import os
 import unittest
 
-from test_report import report, sample
+from test_report import report, sample, composition_sample
 
 try:
     from playwright.sync_api import sync_playwright
@@ -51,6 +51,38 @@ class DomTests(unittest.TestCase):
         self.assertEqual(restored.get_by_role('textbox').first.input_value(), 'Handled; await verification')
         self.assertEqual(restored.locator('#verdict').inner_text(), 'BLOCKED')
         page.close(); restored.close()
+
+    def test_policy_and_optional_followups_are_visible(self):
+        for raw, label, policy in (
+            (sample(), 'Merge policy', None),
+            (sample(), 'Merge policy', 'pragmatic'),
+            (composition_sample(), 'Elenctic merge policy', 'pedantic'),
+        ):
+            if policy is not None:
+                source = raw['identity'] if raw['schema'] == 'elenctic-report/v1' else raw['identity']['assessments']['elenctic']
+                source['merge_policy'] = policy
+            page = self.page(raw)
+            self.assertIn(label, page.locator('#metadata').inner_text())
+            self.assertIn(policy.capitalize() if policy else 'Historical policy · mode unrecorded',
+                          page.locator('#metadata').inner_text())
+            self.assertEqual(page.locator('#finding-f-cancel .outcome strong').inner_text(), 'Required outcome')
+            self.assertEqual(page.locator('#finding-f-recovery .outcome strong').inner_text(), 'Optional follow-up')
+            page.close()
+
+    def test_resolution_handoff_preserves_selected_policy_and_optionality(self):
+        from test_resolution import sample as resolution_sample
+        raw = resolution_sample(); raw['identity']['merge_policy'] = 'pragmatic'
+        page = self.page(raw)
+        page.evaluate("""() => {
+          Object.defineProperty(navigator, 'clipboard', {value:{writeText:async () => {throw new Error('Unavailable');}}});
+        }""")
+        page.get_by_role('button', name='Copy R1 handoff', exact=True).click()
+        page.wait_for_function("document.getElementById('message').textContent.includes('Clipboard unavailable')")
+        handoff = page.locator('#resolution-R1 .handoff')
+        self.assertTrue(handoff.is_visible())
+        self.assertIn('Merge policy: Pragmatic', handoff.inner_text())
+        self.assertIn('Nonblocking follow-ups remain optional.', handoff.inner_text())
+        page.close()
 
     def test_portable_bytes_preserve_handling_without_browser_store(self):
         page = self.page()

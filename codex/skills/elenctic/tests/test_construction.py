@@ -72,6 +72,23 @@ class ConstructionTests(unittest.TestCase):
         self.assertNotIn('whole_pr_coverage', parsed['identity'])
         self.assertTrue(parsed['report_key'].startswith('elenctic-analysis:'))
 
+    def test_feedback_policy_binds_analysis_without_creating_review_credit(self):
+        raw = sample(); legacy = report.prepare(raw)
+        keys = {legacy['report_key']}
+        for policy in ('pragmatic', 'pedantic'):
+            raw['identity']['merge_policy'] = policy
+            parsed = report.prepare(raw)
+            self.assertEqual(parsed['identity']['merge_policy'], policy)
+            self.assertEqual(parsed['identity']['mode'], 'analysis')
+            for field in ('campaign_id', 'campaign_policy_id', 'coverage', 'verdict'):
+                self.assertNotIn(field, parsed['identity'])
+            keys.add(parsed['report_key'])
+        self.assertEqual(len(keys), 3)
+        previous = report.prepare(raw)
+        del raw['identity']['merge_policy']
+        with self.assertRaises(ValueError):
+            report.prepare(raw, previous=previous)
+
     def test_analysis_rejects_all_claims_of_review_credit_even_null(self):
         for key, value in [('verdict', 'APPROVE'), ('coverage', 'complete'),
                            ('selected_scope_coverage', 'complete'), ('whole_pr_coverage', 'partial'),

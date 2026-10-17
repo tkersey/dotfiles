@@ -2,5 +2,5 @@ policy:
   allow_implicit_invocation: false
 interface:
   display_name: "elenctic"
-  short_description: "Review PRs or propose code changes from their feedback"
-  default_prompt: "Use $elenctic under SKILL.md for the requested PR. Preserve the selected comments, resolution, or proposal-only construction workflow and generate its local interactive report."
+  short_description: "Pragmatic PR reviews with an explicit pedantic mode"
+  default_prompt: "Use $elenctic for the requested PR, preserving any established merge policy and output workflow; use the pragmatic default for new work unless pedantic is requested."

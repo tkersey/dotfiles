@@ -61,7 +61,7 @@ not a second source of review truth:
 {
   "schema": "elenctic-report/v1",
   "workflow": "comments",
-  "identity": { "schema": "elenctic-review-identity/v1", "mode": "campaign" },
+  "identity": { "schema": "elenctic-review-identity/v1", "mode": "campaign", "merge_policy": "pragmatic" },
   "title": "<PR title>",
   "pr_url": "<verified absolute HTTP(S) PR URL>",
   "generated_at": "<actual ISO-8601 generation time>",
@@ -86,6 +86,12 @@ not a second source of review truth:
 
 The abbreviated identity above is illustrative: pass the complete actual campaign
 identity from campaign.md, including explicit null provenance where never created.
+New native campaign and construction-analysis identities include the actual
+`merge_policy` (`pragmatic` or `pedantic`). Historical omission stays omitted and
+is labeled **Historical policy · mode unrecorded**, never inferred from a verdict.
+Null and unknown policy values are invalid. A composed campaign preserves the
+actual Elenctic source choice only at `identity.assessments.elenctic.merge_policy`;
+the aggregate identity has no Elenctic-specific root policy field.
 Do not infer missing SHAs/IDs or change coverage to satisfy validation. Dispositions
 are exactly `merge-blocker`, `risk`, `concern`. Include all retained findings once,
 not only blockers; keep nonblocking items nonblocking. With zero findings use `[]`.
@@ -113,6 +119,9 @@ conservatively reopens the check while retaining notes. Withdrawn findings leave
 active list, not a false claim that the user fixed them. No handling state carries
 automatically into another campaign, analysis or head. Proposal changes alone are
 not evidence changes and do not reset handling; handled still does not mean verified.
+An explicit merge-policy value also binds the handling namespace. Changing or
+stripping it cannot overwrite the same report or inherit its checks, even if the
+head and evidence are unchanged. Historic reports retain their original namespace.
 
 ### Resolution result
 
@@ -171,6 +180,7 @@ verdict and coverage. A feedback-only analysis instead supplies this complete id
   "repo": "<owner/repository>",
   "pr": 123,
   "analysis_id": "<actual opaque analysis ID>",
+  "merge_policy": "pragmatic",
   "base": "<observed review merge-base SHA>",
   "candidate": "<observed head SHA>",
   "view": "pr-head"
@@ -182,6 +192,8 @@ identity, even as nulls. `coverage_note` describes the feedback/code inspected a
 missing evidence, explicitly not a whole-PR review. The `elenctic-analysis:` handling
 namespace cannot inherit a campaign's coverage or progress. Existing campaign
 namespaces remain unchanged when switching presentation workflows.
+The analysis policy describes feedback adjudication and grants no campaign
+coverage or verdict. Use the actual selection rather than copying the example.
 
 The construction result reuses the resolution group's ID, title, finding_ids,
 rationale, objective, completion_checks and depends_on fields. Each group adds a
@@ -216,6 +228,9 @@ opaque `id`, `source` (exact source reference/original subject), `claim`, `basis
 `finding_ids` and an optional verified HTTP(S) `url`. Accepted feedback needs an
 entailed law and a retained reference. Rejected feedback references no retained
 finding; optional/underdetermined feedback cannot acquire a merge blocker.
+Accepted feedback may reference a nonblocking risk: factual admission is separate
+from merge necessity. Keep a known risk's certainty and nonblocking rationale in
+its evidence instead of inventing an unresolved premise.
 
 The complete result must account for every retained finding in both adjudications
 and exactly one group. Preserve all substantive feedback, including rejected items
@@ -242,6 +257,10 @@ cannot change the original review verdict or coverage. Construction offers Chang
 proposals / Original findings, the full feedback-adjudication ledger, explicit code
 changes and copyable evidence-bound handoffs. A feedback-only analysis displays
 No review verdict. Rejected-only output remains visible without invented repair units.
+Display the selected merge policy (adjudication policy for analysis, source-qualified
+Elenctic policy for composition) and retain it in copied handoffs. Label nonblocker
+outcomes **Optional follow-up** so known risks and concerns cannot reappear as
+mandatory work through presentation or synthesis.
 
 Use readable restrained styling, visible focus, labeled native controls, responsive
 layout and print support; no remote fonts, dependencies or telemetry. Copy failure

@@ -190,8 +190,17 @@ if (args.length === 1 && args[0] === '--list') {
   // they do not demonstrate that a model follows or benefits from the policy.
   const read = path => readFileSync(new URL(path, import.meta.url),'utf8');
   const fold = read('../SKILL.md');
-  const admission = fold.split('## Counterexample admission\n')[1]?.split('\n## ')[0];
+  const shared = read('../references/admission.md');
+  const admission = shared.split('## Counterexample admission\n')[1]?.split('\n## ')[0];
   assert(admission, 'missing admission standard');
+  for (const [heading, anchor] of [
+    ['Law-authority classification', 'law-authority-classification'],
+    ['Counterexample admission', 'counterexample-admission']
+  ]) {
+    const forwarding = fold.split(`## ${heading}\n`)[1]?.split('\n## ')[0];
+    assert(forwarding?.includes(`references/admission.md#${anchor}`), `missing ${heading} forwarding link`);
+    assert(shared.includes(`## ${heading}\n`), `missing canonical ${heading} section`);
+  }
   for (const heading of ['**Obligation.**','**Validity.**','**Relevance.**','**Countercase.**'])
     assert(admission.includes(heading), heading);
   assert(!fold.includes('Assign disposition from authority plus current applicability'));
