@@ -2,8 +2,9 @@
 
 Use `scripts/ensure_custody.py --migrate` only for selected legacy inspection,
 historical import, or interrupted migration. Without `--migrate`, the helper
-only resolves the personal catalog; existing custody needs no migration receipt
-or complete worktree inventory. Both helpers belong to `$ledger`; the context
+resolves the personal catalog and automatically adopts an existing valid Git
+registration when needed; existing custody needs no migration receipt or complete
+worktree inventory. Both helpers belong to `$ledger`; the context
 helper owns storage home, stable root identity, and catalog associations.
 For a coordinated upgrade of existing installations, start with
 [the upgrade guide](personal-store-upgrade.md); already-managed roots normally

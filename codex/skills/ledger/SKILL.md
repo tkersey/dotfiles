@@ -154,10 +154,15 @@ in consumers or `AGENTS.md`, or substitute an empty store for a failed lookup.
 
 ## Resolve personal custody
 
-Resolve an existing store by `--store-id` or its cataloged workspace association.
-Normal `ensure_custody.py` performs the same read-only lookup. Missing worktrees,
-unresolved legacy imports, and absent migration receipts do not invalidate owned
-custody. Read [explicit adoption and migration](references/canonical-custody.md#explicit-adoption-and-migration)
+At first canonical use, run `scripts/ensure_custody.py --repo "<workspace-path>"`
+through `uv run`, or select a known cataloged `--store-id`. Ensure automatically
+imports a valid existing Git registration into the personal catalog when the
+workspace has no association. It preserves the root, store ID, records, and native
+bindings; it never creates new history or imports legacy records. Repeated ensure
+is read-only. For explicit read-only/no-file work, use `ledger_context.py` instead;
+an uncataloged registration then requires a separately authorized ensure.
+Missing worktrees, unresolved legacy imports, and absent migration receipts do
+not invalidate owned custody. Read [explicit adoption and migration](references/canonical-custody.md#explicit-adoption-and-migration)
 only when that maintenance is selected. A missing or corrupt established root
 still fails closed; it is never replaced with an empty store.
 

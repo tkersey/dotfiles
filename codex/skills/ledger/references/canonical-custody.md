@@ -22,10 +22,10 @@ Resolve a known stable identity without Git:
 uv run "$ledger_skill_root/scripts/ledger_context.py" --store-id "<store-id>"
 ```
 
-An explicitly cataloged workspace can select the same identity:
+For a selected workspace, ensure usable custody before its first canonical use:
 
 ```bash
-uv run "$ledger_skill_root/scripts/ledger_context.py" --repo "<workspace-path>"
+uv run "$ledger_skill_root/scripts/ensure_custody.py" --repo "<workspace-path>"
 ```
 
 Retain `repository_id`, `store_id`, `store_root`, and `native_args` from the
@@ -42,9 +42,15 @@ selector. Native Ledger checks the selected root and validates the relevant
 owner custody. Use `doctor` for diagnosis or a selected integrity check; do not
 surround every validated transaction with redundant full-store checks.
 
-Normal resolution is read-only. It does not enumerate sibling worktrees, inspect
-legacy logs, demand a migration receipt, or rewrite catalog associations. Normal
-`ensure_custody.py --store-id ...` or `--repo ...` is the same lookup. An absent
+Ensure first resolves the catalog. If the selected Git workspace is unregistered,
+it automatically imports its existing valid Git registration using the locked
+catalog adoption operation. Only catalog metadata changes; identity, native
+custody, and the original registration stay intact. Missing registrations,
+invalid roots, and conflicts still fail; ensure never initializes empty history.
+Reuse successful context within the session. `ledger_context.py` remains strictly
+read-only and is the route for explicit read-only/no-file work.
+Neither lookup nor registration adoption enumerates sibling worktrees, inspects
+legacy logs, or demands a migration receipt. An absent
 historical source limits a recovery claim, not access to intact owned data.
 Git-bound workspace aliases require their registered common-directory identity
 to remain verifiable. After checkout deletion, use direct `--store-id` access.

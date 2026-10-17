@@ -93,7 +93,11 @@ and source-note admission. Native operations validate their own owner-defined
 custody; context success is not a semantic health or applicability claim.
 A failed projection's managed root admission exits 3, never a clear gate.
 
-`ensure_custody.py` without `--migrate` performs this same read-only resolution.
+`ensure_custody.py --repo ...` performs this lookup and, only for an unregistered
+Git workspace with an existing valid registration, automatically catalogs that
+same identity. Use ensure for ordinary first canonical use; use
+`ledger_context.py` for strictly read-only lookup. No registration means failure,
+not new custody. Adoption preserves native bytes and rejects catalog conflicts.
 Migration receipts and complete legacy inventory are never access prerequisites.
 No selector means no implicit default store; select a stable ID or a cataloged
 workspace. Caller code uses `resolve(repo=None, store_id=...)`.

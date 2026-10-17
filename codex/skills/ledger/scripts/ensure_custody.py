@@ -1,8 +1,10 @@
 #!/usr/bin/env -S uv run python
 """Resolve personal custody, or explicitly maintain selected legacy history.
 
-Normal use only resolves the personal catalog. --migrate selects historical
-inspection; --apply additionally requires actual writer quiescence.
+Normal use resolves the personal catalog, automatically adopting a selected
+Git family's existing registration when absent. This only updates catalog
+metadata. --migrate selects historical inspection; --apply additionally requires
+actual writer quiescence. Use ledger_context.py for strictly read-only lookup.
 """
 from __future__ import annotations
 
@@ -272,9 +274,21 @@ def sync_tree(path: Path, ctx) -> None:
 
 
 def ensure(repo: Path | None = None, *, store_id: str | None = None) -> dict:
-    """Normal use resolves owned custody without historical coverage checks."""
+    """Resolve custody or catalog an existing Git registration without moving it."""
     ctx = load_module(Path(__file__).with_name('ledger_context.py'))
-    return ctx.resolve(repo, store_id=store_id)
+    try:
+        return ctx.resolve(repo, store_id=store_id)
+    except ctx.UnregisteredContext:
+        # Only absence permits adoption: corrupt catalog/root, conflicting
+        # aliases and explicit unknown identities must retain their failures.
+        if repo is None or store_id is not None:
+            raise
+        root, common, _ = ctx.workspace_associations(repo)
+        if common is None or not os.path.lexists(common / ctx.REGISTRATION):
+            raise
+        # The existing import validates the registration and root and publishes
+        # under the catalog lock, rejecting races with conflicting associations.
+        return ctx.import_registration(common / ctx.REGISTRATION, root)
 
 
 def migration_source(repo: Path, ctx) -> tuple[Path, Path | None]:

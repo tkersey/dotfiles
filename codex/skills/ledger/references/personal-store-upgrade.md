@@ -13,7 +13,7 @@ installation alone neither imports old history nor migrates notes.
 
 | Existing state | Upgrade route | What is retained |
 |---|---|---|
-| Managed root with a Git `ledger-store.json` registration | Import that registration into the personal catalog | Exact root, store ID, native custody, and old registration |
+| Managed root with a Git `ledger-store.json` registration | First-use ensure automatically imports that registration into the personal catalog | Exact root, store ID, native custody, and old registration |
 | Managed root whose Git registration is gone | Register its actual root and marker's existing ID | The same identity and native bytes; no replacement store |
 | Unmanaged `.ledger` or recognized retired Learnings files in live worktrees | Explicit owner-aware migration of the Git family | Source copies, bounded archive, original supported records and IDs |
 | Surviving unmanaged directory after Git metadata was removed | Explicit migration selecting that directory | The same preservation guarantees for that selected source; no claim about other lost copies |
@@ -66,13 +66,17 @@ the actual `.ledger` directory. Do not automatically select `.migrating-*`,
 `.initializing-*`, or an orphan from an interrupted publication. These require
 inspection of their provenance and completion state.
 
-When a registration survives:
+When a registration survives, the ordinary ensure path adopts it automatically:
 
 ```bash
-uv run "$ledger_skill_root/scripts/ledger_context.py" \
-  --import-registration "<git-common-dir>/ledger-store.json" \
-  --repo "<workspace-path>"
+uv run "$ledger_skill_root/scripts/ensure_custody.py" --repo "<workspace-path>"
 ```
+
+This performs registration-only adoption, not cold migration. It needs no writer
+quiescence because native custody stays in place. Strictly read-only tasks use
+`ledger_context.py` and cannot perform this catalog update. The explicit
+`ledger_context.py --import-registration ... --repo ...` maintenance route remains
+available for a specifically selected registration.
 
 When only the managed root survives:
 

@@ -5,7 +5,9 @@ interface:
     Use $ledger to bootstrap Ledger 1.3.0 or newer within major version 1 once,
     then select the owner-requested operation. Pure validation/materialization
     needs no workspace or managed store. For canonical reads/writes, load the
-    selected personal catalog context; historical migration is separate maintenance
+    selected personal context through ensure_custody.py, which automatically adopts
+    an existing valid Git registration without moving history. Use ledger_context.py
+    for strictly read-only lookup; historical migration is separate maintenance
     and never a prerequisite for reading an intact owned store.
     Operate or debug the owner-selected passive definition through the native
     CLI, explain its definition-relative proof and custody boundary, author the

@@ -15,6 +15,9 @@ SCRIPT = Path(__file__).resolve().parents[1] / "scripts/ledger_context.py"
 spec = importlib.util.spec_from_file_location("ledger_context", SCRIPT)
 context = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(context)
+ensure_spec = importlib.util.spec_from_file_location('ensure_custody', SCRIPT.with_name('ensure_custody.py'))
+ensure_module = importlib.util.module_from_spec(ensure_spec)
+ensure_spec.loader.exec_module(ensure_module)
 
 
 class LedgerContextTests(unittest.TestCase):
@@ -442,6 +445,82 @@ class LedgerContextTests(unittest.TestCase):
         self.assertEqual(result['store_id'], store_id)
         self.assertEqual(context.resolve(self.other)['store_root'], str(custody))
         self.assertEqual(before, registration.read_bytes())
+
+    def registered_legacy_root(self):
+        custody, store_id = self.existing_root()
+        registration = self.repo / '.git' / context.REGISTRATION
+        context.write_json(registration, {'schema': context.REGISTRATION_SCHEMA,
+                                          'store_id': store_id, 'store_root': str(custody)})
+        return custody, store_id, registration
+
+    def test_ensure_adopts_from_linked_worktree_once_without_touching_custody(self):
+        custody, store_id, registration = self.registered_legacy_root()
+        (custody / '.ledger/opaque-fixture').write_bytes(b'preserve existing custody\n')
+        before = {str(p.relative_to(custody)): p.read_bytes()
+                  for p in custody.rglob('*') if p.is_file()}
+        registration_bytes = registration.read_bytes()
+        # No family scan is needed, even with an unavailable sibling.
+        missing = self.root / 'missing worktree'
+        self.git(self.repo, 'worktree', 'add', '--detach', str(missing))
+        shutil.rmtree(missing)
+        first = ensure_module.ensure(self.other)
+        self.assertEqual(first['store_id'], store_id)
+        self.assertEqual(first['store_root'], str(custody))
+        self.assertTrue(first['storage_mutated'])
+        catalog = (context.storage_home() / context.CATALOG).read_bytes()
+        self.assertFalse(ensure_module.ensure(self.other)['storage_mutated'])
+        self.assertFalse(ensure_module.ensure(self.repo)['storage_mutated'])
+        self.assertEqual(context.resolve(store_id=store_id)['store_root'], str(custody))
+        self.assertEqual((context.storage_home() / context.CATALOG).read_bytes(), catalog)
+        self.assertEqual(registration.read_bytes(), registration_bytes)
+        self.assertEqual(before, {str(p.relative_to(custody)): p.read_bytes()
+                                  for p in custody.rglob('*') if p.is_file()})
+
+    def test_ensure_does_not_create_history_or_adopt_explicit_unknown_identity(self):
+        with self.assertRaises(RuntimeError):
+            ensure_module.ensure(self.repo)
+        self.assertFalse(self.home.exists())
+        self.registered_legacy_root()
+        with self.assertRaisesRegex(RuntimeError, 'not cataloged'):
+            ensure_module.ensure(self.repo, store_id='b' * 32)
+        self.assertFalse(self.home.exists())
+
+    def test_ensure_rejects_invalid_registration_without_catalog_publication(self):
+        custody, store_id, registration = self.registered_legacy_root()
+        original = registration.read_bytes()
+        for value in (b'{broken', original.replace(store_id.encode(), b'b' * 32)):
+            with self.subTest(value=value):
+                registration.write_bytes(value)
+                with self.assertRaises(RuntimeError):
+                    ensure_module.ensure(self.repo)
+                self.assertFalse((context.storage_home() / context.CATALOG).exists())
+        registration.write_bytes(original)
+        shutil.rmtree(custody)
+        with self.assertRaises((RuntimeError, OSError)):
+            ensure_module.ensure(self.repo)
+        self.assertFalse((context.storage_home() / context.CATALOG).exists())
+        self.assertFalse(custody.exists())
+
+    def test_ensure_cannot_replace_cataloged_store_root(self):
+        custody, store_id, _ = self.registered_legacy_root()
+        other = self.root / 'other custody'
+        shutil.copytree(custody, other)
+        context.register_root(other, store_id)
+        catalog = (context.storage_home() / context.CATALOG).read_bytes()
+        with self.assertRaisesRegex(RuntimeError, 'another root'):
+            ensure_module.ensure(self.repo)
+        self.assertEqual((context.storage_home() / context.CATALOG).read_bytes(), catalog)
+
+    def test_concurrent_ensures_adopt_one_identity(self):
+        custody, store_id, _ = self.registered_legacy_root()
+        argv = [sys.executable, str(SCRIPT.with_name('ensure_custody.py')), '--repo', str(self.other)]
+        def invoke(_):
+            return json.loads(subprocess.run(argv, check=True, capture_output=True).stdout)
+        with ThreadPoolExecutor(max_workers=4) as pool:
+            results = list(pool.map(invoke, range(8)))
+        self.assertEqual({row['store_id'] for row in results}, {store_id})
+        self.assertEqual(sum(row['storage_mutated'] for row in results), 1)
+        self.assertEqual(context.resolve(self.repo)['store_root'], str(custody))
 
     def test_adoption_does_not_hide_a_different_legacy_registration(self):
         custody, store_id = self.existing_root()
