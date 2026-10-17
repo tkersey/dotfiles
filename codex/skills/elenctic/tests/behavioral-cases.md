@@ -12,6 +12,10 @@ provenance, complete applicable lens sources, and an accepted tenant-isolation
 requirement. Preserve source
 identities when the aggregate judgment changes. Judge the actual evidence,
 verdict, coverage, and tool trace, not the presence of instruction phrases.
+Bind `merge_policy=pragmatic` unless a case assigns pedantic; every new worker
+identity carries the actual policy. Cases 15, 17 and 22 compare the two policies
+on unchanged source evidence. Historical receipts keep their original absent mode.
+The raw [merge-policy subjects](merge-policy-cases.md) separate input from answers.
 
 The executable cache witness below checks the fixture's code behavior only.
 It does not demonstrate model judgment, native Seq extraction, fork lineage, or
@@ -350,7 +354,8 @@ for sample in ([], [1], [2, 1], [2, 2, 1], [-1, 0, -2]):
         assert sorting_contract(sample, sort_items(sample, use_fast_path=fast))
 ```
 
-Expected: BLOCKED on the added test-quality violation, not on production sorting.
+Expected: pragmatic retains a nonblocking concern and can APPROVE with complete
+coverage; pedantic is BLOCKED on the added test-quality violation, not production sorting.
 Name the independently permitted implementation change that the assertion rejects
 and the ordering fault it misses; killing the flag-flip mutant does not establish
 behavioral coverage. Adequate existing tests make removal sufficient; do not demand
@@ -383,18 +388,26 @@ missing optional tests when no required verification or misleading claim exists.
 
 ## 17. A trusted domain representation exposes forbidden combinations
 
-Supply a PR introducing a public domain outcome with independent `finished`,
+Supply a PR introducing an internally used domain outcome with a host-language
+public constructor and independent `finished`,
 optional `result`, and optional `error` fields. The accepted domain permits only
 pending, succeeded-with-result, and failed-with-error, and consumers rely on those
 relationships. Show an ordinary construction with `finished: true` and neither
 payload. All current production callers populate the fields consistently. The
-language supports a small sum type or equivalent owned abstraction without changing
+No external construction contract is promised; supported entry points return
+valid outcomes. Several internal producers independently maintain the same
+relationship. The language supports a small sum type or equivalent owned abstraction without changing
 the wire protocol, valid outcomes, or migration obligations.
 
-Expected: BLOCKED for constructional inadequacy, citing the accepted domain law,
+Expected: pragmatic retains the concrete maintenance burden as a concern and can
+APPROVE when no material supported failure exposure or independent merge condition
+is established. Pedantic is BLOCKED for constructional inadequacy, citing the accepted domain law,
 ordinary construction surface, material downstream burden, and Elenctic's standard.
 No observed bad production caller is necessary. A compact feasibility example is
 not a mandated architecture. Never invent a crash to make this finding admissible.
+Variant: make construction a supported public API whose ordinary defaults produce
+a forbidden outcome consumed as trusted. That concrete footgun blocks both modes;
+neither an incident nor a currently misusing repository caller is required.
 
 Counter-cases: the permissive object is only a raw wire/editor shape parsed before
 trusted use; or a private checked owner already rejects invalid construction and
@@ -485,11 +498,13 @@ APPROVE based only on the passing suite and well-behaved current callers. Supply
 all applicable domain authority, exact-head evidence, and complete assigned
 coverage; keep reports' original identities and dispositions intact.
 
-Expected: re-establish applicability of the installed engineering obligation,
-verify the witness, falsify against the actual defenses, and return BLOCKED with
-one deduplicated rank-free "should" comment. Explain a test-quality or constructional
-violation, not a fictitious incident. The coordinator must not let imported
-optional-strengthening language or the absence of a bad caller veto this standard.
+Expected: re-establish applicability and factual validity, then apply the campaign's
+bound policy. Pedantic returns BLOCKED with one deduplicated rank-free "should"
+comment when its engineering obligation survives; pragmatic retains the grounded
+concern unless practical exposure or independent authority makes it a merge
+necessity. A strict source label cannot re-promote optional work. Explain the
+test-quality or constructional observation without inventing an incident or
+uncertainty. Neither source votes nor a passing suite decide its consequence.
 
 Counter-case: substitute the contractual-artifact or adequately encapsulated
 variant. Expected: reject the engineering blocker after checking the defense,

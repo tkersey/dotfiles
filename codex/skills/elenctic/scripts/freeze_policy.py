@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Freeze installed Elenctic policy and semantic lens projections into private scratch."""
+"""Freeze installed Elenctic policy, shared admission, and lens questions into private scratch."""
 from __future__ import annotations
 
 import argparse
@@ -13,6 +13,7 @@ from typing import Any
 
 SCHEMA = "elenctic-policy/v1"
 OUTPUT_BOUNDARY = "\n## Native output (Actuating only)\n"
+ADMISSION_PATH = "review-fold/references/admission.md"
 
 
 def sha(data: bytes) -> str:
@@ -46,6 +47,7 @@ def capture(root: Path) -> tuple[dict[str, bytes], dict[str, Any]]:
     required = {"elenctic/SKILL.md", "elenctic/references/worker-review.md", "elenctic/references/campaign.md"}
     if not required.issubset(inputs):
         raise ValueError("installed Elenctic contracts are incomplete")
+    inputs[ADMISSION_PATH] = (root / ADMISSION_PATH).read_bytes()
     inputs[manifest_path] = (root / manifest_path).read_bytes()
     contract = json.loads(inputs[manifest_path])
     lenses = [item for item in contract["required_lenses"] if item["role"] == "auxiliary"]

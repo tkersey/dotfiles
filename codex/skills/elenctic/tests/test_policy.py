@@ -22,6 +22,8 @@ class PolicyTests(unittest.TestCase):
             'elenctic/SKILL.md': '# Fixture skill\n',
             'elenctic/references/worker-review.md': '# Fixture worker\n',
             'elenctic/references/campaign.md': '# Fixture campaign\n',
+            'review-fold/references/admission.md': '# Shared admission\nValidate the current witness.\n',
+            'review-fold/SKILL.md': '# Full workflow is not a frozen dependency.\n',
             'actuating/references/lenses/example.md': '# Semantic question\nPreserve the accepted law.\n' + policy.OUTPUT_BOUNDARY + '\nReturn native overall_correctness.\n',
             'actuating/references/review-contract.json': json.dumps({'required_lenses':[
                 {'name':'standard','role':'standard'},
@@ -53,6 +55,36 @@ class PolicyTests(unittest.TestCase):
         _, next_manifest=policy.capture(self.root)
         self.assertNotEqual(identity,next_manifest['policy_id'])
 
+    def test_shared_admission_is_exact_and_bound_without_full_workflow(self):
+        path = 'review-fold/references/admission.md'
+        source = (self.root / path).read_bytes()
+        root, identity = policy.freeze(self.root, self.destination)
+        manifest = policy.verify(root, identity)
+        self.assertEqual((root / path).read_bytes(), source)
+        binding = next(f for f in manifest['files'] if f['path'] == path)
+        self.assertEqual(binding['source_sha256'], policy.sha(source))
+        self.assertEqual(binding['snapshot_sha256'], policy.sha(source))
+        self.assertFalse((root / 'review-fold/SKILL.md').exists())
+        (self.root / path).write_bytes(source + b'Changed authority.\n')
+        policy.verify(root, identity)
+        self.assertEqual((root / path).read_bytes(), source)
+        _, next_manifest = policy.capture(self.root)
+        self.assertNotEqual(identity, next_manifest['policy_id'])
+
+    def test_missing_shared_admission_prevents_publication(self):
+        (self.root / 'review-fold/references/admission.md').unlink()
+        with self.assertRaises(FileNotFoundError):
+            policy.freeze(self.root, self.destination)
+        self.assertFalse(self.destination.exists())
+
+    def test_changed_shared_admission_snapshot_is_rejected(self):
+        root, identity = policy.freeze(self.root, self.destination)
+        path = root / 'review-fold/references/admission.md'
+        path.chmod(0o600)
+        path.write_text('# Different authority\n')
+        with self.assertRaises(ValueError):
+            policy.verify(root, identity)
+
     def test_modified_snapshot_and_wrong_identity_rejected(self):
         root, identity=policy.freeze(self.root,self.destination)
         with self.assertRaises(ValueError):policy.verify(root,'sha256:invented')
@@ -80,16 +112,20 @@ class PolicyTests(unittest.TestCase):
             with self.subTest(path=path),self.assertRaises(ValueError):policy.relative(path)
 
     def test_source_changes_during_capture_are_detected(self):
-        actual=Path.read_bytes; calls={}
-        def read(path):
-            value=actual(path)
-            if path.name=='worker-review.md':
-                calls[path]=calls.get(path,0)+1
-                if calls[path]>1:return value+b'changed'
-            return value
-        with patch.object(Path,'read_bytes',read),self.assertRaises(ValueError):
-            policy.freeze(self.root,self.destination)
-        self.assertFalse(self.destination.exists())
+        actual = Path.read_bytes
+        for name in ('worker-review.md', 'admission.md'):
+            with self.subTest(source=name):
+                calls = {}
+                def read(path):
+                    value = actual(path)
+                    if path.name == name:
+                        calls[path] = calls.get(path, 0) + 1
+                        if calls[path] > 1:
+                            return value + b'changed'
+                    return value
+                with patch.object(Path, 'read_bytes', read), self.assertRaises(ValueError):
+                    policy.freeze(self.root, self.destination)
+                self.assertFalse(self.destination.exists())
 
     def test_installed_skill_symlink_is_copied_as_bytes(self):
         installed=self.root/'elenctic';target=Path(self.temp.name)/'owned-package'

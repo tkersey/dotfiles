@@ -120,6 +120,9 @@ tests, and integration paths; use isolated targeted checks where useful. Reuse
 the worker contract's evidence, engineering-obligation, adjudication, and
 blocker-falsification standards, not its worker-only entry point or assignment
 requirements. Apply the discussion-aware evaluation below as part of that work.
+Read the frozen [merge policy](merge-policy.md) and shared Review Fold admission
+reference here too. Judge a surviving concern's current merge consequence under
+the bound policy; a prior strict disposition cannot supply authority by itself.
 
 Compare the original commented revision with the candidate where relevant and
 available. Follow renames, deletions, replacement implementations, and unchanged
@@ -146,7 +149,7 @@ Assign one semantic disposition per eligible thread:
 | **Not established** | Missing, contradictory, or stale evidence prevents a justified decision. | Leave open; identify the gap. |
 
 A downgrade from blocker to risk/concern is not itself closure. Determine the
-current merge consequence separately; an unresolved nonblocking discussion is
+current merge consequence under the bound policy separately; an unresolved nonblocking discussion is
 not automatically a blocker. Only an applicable exception from an authorized
 owner can alter a mandatory obligation where its governing contract permits it.
 Do not require a reply, author agreement, or implementation change when current
@@ -196,9 +199,9 @@ prior fix-based conclusion. A newly supported path defeating a reachability
 defense, or newly verified evidence refuting an earlier premise, can also qualify.
 Code changes are not required, but evidence already present in the discussion is
 not newly uncovered merely because this run noticed it. A new SHA, rebase,
-rename, reviewer, stronger wording, priority, confidence, or preferred design
-alone never qualifies. New requirements cannot be invented to manufacture a
-discussion delta.
+rename, reviewer, stronger wording, priority, confidence, preferred design, or
+changed merge-policy selection alone never qualifies. New requirements cannot
+be invented to manufacture a discussion delta.
 
 Separate the supported finding and merge consequence from its presentation:
 

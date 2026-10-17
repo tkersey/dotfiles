@@ -14,7 +14,7 @@ ordinary campaign first, under construction's no-GitHub-mutation limit. Do not i
 fresh review from PR authorship or start one merely to manufacture new comments.
 
 For an existing or requested campaign, preserve its actual selection, frozen policy,
-review evidence and coverage. Finish authorized runnable selected work before final
+selected `merge_policy`, review evidence and coverage. Finish authorized runnable selected work before final
 synthesis. Do not rerun complete reviews, substitute coordinator analysis for worker
 coverage, or award Actuating review credit. A workflow switch is not a new epoch.
 
@@ -34,6 +34,11 @@ unrequested whole-PR audit. Record the inspected source horizon and gaps; an emp
 feedback set is not approval. Allocate an actual opaque analysis ID in the existing
 working set. A feedback analysis uses `elenctic-construction-identity/v1` with
 `mode: analysis`, not an invented review campaign or a review verdict.
+Bind `merge_policy` for this analysis before adjudication: new analyses use
+`pragmatic` unless the caller selects `pedantic`. Read [merge-policy.md](merge-policy.md)
+and the installed Review Fold admission source. Record their actual source
+identities with the analysis horizon, without claiming a frozen campaign bundle.
+The selector changes how feedback is adjudicated; it does not request fresh review.
 
 ## Compose once over full evidence
 
@@ -47,9 +52,12 @@ modify the frozen review seed or policy to inject this later analysis.
 
 Supply the accepted source obligations, compatibility and non-goals, authorized path
 scope, exact candidate, full findings and counterevidence, prior discussions and
-applicable verification. Include Elenctic's governing engineering standards with
-subject evidence establishing their applicability; do not demote an applicable
-standard to a reviewer's preference or invent subject laws from that standard.
+applicable verification. Carry the selected merge policy and per-finding merge
+rationale. Separate independently binding subject requirements from Elenctic's
+additional engineering standards: they are pre-merge commitments in pedantic
+mode; in pragmatic mode, they need practical merge necessity or independent
+authority to block. Preserve established facts when a recommendation is optional.
+Do not invent subject laws or let synthesis turn an optional improvement into a gate.
 Comment drafts are lossy presentation, not the input representation. Existing drafts
 remain available; producing new drafts is not a prerequisite for this mode.
 
@@ -133,7 +141,7 @@ artifact. Explicit no-file/no-local-write limits also bind internal writes under
 campaign.md. Neither analysis nor its helpers persist a corpus or store.
 
 Resume only the established analysis/campaign for the same PR, retaining its ID,
-source horizon, source identities, numbering and existing report path. Refresh the
+source horizon, source identities, merge policy, numbering and existing report path. Refresh the
 exact head/base and relevant complete discussions before synthesis and delivery.
 Material discussion or source changes require affected adjudication/synthesis to be
 refreshed, not a new review merely for a changed output label. A changed PR epoch
@@ -141,6 +149,10 @@ makes old evidence historical: preserve provenance, rebind through an explicit
 restart/resume decision, and use a fresh identity and handling namespace. A switch
 from standalone analysis to a requested review creates a real campaign; it cannot
 inherit file coverage or handled state from comment analysis.
+Do not apply today's default to a historical analysis with an unrecorded mode.
+An explicit policy change creates a new analysis identity and report namespace,
+reusing attributed source evidence while refreshing its adjudication; it cannot
+rewrite the earlier conclusion or silently inherit handled state.
 
 If final identity/discussion freshness cannot be established, disclose the stale or
 incomplete horizon; do not deliver old proposals as current-head recommendations.

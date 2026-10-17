@@ -1,6 +1,6 @@
 ---
 name: elenctic
-description: "Explicit-only PR review: adjudicate your prior threads, review unchecked (or explicitly all-changed) files and their causal consequences, and return evidence-backed findings with an interactive local report. Request 'for resolution' for groups, or 'for construction' to adjudicate PR feedback into explicit code-change proposals without implementing them."
+description: "Explicit-only PR review: adjudicate prior threads, review unchecked (or explicitly all-changed) files and causal consequences, and return evidence-backed findings with a pragmatic default merge policy; request pedantic for stricter engineering gates. Request 'for resolution' for groups, or 'for construction' for feedback-based code-change proposals without implementation."
 ---
 
 # Elenctic
@@ -8,9 +8,10 @@ description: "Explicit-only PR review: adjudicate your prior threads, review unc
 Review an exact-head PR, or compile its feedback into code-change proposals.
 Deliver the evidence, actual scope, and handling workspace. **The file is the
 causal anchor, not the evidence boundary.**
-Behavioral test adequacy and constructional adequacy are mandatory acceptance
-standards, with the evidence thresholds and exceptions in the
-[worker contract](references/worker-review.md#engineering-obligations).
+Keep discovery thorough and merge obligations proportionate. Use Review Fold's
+[shared admission semantics](../review-fold/references/admission.md) and the
+[merge policy](references/merge-policy.md)
+to separate established findings from requirements to repair before merge.
 
 ## Invocation
 
@@ -20,6 +21,8 @@ $elenctic this PR
 $elenctic this branch
 $elenctic PR #123
 $elenctic PR #123 with concurrency 10
+$elenctic PR #123 merge-policy=pragmatic
+$elenctic PR #123 merge-policy=pedantic
 $elenctic PR #123 selection=all-changed
 $elenctic PR #123 for resolution
 $elenctic PR #123 for construction
@@ -42,6 +45,15 @@ No workflow implements fixes or publishes comments.
 Extract the PR selector independently from workflow/concurrency instructions;
 pass only that selector to `gh`. Concurrency remains unchanged (default/cap 20).
 
+New invocations use `merge-policy=pragmatic`; explicit `merge-policy=pedantic` or
+equivalent caller intent such as "pedantic review" selects the stricter policy.
+Parse it independently from the PR selector, workflow, selection, and concurrency.
+Record `merge_policy` before adjudication and carry it into preparation, assignments,
+and output. Both policies retain the same discovery and evidence standards.
+Pedantic additionally makes the defined test/construction standards merge
+commitments; pragmatic requires practical merge necessity or a binding subject
+obligation. Neither policy invents requirements or waives mandatory conditions.
+
 `selection=unchecked` remains the default. Explicit `selection=all-changed` or
 an accepted Ergasterion composition loads
 [ergasterion-composition.md](references/ergasterion-composition.md) before campaign preflight.
@@ -63,6 +75,10 @@ or coordinator context; an accompanying PR must match. Follow
 not the current branch or a silently new target. Retain the recorded workflow
 unless the caller explicitly changes it; legacy campaigns default to `comments`.
 Changing the output workflow does not change selection, epoch or review credit.
+Resume the recorded merge policy without applying today's default to old work.
+An absent historic mode remains unrecorded under its original frozen contracts.
+An explicit policy change follows campaign recovery and re-adjudication; changing
+a label cannot reinterpret old approval, coverage, drafts, or handling state.
 
 Retired standalone selectors remain rejected before target resolution: `file`,
 `single-file`, path-only, `session-corpus`, same-name session aggregation, standalone
@@ -83,6 +99,8 @@ Its selected references own their respective obligations:
   owns transport/history checks, not review semantics.
 - [Worker review](references/worker-review.md): one integrated causal investigation,
   adjudication, blocker falsification, and rank-free human-approval drafts.
+- [Merge policy](references/merge-policy.md): shared Review Fold admission,
+  pragmatic/pedantic merge consequences, realistic applicability, and bounded gaps.
 - [Resolution presentation](references/resolution.md): stable campaign finding
   numbers in both outputs; only in resolution mode, synthesize work units after
   ordinary reconciliation and eligible draft derivation. Preserve all findings.

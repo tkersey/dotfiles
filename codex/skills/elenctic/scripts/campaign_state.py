@@ -38,6 +38,16 @@ def nonempty(value: Any, field: str) -> None:
     require(isinstance(value, str) and bool(value), f"{field} must be nonempty text")
 
 
+def merge_policy(source: dict[str, Any]) -> str | None:
+    """Absence preserves a historical binding; it never selects today's default."""
+    if "merge_policy" not in source:
+        return None
+    value = source["merge_policy"]
+    require(isinstance(value, str) and value in ("pragmatic", "pedantic"),
+            "merge_policy must be pragmatic or pedantic when supplied")
+    return value
+
+
 def rows_by_id(rows: Any) -> dict[str, dict[str, Any]]:
     require(isinstance(rows, list), "assignments must be a list")
     result = {}
@@ -124,8 +134,9 @@ def check_report(payload: dict[str, Any]) -> dict[str, Any]:
     bound, observed = payload["bound_epoch"], payload["observed_epoch"]
     check_epoch(bound, observed)
     expected = payload["expected_identity"]
-    require(isinstance(expected, dict) and set(expected) == IDENTITY_FIELDS,
-            "expected_identity must contain exactly the fixed v1 single-file bindings")
+    require(isinstance(expected, dict) and set(expected) in (
+        IDENTITY_FIELDS, IDENTITY_FIELDS | {"merge_policy"}),
+        "expected_identity needs the fixed v1 single-file bindings and optional merge_policy")
     for field, value in expected.items():
         if field == "pr":
             require(type(value) is int and value > 0, "pr must be a positive integer")
@@ -143,6 +154,8 @@ def check_report(payload: dict[str, Any]) -> dict[str, Any]:
         require(report[field] == active[field], f"report is not from the recorded active {field}")
     identity = report["identity"]
     require(isinstance(identity, dict), "report identity must be an object")
+    require(merge_policy(identity) == merge_policy(expected),
+            "report merge_policy differs from its assignment binding")
     for field, value in expected.items():
         require(type(identity.get(field)) is type(value) and identity[field] == value,
                 f"report identity mismatch: {field}")
@@ -167,6 +180,7 @@ def coverage(payload: dict[str, Any]) -> dict[str, Any]:
     assignments = rows_by_id(rows)
     check_selection(selected, rows)
     nonempty(payload["campaign_id"], "campaign_id")
+    policy = merge_policy(payload)
     states = Counter(row["state"] for row in rows)
     verdicts = Counter()
     for assignment_id, row in assignments.items():
@@ -178,6 +192,8 @@ def coverage(payload: dict[str, Any]) -> dict[str, Any]:
         for field in CAMPAIGN_FIELDS:
             require(row["expected_identity"][field] == payload[field],
                     f"accepted report belongs to another {field}")
+        require(merge_policy(row["expected_identity"]) == policy,
+                "accepted report belongs to another merge_policy binding")
         claim = check_report({
             "bound_epoch": payload["bound_epoch"], "observed_epoch": payload["observed_epoch"],
             "expected_identity": row["expected_identity"], "active_attempt": row["active_attempt"],

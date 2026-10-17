@@ -73,6 +73,7 @@ Use this shape, omitting empty sections and narrative history:
 
 ## Bound candidate
 - Campaign ID:
+- Frozen policy ID / root and selected merge policy:
 - Repository / PR:
 - Base tip / review merge base / head:
 - Selected unchecked files:
@@ -81,6 +82,7 @@ Use this shape, omitting empty sections and narrative history:
 ## Intended change
 - Accepted objective and observable behavior:
 - Accepted non-goals and compatibility constraints:
+- Supported operations, trust boundaries, configurations, and workload/lifetime limits — sources, not assumed deployment facts:
 
 ## Change topology
 - Primary owners and changed contracts:
@@ -201,7 +203,7 @@ against the current candidate.
 
 ## Invalidation and recovery
 
-Any change to PR state, base tip, review merge base, head, complete inventory,
+Any change to merge policy, PR state, base tip, review merge base, head, complete inventory,
 initial Viewed-state partition, selected-set identity, or material Campaign Brief
 bytes invalidates the seed for new work.
 

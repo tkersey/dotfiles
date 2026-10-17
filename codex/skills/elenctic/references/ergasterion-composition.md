@@ -55,6 +55,15 @@ private policy/runtime work. An explicit no-file/no-local-write limit still prev
 new policy-snapshot creation; report dependent incompleteness rather than substituting
 a generic worker. An intact already-bound snapshot may be reused when readable.
 
+Carry any caller-selected `merge-policy=pragmatic|pedantic` into Elenctic; absence
+on a new campaign selects its pragmatic default. Preserve the actual returned
+`merge_policy` in `assessments.elenctic` of a composed campaign report. Do not put
+it at the aggregate identity's root or imply Architectonic used Elenctic's policy.
+Historical absence remains unrecorded. It does not weaken another source's
+independently binding obligations, and a strict source label alone does not
+establish an Elenctic blocker. The joint fold retains factual evidence and source
+dispositions while justifying each current merge obligation.
+
 Elenctic runs exactly one campaign per requested round, finishes runnable selected
 work, and returns its original full findings, adjudications, source identities,
 coverage, policy/context/seed provenance and verdict. It does not run Actuating,
