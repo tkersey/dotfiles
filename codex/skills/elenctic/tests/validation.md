@@ -242,9 +242,10 @@ worker text only in the comparison:
 > demonstrated structural or test-quality violation; do not invent one.
 > Apply the supplied Review Fold admission and bound merge policy separately:
 > factual validity does not automatically establish a pre-merge obligation.
-> Pedantic adopts the additional engineering commitments; pragmatic requires
-> practical merge necessity or independent mandatory authority. Preserve proven
-> nonblocking risks, and let optional unknowns remain nonblocking.
+> Behavioral test adequacy remains a merge requirement in both modes. Pedantic
+> adopts the additional construction commitment; pragmatic requires practical
+> merge necessity or independent mandatory authority for structural construction
+> findings. Preserve proven nonblocking risks and optional unknowns.
 >
 > Before retaining a blocker, try to defeat it with the strongest actual defense,
 > including complete relevant author responses. Distinguish accepted obligations
@@ -272,6 +273,11 @@ Confirm any promising result on unseen causal structures and real pinned changes
 before claiming a general benefit or changing production preparation policy.
 
 ## 2026-10-17 pragmatic/pedantic adjudication revision
+
+This is the initial record at commit `6780b808620286fb1b99862c9dfda7a583cbbf44`.
+It remains evidence of that policy's behavior. The test-quality correction below
+supersedes its treatment of brittle tests; do not count the initial pragmatic
+Concern as satisfying the clarified quality requirement.
 
 This revision composes Review Fold's shared admission semantics into the existing
 Elenctic investigation and adjudication. It defaults new work to pragmatic merge
@@ -343,3 +349,42 @@ or real-world merge throughput has been measured. Use
 [merge-policy-cases.md](merge-policy-cases.md) to reproduce the isolated experiment;
 use unseen causal structures and actual pinned changes before claiming broad
 efficacy. Published cases become calibration material after their key is seen.
+
+## 2026-10-17 test-quality correction
+
+The user clarified that the existing test-quality rule intentionally builds
+quality into reviews and removes brittle tests. The initial pragmatic exemption
+weakened that requirement. Behavioral test adequacy now remains binding in both
+modes; the subject still supplies independent authority for expected behavior and
+permitted implementation changes. Adequate other tests can make deletion the
+minimum sufficient correction. Keep the earlier reports and their policy identity
+as historical observations, not evidence that the exemption met the user's intent.
+
+The helper-call subject and its factual probe are unchanged. Its evaluator
+expectation now requires resolution in both modes. One added contractual-delivery
+subject distinguishes a legitimate interaction assertion from private-helper
+coupling: internal delegation preserves the test, while duplicate external
+delivery fails it. No production review script, report JavaScript, identity
+format, or runtime protocol changes in this correction.
+
+| Check | Observed result | Evidence scope |
+|---|---|---|
+| Policy-binding suite | 11 passed | Frozen policy and shared admission mechanisms. |
+| Exported fixture checks | All nine factual observations matched | Source digests and compilable fixtures; the new delivery probe passes its permitted refactor and rejects duplicate delivery. |
+| Skill metadata, actual policy capture/verification, relative references, whitespace | Passed | Package and source integration. |
+| Fresh pragmatic review of the unchanged helper-call subject | BLOCKED on test quality | Established the ordinary inline counterfactual and accepted authority; retained correct production behavior and adequate independent coverage; removing the new test was sufficient. |
+| Fresh pragmatic review of the contractual-delivery subject | APPROVE with no findings | Preserved the required external call count, arguments, and receipt identity; rejected the brittle-test allegation from independent protocol authority. |
+
+Both reviewers used decisive source traces and claimed no test execution. The
+fixture probes were executed separately. Each fresh reviewer received one opaque
+subject and the shared admission, merge-policy, and Engineering obligations text,
+without authoring history, evaluator key, sibling subject, or another result.
+Preserve their first raw reports, exact delivered assignments, and source hashes.
+They used inherited runtime settings without model or reasoning overrides.
+
+The evaluated semantic sources are bound by policy identity
+`sha256:18c3bc692bfaffb4a8bae93b453ddea76b7e1b39c3f11e3f08dce9c803435700`.
+The broader implementation suite results above belong to the prior revision;
+only the focused checks listed here were rerun. These two observations establish
+the intended distinction on the supplied evidence, without qualifying a full
+worker/lens bundle, native campaign, browser behavior, or general review efficacy.

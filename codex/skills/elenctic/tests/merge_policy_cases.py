@@ -66,10 +66,11 @@ CASES.append(Case(
                     label(" x ")
                     clean.assert_called_once_with(" x ")
     ''')},
-    {"pragmatic": "APPROVE with concern", "pedantic": "BLOCKED"},
+    {"pragmatic": "BLOCKED", "pedantic": "BLOCKED"},
     "The new assertion rejects an allowed inline implementation despite independent behavioral "
-    "coverage. Its test-quality violation is factual in both modes; only pedantic makes this extra "
-    "standard alone a merge obligation. Do not invent a production failure or missing required check.",
+    "coverage. This demonstrated test-quality violation requires resolution in both modes. Adequate "
+    "existing coverage makes deleting the added test sufficient; do not demand another test or invent "
+    "a production failure or missing required check.",
     source('''
         import unittest
         import test_labels
@@ -82,6 +83,62 @@ CASES.append(Case(
         return [before, run()]
     '''),
     [[2, 0, 0], [2, 1, 0]],
+))
+
+dispatches = source('''
+    def dispatch(delivery, destination, payload):
+        return delivery.send(destination, payload)
+''')
+delivery_tests = source('''
+    import unittest
+    from unittest.mock import Mock
+    from dispatch import dispatch
+
+    class DispatchTests(unittest.TestCase):
+        def test_delivery(self):
+            delivery = Mock()
+            receipt = object()
+            delivery.send.return_value = receipt
+            self.assertIs(dispatch(delivery, "inbox", "hello"), receipt)
+''')
+CASES.append(Case(
+    "contractual-delivery-count",
+    "dispatch.dispatch accepts an injected delivery interface, a destination string, and a payload "
+    "string. Each delivery.send(destination, payload) call performs one externally visible delivery "
+    "and returns a receipt. The protocol requires dispatch to call that interface exactly once with "
+    "the supplied destination and payload, then return the same receipt. Calls in scope complete "
+    "successfully; no retries are part of this protocol. Internal delegation is not externally "
+    "specified. The candidate adds a test assertion; production code is unchanged. These files "
+    "contain the complete relevant implementation and tests.",
+    {"dispatch.py": dispatches, "test_dispatch.py": delivery_tests},
+    {"dispatch.py": dispatches, "test_dispatch.py": delivery_tests
+     + '        delivery.send.assert_called_once_with("inbox", "hello")\n'},
+    {"pragmatic": "APPROVE", "pedantic": "APPROVE"},
+    "The interaction assertion verifies the protocol's external effect count and arguments. An "
+    "allowed internal delegation refactor preserves the assertion, while duplicate delivery fails "
+    "it. Retain this contract-grounded verification in both modes; mock syntax alone does not "
+    "establish incidental implementation coupling.",
+    source('''
+        import unittest
+        import test_dispatch
+        def run():
+            result = unittest.TestResult()
+            unittest.defaultTestLoader.loadTestsFromModule(test_dispatch).run(result)
+            return [result.testsRun, len(result.failures), len(result.errors)]
+        before = run()
+        def deliver(delivery, destination, payload):
+            return delivery.send(destination, payload)
+        def delegated_dispatch(delivery, destination, payload):
+            return deliver(delivery, destination, payload)
+        test_dispatch.dispatch = delegated_dispatch
+        delegated = run()
+        def duplicate_dispatch(delivery, destination, payload):
+            deliver(delivery, destination, payload)
+            return deliver(delivery, destination, payload)
+        test_dispatch.dispatch = duplicate_dispatch
+        return [before, delegated, run()]
+    '''),
+    [[1, 0, 0], [1, 0, 0], [1, 1, 0]],
 ))
 
 old_jobs = source('''

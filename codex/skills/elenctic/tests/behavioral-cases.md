@@ -354,8 +354,8 @@ for sample in ([], [1], [2, 1], [2, 2, 1], [-1, 0, -2]):
         assert sorting_contract(sample, sort_items(sample, use_fast_path=fast))
 ```
 
-Expected: pragmatic retains a nonblocking concern and can APPROVE with complete
-coverage; pedantic is BLOCKED on the added test-quality violation, not production sorting.
+Expected: both modes are BLOCKED on the added test-quality violation, not
+production sorting. Other adequate tests do not excuse the needless change barrier.
 Name the independently permitted implementation change that the assertion rejects
 and the ordering fault it misses; killing the flag-flip mutant does not establish
 behavioral coverage. Adequate existing tests make removal sufficient; do not demand
@@ -499,12 +499,14 @@ all applicable domain authority, exact-head evidence, and complete assigned
 coverage; keep reports' original identities and dispositions intact.
 
 Expected: re-establish applicability and factual validity, then apply the campaign's
-bound policy. Pedantic returns BLOCKED with one deduplicated rank-free "should"
-comment when its engineering obligation survives; pragmatic retains the grounded
-concern unless practical exposure or independent authority makes it a merge
-necessity. A strict source label cannot re-promote optional work. Explain the
-test-quality or constructional observation without inventing an incident or
-uncertainty. Neither source votes nor a passing suite decide its consequence.
+bound policy. Case 15 returns BLOCKED in both modes on the shared test-quality
+requirement, with one deduplicated rank-free "should" comment; adequate other tests
+can make removal sufficient. For case 17, pedantic returns BLOCKED when its
+construction obligation survives; pragmatic retains the grounded concern unless
+practical exposure or independent authority makes it a merge necessity. A strict
+source label cannot re-promote optional work. Explain the test-quality or
+constructional observation without inventing an incident or uncertainty. Neither
+source votes nor a passing suite decide its consequence.
 
 Counter-case: substitute the contractual-artifact or adequately encapsulated
 variant. Expected: reject the engineering blocker after checking the defense,

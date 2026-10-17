@@ -50,9 +50,11 @@ equivalent caller intent such as "pedantic review" selects the stricter policy.
 Parse it independently from the PR selector, workflow, selection, and concurrency.
 Record `merge_policy` before adjudication and carry it into preparation, assignments,
 and output. Both policies retain the same discovery and evidence standards.
-Pedantic additionally makes the defined test/construction standards merge
-commitments; pragmatic requires practical merge necessity or a binding subject
-obligation. Neither policy invents requirements or waives mandatory conditions.
+Both policies retain behavioral test adequacy as a merge requirement. Pedantic
+additionally makes the defined construction standard a merge commitment;
+pragmatic requires practical merge necessity or a binding obligation for a
+construction finding. Neither policy invents requirements or waives mandatory
+conditions.
 
 `selection=unchecked` remains the default. Explicit `selection=all-changed` or
 an accepted Ergasterion composition loads

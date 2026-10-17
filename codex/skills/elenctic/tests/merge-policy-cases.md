@@ -54,7 +54,8 @@ review; a risk relabeled as an unknown has lost relevant truth.
 
 | Case | Pragmatic | Pedantic | Decisive evidence |
 |---|---|---|---|
-| Extra test coupling | Approve with concern | Block | An allowed inline implementation preserves the API behavior and independent behavioral checks but fails the new helper-call assertion. |
+| Extra test coupling | Block | Block | An allowed inline implementation preserves the API behavior and independent behavioral checks but fails the new helper-call assertion. Adequate existing coverage makes deleting the added test sufficient. |
+| Contractual delivery count | Approve | Approve | The protocol requires one external delivery with the supplied arguments. The interaction assertion tolerates internal delegation and rejects duplicate delivery. |
 | Internal completion carrier | Approve with concern | Block under the additional construction standard | All present producers preserve the law; the new trusted carrier separately maintains one three-field relationship across them and admits forbidden combinations through ordinary construction. Do not invent an external caller or incident. |
 | Ordinary subtotal | Block | Block | The loop omits the final price for an ordinary supported list. |
 | Revocation during export | Block | Block | The accepted event hook can revoke permission before the second read; the candidate still releases that document. |
@@ -62,6 +63,13 @@ review; a risk relabeled as an unknown has lost relevant truth.
 | Supported value boundary | Approve | Approve | Malformed constructor input is rejected, the ordinary mutation is prohibited, and the new operation preserves the checked fact. Unsafe state-forging does not establish a supported bypass. |
 | Bounded preview observation | Approve with risk | Approve with risk | A combining sequence is visibly severed at the truncation boundary; exact open/export behavior remains intact. The limited consequence is known, not uncertain. |
 | Optional durability question | Approve | Approve | Atomic replacement meets current visibility requirements. Device power-loss behavior for an unaccepted future offline mode remains unknown without preventing the current decision. |
+
+The test cases distinguish noncontractual helper coupling from verification of a
+required external effect. The helper assertion's permitted-refactor failure is a
+test-quality violation in both modes; adequate existing behavioral coverage permits
+removal without replacement. The delivery assertion has independent protocol
+authority and should remain. Neither mock syntax nor call-count syntax decides
+test quality, and neither case establishes a production failure in the candidate.
 
 For the completion-carrier case, the pedantic assessment must still establish the
 actual engineering standard's materiality, proportionality, and applicability.

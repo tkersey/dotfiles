@@ -34,8 +34,9 @@ supported behavior, compatibility, protocols, trust boundaries, and mandatory
 verification. It does not require a literal user sentence for every ordinary
 correctness obligation. Cite the independent source and the inference. Review
 doctrine, severity, a possible value, or reviewer agreement cannot invent domain
-facts. Elenctic's additional engineering standards have the policy-dependent
-authority below; distinguish them from independently binding subject requirements.
+facts. Elenctic supplies shared test-quality requirements and policy-dependent
+construction standards below. The subject still supplies the authority for a
+test's oracle, permitted implementation changes, and actual domain laws.
 
 ## Apply the selected policy
 
@@ -46,17 +47,27 @@ independent requirements, pragmatic blockers are a subset of pedantic blockers.
 
 | Policy | What requires resolution before merge |
 |---|---|
-| **Pragmatic — default** | An established violation of an applicable mandatory requirement or merge condition; or a concrete material failure in supported or reasonably expected use, workload, or a relevant trust boundary. Explain why merging this change creates a present liability. The additional test/construction standards guide investigation and useful follow-ups; their violation alone does not establish this necessity. |
-| **Pedantic — explicit** | Everything that blocks pragmatically, plus demonstrated material violations of the [engineering standards](worker-review.md#engineering-obligations). A concrete test counterfactual or ordinary structural witness may establish these additional pre-merge commitments without a production failure or an already-misusing caller. Their applicability, proportionality, compatibility, and required-valid preservation conditions still apply. |
+| **Pragmatic — default** | An established violation of an applicable mandatory requirement or merge condition, including demonstrated material violations of [behavioral test adequacy](worker-review.md#behavioral-test-adequacy); or a concrete material failure in supported or reasonably expected use, engineering work, workload, or a relevant trust boundary. Explain the present liability. Additional construction standards guide investigation and useful follow-ups; a structural weakness alone does not establish merge necessity. |
+| **Pedantic — explicit** | Everything that blocks pragmatically, plus demonstrated material violations of the [construction standard](worker-review.md#constructional-adequacy-and-evidence-preserving-parsing). An ordinary structural witness may establish this additional pre-merge commitment without a production failure or an already-misusing caller. Applicability, proportionality, compatibility, and required-valid preservation conditions still apply. |
 
-In pragmatic mode, a stronger representation or better test can still be the
-right recommendation. It becomes a blocker when the evidence establishes a
-practical correctness trap, material regression, or unmet binding requirement,
-not merely because the improvement is feasible. A new redundant test freezing a
-noncontractual helper-call count can remain a concern when independent behavioral
-verification is adequate; the same witnessed test-quality violation can block
-under the selected pedantic standard. A vacuous test that leaves mandatory
-verification unmet blocks in both modes.
+Keep test quality binding in both modes. A new or materially changed test that
+demonstrably rejects an ordinary permitted refactor creates a needless change
+barrier now, even when production behavior and other behavioral tests are correct.
+Independent adequate coverage can make deleting the brittle assertion sufficient;
+it does not excuse retaining it. A new helper-call assertion that fails when the
+private helper is inlined can supply this witness. Do not invent a production bug
+or require a planned refactor, incident, or missing coverage to establish it.
+
+Establish the counterfactual's realism and preserve all contractual observations,
+including effects, interactions, errors, compatibility, and resource conditions.
+A hypothetical rewrite or one test missing one defect is insufficient. An
+interaction count, configuration literal, or snapshot may itself be contractual;
+check its authority before calling it brittle. Retain useful assertions when
+removing an incidental one, and never leave mandatory verification unmet.
+
+In pragmatic mode, a stronger construction becomes a blocker when evidence
+establishes a practical correctness trap, material regression, or unmet binding
+requirement, not merely because the improvement is feasible.
 
 Pedantic adopts only the defined additional standards. It does not require
 maximal type strength, every possible test, arbitrary resilience, speculative

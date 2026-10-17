@@ -492,10 +492,12 @@ by file, wording, title, line, worker or downstream manifestation.
 For each candidate blocker, inspect exact candidate/diff at its anchors and affected
 paths. Re-establish delta causality, mandatory authority, supported reachability or
 structural/test witness, defenses, companion changes, relevant integration and the
-minimum pre-merge obligation under the selected policy. A pragmatic blocker needs
-realistic material exposure or an independently binding condition; an engineering
-witness alone is insufficient. Confront the strongest actual substantive prior response
-and conflicting reports, then apply the worker's falsification cut once on unchanged
+minimum pre-merge obligation under the selected policy. Retain the shared
+test-quality requirement in both modes; adequate other tests can support deleting
+a brittle assertion without refuting its defect. A purely structural construction
+witness needs practical merge necessity or independent authority under pragmatic
+policy. Confront the strongest actual substantive prior response and conflicting
+reports, then apply the worker's falsification cut once on unchanged
 evidence. Reclassify/reject or preserve a named pending premise when justified.
 
 Separate PR-delta relevance from discussion-delta novelty. An already covered issue

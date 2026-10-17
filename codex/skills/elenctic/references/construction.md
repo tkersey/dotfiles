@@ -53,10 +53,12 @@ modify the frozen review seed or policy to inject this later analysis.
 Supply the accepted source obligations, compatibility and non-goals, authorized path
 scope, exact candidate, full findings and counterevidence, prior discussions and
 applicable verification. Carry the selected merge policy and per-finding merge
-rationale. Separate independently binding subject requirements from Elenctic's
-additional engineering standards: they are pre-merge commitments in pedantic
-mode; in pragmatic mode, they need practical merge necessity or independent
-authority to block. Preserve established facts when a recommendation is optional.
+rationale. Carry behavioral test adequacy as a merge requirement in both modes;
+adequate other tests can make removing a brittle assertion sufficient. Separate
+this shared authority and independently binding subject requirements from the
+additional construction standard: it is a pre-merge commitment in pedantic mode;
+in pragmatic mode, it needs practical merge necessity or independent authority
+to block. Preserve established facts when a recommendation is optional.
 Do not invent subject laws or let synthesis turn an optional improvement into a gate.
 Comment drafts are lossy presentation, not the input representation. Existing drafts
 remain available; producing new drafts is not a prerequisite for this mode.

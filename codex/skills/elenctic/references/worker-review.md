@@ -162,12 +162,12 @@ selecting a successor architecture or turning the review into a repair plan.
 ## Engineering obligations
 
 Investigate these standards for new or materially changed tests and domain
-boundaries within the assigned causal scope. The selected [merge policy](merge-policy.md)
-owns their merge consequence: `pedantic` makes them additional acceptance
-commitments; `pragmatic` requires a binding subject obligation or demonstrated
-practical merge necessity before treating their violation as blocking. The
-subject must independently establish the domain law, supported behavior,
-compatibility, and material burden. The standard cannot invent those facts.
+boundaries within the assigned causal scope. Behavioral test adequacy is a merge
+requirement in both modes. The selected [merge policy](merge-policy.md) determines
+when a constructional violation also requires pre-merge resolution. The subject
+must independently establish oracle authority, the domain law, permitted
+implementation changes, supported behavior, compatibility, and material burden.
+The standard cannot invent those facts.
 They supplement the auxiliary concerns without imposing Actuating gates.
 
 ### Behavioral test adequacy
@@ -196,7 +196,10 @@ Source reasoning or isolated witnesses suffice; require no mutation framework,
 coverage percentage, additional suite, or universal fault-detection proof.
 
 A demonstrated assertion that merely freezes a noncontractual implementation
-choice is a test-quality violation, even when other behavioral tests are adequate.
+choice is a test-quality violation in both modes, even when other behavioral
+tests are adequate. Establish an ordinary permitted implementation change, not
+an arbitrary hypothetical rewrite. Preserve contractual effects, interactions,
+errors, compatibility, and resource conditions as well as returned values.
 State what independent obligation is absent and the concrete false confidence
 or needless change barrier. The minimum outcome is removal or contract-grounded
 verification, not necessarily another test. Existing adequate coverage can make
@@ -310,7 +313,9 @@ it should not block merge. Determine whether:
 - the required outcome is truly a merge prerequisite under the selected policy
   rather than optional strengthening, preference, legitimate follow-up, or
   speculative redesign; for pragmatic policy, establish realistic material
-  exposure or an independently binding condition, not only an engineering witness.
+  consequences or a binding condition, including the shared test-quality
+  requirement. A purely structural construction witness needs practical merge
+  necessity or independent authority under that policy.
 
 For engineering blockers, specifically test the counter-case: is the asserted
 configuration itself contractual; is the oracle independent; does an existing
