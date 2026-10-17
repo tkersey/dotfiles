@@ -460,10 +460,18 @@ def prepare(raw: Any, *, previous: dict[str, Any] | None = None) -> dict[str, An
     key = {k: identity[k] for k in key_fields}
     policy = merge_policy(identity if not composed else
                           identity.get("assessments", {}).get("elenctic", {}))
-    if policy is not None:
-        # Preserve legacy namespaces exactly; explicit policy cannot be stripped
-        # or changed while carrying the old campaign's handling state forward.
-        key["elenctic_merge_policy" if composed else "merge_policy"] = policy
+    if composed:
+        # Assessment availability is progress within a round, not round identity.
+        # Policy changes still require a new round once a source has arrived.
+        if previous is not None:
+            prior = previous["identity"].get("assessments", {}).get("elenctic")
+            current = identity.get("assessments", {}).get("elenctic")
+            if prior is not None and (
+                    current is None or merge_policy(prior) != policy):
+                raise ValueError("Elenctic policy changes require a new campaign")
+    elif policy is not None:
+        # Preserve standalone legacy namespaces and policy isolation.
+        key["merge_policy"] = policy
     result["report_key"] = owner + ("-analysis:" if analysis else ":") + digest(key)
     if previous is not None and previous.get("report_key") != result["report_key"]:
         raise ValueError("cannot reuse finding numbers from another campaign")

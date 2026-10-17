@@ -249,6 +249,35 @@ class CompositionReportTests(unittest.TestCase):
         for a in raw["identity"]["assessments"].values(): a["base_tip"] = "e" * 40
         self.assertNotEqual(key, report.prepare(raw)["report_key"])
 
+    def test_late_elenctic_assessment_preserves_round_namespace(self):
+        complete = fixture()
+        complete["identity"]["assessments"]["elenctic"]["merge_policy"] = "pragmatic"
+        partial = deepcopy(complete)
+        i = partial["identity"]
+        i.update(coverage="partial", selected_scope_coverage="partial",
+                 whole_pr_coverage="not-established", verdict="INCOMPLETE")
+        del i["assessments"]["elenctic"]
+        previous = report.prepare(partial)
+        current = report.prepare(complete, previous=previous)
+        self.assertEqual(previous["report_key"], current["report_key"])
+        changed = deepcopy(complete)
+        changed["identity"]["assessments"]["elenctic"]["merge_policy"] = "pedantic"
+        with self.assertRaises(ValueError):
+            report.prepare(changed, previous=current)
+        original_read = Path.read_text
+        def read(path, *args, **kwargs):
+            if path.name == "report.html" and path.parent.name == "assets":
+                return TEMPLATE
+            return original_read(path, *args, **kwargs)
+        with tempfile.TemporaryDirectory() as temp, patch.object(
+                Path, "read_text", autospec=True, side_effect=read):
+            folder = Path(temp); folder.chmod(0o700)
+            output = folder / "report.html"
+            report.write_report(partial, output)
+            report.write_report(complete, output)
+            with self.assertRaises(ValueError):
+                report.write_report(changed, output)
+
     def test_render_brands_template_without_rewriting_evidence(self):
         raw = fixture(); raw["title"] = "Elenctic evidence <script>"
         raw["report_text"] = "Elenctic source </script><script>alert(1)</script>"

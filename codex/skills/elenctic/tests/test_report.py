@@ -176,7 +176,7 @@ class ReportTests(unittest.TestCase):
             self.assertEqual(current['identity']['assessments']['elenctic']['merge_policy'], policy)
             self.assertNotIn('merge_policy', current['identity'])
             keys.add(current['report_key'])
-        self.assertEqual(len(keys), 3)
+        self.assertEqual(len(keys), 1)
         for value in (None, 'default', []):
             raw['identity']['assessments']['elenctic']['merge_policy'] = value
             with self.subTest(value=value), self.assertRaises(ValueError):
