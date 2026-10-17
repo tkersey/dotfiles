@@ -57,7 +57,13 @@ requirement, compatibility promise, or release posture needs explicit authority.
 
 Use [initial construction](SKILL.md#initial-construction) for the repair; there is
 no separate construction pipeline. Combine current and applicable historical
-witnesses under the source-required law. Acceptance establishes a supported
+witnesses under the source-required law. Carry every admitted liability into the
+root's [automatic construction reconsideration](SKILL.md#mission). Reuse inquiry
+across witnesses only when the same supported causal mechanism covers them; account
+for each new witness and reopen the explanation when it adds a causal distinction.
+A shared reviewer, file, owner, or law alone does not establish a common cause.
+Reconsideration belongs to response selection, not a separate pass or a demand to
+redesign. Acceptance establishes a supported
 disagreement, not the causal explanation. Investigate the implementation, model,
 oracle, and claim as evidence warrants; a completed family narrative or nomination
 is not an entry condition for inquiry.

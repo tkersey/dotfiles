@@ -1,6 +1,6 @@
 {
   "schema": "actuating-review-contract/v17",
-  "contract_id": "actuating-review-contract-v22",
+  "contract_id": "actuating-review-contract-v23",
   "required_lenses": [
     {
       "name": "standard",
@@ -158,6 +158,7 @@
     "incumbent_preservation_is_dominance": false,
     "pre_mutation_theorem_equality_required": false,
     "metanoetic_before_universalist_when_triggered": false,
+    "admitted_liability_triggers_metanoetic_before_response_selection": true,
     "live_boundary_not_route_label_triggers_universalist": true,
     "plausible_subtractive_comparison_when_redundancy_evidenced": true,
     "two_complete_implementations_required": false,

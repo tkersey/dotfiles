@@ -25,9 +25,9 @@ const c = json('references/review-contract.json');
 const d = json('references/decision-contract.json').skill_decision_contract;
 const names = ['standard','soundness-skeptic','footgun-finder','invariant-ace','complexity-mitigator','fresh-eyes'];
 assert.equal(c.schema, 'actuating-review-contract/v17');
-assert.equal(c.contract_id, 'actuating-review-contract-v22');
+assert.equal(c.contract_id, 'actuating-review-contract-v23');
 assert.equal(d.contract_version, 'SKDC-v1');
-assert.equal(d.skill.source_fingerprint, 'actuating-construction-core-v21');
+assert.equal(d.skill.source_fingerprint, 'actuating-construction-core-v22');
 assert.deepEqual(c.required_lenses.map(l => l.name), names);
 assert.deepEqual(c.required_lenses[0], {name:'standard',role:'standard',instruction_source:'codex-default',custom_instructions:false});
 assert.deepEqual(c.review_scheduling.initial_lens_order, names);
@@ -205,7 +205,7 @@ assert(construction.failure_signals.includes('a shared predicate, exhaustive swi
 // Pairing source-contract regressions; these do not measure model efficacy.
 assert(text('SKILL.md').includes('[architecture.md](architecture.md)'), 'architecture guide not routed');
 const rootStep = text('architecture.md').split('## Architecture compilation')[1].split('\n## ')[0].replace(/\s+/g, ' ');
-assert(rootStep.includes('When the existing Metanoetic trigger fires'));
+assert(rootStep.includes('When considering a response to a current applicable liability admitted by Review Fold'));
 assert(rootStep.includes('apply `$glaze` then `$metanoetic` verbatim in one shared activation'));
 assert(rootStep.includes('This pairing does not impose an order relative to Universalist'));
 assert(rootStep.includes('One activation is not a cap on reasoning, evidence gathering, or useful revision'));
@@ -248,7 +248,7 @@ assert(rootStep.includes('feasibility against authorized resource ceilings using
 assert(rootStep.includes('Leave unestablished feasibility unresolved'));
 assert(rootStep.includes('Reuse evidence only while its subject and assumptions remain applicable'));
 assert(rootStep.includes('No separate comparison packet or benchmark stage is required'));
-assert(challenger.success_signals.includes('one shared Glaze-primed Metanoetic activation under the existing trigger, with no required order relative to Universalist'));
+assert(challenger.success_signals.includes('every current applicable admitted liability triggers shared Glaze-primed Metanoetic reconsideration before response selection, beginning with the first finding, with no required order relative to Universalist'));
 assert(challenger.success_signals.includes('canonical Glaze then Metanoetic instructions share one context; encouragement does not change admissibility or proof'));
 assert(challenger.failure_signals.includes('Glaze adds a trigger, separate stage, report, review, or acceptance authority'));
 // Canonical byte preservation and wrapper boundaries; not model-efficacy evidence.
