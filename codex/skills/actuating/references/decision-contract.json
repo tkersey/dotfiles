@@ -4,7 +4,7 @@
     "skill": {
       "name": "actuating",
       "kind": "mixed",
-      "source_fingerprint": "actuating-construction-core-v23"
+      "source_fingerprint": "actuating-construction-core-v24"
     },
     "triggers": [
       {
@@ -200,13 +200,15 @@
         "required_artifacts": [
           "exact reviewable candidate head",
           "bound CAS requests",
+          "frozen ranked focal-file assignments selected from the complete base-to-head change",
           "applicable terminal outcomes, recovery, and Review Fold"
         ],
         "success_signals": [
           "candidate stays frozen through the applicable cut",
           "available waiting time supports read-only self-review without delaying required collection, recovery, or dispatch or requiring a completed pass",
-          "serial and parallel acquire the same initial six-lens evidence",
-          "confirmation invalidation requires no new auxiliary wave on the invalid head"
+          "serial and parallel acquire the same initial six-lens and selected-file evidence, including after invalidation",
+          "confirmation invalidation requires no new auxiliary wave on the invalid head",
+          "all initial obligations are folded and credited before later native confirmations"
         ],
         "failure_signals": [
           "mutation inside an open epoch",
@@ -396,6 +398,7 @@
           "live owner-source frontier and unavailable-source limitations",
           "exact CAS receipts and native/default standard review",
           "five checked-in auxiliary lenses",
+          "at most three independent initial file reviews, without a file-by-lens matrix",
           "projected and captured CEX identities",
           "complete applicable review cut"
         ],
@@ -404,13 +407,15 @@
           "admitted current material entailed self-findings invalidate the candidate and all credit under existing phase rules even when CAS returns clean",
           "self-review supplies evidence without a CAS receipt, independent confirmation, or clean credit",
           "unavailable provider quota is not a clean verdict",
-          "six-lens inventory and five-standard-clean convergence are preserved"
+          "six-lens inventory and five-standard-clean convergence are preserved",
+          "each selected file receives a complete causal inquiry that continues beyond the first supported finding"
         ],
         "failure_signals": [
           "custom instructions replace the default standard review",
           "live provider finding omitted while dependent action proceeds",
           "self-discovered material evidence omitted from adjudication before convergence",
-          "absence in incomplete history proves first occurrence or elimination"
+          "absence in incomplete history proves first occurrence or elimination",
+          "file review credit substitutes for a standard, an auxiliary, another file, or a changed head"
         ],
         "rationale": "Review supplies falsification evidence; it neither chooses repairs nor silently adds requirements."
       },

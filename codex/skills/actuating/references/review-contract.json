@@ -1,6 +1,6 @@
 {
-  "schema": "actuating-review-contract/v17",
-  "contract_id": "actuating-review-contract-v23",
+  "schema": "actuating-review-contract/v18",
+  "contract_id": "actuating-review-contract-v24",
   "required_lenses": [
     {
       "name": "standard",
@@ -34,6 +34,25 @@
       "instructions_ref": "codex/skills/actuating/references/lenses/fresh-eyes-review.md"
     }
   ],
+  "focused_file_reviews": {
+    "name": "focused-file",
+    "role": "focused-file",
+    "instructions_ref": "codex/skills/actuating/references/focused-file-review.md",
+    "selection_ref": "codex/skills/actuating/references/review-contract.md#focused-file-reviews",
+    "maximum_files": 3,
+    "skip_single_logical_file_changeset": true,
+    "rank_by": "additions-plus-deletions-descending",
+    "tie_break": "head-path-or-deleted-base-path",
+    "selection_frozen_before_dispatch": true,
+    "exact_assignment_in_instruction_digest": true,
+    "target": "same-complete-repository-base-head",
+    "investigation": "whole-focal-file-and-causal-consequences",
+    "continue_after_first_finding": true,
+    "phase": "initial-only",
+    "file_by_lens_matrix": false,
+    "credit": "exact-selected-file-obligation-only",
+    "successor_reselects_from_full_bound_base": true
+  },
   "review_scheduling": {
     "default_mode": "parallel-reviews",
     "waiting_work": "read-only-self-review-of-frozen-subject",
@@ -63,11 +82,13 @@
       "serial-reviews": {
         "dispatch": "serial",
         "adjudicate_before_next": true,
-        "continue_remaining_initial_lenses_after_invalidation": true,
-        "post_invalidation_lenses_are_evidence_only": true,
-        "mutation_forbidden_until_cut": true
+        "mutation_forbidden_until_cut": true,
+        "continue_remaining_initial_requests_after_invalidation": true,
+        "post_invalidation_requests_are_evidence_only": true
       }
-    }
+    },
+    "initial_inventory": "required-lenses-then-ranked-focused-files",
+    "all_selected_files_required": true
   },
   "counterexample_corpus": {
     "owner": "review-fold",
@@ -137,7 +158,6 @@
     "initial_falsification_wave_complete_before_successor_selection": true,
     "parallel_waits_for_all_launched_semantic_outcomes": true,
     "required_recovery_part_of_semantic_barrier": true,
-    "serial_continues_remaining_initial_lenses_after_material_finding": true,
     "serial_post_invalidation_clean_credit_forbidden": true,
     "confirmation_material_finding_stops_confirmation": true,
     "review_findings_do_not_select_repairs": true,
@@ -147,7 +167,9 @@
     "applies_after_review_dispatch": true,
     "initial_implementation_requires_review_dispatch": false,
     "initial_implementation_requires_initial_falsification_wave": false,
-    "confirmation_invalidation_requires_new_initial_wave": false
+    "confirmation_invalidation_requires_new_initial_wave": false,
+    "serial_continues_remaining_initial_requests_after_material_finding": true,
+    "initial_outcomes_fold_and_credit_before_confirmations": true
   },
   "construction_selection": {
     "objective": "required-law-realization-with-family-exclusion-and-required-valid-preservation",
@@ -259,6 +281,7 @@
     "consumers": [
       "standard count",
       "auxiliary completion",
+      "focused file completion",
       "user and PR completion statements"
     ],
     "hold_effect": "no advance; preserve unrelated valid credit; pause dependent confirmation or completion",

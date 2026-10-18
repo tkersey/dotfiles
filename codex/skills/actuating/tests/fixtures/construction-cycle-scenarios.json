@@ -4,6 +4,7 @@
   "defaults": {
     "route": "review-closeout",
     "head": "h1",
+    "focused_files": [],
     "proof": {
       "head": "h1",
       "status": "passed"
