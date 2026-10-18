@@ -77,6 +77,7 @@ reasoning sequence. Do not load every workflow or reference at entry.
 | `analyze` | The same source and claim discipline, read-only. Load the relevant evidence or architecture guidance; do not execute realization, persist a corpus, publish, or grant closure. |
 | A finding, failed check, or counterexample-driven selection | [counterexamples.md](counterexamples.md) before admission; [architecture.md](architecture.md) for automatic reconsideration before selecting a response to each admitted liability. |
 | Using supporting construction skills or a selected architecture technique | [architecture.md](architecture.md) for composition and effect boundaries; its techniques do not add a construction stage. |
+| Designing or reducing materially costly verification, diagnosing slow qualification, or selecting a broad retry while verification cost impedes the Goal | [verification.md](verification.md) for evidence-preserving construction and the next useful execution; ordinary cheap validation needs no additional workflow. |
 | An elimination claim meets a current witness, a broader Goal obligation remains unresolved after a narrow repair, or efficacy is being assessed | [recurrence.md](recurrence.md), before retaining the claim or selecting a successor. |
 | `review-closeout`, or bare Actuating reaching review | [review-closeout.md](review-closeout.md) and its required review contract, before the first CAS request; use the complete frozen-subject and convergence rules. |
 | Bare Actuating reaching publication | `$ship`; publication does not replace subsequent review-closeout. |
@@ -187,6 +188,12 @@ Acceptance requires the actual mechanism, migrations, and retirements, not inten
 At entry and after material change, bind the Goal, immutable base, exact head,
 current construction, proof inventory, and any publication state. Read the
 relevant source, not a remembered architecture. Unknown evidence receives no credit.
+
+Preserve source-backed obligations and the independent observations and conditions
+that distinguish their relevant failures. Unless source-fixed, fixture sizes,
+repetition, preparation, check placement, and build arrangements are design
+variables. Their replacement needs a proportionate preservation argument, not
+preservation of accidental implementation assertions or every inherited execution.
 
 Before accepting validation for local completion or reviewability, inspect the
 base-to-candidate diff and actual check selection for deleted tests, weakened

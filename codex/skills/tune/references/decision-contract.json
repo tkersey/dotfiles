@@ -4,7 +4,7 @@
     "skill": {
       "name": "tune",
       "kind": "mixed",
-      "source_fingerprint": "unified-create-edit-evidence-tune-v11-bench-stats-only"
+      "source_fingerprint": "unified-create-edit-evidence-tune-v12-verification-construction"
     },
     "triggers": [
       {
@@ -325,13 +325,15 @@
           "target selects evidence and procedures before mutation",
           "specified edits do not bypass performance validation",
           "mixed targets share an objective and only load implicated guides",
-          "baseline shifts only after a supported accepted gain"
+          "baseline shifts only after a supported accepted gain",
+          "an enclosing workflow may reuse performance methods under its own selection, effect, and completion authority"
         ],
         "failure_signals": [
           "software work requires skill-package discovery or activation history",
           "optimization chosen from grep or fixed score without mechanism evidence",
           "first win ends a still-incomplete requested objective",
-          "noisy or unmeasured change reported as verified improvement"
+          "noisy or unmeasured change reported as verified improvement",
+          "reference reuse starts a competing optimizer or enlarges the enclosing workflow's authority"
         ],
         "rationale": "Software and agent optimization share an evidence-driven loop without inheriting irrelevant skill-authoring prerequisites."
       },
@@ -359,13 +361,15 @@
         "success_signals": [
           "preservation argument distinguished from executed evidence and residual uncertainty",
           "approximation uses an existing allowance or explicit bounded authorization",
-          "local gains validated against the end-to-end objective"
+          "local gains validated against the end-to-end objective",
+          "verification may reduce physical executions while preserving accepted observations and their discriminating conditions"
         ],
         "failure_signals": [
           "unchanged golden files treated as candidate verification",
           "checklist or equal hashes claimed as universal equivalence proof",
           "ordering, safety, security, or accuracy silently weakened",
-          "microbenchmark or asymptotic change presented as measured system speedup"
+          "microbenchmark or asymptotic change presented as measured system speedup",
+          "verification shrinks required independence, sampling, stress, environments, or bounds to obtain a pass"
         ],
         "rationale": "Optimization must protect required observations and substantiate its actual performance claim, not merely change code."
       },

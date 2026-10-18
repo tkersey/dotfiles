@@ -4,7 +4,7 @@
     "skill": {
       "name": "actuating",
       "kind": "mixed",
-      "source_fingerprint": "actuating-construction-core-v22"
+      "source_fingerprint": "actuating-construction-core-v23"
     },
     "triggers": [
       {
@@ -439,14 +439,20 @@
           "redundant primary compensation retired or justified by distinct obligations",
           "same-claim witness revokes exclusion and reopens its causal explanation",
           "local completion and reviewability inspect deleted tests, weakened assertions, skipped checks, and reduced coverage against source-backed obligations",
-          "test retirement preserves proof or has independent oracle-correction evidence or explicit obligation-retirement authority"
+          "test retirement preserves proof or has independent oracle-correction evidence or explicit obligation-retirement authority",
+          "verification preserves source-backed failure distinctions while inherited physical arrangements remain redesignable unless source-fixed",
+          "costly verification changes use proportionate preservation arguments and existing phase evidence to choose the next useful execution",
+          "complete required job and workflow evidence belongs to the accepted candidate in its required modes"
         ],
         "failure_signals": [
           "only reported examples repaired",
           "labels or digests substitute for construction evidence",
           "unresolved or unauthorized residual liability called complete",
           "clean reviews or policy fixtures claimed as universal proof or controlled model efficacy",
-          "passing a weakened suite discharges an unchanged requirement"
+          "passing a weakened suite discharges an unchanged requirement",
+          "branch coverage substitutes for resource, sequence, or independence preservation",
+          "broad qualification repeats a known unaffected obstruction without a deciding whole-workflow question",
+          "cached artifacts or diagnostics inside a cancelled run are credited as complete execution"
         ],
         "rationale": "Success is justified behavior in the actual code, not process completion or route classification."
       }

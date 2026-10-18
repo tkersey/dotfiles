@@ -25,9 +25,17 @@ Do not interpret a process benchmark's largest sample as a well-estimated p99.
 Use microbenchmarks to test a mechanism, then verify end-to-end benefit. Consume
 results so dead-code elimination cannot remove the work; isolate setup only when
 setup is not part of the objective. Exercise small/large, skewed/uniform,
-cold/warm, adversarial, and failing inputs when relevant. Keep denominators and
-work performed constant. Allocation count, retained memory, and peak RSS answer
-different questions; do not substitute one for another without explanation.
+cold/warm, adversarial, and failing inputs when relevant. Keep the declared
+workload and denominators comparable. Allocation count, retained memory, and peak
+RSS answer different questions; do not substitute one for another without explanation.
+
+When optimizing verification itself, preserve accepted observations and the
+conditions that expose relevant failures. Physical setup, fixtures, repetition,
+compilation, and transport may change under that preservation relation; their
+inherited execution count is not the protected workload. Retain required
+independence, sampling, resource stress, environments, and bounds. Establish the
+replacement's evidential contribution before crediting reduced execution as a
+gain; artifact reuse does not establish that the current checks ran.
 
 ## State the preservation relation before changing code
 

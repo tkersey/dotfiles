@@ -83,6 +83,7 @@ assert.match(universalist,/Missing evidence or incomparable\s+adequate candidate
 assert.equal(policy.universalist_compilation.nomination_result_required,false);
 assert.match(universalist,/not required output or a new route or mode/);
 const fold = text('../review-fold/SKILL.md');
+const admission = text('../review-fold/references/admission.md');
 const corpus = text('../review-fold/references/counterexample-corpus.md');
 assert.match(fold,/corpus_write_authorized: true \| false # enclosing task; omitted means false/);
 assert.match(section(fold,'Effect authority'),/always false in\s+Actuating `analyze`/);
@@ -92,8 +93,9 @@ assert.match(section(corpus,'Effect authority'),/not `ledger transact`/);
 assert.match(skill,/corpus_write_authorized: false/);
 for (const name of ['challenged_judgment','earliest_failed_premise','claim_strength_consequence'])
   assert(fold.includes(name),`lost judgment-challenge field: ${name}`);
-assert.match(fold,/Missing proof alone is not evidence that the behavior is false/);
-assert.match(fold,/never rewrites\s+an owner-issued `findings` verdict into `clean`/);
+assert(fold.includes('(references/admission.md#law-authority-classification)'));
+assert.match(admission,/Missing proof alone is not evidence that the behavior is false/);
+assert.match(admission,/never rewrites\s+an owner-issued `findings` verdict into `clean`/);
 const visibility = text('../cas/references/review-proof-boundary.md');
 assert.match(visibility,/does not deliver the hashed context or prove that a reviewer saw it/);
 assert.match(visibility,/parent-only conversation premises are not implicitly inherited/);
