@@ -15,8 +15,10 @@ tuning. The bundled Skill Creator supplies reusable scaffolding and validation
 helpers; using those helpers does not start a second authoring workflow. Explicit
 user selection of a skill still governs.
 
-One skill owns diagnosis, selection, and authorized mutation. Keep those phases
-distinct; do not hand off merely because the target is code rather than a skill.
+When Tune is the selected workflow, it owns diagnosis, selection, and authorized
+mutation. Keep those phases distinct; do not hand off merely because the target
+is code rather than a skill. An enclosing workflow may reuse the performance
+references under its own authority without starting a second optimizer.
 
 ## Select the target before the procedure
 

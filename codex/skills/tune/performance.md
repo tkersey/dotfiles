@@ -1,16 +1,18 @@
 # Measured performance optimization
 
 Use for software or agent-system optimization, including a specified optimization
-in `edit` mode. Tune's authority and protected-contract rules always apply.
+in `edit` mode. When Tune is selected, its authority and protected-contract rules apply.
 Before the first experiment, read only the relevant guide:
 [software-performance.md](references/software-performance.md) for code and
 [agent-performance.md](references/agent-performance.md) for agents. Mixed changes
 use both only where required. Skill-package edits additionally retain authoring
 rules, not a second optimizer or a second experiment dossier.
 
-Tune owns the software and agent-performance optimization workflow end to end.
-Specialized references and optional utilities support this procedure; they do not
-introduce another optimizer, acceptance gate, or report contract.
+When Tune is selected, it owns software and agent-performance optimization end
+to end. An enclosing workflow may reuse these measurement and preservation
+methods while retaining its selection, effect, and completion authority.
+Specialized references and optional utilities do not introduce a second optimizer,
+acceptance gate, or report contract.
 
 ## Frame and baseline
 

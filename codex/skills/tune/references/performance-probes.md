@@ -78,6 +78,24 @@ The retired `$lift` name below is a migration fixture, not an alias or dispatch 
 | Necessary multi-file representation change | Allowed as one attributable experiment; not rejected solely for diff/commit size |
 | No worthwhile supported candidate remains | `no-change` or explicit stop; no complexity escalation to fill a round |
 
+## Verification as the optimization target
+
+Use Actuating's conditional [verification guidance](../../actuating/verification.md)
+when it owns the task. These cases exercise the preservation relation and choice
+of observation; they add no runtime optimization stage or suite-wide proof demand.
+
+| Fixture / challenge | Required observation |
+|---|---|
+| The same deterministic positive case runs from equivalent fresh state inside every negative-case iteration | Remove the positive duplicates while retaining distinct rejection cases; preserve repetition if it owns required sampling or lifecycle evidence |
+| A small composition delegates scale-sensitive behavior to an owner tested at scale; a variant adds its own narrowing conversion | Accept the first reduction after inspecting delegation; retain a sufficient witness through the variant's transformation |
+| A homogeneous failure batch becomes a mixed batch, first reducing failure count and then restoring it | Reject lost cardinality; restored counts still need a sequence and lifetime argument, or the homogeneous witness remains |
+| Immutable evaluator preparation is shared, including allocations formerly inside a failure sweep | Keep mutable sessions fresh and account for preparation failures at their owner; sharing must not erase that obligation |
+| One fixture improves while another known cold path remains over budget | Use existing phase evidence for all plausible limiting paths and continue targeted work before final qualification |
+| Only complete execution can resolve an unknown cross-job scheduling effect | Permit a broad diagnostic with a named deciding question; do not require a prediction that guarantees success |
+| A helper is ready while unrelated producer checks continue | Express actual artifact readiness as the consumer prerequisite under provider semantics; retain independent checks at final acceptance |
+| A test-only edit leaves the audited compiled-input closure unchanged | Reuse the admitted artifact and execute changed checks; a cache hit or cancelled workflow cannot supply missing qualification |
+| Ordinary cheap validation, read-only inquiry, or a frozen candidate | Avoid an extra optimization workflow for the first; preserve existing effect and review-epoch limits for the others |
+
 ## Feedback, reserves, and adaptive allocation
 
 Use the selected [feedback guide](feedback-dynamics.md) in these mechanism-specific
