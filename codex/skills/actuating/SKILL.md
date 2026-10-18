@@ -199,6 +199,21 @@ and block only dependent completion or reviewability. Reuse the existing proof
 inventory; no separate critic, packet, or review stage.
 
 
+## Comments in code
+
+Do not write explanatory comments in source code, tests, or examples, including
+inline/block comments, docstrings, and optional API documentation. Apply this rule
+to delegated implementation work.
+
+Express intent through precise names, types, ownership, and operations; enforce
+invariants in the construction. The absence of comments is not correctness evidence.
+Do not add abstractions or documentation files solely to avoid a comment.
+
+Reserve comment syntax for mandatory legal notices, required machine directives,
+and documentation explicitly required by the accepted source or current user.
+Preserve unrelated existing comments. Check added comments against this rule
+during the existing diff inspection.
+
 ## Realization and common proof obligations
 
 There is one operation: realize the selected construction, initially or as a
