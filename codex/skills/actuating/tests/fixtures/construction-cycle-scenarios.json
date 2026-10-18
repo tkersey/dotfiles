@@ -27,7 +27,8 @@
           "applicability": "current",
           "witness": "bad-input"
         }
-      ]
+      ],
+      "credit_disposition": "hold"
     },
     "r02": {
       "id": "initial-soundness-skeptic-0",
@@ -35,7 +36,8 @@
       "phase": "initial",
       "lens": "soundness-skeptic",
       "head": "h1",
-      "verdict": "clean"
+      "verdict": "clean",
+      "credit_disposition": "credit"
     },
     "r03": {
       "id": "initial-footgun-finder-0",
@@ -43,7 +45,8 @@
       "phase": "initial",
       "lens": "footgun-finder",
       "head": "h1",
-      "verdict": "clean"
+      "verdict": "clean",
+      "credit_disposition": "credit"
     },
     "r04": {
       "id": "initial-invariant-ace-0",
@@ -51,7 +54,8 @@
       "phase": "initial",
       "lens": "invariant-ace",
       "head": "h1",
-      "verdict": "clean"
+      "verdict": "clean",
+      "credit_disposition": "credit"
     },
     "r05": {
       "id": "initial-complexity-mitigator-0",
@@ -59,7 +63,8 @@
       "phase": "initial",
       "lens": "complexity-mitigator",
       "head": "h1",
-      "verdict": "clean"
+      "verdict": "clean",
+      "credit_disposition": "credit"
     },
     "r06": {
       "id": "initial-fresh-eyes-0",
@@ -67,7 +72,8 @@
       "phase": "initial",
       "lens": "fresh-eyes",
       "head": "h1",
-      "verdict": "clean"
+      "verdict": "clean",
+      "credit_disposition": "credit"
     },
     "r07": {
       "id": "initial-standard-0",
@@ -75,7 +81,8 @@
       "phase": "initial",
       "lens": "standard",
       "head": "h1",
-      "verdict": "clean"
+      "verdict": "clean",
+      "credit_disposition": "credit"
     },
     "r08": {
       "id": "confirmation-standard-1",
@@ -83,7 +90,8 @@
       "phase": "confirmation",
       "lens": "standard",
       "head": "h1",
-      "verdict": "clean"
+      "verdict": "clean",
+      "credit_disposition": "credit"
     },
     "r09": {
       "id": "confirmation-standard-2",
@@ -91,7 +99,8 @@
       "phase": "confirmation",
       "lens": "standard",
       "head": "h1",
-      "verdict": "clean"
+      "verdict": "clean",
+      "credit_disposition": "credit"
     },
     "r10": {
       "id": "confirmation-standard-3",
@@ -99,7 +108,8 @@
       "phase": "confirmation",
       "lens": "standard",
       "head": "h1",
-      "verdict": "clean"
+      "verdict": "clean",
+      "credit_disposition": "credit"
     },
     "r11": {
       "id": "confirmation-standard-4",
@@ -107,7 +117,8 @@
       "phase": "confirmation",
       "lens": "standard",
       "head": "h1",
-      "verdict": "clean"
+      "verdict": "clean",
+      "credit_disposition": "credit"
     },
     "r12": {
       "id": "confirmation-standard-3",
@@ -122,7 +133,8 @@
           "applicability": "current",
           "witness": "bad-input"
         }
-      ]
+      ],
+      "credit_disposition": "hold"
     },
     "r13": {
       "id": "initial-fresh-eyes-0",
@@ -130,7 +142,8 @@
       "phase": "initial",
       "lens": "fresh-eyes",
       "head": "h1",
-      "verdict": "verdictless"
+      "verdict": "verdictless",
+      "credit_disposition": "hold"
     },
     "r14": {
       "id": "initial-fresh-eyes-1",
@@ -138,7 +151,8 @@
       "phase": "initial",
       "lens": "fresh-eyes",
       "head": "h1",
-      "verdict": "clean"
+      "verdict": "clean",
+      "credit_disposition": "credit"
     },
     "r15": {
       "id": "initial-fresh-eyes-1",
@@ -146,7 +160,8 @@
       "phase": "initial",
       "lens": "fresh-eyes",
       "head": "h1",
-      "verdict": "verdictless"
+      "verdict": "verdictless",
+      "credit_disposition": "hold"
     },
     "r16": {
       "id": "confirmation-standard-1",
@@ -154,7 +169,8 @@
       "phase": "confirmation",
       "lens": "standard",
       "head": "h0",
-      "verdict": "clean"
+      "verdict": "clean",
+      "credit_disposition": "credit"
     },
     "r17": {
       "id": "initial-standard-0",
@@ -163,7 +179,8 @@
       "lens": "standard",
       "head": "h1",
       "verdict": "clean",
-      "custom_instructions": "review only invariants"
+      "custom_instructions": "review only invariants",
+      "credit_disposition": "credit"
     }
   },
   "scenarios": [
