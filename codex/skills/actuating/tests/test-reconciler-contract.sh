@@ -24,10 +24,10 @@ const json = p => JSON.parse(text(p));
 const c = json('references/review-contract.json');
 const d = json('references/decision-contract.json').skill_decision_contract;
 const names = ['standard','soundness-skeptic','footgun-finder','invariant-ace','complexity-mitigator','fresh-eyes'];
-assert.equal(c.schema, 'actuating-review-contract/v17');
-assert.equal(c.contract_id, 'actuating-review-contract-v23');
+assert.equal(c.schema, 'actuating-review-contract/v18');
+assert.equal(c.contract_id, 'actuating-review-contract-v24');
 assert.equal(d.contract_version, 'SKDC-v1');
-assert.equal(d.skill.source_fingerprint, 'actuating-construction-core-v23');
+assert.equal(d.skill.source_fingerprint, 'actuating-construction-core-v24');
 assert.deepEqual(c.required_lenses.map(l => l.name), names);
 assert.deepEqual(c.required_lenses[0], {name:'standard',role:'standard',instruction_source:'codex-default',custom_instructions:false});
 assert.deepEqual(c.review_scheduling.initial_lens_order, names);
@@ -35,8 +35,8 @@ assert.equal(c.review_scheduling.default_mode, 'parallel-reviews');
 assert.deepEqual(Object.keys(c.review_scheduling.modes).sort(), ['parallel-reviews','serial-reviews']);
 assert.equal(c.review_scheduling.modes['parallel-reviews'].non_cancelling, true);
 assert.equal(c.review_scheduling.modes['parallel-reviews'].all_launched_semantic_outcomes_before_cut, true);
-assert.equal(c.review_scheduling.modes['serial-reviews'].continue_remaining_initial_lenses_after_invalidation, true);
-assert.equal(c.review_scheduling.modes['serial-reviews'].post_invalidation_lenses_are_evidence_only, true);
+assert.equal(c.review_scheduling.modes['serial-reviews'].continue_remaining_initial_requests_after_invalidation, true);
+assert.equal(c.review_scheduling.modes['serial-reviews'].post_invalidation_requests_are_evidence_only, true);
 assert.deepEqual(c.standard_convergence, {
   required_consecutive_clean_attempts:5, initial_standard_counts:true,
   later_attempts_serial:true, findings_reset_streak:true,

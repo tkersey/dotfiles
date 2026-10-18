@@ -6,7 +6,7 @@ and construction consequences from exact owner facts.
 
 ## Binding and owner authority
 
-Read the exact contract bytes and each auxiliary instruction file without trimming
+Read the exact contract bytes and each custom instruction source without trimming
 or normalization. Standard invokes Codex's native/default review with no custom
 instructions argument or skill-authored prompt. Bind its instruction identity to
 `codex-default-review/v1`, which records deliberate absence of customization; it
@@ -30,6 +30,7 @@ review_context:
   proof_inventory_digest:
   validation_summary:
   publication_observation_ref: null | sha256-digest
+  focused_files: []
 ```
 
 ```text
@@ -42,7 +43,7 @@ campaign_id = sha256(
 
 instruction_digest =
   standard ? sha256("codex-default-review/v1")
-           : sha256(exact auxiliary instruction bytes)
+           : sha256(exact delivered custom instruction bytes)
 
 request_fingerprint = sha256(
   "actuating-review-request/v3" || NUL ||
@@ -60,10 +61,57 @@ are not verdicts. Hashes do not prove semantic equivalence or evidence delivery.
 Keep required scope and usable prior evidence in existing accessible repository/task
 documentation or a supported context channel, without customizing standard review.
 
+## Focused file reviews
+
+Before the first request, read the complete rename-aware base-to-head file
+inventory and additions/deletions, using `git diff --find-renames --numstat -z`
+and `--name-status -z` against those exact commits. Preserve literal paths;
+do not rank a truncated provider listing or split filenames on whitespace.
+
+When the entire changeset has at most one logical file, select no supplement:
+the existing reviews already have that file as their sole change anchor.
+Otherwise rank eligible text-file changes by additions plus deletions descending,
+breaking ties by repository path (head path, or base path for a deletion).
+Select the first three, or all eligible files if fewer. This caps primary file
+assignments per epoch; existing exact-request recovery remains separate.
+
+Include hand-maintained code, tests, schemas, configuration, documentation, and
+skill/workflow instructions. Exclude generated output, vendored snapshots,
+lockfile regeneration, formatting, or moves only when evidence establishes that
+the change is entirely generated or mechanical; a filename alone is insufficient.
+Mixed substantive/mechanical edits remain eligible at their full raw line count.
+Count a rename once, preserve both paths, and include substantive path-only changes
+even at zero line churn. Deletions use their base-side contents and deleted lines.
+Binary changes have no comparable line score and receive no automatic supplement.
+All exclusions affect only this selection; full changeset scope remains required.
+Retain selected paths, observed counts, and exclusion reasons in the existing
+Working Set. Churn allocates attention; it neither proves risk nor waives scope.
+
+Freeze the ordered `focused_files` list in `review_context` before dispatch.
+Each entry has `base_path` and `head_path`; use null for an absent side.
+For each file, use one independent CAS request with `lens_name` and `role` both
+`focused-file`, a distinct request ID, and the same complete repository/base/head
+target as every changeset review. Deliver the exact
+[focused-file instructions](focused-file-review.md), followed by a JSON assignment
+containing `repository`, `base_sha`, `head_sha`, and `focus: {base_path, head_path}`.
+Hash all delivered bytes, including that assignment. A digest alone does not
+deliver the accepted requirements or source evidence. Do not invent a native
+file-target selector, customize standard, invoke Elenctic, or run lenses per file.
+
+A file reviewer completes one integrated inquiry into the whole focal file and
+its causal consequences, continuing beyond the first finding. Its single result
+supplies supported distinct findings and material gaps to the same cumulative
+Review Fold as the changeset reviews. It does not select or implement repairs.
+Credit covers only its exact selected file obligation on that frozen subject;
+it cannot cover another file, an auxiliary, or a native standard confirmation.
+Changing the head or frozen selection requires a newly bound initial inventory;
+recompute from the full bound base to the proved successor, not just the last fix.
+No file credit survives a head change merely because its own bytes are unchanged.
+
 ## Review-credit admission
 
-Before advancing a standard count, completing an auxiliary obligation, or publishing
-review completion, Actuating adjudicates the full result, including its explanation,
+Before advancing a standard count, completing an auxiliary or file obligation, or
+publishing review completion, Actuating adjudicates the full result, including its explanation,
 against the requested scope and current evidence. Preserve CAS's original receipt.
 Adjudicate findings through Review Fold and retain existing unusable-result and
 invalidation paths; an evidence limitation is not itself a fabricated code finding.
@@ -113,12 +161,13 @@ transport recovery and does not consume or extend its allowance.
 
 A held result neither advances nor by itself resets existing credit. Continue
 independent authorized work; a held standard pauses serial confirmations until
-credited or invalidated, rather than being skipped to fill the quota. All required auxiliaries
-need credit, not merely terminal receipts and an acknowledged caveat. Findings,
-changed inputs, and newly discovered missing pre-review proof retain their existing
+credited or invalidated, rather than being skipped to fill the quota. All required
+auxiliaries and selected files need credit, not merely terminal receipts and an
+acknowledged caveat. Findings, changed inputs, and newly discovered missing
+pre-review proof retain their existing
 invalidation rules. Do not downgrade such missing proof to a review-only limitation.
 
-Derive standard counts, auxiliary completion, and user/PR readiness statements
+Derive standard counts, auxiliary/file completion, and user/PR readiness statements
 from these same owner dispositions, never directly from receipt labels. Preserve
 material limitations and the accepted scope even after credit. An unresolved
 required obligation prevents an unqualified complete/all-clean claim; correcting
@@ -149,7 +198,8 @@ of the frozen subject. This supplies evidence without adding a required lens or
 clean credit, delaying required dispatch/recovery/result collection, or extending
 the epoch to finish a pass.
 
-The required initial order is:
+The required initial order is the six changeset-wide lenses, followed by the
+frozen selected files in rank order:
 
 ```text
 standard
@@ -158,24 +208,30 @@ footgun-finder
 invariant-ace
 complexity-mitigator
 fresh-eyes
+focused-file (one request per selected file)
 ```
 
-`parallel-reviews` launches all six owner-live requests concurrently and never
-cancels siblings. Await all launched semantic outcomes and required recovery.
+`parallel-reviews` dispatches the entire initial inventory concurrently within
+available capacity and never cancels siblings. Keep queued requests required;
+await every initial semantic outcome and required recovery.
 
 `serial-reviews` adjudicates each request before the next. After invalidation,
-continue the remaining initial lenses against the same frozen head for evidence
+continue every remaining initial request against the same frozen head for evidence
 only: no mutation, no clean credit, no successor assumptions.
 
 A verdictless terminal has no semantic outcome. Permit one fresh exact-request
 recovery; it remains part of the barrier after invalidation. A second verdictless
 terminal blocks. Do not interpret an observation timeout as terminal failure.
 
-The initial credited standard counts as one. Four later standard confirmations
+Complete and fold the entire initial inventory before any later confirmation;
+proceed only while the candidate remains valid and all initial obligations have
+credit. The initial credited standard counts as one. Four later standard confirmations
 run serially, producing five consecutive distinct native/default standard cleans
 admitted under Review-credit admission on one unchanged head. A material finding stops confirmation. A material head change
-resets all review credit; the proved successor starts a new initial wave under
-the selected scheduling mode.
+resets all review credit; rerank files for the proved successor and start a new
+initial wave under the selected scheduling mode. File reviews add no confirmation
+streak. A fully clean epoch has six to nine initial requests and four later
+standards, excluding required recovery; request count is not a token or time bound.
 
 ## Live owner-source frontier
 

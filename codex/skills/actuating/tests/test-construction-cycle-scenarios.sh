@@ -17,17 +17,28 @@ assert.equal(new Set(fixture.scenarios.map(x => x.id)).size, fixture.scenarios.l
 // or direct-gate input that can exempt a candidate from proof.
 function observe(i) {
   const slots = new Map(), seen = new Set();
+  assert(Array.isArray(i.focused_files), 'missing frozen file selection');
+  assert(i.focused_files.length <= policy.focused_file_reviews.maximum_files, 'file review budget exceeded');
+  assert.equal(new Set(i.focused_files.map(f => JSON.stringify(f))).size, i.focused_files.length, 'duplicate file selection');
+  const initialSlots = new Map(lenses.map(lens => [lens, {lens}]));
+  i.focused_files.forEach((focus, n) => initialSlots.set(`focused-file-${n}`,
+    {lens:policy.focused_file_reviews.name, focus}));
   const semantic = r => ['clean', 'findings'].includes(r.verdict);
   const material = r => r.findings?.some(f => f.authority === 'entailed' && f.applicability === 'current');
-  const initialComplete = () => lenses.every(l => semantic(slots.get(l)?.at(-1) ?? {}));
+  const initialComplete = () => [...initialSlots.keys()].every(slot => semantic(slots.get(slot)?.at(-1) ?? {}));
   for (const r of i.receipts) {
     assert(!seen.has(r.id), 'duplicate receipt'); seen.add(r.id);
     assert.equal(r.head, i.head, 'stale receipt');
-    assert(lenses.includes(r.lens), 'unknown lens');
+    assert(lenses.includes(r.lens) || r.lens === policy.focused_file_reviews.name, 'unknown lens');
     assert(['initial', 'confirmation'].includes(r.phase), 'unknown phase');
     assert(['clean', 'findings', 'verdictless'].includes(r.verdict), 'unknown verdict');
     if (r.lens === 'standard') assert.equal(r.custom_instructions, undefined, 'custom standard prompt');
-    if (r.phase === 'initial') assert.equal(r.slot, r.lens);
+    if (r.phase === 'initial') {
+      const required = initialSlots.get(r.slot);
+      assert(required, 'unselected initial request');
+      assert.equal(r.lens, required.lens, 'wrong initial review role');
+      assert.deepEqual(r.focus, required.focus, 'wrong focal file');
+    }
     else {
       assert.equal(r.lens, 'standard');
       assert(initialComplete(), 'confirmation before initial barrier');
@@ -125,6 +136,34 @@ assert.equal(evaluate([...pending, {...confirmation(4), id:'suffix-4-recovery'}]
 const materialCut = [...initial, confirmation(1,'findings','entailed')];
 assert.deepEqual(evaluate(materialCut), {mutable:true, epoch_open:false, complete:false, may_dispatch:false});
 assert.throws(() => evaluate([...materialCut, confirmation(2)]), /confirmation after material finding/);
+
+const focusedFiles = ['src/a.js', 'src/b.js'].map(path => ({base_path:path, head_path:path}));
+const fileReceipts = focusedFiles.map((focus, n) => ({
+  id:`file-${n}`, slot:`focused-file-${n}`, phase:'initial', lens:'focused-file',
+  head:cleanInput.head, verdict:'clean', focus
+}));
+const evaluateFiles = receipts => observe({...cleanInput, focused_files:focusedFiles,
+  receipts, folded:receipts.map(r => r.id)});
+const focusedInitial = [...initial, ...fileReceipts];
+const focusedClean = [...focusedInitial, ...[1,2,3,4].map(n => confirmation(n))];
+assert.equal(evaluateFiles(focusedClean).complete, true);
+assert.equal(evaluateFiles([...focusedInitial, confirmation(1), confirmation(2)]).complete, false);
+for (const omitted of fileReceipts) {
+  const partial = focusedInitial.filter(r => r.id !== omitted.id);
+  assert.deepEqual(evaluateFiles(partial), {mutable:false, epoch_open:true, complete:false, may_dispatch:false});
+  assert.throws(() => evaluateFiles([...partial, confirmation(1)]), /confirmation before initial barrier/);
+}
+const invalidInitial = initial.map(r => r.lens === 'standard' ? fixture.receipt_catalog.r01 : r);
+assert.deepEqual(evaluateFiles(invalidInitial), {mutable:false, epoch_open:true, complete:false, may_dispatch:false});
+assert.deepEqual(evaluateFiles([...invalidInitial, ...fileReceipts]),
+  {mutable:true, epoch_open:false, complete:false, may_dispatch:false});
+assert.throws(() => evaluateFiles([...initial,
+  {...fileReceipts[0], focus:focusedFiles[1]}, fileReceipts[1]]), /wrong focal file/);
+assert.throws(() => evaluateFiles([...initial, {...fileReceipts[0], head:'h0'}, fileReceipts[1]]), /stale receipt/);
+const fileRecovery = [...initial, {...fileReceipts[0], verdict:'verdictless'}, fileReceipts[1]];
+assert.equal(evaluateFiles(fileRecovery).epoch_open, true);
+assert.equal(evaluateFiles([...fileRecovery, {...fileReceipts[0], id:'file-0-recovery'},
+  ...[1,2,3,4].map(n => confirmation(n))]).complete, true);
 
 // Executable finite discriminator: a guard for the observed enum case misses
 // a sum/product sibling. An independent inhabitant enumerator also prevents the

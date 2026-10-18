@@ -7,10 +7,11 @@ the first CAS request against an exact locally proved `reviewable` head. While
 open, freeze that subject and forbid successor mutation.
 
 A material current entailed finding invalidates the candidate and all review
-credit immediately. It does not request a patch. Complete the initial six-lens
-wave against the frozen head: parallel siblings are non-cancelling; serial mode
-continues remaining initial lenses for evidence only. Required request-local
-recovery is part of the barrier. Fold the complete cut before closing the epoch.
+credit immediately. It does not request a patch. Complete the initial inventory
+of six changeset-wide lenses and every selected file review against the frozen
+head: parallel siblings are non-cancelling; serial mode continues all remaining
+initial requests for evidence only. Required request-local recovery is part of
+the barrier. Fold the complete cut before closing the epoch.
 
 A material later standard-confirmation finding stops further confirmations.
 Fold it and already-live required owner observations; do not launch another
@@ -49,17 +50,25 @@ corpus-write authority still govern every handoff.
 
 ## Review and closure
 
-The initial inventory remains standard, soundness-skeptic, footgun-finder,
+The changeset-wide inventory remains standard, soundness-skeptic, footgun-finder,
 invariant-ace, complexity-mitigator, and fresh-eyes. Standard is Codex's native
 review with no custom Actuating instruction file or argument. Auxiliaries retain
 their checked-in lenses; none substitutes for standard.
+
+Before dispatch, select up to three of the largest eligible text-file changes under
+[Focused file reviews](references/review-contract.md#focused-file-reviews).
+Give each selected file one independent review in the same initial wave; do not
+multiply files by lenses or repeat file reviews during standard confirmations.
+File focus anchors the inquiry while allowing relevant cross-file evidence.
 
 Only a completely realized, locally proved candidate is `reviewable`. Require
 five consecutive distinct native/default standard cleans on one unchanged head,
 each admitted by [Review-credit admission](references/review-contract.md#review-credit-admission).
 The initial credited standard counts as one and the next four run serially. All
-five auxiliaries must be terminal, adjudicated, and credited for their requested
-obligations. An acknowledged limitation or raw `clean` receipt is not that decision.
+five auxiliaries and all selected file reviews must be terminal, adjudicated,
+and credited for their own requested obligations before later confirmations.
+File credit never advances the standard streak or completes an auxiliary.
+An acknowledged limitation or raw `clean` receipt is not that decision.
 Use the same dispositions for counts and user/PR completion statements. A material
 finding or head change resets all credit. Reviews falsify; they do not prove
 soundness by failing to find a bug.

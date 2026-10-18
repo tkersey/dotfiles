@@ -60,6 +60,7 @@ For full `complete`, require:
 required Ship/provider state matches the exact head
 no review epoch remains open; all terminal semantic outcomes are folded
 all five auxiliary obligations have terminal, adjudicated, credited outcomes
+all selected file obligations have terminal, adjudicated, credited outcomes
 five consecutive distinct native/default standard cleans credited on the unchanged head
 no unresolved current accepted liability
 no unauthorized semantic change, containment, narrowing, risk, or deferral

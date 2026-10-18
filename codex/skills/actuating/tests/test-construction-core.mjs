@@ -40,11 +40,11 @@ function check(src) {
     'Construction Working Set':'932740e6ab5d55a930290b4daf16aefbf9e3c228e41babe0ff457d06301cc3ef',
     'Completion':'752122b61b3a561ec1f1ecb820dd71a87ef364573e09072f1b63f8deb29fb70c'
   })) assert.equal(hash(section(skill,h)),digest,`changed acceptance/authority section: ${h}`);
-  const reviewKeys=['required_lenses','review_scheduling','candidate_lifecycle',
+  const reviewKeys=['required_lenses','focused_file_reviews','review_scheduling','candidate_lifecycle',
     'review_epoch','review_entry','evidence_acquisition','standard_convergence',
     'material_change','transport_recovery','attempt_quality'];
   assert.equal(hash(JSON.stringify(canonical(Object.fromEntries(reviewKeys.map(k=>[k,policy[k]]))))),
-    'cac08cd7f3eada2a97dc1a9629716de84803e4fecbcf57b1d2f3e2c2db94fe6d','changed review process');
+    'ee39c7a7c5c256ba15aa3e2e1d95f0cf350097dec4c16e252d75ad3f9e5d88d9','changed review process');
   const admissionStart=counter.indexOf('Before counterexample-driven selection,');
   const admissionEnd=counter.indexOf('\n## Compile the first loss of guarantee');
   assert(admissionStart>=0 && admissionEnd>admissionStart);
@@ -71,13 +71,13 @@ function check(src) {
   assert(normalized(section(skill,'Proof acceptance')).includes('A passing weakened suite cannot discharge an unchanged requirement'));
   assert(normalized(section(skill,'Proof acceptance')).includes('does not demand a finished causal account before authorized exploration'));
 
-  assert.equal(policy.contract_id,'actuating-review-contract-v23');
+  assert.equal(policy.contract_id,'actuating-review-contract-v24');
   assert.equal(policy.construction_selection.reasoning_sequence_required,false);
   assert.equal(policy.construction_selection.metanoetic_before_universalist_when_triggered,false);
   assert.equal(policy.universalist_compilation.nomination_result_required,false);
   assert.equal(policy.universalist_compilation.nomination_is_executed_proof,false);
   assert.equal(policy.efficacy.policy_unit_tests_prove_model_efficacy,false);
-  assert.equal(contract.skill.source_fingerprint,'actuating-construction-core-v23');
+  assert.equal(contract.skill.source_fingerprint,'actuating-construction-core-v24');
   const clauses=Object.fromEntries(contract.clauses.map(c=>[c.clause_id,c]));
   assert(clauses['ACT-IMPLEMENT-ENTRY-001'].success_signals.some(s=>s.includes('without a fixed reasoning sequence')));
   assert(clauses['ACT-METANOETIC-ADMISSIBILITY-001'].success_signals.some(s=>s.includes('no required order relative to Universalist')));

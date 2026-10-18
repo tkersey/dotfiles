@@ -17,18 +17,15 @@ const canonical = v => Array.isArray(v) ? v.map(canonical) : v && typeof v === '
   ? Object.fromEntries(Object.keys(v).sort().map(k => [k,canonical(v[k])])) : v;
 const policy = JSON.parse(text('references/review-contract.json'));
 // Protect the accepted review process, not just one count or flag.
-// Extend the policy at 1cf6baa6d14a only with the user-requested waiting_work
-// self-review instruction. All other protected policy entries remain unchanged;
-// intentional policy changes must explicitly update these expectations.
-const reviewKeys = ["required_lenses", "review_scheduling", "candidate_lifecycle", "review_epoch", "review_entry", "evidence_acquisition", "standard_convergence", "material_change", "transport_recovery", "attempt_quality"];
+const reviewKeys = ["required_lenses", "focused_file_reviews", "review_scheduling", "candidate_lifecycle", "review_epoch", "review_entry", "evidence_acquisition", "standard_convergence", "material_change", "transport_recovery", "attempt_quality"];
 assert.equal(sha256(JSON.stringify(canonical(Object.fromEntries(reviewKeys.map(k => [k,policy[k]]))))),
-  'cac08cd7f3eada2a97dc1a9629716de84803e4fecbcf57b1d2f3e2c2db94fe6d', 'review process changed');
+  'ee39c7a7c5c256ba15aa3e2e1d95f0cf350097dec4c16e252d75ad3f9e5d88d9', 'review process changed');
 const skill = text('SKILL.md');
 const protectedSections = {
   "Public routes": "8e2aec586fe33dfc69d573c15a9fdc425547bf8bdf8c4952e5f0fbdd8fb6c222",
-  "Review-epoch immutability and evidence acquisition": "1db48d44444f7f346820393de4305a42da9da7e3f4a2ea1acce4563a3867aed4",
+  "Review-epoch immutability and evidence acquisition": "34f13a2d7fa428349e6d14938921d8c44a03f7842af655569277f4cdc8bfc906",
   // #300 adds explicit evidence admission without changing review quotas.
-  "Review and closure": "a577a29c392abf9ca61f3bb06f958ba03dbf0688b1564b42ce99a48a324256bb",
+  "Review and closure": "4d441959d7e465f1e4a04b182ec4a34092b9ca23c45fe0600caafbe9f187f9fc",
   // Apply the same proof bar to initial construction; witnesses are conditional.
   "Realization and common proof obligations": "14bd3233e5cf89c6a805b16782db88a557a6f6d2325cac1bb5a8f10c5b6b87f7"
 };
