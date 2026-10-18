@@ -3,6 +3,11 @@
 git clone https://github.com/tkersey/dotfiles.git ~/.dotfiles && cd ~/.dotfiles && ./install
 ```
 
+### Ghostty
+
+See [Ghostty configuration](ghostty/README.md) for themes, agent-session shortcuts,
+the one-time tip-cask migration, and local validation.
+
 ### Codex configuration
 
 The two repository configs are installed as symlinks:

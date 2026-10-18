@@ -1,14 +1,21 @@
-# Theme: locked to Rosé Pine Moon (no theme toggling)
 theme = Rose Pine Moon
 
+auto-update = check
 auto-update-channel = tip
+
 font-size = 14
 window-padding-x = 6
 window-padding-y = 6
 window-padding-balance = true
-unfocused-split-opacity = 0.55
-keybind = shift+enter=text:\n
+unfocused-split-opacity = 0.8
+split-preserve-zoom = navigation
+scrollback-limit = 10000000
+
 keybind = cmd+shift+h=new_split:right
-keybind = cmd+shift+v=new_split:down
 keybind = cmd+shift+e=equalize_splits
-quick-terminal-animation-duration = 0.1
+
+notify-on-command-finish = unfocused
+notify-on-command-finish-action = no-bell,notify
+notify-on-command-finish-after = 30s
+
+command-palette-entry = title:"Copy scrollback path",action:write_scrollback_file:copy
