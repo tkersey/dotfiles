@@ -1,7 +1,7 @@
 # Measured performance optimization
 
 Use for software or agent-system optimization, including a specified optimization
-in `edit` mode. Tune's authority and protected-contract rules always apply.
+in `edit` mode. When Tune is selected, its authority and protected-contract rules apply.
 Before the first experiment, read only the relevant guide:
 [software-performance.md](references/software-performance.md) for code and
 [agent-performance.md](references/agent-performance.md) for agents. Mixed changes
