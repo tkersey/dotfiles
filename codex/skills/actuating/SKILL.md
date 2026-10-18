@@ -201,17 +201,18 @@ inventory; no separate critic, packet, or review stage.
 
 ## Comments in code
 
-Do not write explanatory comments in source code, tests, or examples, including
-inline/block comments, docstrings, and optional API documentation. Apply this rule
-to delegated implementation work.
+Do not add explanatory comments in source code, tests, or examples, including
+inline/block comments and docstrings. Apply this rule to delegated implementation
+work. Existing comments and documentation may be updated when needed to keep them
+accurate to changed APIs or behavior; preserve unrelated existing comments.
 
 Express intent through precise names, types, ownership, and operations; enforce
 invariants in the construction. The absence of comments is not correctness evidence.
 Do not add abstractions or documentation files solely to avoid a comment.
 
 Reserve comment syntax for mandatory legal notices, required machine directives,
-and documentation explicitly required by the accepted source or current user.
-Preserve unrelated existing comments. Check added comments against this rule
+and documentation explicitly required by the accepted source or current user, or
+needed to keep existing documentation accurate. Check additions against this rule
 during the existing diff inspection.
 
 ## Realization and common proof obligations
