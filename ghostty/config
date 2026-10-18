@@ -18,4 +18,4 @@ notify-on-command-finish = unfocused
 notify-on-command-finish-action = no-bell,notify
 notify-on-command-finish-after = 30s
 
-command-palette-entry = title:"Copy scrollback path",action:write_scrollback_file:copy
+command-palette-entry = title:"Copy scrollback path",action:"write_scrollback_file:action:copy,emit:plain"
