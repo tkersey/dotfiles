@@ -1,5 +1,5 @@
 {
-  "schema": "actuating-construction-cycle-scenarios/v5",
+  "schema": "actuating-construction-cycle-scenarios/v6",
   "note": "Test-only receipt scenarios; not live CAS evidence, a runtime gate, or model-efficacy measurements.",
   "defaults": {
     "route": "review-closeout",
@@ -19,6 +19,8 @@
       "slot": "standard",
       "phase": "initial",
       "lens": "standard",
+      "scope": "changeset",
+      "role": "standard",
       "head": "h1",
       "verdict": "findings",
       "findings": [
@@ -35,6 +37,8 @@
       "slot": "soundness-skeptic",
       "phase": "initial",
       "lens": "soundness-skeptic",
+      "scope": "changeset",
+      "role": "auxiliary",
       "head": "h1",
       "verdict": "clean",
       "credit_disposition": "credit"
@@ -44,6 +48,8 @@
       "slot": "footgun-finder",
       "phase": "initial",
       "lens": "footgun-finder",
+      "scope": "changeset",
+      "role": "auxiliary",
       "head": "h1",
       "verdict": "clean",
       "credit_disposition": "credit"
@@ -53,6 +59,8 @@
       "slot": "invariant-ace",
       "phase": "initial",
       "lens": "invariant-ace",
+      "scope": "changeset",
+      "role": "auxiliary",
       "head": "h1",
       "verdict": "clean",
       "credit_disposition": "credit"
@@ -62,6 +70,8 @@
       "slot": "complexity-mitigator",
       "phase": "initial",
       "lens": "complexity-mitigator",
+      "scope": "changeset",
+      "role": "auxiliary",
       "head": "h1",
       "verdict": "clean",
       "credit_disposition": "credit"
@@ -71,6 +81,8 @@
       "slot": "fresh-eyes",
       "phase": "initial",
       "lens": "fresh-eyes",
+      "scope": "changeset",
+      "role": "auxiliary",
       "head": "h1",
       "verdict": "clean",
       "credit_disposition": "credit"
@@ -80,6 +92,8 @@
       "slot": "standard",
       "phase": "initial",
       "lens": "standard",
+      "scope": "changeset",
+      "role": "standard",
       "head": "h1",
       "verdict": "clean",
       "credit_disposition": "credit"
@@ -89,6 +103,8 @@
       "slot": "confirmation-1",
       "phase": "confirmation",
       "lens": "standard",
+      "scope": "changeset",
+      "role": "standard",
       "head": "h1",
       "verdict": "clean",
       "credit_disposition": "credit"
@@ -98,6 +114,8 @@
       "slot": "confirmation-2",
       "phase": "confirmation",
       "lens": "standard",
+      "scope": "changeset",
+      "role": "standard",
       "head": "h1",
       "verdict": "clean",
       "credit_disposition": "credit"
@@ -107,6 +125,8 @@
       "slot": "confirmation-3",
       "phase": "confirmation",
       "lens": "standard",
+      "scope": "changeset",
+      "role": "standard",
       "head": "h1",
       "verdict": "clean",
       "credit_disposition": "credit"
@@ -116,6 +136,8 @@
       "slot": "confirmation-4",
       "phase": "confirmation",
       "lens": "standard",
+      "scope": "changeset",
+      "role": "standard",
       "head": "h1",
       "verdict": "clean",
       "credit_disposition": "credit"
@@ -125,6 +147,8 @@
       "slot": "confirmation-3",
       "phase": "confirmation",
       "lens": "standard",
+      "scope": "changeset",
+      "role": "standard",
       "head": "h1",
       "verdict": "findings",
       "findings": [
@@ -141,6 +165,8 @@
       "slot": "fresh-eyes",
       "phase": "initial",
       "lens": "fresh-eyes",
+      "scope": "changeset",
+      "role": "auxiliary",
       "head": "h1",
       "verdict": "verdictless",
       "credit_disposition": "hold"
@@ -150,6 +176,8 @@
       "slot": "fresh-eyes",
       "phase": "initial",
       "lens": "fresh-eyes",
+      "scope": "changeset",
+      "role": "auxiliary",
       "head": "h1",
       "verdict": "clean",
       "credit_disposition": "credit"
@@ -159,6 +187,8 @@
       "slot": "fresh-eyes",
       "phase": "initial",
       "lens": "fresh-eyes",
+      "scope": "changeset",
+      "role": "auxiliary",
       "head": "h1",
       "verdict": "verdictless",
       "credit_disposition": "hold"
@@ -168,6 +198,8 @@
       "slot": "confirmation-1",
       "phase": "confirmation",
       "lens": "standard",
+      "scope": "changeset",
+      "role": "standard",
       "head": "h0",
       "verdict": "clean",
       "credit_disposition": "credit"
@@ -177,6 +209,8 @@
       "slot": "standard",
       "phase": "initial",
       "lens": "standard",
+      "scope": "changeset",
+      "role": "standard",
       "head": "h1",
       "verdict": "clean",
       "custom_instructions": "review only invariants",

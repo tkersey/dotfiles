@@ -1,6 +1,6 @@
 {
-  "schema": "actuating-review-contract/v18",
-  "contract_id": "actuating-review-contract-v24",
+  "schema": "actuating-review-contract/v19",
+  "contract_id": "actuating-review-contract-v25",
   "required_lenses": [
     {
       "name": "standard",
@@ -35,8 +35,8 @@
     }
   ],
   "focused_file_reviews": {
-    "name": "focused-file",
-    "role": "focused-file",
+    "scope": "file",
+    "lenses": "required_lenses",
     "instructions_ref": "codex/skills/actuating/references/focused-file-review.md",
     "selection_ref": "codex/skills/actuating/references/review-contract.md#focused-file-reviews",
     "maximum_files": 3,
@@ -49,8 +49,15 @@
     "investigation": "whole-focal-file-and-causal-consequences",
     "continue_after_first_finding": true,
     "phase": "initial-only",
-    "file_by_lens_matrix": false,
-    "credit": "exact-selected-file-obligation-only",
+    "file_by_lens_matrix": true,
+    "standard_review": {
+      "instruction_source": "file-scope-only",
+      "custom_instructions": true,
+      "native_default": false,
+      "counts_toward_standard_convergence": false,
+      "best_judgment_unconstrained_by_auxiliary_taxonomy": true
+    },
+    "credit": "exact-selected-file-and-lens-obligation-only",
     "successor_reselects_from_full_bound_base": true
   },
   "review_scheduling": {
@@ -67,6 +74,7 @@
       "fresh-eyes"
     ],
     "standard_review": {
+      "scope": "changeset",
       "owner": "codex",
       "source": "native-default",
       "custom_instructions_argument_forbidden": true,
@@ -87,7 +95,7 @@
         "post_invalidation_requests_are_evidence_only": true
       }
     },
-    "initial_inventory": "required-lenses-then-ranked-focused-files",
+    "initial_inventory": "required-lenses-for-changeset-then-each-ranked-file",
     "all_selected_files_required": true
   },
   "counterexample_corpus": {
@@ -226,6 +234,7 @@
     "historical_absence_requires_complete_corpus_horizon": true
   },
   "standard_convergence": {
+    "scope": "changeset",
     "required_consecutive_clean_attempts": 5,
     "initial_standard_counts": true,
     "later_attempts_serial": true,
@@ -279,9 +288,9 @@
       "unresolved"
     ],
     "consumers": [
-      "standard count",
-      "auxiliary completion",
-      "focused file completion",
+      "changeset standard count",
+      "changeset auxiliary completion",
+      "file/lens completion",
       "user and PR completion statements"
     ],
     "hold_effect": "no advance; preserve unrelated valid credit; pause dependent confirmation or completion",

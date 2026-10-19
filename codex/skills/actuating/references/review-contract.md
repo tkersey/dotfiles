@@ -7,10 +7,11 @@ and construction consequences from exact owner facts.
 ## Binding and owner authority
 
 Read the exact contract bytes and each custom instruction source without trimming
-or normalization. Standard invokes Codex's native/default review with no custom
-instructions argument or skill-authored prompt. Bind its instruction identity to
+or normalization. Changeset-wide standard invokes Codex's native/default review
+with no custom instructions argument or skill-authored prompt. Bind its instruction identity to
 `codex-default-review/v1`, which records deliberate absence of customization; it
-does not reproduce or constrain Codex's internal prompt.
+does not reproduce or constrain Codex's internal prompt. File-scoped standard uses
+the focus instructions below and has no native/default convergence credit.
 
 Use the existing canonical ephemeral context:
 
@@ -33,6 +34,10 @@ review_context:
   focused_files: []
 ```
 
+Each request has `scope: changeset | file` and `focus: null | {base_path, head_path}`.
+Changeset scope requires null focus; file scope requires an exact entry from the
+frozen selection. Scope and lens are independent dimensions of the obligation.
+
 ```text
 campaign_id = sha256(
   "actuating-review-campaign/v3" || NUL ||
@@ -41,14 +46,17 @@ campaign_id = sha256(
   review_context_digest
 )
 
+scope_digest = sha256(canonical JSON of {scope, focus})
+
 instruction_digest =
-  standard ? sha256("codex-default-review/v1")
-           : sha256(exact delivered custom instruction bytes)
+  (scope == changeset and lens_name == standard)
+    ? sha256("codex-default-review/v1")
+    : sha256(exact delivered custom instruction bytes)
 
 request_fingerprint = sha256(
-  "actuating-review-request/v3" || NUL ||
+  "actuating-review-request/v4" || NUL ||
   campaign_id || NUL || request_id || NUL || lens_name || NUL ||
-  role || NUL || instruction_digest
+  role || NUL || scope_digest || NUL || instruction_digest
 )
 ```
 
@@ -59,7 +67,8 @@ transport, and the required backend capability. These checks authenticate the
 result; they do not award review credit. Process exit, prose, and thread handles
 are not verdicts. Hashes do not prove semantic equivalence or evidence delivery.
 Keep required scope and usable prior evidence in existing accessible repository/task
-documentation or a supported context channel, without customizing standard review.
+documentation or a supported context channel, without customizing changeset-wide
+standard review.
 
 ## Focused file reviews
 
@@ -89,32 +98,54 @@ Working Set. Churn allocates attention; it neither proves risk nor waives scope.
 
 Freeze the ordered `focused_files` list in `review_context` before dispatch.
 Each entry has `base_path` and `head_path`; use null for an absent side.
-For each file, use one independent CAS request with `lens_name` and `role` both
-`focused-file`, a distinct request ID, and the same complete repository/base/head
-target as every changeset review. Deliver the exact
-[focused-file instructions](focused-file-review.md), followed by a JSON assignment
-containing `repository`, `base_sha`, `head_sha`, and `focus: {base_path, head_path}`.
-Hash all delivered bytes, including that assignment. A digest alone does not
-deliver the accepted requirements or source evidence. Do not invent a native
-file-target selector, customize standard, invoke Elenctic, or run lenses per file.
+For each file, dispatch all six `required_lenses` as independent CAS requests in
+the same initial wave. Retain each lens's `lens_name` and `role`, give every
+file/lens pair a distinct request ID, and use the same complete repository/base/head
+target as every changeset review. Scope focuses attention without changing the Git
+subject or restricting access to causal evidence in other files.
 
-A file reviewer completes one integrated inquiry into the whole focal file and
-its causal consequences, continuing beyond the first finding. Its single result
-supplies supported distinct findings and material gaps to the same cumulative
-Review Fold as the changeset reviews. It does not select or implement repairs.
-Credit covers only its exact selected file obligation on that frozen subject;
-it cannot cover another file, an auxiliary, or a native standard confirmation.
+File standard is a general best-judgment review with file focus and no auxiliary
+rubric. CAS has no native file-target selector: this request uses custom focus
+instructions and cannot be represented as an uncustomized native/default standard.
+The native changeset-wide standard remains unchanged.
+
+Compose each file request from the exact
+[file-focus instructions](focused-file-review.md), then, for an auxiliary, its
+exact unchanged checked-in lens bytes, then a JSON assignment containing
+`repository`, `base_sha`, `head_sha`, `lens_name`, `scope: "file"`, and
+`focus: {base_path, head_path}`. Separate segments with two newlines; preserve
+source bytes. File standard has no auxiliary segment. Hash all delivered bytes,
+including separators and assignment. A digest alone does not deliver the accepted
+requirements or source evidence. Whole-changeset auxiliaries retain their existing
+exact instruction delivery.
+
+Each file reviewer applies its assigned lens to the whole focal file and its
+causal consequences, continuing beyond the first finding. Collect every supported
+distinct finding and material gap in the same cumulative Review Fold as the
+changeset reviews. Reviewers investigate independently; sibling conclusions from
+this initial wave do not seed another request. The parent retains their findings
+for the cumulative basis before choosing or implementing a successor.
+
+Credit covers only the exact file/lens obligation on that frozen subject. A result
+cannot discharge another lens, another file, a changeset auxiliary, or the native
+standard streak. One combined file inquiry cannot discharge six independent reviews.
 Changing the head or frozen selection requires a newly bound initial inventory;
 recompute from the full bound base to the proved successor, not just the last fix.
 No file credit survives a head change merely because its own bytes are unchanged.
 
 ## Review-credit admission
 
-Before advancing a standard count, completing an auxiliary or file obligation, or
+Before advancing a changeset standard count, completing an auxiliary or file/lens obligation, or
 publishing review completion, Actuating adjudicates the full result, including its explanation,
 against the requested scope and current evidence. Preserve CAS's original receipt.
 Adjudicate findings through Review Fold and retain existing unusable-result and
 invalidation paths; an evidence limitation is not itself a fabricated code finding.
+
+Mismatched instruction or workflow bindings remain unusable under the existing CAS
+result paths. When bindings are authentic but the actual inquiry misses its assigned
+file or lens, hold for inadequate evidence. Complete the missing inquiry and reassess
+it under observation/reasoning recovery below; this is not a verdictless terminal
+and neither consumes nor extends the transport-recovery allowance.
 
 ```text
 authentic current result + no unresolved findings + adequate evidence for the
@@ -162,12 +193,12 @@ transport recovery and does not consume or extend its allowance.
 A held result neither advances nor by itself resets existing credit. Continue
 independent authorized work; a held standard pauses serial confirmations until
 credited or invalidated, rather than being skipped to fill the quota. All required
-auxiliaries and selected files need credit, not merely terminal receipts and an
+changeset auxiliaries and every selected file/lens pair need credit, not merely terminal receipts and an
 acknowledged caveat. Findings, changed inputs, and newly discovered missing
 pre-review proof retain their existing
 invalidation rules. Do not downgrade such missing proof to a review-only limitation.
 
-Derive standard counts, auxiliary/file completion, and user/PR readiness statements
+Derive changeset standard counts, scope/lens completion, and user/PR readiness statements
 from these same owner dispositions, never directly from receipt labels. Preserve
 material limitations and the accepted scope even after credit. An unresolved
 required obligation prevents an unqualified complete/all-clean claim; correcting
@@ -198,8 +229,9 @@ of the frozen subject. This supplies evidence without adding a required lens or
 clean credit, delaying required dispatch/recovery/result collection, or extending
 the epoch to finish a pass.
 
-The required initial order is the six changeset-wide lenses, followed by the
-frozen selected files in rank order:
+The initial inventory is the product of the changeset plus the frozen selected
+files with all six required lenses. Visit changeset scope first, then each selected
+file in rank order; within every scope use:
 
 ```text
 standard
@@ -208,8 +240,10 @@ footgun-finder
 invariant-ace
 complexity-mitigator
 fresh-eyes
-focused-file (one request per selected file)
 ```
+
+Each cell is a separate independent request. With three selected files this means
+six changeset reviews plus eighteen file reviews, all in one frozen initial wave.
 
 `parallel-reviews` dispatches the entire initial inventory concurrently within
 available capacity and never cancels siblings. Keep queued requests required;
@@ -225,13 +259,16 @@ terminal blocks. Do not interpret an observation timeout as terminal failure.
 
 Complete and fold the entire initial inventory before any later confirmation;
 proceed only while the candidate remains valid and all initial obligations have
-credit. The initial credited standard counts as one. Four later standard confirmations
+credit. The initial credited changeset-wide standard counts as one. Four later standard confirmations
 run serially, producing five consecutive distinct native/default standard cleans
 admitted under Review-credit admission on one unchanged head. A material finding stops confirmation. A material head change
 resets all review credit; rerank files for the proved successor and start a new
-initial wave under the selected scheduling mode. File reviews add no confirmation
-streak. A fully clean epoch has six to nine initial requests and four later
-standards, excluding required recovery; request count is not a token or time bound.
+initial wave under the selected scheduling mode. Confirmations have changeset scope
+only. File-standard outcomes neither advance nor break the native standard suffix;
+a material finding from any scope still invalidates all credit. For `N` selected
+files, a fully clean epoch has `6 * (1 + N)` initial requests and four later native
+standards: at most 24 initial and 28 total, excluding required recovery. File lenses
+do not acquire their own confirmation streaks; request count is not a token or time bound.
 
 ## Live owner-source frontier
 
@@ -354,7 +391,8 @@ successor realization; intermediate commits receive no closure credit.
 
 ## Lens ownership and evaluation
 
-Standard remains Codex's default best-judgment review. Each auxiliary has a distinct
+Changeset standard remains Codex's default best-judgment review; file standard
+uses that general investigative remit within its custom file scope. Each auxiliary has a distinct
 investigative starting point, defined by its exact checked-in instruction file:
 
 | Lens | Starting point |

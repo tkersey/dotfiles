@@ -9,7 +9,7 @@ const read = path => JSON.parse(readFileSync(`${root}/${path}`, 'utf8'));
 const policy = read('references/review-contract.json');
 const fixture = read('tests/fixtures/construction-cycle-scenarios.json');
 const lenses = policy.required_lenses.map(x => x.name);
-assert.equal(fixture.schema, 'actuating-construction-cycle-scenarios/v5');
+assert.equal(fixture.schema, 'actuating-construction-cycle-scenarios/v6');
 assert.equal(new Set(fixture.scenarios.map(x => x.id)).size, fixture.scenarios.length);
 
 // Test-only reference model of receipt barriers. It neither runs CAS nor grants
@@ -20,9 +20,10 @@ function observe(i) {
   assert(Array.isArray(i.focused_files), 'missing frozen file selection');
   assert(i.focused_files.length <= policy.focused_file_reviews.maximum_files, 'file review budget exceeded');
   assert.equal(new Set(i.focused_files.map(f => JSON.stringify(f))).size, i.focused_files.length, 'duplicate file selection');
-  const initialSlots = new Map(lenses.map(lens => [lens, {lens}]));
-  i.focused_files.forEach((focus, n) => initialSlots.set(`focused-file-${n}`,
-    {lens:policy.focused_file_reviews.name, focus}));
+  const initialSlots = new Map(policy.required_lenses.map(({name:lens, role}) =>
+    [lens, {scope:'changeset', lens, role, focus:null}]));
+  i.focused_files.forEach((focus, n) => policy.required_lenses.forEach(({name:lens, role}) =>
+    initialSlots.set(`focused-file-${n}-${lens}`, {scope:'file', lens, role, focus})));
   const semantic = r => ['clean', 'findings'].includes(r.verdict);
   const credited = r => semantic(r) && r.credit_disposition === 'credit';
   const material = r => r.findings?.some(f => f.authority === 'entailed' && f.applicability === 'current');
@@ -30,18 +31,27 @@ function observe(i) {
   for (const r of i.receipts) {
     assert(!seen.has(r.id), 'duplicate receipt'); seen.add(r.id);
     assert.equal(r.head, i.head, 'stale receipt');
-    assert(lenses.includes(r.lens) || r.lens === policy.focused_file_reviews.name, 'unknown lens');
+    assert(lenses.includes(r.lens), 'unknown lens');
+    assert(['changeset', 'file'].includes(r.scope), 'unknown scope');
     assert(['initial', 'confirmation'].includes(r.phase), 'unknown phase');
     assert(['clean', 'findings', 'verdictless'].includes(r.verdict), 'unknown verdict');
-    if (r.lens === 'standard') assert.equal(r.custom_instructions, undefined, 'custom standard prompt');
+    if (r.scope === 'changeset' && r.lens === 'standard')
+      assert.equal(r.custom_instructions, undefined, 'custom standard prompt');
+    if (r.scope === 'file')
+      assert.equal(typeof r.custom_instructions, 'string', 'missing file scope instructions');
     if (r.phase === 'initial') {
       const required = initialSlots.get(r.slot);
       assert(required, 'unselected initial request');
-      assert.equal(r.lens, required.lens, 'wrong initial review role');
-      assert.deepEqual(r.focus, required.focus, 'wrong focal file');
+      assert.equal(r.scope, required.scope, 'wrong initial review scope');
+      assert.equal(r.lens, required.lens, 'wrong initial review lens');
+      assert.equal(r.role, required.role, 'wrong initial review role');
+      assert.deepEqual(r.focus ?? null, required.focus, 'wrong focal file');
     }
     else {
+      assert.equal(r.scope, 'changeset', 'file confirmation forbidden');
       assert.equal(r.lens, 'standard');
+      assert.equal(r.role, 'standard');
+      assert.equal(r.focus ?? null, null, 'focused confirmation forbidden');
       assert(initialComplete(), 'confirmation before initial barrier');
       assert(![...slots.values()].flat().some(material), 'confirmation after material finding');
       assert([...slots.values()].every(xs => xs.at(-1).slot === r.slot || credited(xs.at(-1))),
@@ -51,6 +61,7 @@ function observe(i) {
     if (history.length) {
       assert.equal(history.at(-1).verdict, 'verdictless', 'duplicate semantic outcome');
       assert(history.length <= policy.transport_recovery.maximum_fresh_recovery_attempts, 'recovery exhausted');
+      assert.equal(r.custom_instructions, history.at(-1).custom_instructions, 'changed recovery instructions');
     }
     history.push(r); slots.set(r.slot, history);
     if (history.length > policy.transport_recovery.maximum_fresh_recovery_attempts && !semantic(r))
@@ -66,7 +77,7 @@ function observe(i) {
   // Verdictless transport attempts are not semantic outcomes; recovery stays
   // in the existing barrier. Count the ordered semantic suffix, not totals.
   let cleanStandards = 0;
-  for (const r of i.receipts) if (r.lens === 'standard' && semantic(r))
+  for (const r of i.receipts) if (r.scope === 'changeset' && r.lens === 'standard' && semantic(r))
     cleanStandards = r.verdict === 'clean' ? cleanStandards + Number(credited(r)) : 0;
   if (invalidated) cleanStandards = 0;
   const converged = barrier && last.every(credited) && !invalidated && folded && sourcesFolded &&
@@ -112,7 +123,7 @@ assert.equal(observe({...recovered, folded:[...recovered.folded, fixture.receipt
 // mutation authority. These traces previously completed on five TOTAL cleans.
 const initial = cleanInput.receipts.filter(r => r.phase === 'initial');
 const confirmation = (n, verdict = 'clean', authority = 'strengthening') => ({
-  id:`suffix-${n}`, slot:`suffix-${n}`, phase:'confirmation', lens:'standard',
+  id:`suffix-${n}`, slot:`suffix-${n}`, phase:'confirmation', scope:'changeset', lens:'standard', role:'standard',
   head:cleanInput.head, verdict, credit_disposition:verdict === 'verdictless' ? 'hold' : 'credit',
   ...(verdict === 'findings' ? {findings:[{authority, applicability:'current'}]} : {})
 });
@@ -140,33 +151,76 @@ const materialCut = [...initial, confirmation(1,'findings','entailed')];
 assert.deepEqual(evaluate(materialCut), {mutable:true, epoch_open:false, complete:false, may_dispatch:false});
 assert.throws(() => evaluate([...materialCut, confirmation(2)]), /confirmation after material finding/);
 
-const focusedFiles = ['src/a.js', 'src/b.js', 'src/c.js'].map(path => ({base_path:path, head_path:path}));
-const fileReceipts = focusedFiles.map((focus, n) => ({
-  id:`file-${n}`, slot:`focused-file-${n}`, phase:'initial', lens:'focused-file',
-  head:cleanInput.head, verdict:'clean', credit_disposition:'credit', focus
-}));
+const focusedFiles = [
+  {base_path:'src/old-a.js', head_path:'src/a.js'},
+  {base_path:null, head_path:'src/b.js'},
+  {base_path:'src/c.js', head_path:null}
+];
+const fileReceipts = focusedFiles.flatMap((focus, n) => policy.required_lenses.map(({name:lens, role}) => ({
+  id:`file-${n}-${lens}`, slot:`focused-file-${n}-${lens}`, phase:'initial', scope:'file', lens, role,
+  head:cleanInput.head, verdict:'clean', credit_disposition:'credit', focus, custom_instructions:JSON.stringify({focus, lens})
+})));
 const evaluateFiles = receipts => observe({...cleanInput, focused_files:focusedFiles,
   receipts, folded:receipts.map(r => r.id)});
 const focusedInitial = [...initial, ...fileReceipts];
 const focusedClean = [...focusedInitial, ...[1,2,3,4].map(n => confirmation(n))];
+assert.equal(focusedInitial.length, 24);
+assert.equal(focusedClean.length, 28);
 assert.equal(evaluateFiles(focusedClean).complete, true);
-assert.equal(evaluateFiles([...focusedInitial, confirmation(1), confirmation(2)]).complete, false);
+for (let count = 0; count < 4; count++)
+  assert.equal(evaluateFiles([...focusedInitial, ...Array.from({length:count}, (_, n) => confirmation(n+1))]).complete,
+    false, `file standards cannot replace whole-changeset confirmation ${count+1}`);
+const invalidInitial = initial.map(r => r.lens === 'standard' ? fixture.receipt_catalog.r01 : r);
 for (const omitted of fileReceipts) {
   const partial = focusedInitial.filter(r => r.id !== omitted.id);
   assert.deepEqual(evaluateFiles(partial), {mutable:false, epoch_open:true, complete:false, may_dispatch:false});
   assert.throws(() => evaluateFiles([...partial, confirmation(1)]), /confirmation before initial barrier/);
+  assert.deepEqual(evaluateFiles([...invalidInitial, ...fileReceipts.filter(r => r.id !== omitted.id)]),
+    {mutable:false, epoch_open:true, complete:false, may_dispatch:false});
+  assert.equal(observe({...cleanInput, focused_files:focusedFiles, receipts:focusedClean,
+    folded:focusedClean.filter(r => r.id !== omitted.id).map(r => r.id)}).complete, false);
 }
-const invalidInitial = initial.map(r => r.lens === 'standard' ? fixture.receipt_catalog.r01 : r);
 assert.deepEqual(evaluateFiles(invalidInitial), {mutable:false, epoch_open:true, complete:false, may_dispatch:false});
 assert.deepEqual(evaluateFiles([...invalidInitial, ...fileReceipts]),
   {mutable:true, epoch_open:false, complete:false, may_dispatch:false});
-assert.throws(() => evaluateFiles([...initial,
-  {...fileReceipts[0], focus:focusedFiles[1]}, ...fileReceipts.slice(1)]), /wrong focal file/);
-assert.throws(() => evaluateFiles([...initial, {...fileReceipts[0], head:'h0'}, ...fileReceipts.slice(1)]), /stale receipt/);
-const fileRecovery = [...initial, {...fileReceipts[0], verdict:'verdictless'}, ...fileReceipts.slice(1)];
+for (const authority of ['strengthening', 'preference']) {
+  const nonmaterial = focusedClean.map(r => r.scope === 'file' && r.lens === 'standard'
+    ? {...r, verdict:'findings', findings:[{authority, applicability:'current'}]} : r);
+  assert.equal(evaluateFiles(nonmaterial).complete, true, `${authority}: file standard does not reset native suffix`);
+}
+const fileMaterial = focusedInitial.map(r => r.id === fileReceipts[0].id
+  ? {...r, verdict:'findings', findings:[{authority:'entailed', applicability:'current'}]} : r);
+assert.deepEqual(evaluateFiles(fileMaterial), {mutable:true, epoch_open:false, complete:false, may_dispatch:false});
+assert.throws(() => evaluateFiles([...fileMaterial, confirmation(1)]), /confirmation after material finding/);
+const fileRecovery = focusedInitial.map(r => r.id === fileReceipts[0].id ? {...r, verdict:'verdictless'} : r);
 assert.equal(evaluateFiles(fileRecovery).epoch_open, true);
-assert.equal(evaluateFiles([...fileRecovery, {...fileReceipts[0], id:'file-0-recovery'},
+const recoveredFile = {...fileReceipts[0], id:'file-0-standard-recovery'};
+assert.equal(evaluateFiles([...fileRecovery, recoveredFile,
   ...[1,2,3,4].map(n => confirmation(n))]).complete, true);
+assert.throws(() => evaluateFiles([...fileRecovery, {...recoveredFile, verdict:'verdictless'}]), /recovery exhausted/);
+assert.throws(() => evaluateFiles([...fileRecovery, {...recoveredFile, custom_instructions:'different scope prompt'}]),
+  /changed recovery instructions/);
+const invalidRecovery = [...invalidInitial, ...fileRecovery.filter(r => r.scope === 'file')];
+assert.equal(evaluateFiles(invalidRecovery).epoch_open, true);
+assert.deepEqual(evaluateFiles([...invalidRecovery, recoveredFile]),
+  {mutable:true, epoch_open:false, complete:false, may_dispatch:false});
+for (const [delta, error] of [
+  [{focus:focusedFiles[1]}, /wrong focal file/],
+  [{focus:{...focusedFiles[0], base_path:'src/unrelated.js'}}, /wrong focal file/],
+  [{lens:'footgun-finder', role:'auxiliary'}, /wrong initial review lens/],
+  [{role:'auxiliary'}, /wrong initial review role/],
+  [{scope:'changeset', custom_instructions:undefined, focus:null}, /wrong initial review scope/],
+  [{scope:undefined}, /unknown scope/],
+  [{head:'h0'}, /stale receipt/],
+  [{custom_instructions:undefined}, /missing file scope instructions/]
+]) {
+  assert.throws(() => evaluateFiles([...initial, {...fileReceipts[0], ...delta}, ...fileReceipts.slice(1)]), error);
+  assert.throws(() => evaluateFiles([...fileRecovery, {...recoveredFile, ...delta}]), error);
+}
+assert.throws(() => evaluateFiles([...focusedInitial,
+  {...fileReceipts[0], id:'file-confirmation', slot:'file-confirmation', phase:'confirmation'}]), /file confirmation forbidden/);
+assert.throws(() => observe({...cleanInput, focused_files:[...focusedFiles,
+  {base_path:'src/d.js', head_path:'src/d.js'}]}), /file review budget exceeded/);
 
 for (const receipt of focusedInitial) for (const credit_disposition of ['hold', undefined]) {
   const held = focusedInitial.map(r => r.id === receipt.id ? {...r, credit_disposition} : r);

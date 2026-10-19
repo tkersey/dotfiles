@@ -19,13 +19,12 @@ const policy = JSON.parse(text('references/review-contract.json'));
 // Protect the accepted review process, not just one count or flag.
 const reviewKeys = ["required_lenses", "focused_file_reviews", "review_scheduling", "candidate_lifecycle", "review_epoch", "review_entry", "evidence_acquisition", "standard_convergence", "material_change", "transport_recovery", "attempt_quality"];
 assert.equal(sha256(JSON.stringify(canonical(Object.fromEntries(reviewKeys.map(k => [k,policy[k]]))))),
-  'ee39c7a7c5c256ba15aa3e2e1d95f0cf350097dec4c16e252d75ad3f9e5d88d9', 'review process changed');
+  '1416aed22438bb64afc3aa3e6caa1a570cf3998dfba284b96c1c1accc203c509', 'review process changed');
 const skill = text('SKILL.md');
 const protectedSections = {
   "Public routes": "8e2aec586fe33dfc69d573c15a9fdc425547bf8bdf8c4952e5f0fbdd8fb6c222",
-  "Review-epoch immutability and evidence acquisition": "34f13a2d7fa428349e6d14938921d8c44a03f7842af655569277f4cdc8bfc906",
-  // #300 adds explicit evidence admission without changing review quotas.
-  "Review and closure": "4d441959d7e465f1e4a04b182ec4a34092b9ca23c45fe0600caafbe9f187f9fc",
+  "Review-epoch immutability and evidence acquisition": "fea7a409fda38f8c71c95e420839469b0e4fafff77a7a6141a0c090a48859137",
+  "Review and closure": "f506911bea5b95b97be141a59b86eb714b7209b2d1288ce585b2b07d19f4992b",
   // Apply the same proof bar to initial construction; witnesses are conditional.
   "Realization and common proof obligations": "14bd3233e5cf89c6a805b16782db88a557a6f6d2325cac1bb5a8f10c5b6b87f7"
 };

@@ -44,7 +44,7 @@ function check(src) {
     'review_epoch','review_entry','evidence_acquisition','standard_convergence',
     'material_change','transport_recovery','attempt_quality'];
   assert.equal(hash(JSON.stringify(canonical(Object.fromEntries(reviewKeys.map(k=>[k,policy[k]]))))),
-    'ee39c7a7c5c256ba15aa3e2e1d95f0cf350097dec4c16e252d75ad3f9e5d88d9','changed review process');
+    '1416aed22438bb64afc3aa3e6caa1a570cf3998dfba284b96c1c1accc203c509','changed review process');
   const admissionStart=counter.indexOf('Before counterexample-driven selection,');
   const admissionEnd=counter.indexOf('\n## Compile the first loss of guarantee');
   assert(admissionStart>=0 && admissionEnd>admissionStart);
@@ -71,13 +71,13 @@ function check(src) {
   assert(normalized(section(skill,'Proof acceptance')).includes('A passing weakened suite cannot discharge an unchanged requirement'));
   assert(normalized(section(skill,'Proof acceptance')).includes('does not demand a finished causal account before authorized exploration'));
 
-  assert.equal(policy.contract_id,'actuating-review-contract-v24');
+  assert.equal(policy.contract_id,'actuating-review-contract-v25');
   assert.equal(policy.construction_selection.reasoning_sequence_required,false);
   assert.equal(policy.construction_selection.metanoetic_before_universalist_when_triggered,false);
   assert.equal(policy.universalist_compilation.nomination_result_required,false);
   assert.equal(policy.universalist_compilation.nomination_is_executed_proof,false);
   assert.equal(policy.efficacy.policy_unit_tests_prove_model_efficacy,false);
-  assert.equal(contract.skill.source_fingerprint,'actuating-construction-core-v24');
+  assert.equal(contract.skill.source_fingerprint,'actuating-construction-core-v25');
   const clauses=Object.fromEntries(contract.clauses.map(c=>[c.clause_id,c]));
   assert(clauses['ACT-IMPLEMENT-ENTRY-001'].success_signals.some(s=>s.includes('without a fixed reasoning sequence')));
   assert(clauses['ACT-METANOETIC-ADMISSIBILITY-001'].success_signals.some(s=>s.includes('no required order relative to Universalist')));

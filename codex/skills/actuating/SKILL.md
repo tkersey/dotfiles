@@ -79,7 +79,7 @@ reasoning sequence. Do not load every workflow or reference at entry.
 | Using supporting construction skills or a selected architecture technique | [architecture.md](architecture.md) for composition and effect boundaries; its techniques do not add a construction stage. |
 | Designing or reducing materially costly verification, diagnosing slow qualification, or selecting a broad retry while verification cost impedes the Goal | [verification.md](verification.md) for evidence-preserving construction and the next useful execution; ordinary cheap validation needs no additional workflow. |
 | An elimination claim meets a current witness, a broader Goal obligation remains unresolved after a narrow repair, or efficacy is being assessed | [recurrence.md](recurrence.md), before retaining the claim or selecting a successor. |
-| `review-closeout`, or bare Actuating reaching review | [review-closeout.md](review-closeout.md) and its required review contract, before the first CAS request; combine whole-changeset reviews with bounded individual reviews of the most changed files under the same frozen-subject and convergence rules. |
+| `review-closeout`, or bare Actuating reaching review | [review-closeout.md](review-closeout.md) and its required review contract, before the first CAS request; apply all six initial lenses to the whole changeset and individually to up to three of the most changed files under the same frozen-subject and convergence rules. |
 | Bare Actuating reaching publication | `$ship`; publication does not replace subsequent review-closeout. |
 
 An open review epoch forbids successor mutation, including experiments. Read its

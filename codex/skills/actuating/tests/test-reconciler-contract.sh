@@ -24,13 +24,21 @@ const json = p => JSON.parse(text(p));
 const c = json('references/review-contract.json');
 const d = json('references/decision-contract.json').skill_decision_contract;
 const names = ['standard','soundness-skeptic','footgun-finder','invariant-ace','complexity-mitigator','fresh-eyes'];
-assert.equal(c.schema, 'actuating-review-contract/v18');
-assert.equal(c.contract_id, 'actuating-review-contract-v24');
+assert.equal(c.schema, 'actuating-review-contract/v19');
+assert.equal(c.contract_id, 'actuating-review-contract-v25');
 assert.equal(d.contract_version, 'SKDC-v1');
-assert.equal(d.skill.source_fingerprint, 'actuating-construction-core-v24');
+assert.equal(d.skill.source_fingerprint, 'actuating-construction-core-v25');
 assert.deepEqual(c.required_lenses.map(l => l.name), names);
 assert.deepEqual(c.required_lenses[0], {name:'standard',role:'standard',instruction_source:'codex-default',custom_instructions:false});
 assert.deepEqual(c.review_scheduling.initial_lens_order, names);
+assert.equal(c.focused_file_reviews.scope, 'file');
+assert.equal(c.focused_file_reviews.lenses, 'required_lenses');
+assert.equal(c.focused_file_reviews.file_by_lens_matrix, true);
+assert.equal(c.focused_file_reviews.maximum_files, 3);
+assert.equal(c.focused_file_reviews.standard_review.custom_instructions, true);
+assert.equal(c.focused_file_reviews.standard_review.native_default, false);
+assert.equal(c.focused_file_reviews.standard_review.counts_toward_standard_convergence, false);
+assert.equal(c.review_scheduling.standard_review.scope, 'changeset');
 assert.equal(c.review_scheduling.default_mode, 'parallel-reviews');
 assert.deepEqual(Object.keys(c.review_scheduling.modes).sort(), ['parallel-reviews','serial-reviews']);
 assert.equal(c.review_scheduling.modes['parallel-reviews'].non_cancelling, true);
@@ -38,6 +46,7 @@ assert.equal(c.review_scheduling.modes['parallel-reviews'].all_launched_semantic
 assert.equal(c.review_scheduling.modes['serial-reviews'].continue_remaining_initial_requests_after_invalidation, true);
 assert.equal(c.review_scheduling.modes['serial-reviews'].post_invalidation_requests_are_evidence_only, true);
 assert.deepEqual(c.standard_convergence, {
+  scope:'changeset',
   required_consecutive_clean_attempts:5, initial_standard_counts:true,
   later_attempts_serial:true, findings_reset_streak:true,
   native_default_review_required:true, custom_instructions_forbidden:true
