@@ -37,9 +37,10 @@ function check(src) {
     'Public routes':'8e2aec586fe33dfc69d573c15a9fdc425547bf8bdf8c4952e5f0fbdd8fb6c222',
     'Source binding':'a08472adfb58b7540f832680acac69f92a87e7ee8e4086c9621134194aa4639d',
     'Realization and common proof obligations':'8f782e151a2c48cca2da1506830376ad597b689fde6985014f30c466f87be6e3',
-    'Construction Working Set':'932740e6ab5d55a930290b4daf16aefbf9e3c228e41babe0ff457d06301cc3ef',
     'Completion':'dc56a54f2fd79d07f4d801b030cbf5b5a1ec6758be7a8c72eae0e8c2f630f58f'
   })) assert.equal(hash(section(skill,h)),digest,`changed acceptance/authority section: ${h}`);
+  assert.equal(hash(section(skill,'Construction Working Set')),
+    'becab050638d8517356ae6e57bb49bdd6e726ae47e7207ebeb564ecc6476c86e','changed construction assignment binding');
   const reviewKeys=['required_lenses','focused_file_reviews','review_scheduling','candidate_lifecycle',
     'review_epoch','review_entry','evidence_acquisition','standard_convergence',
     'material_change','transport_recovery','attempt_quality'];
@@ -77,7 +78,7 @@ function check(src) {
   assert.equal(policy.universalist_compilation.nomination_result_required,false);
   assert.equal(policy.universalist_compilation.nomination_is_executed_proof,false);
   assert.equal(policy.efficacy.policy_unit_tests_prove_model_efficacy,false);
-  assert.equal(contract.skill.source_fingerprint,'actuating-construction-core-v27');
+  assert.equal(contract.skill.source_fingerprint,'actuating-construction-core-v28');
   const clauses=Object.fromEntries(contract.clauses.map(c=>[c.clause_id,c]));
   assert(clauses['ACT-IMPLEMENT-ENTRY-001'].success_signals.some(s=>s.includes('without a fixed reasoning sequence')));
   assert(clauses['ACT-METANOETIC-ADMISSIBILITY-001'].success_signals.some(s=>s.includes('no required order relative to Universalist')));
@@ -97,7 +98,13 @@ function check(src) {
   assert(!prompt.includes('Universalist derives and nominates'));
 
   const comparison=src['tests/construction-comparison.md'];
-  for(const required of ['authored, not model-replayed','A: accumulated','B: reduced','C: protocol-free',
+  for(const required of ['authored, not model-replayed','Control: current workflow','Candidate: active construction task',
+    '753569e0df6935a428ed8c509fb7fac5f23c008d',
+    'Preserve its ability to discover the same relationship or choose the same task',
+    'Give both arms the same requirements, evidence, suggested repairs, source and theory access',
+    'Assignment','Continuation','Fresh context',
+    'adequate-incumbent','direct-fix','false-allegation','wrong-oracle',
+    'A: accumulated','B: reduced','C: protocol-free',
     '5159d76f3b627fb334e2ecb89c5cccf1db9d2e07','AGENTS.md','compaction','memory',
     'required-valid','Freeze the first completed candidate','timeouts',
     'A tie or insufficient power is inconclusive','no permission for paid model runs']) {

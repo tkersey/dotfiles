@@ -58,8 +58,10 @@ requirement, compatibility promise, or release posture needs explicit authority.
 ## Compile the first loss of guarantee
 
 Use [initial construction](SKILL.md#initial-construction) for the repair; there is
-no separate construction pipeline. Combine current and applicable historical
-witnesses under the source-required law. Carry every admitted liability into the
+no separate construction pipeline. On returning to construction, form the
+[next assignment](SKILL.md#construction-working-set) from the accepted source and
+the full admitted basis. Combine current and applicable historical witnesses under
+the source-required law. Carry every admitted liability into the
 root's [automatic construction reconsideration](SKILL.md#mission). Reuse inquiry
 across witnesses only when the same supported causal mechanism covers them; account
 for each new witness and reopen the explanation when it adds a causal distinction.
@@ -77,6 +79,13 @@ Ask whether the claimed premises or evidence remain true but the required behavi
 fails. Establish the observation's applicability: a conditional counter agreeing
 with a candidate may mean the relevant mechanism never ran. A decisive source
 argument can suffice; no paired-case quota or forced redesign.
+
+When preservation through subsequent behavior is uncertain, inspect source-permitted
+operations that can overwrite, invalidate, or reinterpret a premise of the proposed
+guarantee. Use a relevant operation or composition to discriminate that uncertainty;
+follow semantic dependencies, not shared fields alone. Reuse adequate native
+preservation evidence when it already settles the question; do not invent another
+writer, sibling, or test obligation.
 
 Distinguish model adequacy, required semantic content, and operation coverage.
 When the model erases a distinction required by the law, retain or derive the
