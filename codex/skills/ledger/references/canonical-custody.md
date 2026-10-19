@@ -10,7 +10,7 @@ This skill, [storage-context.md](storage-context.md), and
 catalog identity, and explicit migration policy. Consumers select semantic
 definitions and operations; they do not derive another physical storage path.
 
-Learnings and Negative Ledger use personal managed custody. Existing independent
+Learnings, Negative Ledger, and Review Fold use personal managed custody. Existing independent
 histories retain their store IDs and owner-defined slots. A worktree is optional
 evidence provenance and a lookup association, not the lifetime of the history.
 Other owners opt into personal custody explicitly; session/worktree-specific
@@ -108,6 +108,14 @@ Writes use owner-selected `ledger transact` operations. Never hand-edit, compact
 reinterpret, or skip canonical records. Explicit cold transport is not an alternate
 semantic writer. Fail closed on unknown closure, ABI, operator, binding, integrity,
 replay, projection, or recovery state.
+
+Before an authorized write for an owner that opts in, use
+[automatic owner upgrade](automatic-migration.md#automatic-owner-upgrade) with
+`--ensure-owner --definition`. It initializes managed custody, transports compatible
+current-format history, or restores a missing static slot against its unchanged
+native binding. It waits for active writers under native locks. Continue with the
+returned managed selector; never fall back to a local store on failure. Read-only
+owner selection uses `--read-only --definition` and never creates or repairs custody.
 
 Lease expiry does not transfer authority. Recovery is bound to one transaction's
 resource, lock identity, fencing token, owner, and witnessed lease state. Read

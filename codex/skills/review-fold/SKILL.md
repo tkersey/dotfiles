@@ -127,7 +127,10 @@ all decision-relevant evidence without populating inapplicable schema fields.
 ## Procedure
 
 1. Project the repository counterexample basis and preserve its exact IDs and
-   source references. An absent local store is not proof of complete history.
+   source references through Ledger's personal context. An absent slot is not
+   proof of complete history. Authorized capture uses the corpus reference's
+   automatic migration and repair, waiting for active writers; read-only analysis
+   never creates or repairs custody.
 2. Preserve every current and historical witness's original subject.
 3. Separate reported claim, established fact, suggested repair, and transport
    status; do not copy an allegation into `observed_fact` as proof of itself.

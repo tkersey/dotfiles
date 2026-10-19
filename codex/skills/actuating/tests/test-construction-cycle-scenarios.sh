@@ -24,6 +24,7 @@ function observe(i) {
   i.focused_files.forEach((focus, n) => initialSlots.set(`focused-file-${n}`,
     {lens:policy.focused_file_reviews.name, focus}));
   const semantic = r => ['clean', 'findings'].includes(r.verdict);
+  const credited = r => semantic(r) && r.credit_disposition === 'credit';
   const material = r => r.findings?.some(f => f.authority === 'entailed' && f.applicability === 'current');
   const initialComplete = () => [...initialSlots.keys()].every(slot => semantic(slots.get(slot)?.at(-1) ?? {}));
   for (const r of i.receipts) {
@@ -43,6 +44,8 @@ function observe(i) {
       assert.equal(r.lens, 'standard');
       assert(initialComplete(), 'confirmation before initial barrier');
       assert(![...slots.values()].flat().some(material), 'confirmation after material finding');
+      assert([...slots.values()].every(xs => xs.at(-1).slot === r.slot || credited(xs.at(-1))),
+        'confirmation before review credit');
     }
     const history = slots.get(r.slot) ?? [];
     if (history.length) {
@@ -64,9 +67,9 @@ function observe(i) {
   // in the existing barrier. Count the ordered semantic suffix, not totals.
   let cleanStandards = 0;
   for (const r of i.receipts) if (r.lens === 'standard' && semantic(r))
-    cleanStandards = r.verdict === 'clean' ? cleanStandards + 1 : 0;
+    cleanStandards = r.verdict === 'clean' ? cleanStandards + Number(credited(r)) : 0;
   if (invalidated) cleanStandards = 0;
-  const converged = barrier && !invalidated && folded && sourcesFolded &&
+  const converged = barrier && last.every(credited) && !invalidated && folded && sourcesFolded &&
     cleanStandards >= policy.standard_convergence.required_consecutive_clean_attempts;
   const cutClosed = invalidated && barrier && folded && sourcesFolded;
   const open = i.receipts.length > 0 && !(cutClosed || converged);
@@ -110,7 +113,7 @@ assert.equal(observe({...recovered, folded:[...recovered.folded, fixture.receipt
 const initial = cleanInput.receipts.filter(r => r.phase === 'initial');
 const confirmation = (n, verdict = 'clean', authority = 'strengthening') => ({
   id:`suffix-${n}`, slot:`suffix-${n}`, phase:'confirmation', lens:'standard',
-  head:cleanInput.head, verdict,
+  head:cleanInput.head, verdict, credit_disposition:verdict === 'verdictless' ? 'hold' : 'credit',
   ...(verdict === 'findings' ? {findings:[{authority, applicability:'current'}]} : {})
 });
 const evaluate = receipts => observe({...cleanInput, receipts, folded:receipts.map(r => r.id)});
@@ -137,10 +140,10 @@ const materialCut = [...initial, confirmation(1,'findings','entailed')];
 assert.deepEqual(evaluate(materialCut), {mutable:true, epoch_open:false, complete:false, may_dispatch:false});
 assert.throws(() => evaluate([...materialCut, confirmation(2)]), /confirmation after material finding/);
 
-const focusedFiles = ['src/a.js', 'src/b.js'].map(path => ({base_path:path, head_path:path}));
+const focusedFiles = ['src/a.js', 'src/b.js', 'src/c.js'].map(path => ({base_path:path, head_path:path}));
 const fileReceipts = focusedFiles.map((focus, n) => ({
   id:`file-${n}`, slot:`focused-file-${n}`, phase:'initial', lens:'focused-file',
-  head:cleanInput.head, verdict:'clean', focus
+  head:cleanInput.head, verdict:'clean', credit_disposition:'credit', focus
 }));
 const evaluateFiles = receipts => observe({...cleanInput, focused_files:focusedFiles,
   receipts, folded:receipts.map(r => r.id)});
@@ -158,12 +161,33 @@ assert.deepEqual(evaluateFiles(invalidInitial), {mutable:false, epoch_open:true,
 assert.deepEqual(evaluateFiles([...invalidInitial, ...fileReceipts]),
   {mutable:true, epoch_open:false, complete:false, may_dispatch:false});
 assert.throws(() => evaluateFiles([...initial,
-  {...fileReceipts[0], focus:focusedFiles[1]}, fileReceipts[1]]), /wrong focal file/);
-assert.throws(() => evaluateFiles([...initial, {...fileReceipts[0], head:'h0'}, fileReceipts[1]]), /stale receipt/);
-const fileRecovery = [...initial, {...fileReceipts[0], verdict:'verdictless'}, fileReceipts[1]];
+  {...fileReceipts[0], focus:focusedFiles[1]}, ...fileReceipts.slice(1)]), /wrong focal file/);
+assert.throws(() => evaluateFiles([...initial, {...fileReceipts[0], head:'h0'}, ...fileReceipts.slice(1)]), /stale receipt/);
+const fileRecovery = [...initial, {...fileReceipts[0], verdict:'verdictless'}, ...fileReceipts.slice(1)];
 assert.equal(evaluateFiles(fileRecovery).epoch_open, true);
 assert.equal(evaluateFiles([...fileRecovery, {...fileReceipts[0], id:'file-0-recovery'},
   ...[1,2,3,4].map(n => confirmation(n))]).complete, true);
+
+for (const receipt of focusedInitial) for (const credit_disposition of ['hold', undefined]) {
+  const held = focusedInitial.map(r => r.id === receipt.id ? {...r, credit_disposition} : r);
+  assert.deepEqual(evaluateFiles(held), {mutable:false, epoch_open:true, complete:false, may_dispatch:false});
+  assert.throws(() => evaluateFiles([...held, confirmation(1)]), /confirmation before review credit/,
+    `${receipt.lens}: ${credit_disposition ?? 'absent'}`);
+  const restored = held.map(r => r.id === receipt.id ? {...r, credit_disposition:'credit'} : r);
+  assert.equal(evaluateFiles([...restored, ...[1,2,3,4].map(n => confirmation(n))]).complete, true);
+}
+for (const n of [1,2,3,4]) for (const credit_disposition of ['hold', undefined]) {
+  const held = [...focusedInitial, ...Array.from({length:n-1}, (_,i) => confirmation(i+1)),
+    {...confirmation(n), credit_disposition}];
+  assert.deepEqual(evaluateFiles(held), {mutable:false, epoch_open:true, complete:false, may_dispatch:false});
+  assert.throws(() => evaluateFiles([...held, confirmation(n+1)]), /confirmation before review credit/);
+  const restored = [...held.slice(0,-1), confirmation(n),
+    ...Array.from({length:4-n}, (_,i) => confirmation(n+i+1))];
+  assert.equal(evaluateFiles(restored).complete, true);
+}
+const uncreditedInvalidated = [...invalidInitial, ...fileReceipts].map(r => ({...r, credit_disposition:'hold'}));
+assert.deepEqual(evaluateFiles(uncreditedInvalidated),
+  {mutable:true, epoch_open:false, complete:false, may_dispatch:false});
 
 // Executable finite discriminator: a guard for the observed enum case misses
 // a sum/product sibling. An independent inhabitant enumerator also prevents the

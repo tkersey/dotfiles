@@ -166,6 +166,13 @@ not invalidate owned custody. Read [explicit adoption and migration](references/
 only when that maintenance is selected. A missing or corrupt established root
 still fails closed; it is never replaced with an empty store.
 
+Before an authorized write for an opted-in owner, use
+[automatic owner upgrade](references/automatic-migration.md#automatic-owner-upgrade)
+with `--ensure-owner --definition`. It initializes, migrates compatible local
+history, or restores missing bound bytes, waiting for active writers. Use the
+returned managed selector for the original operation. `--read-only --definition`
+never creates or repairs custody; failures never select a local-store fallback.
+
 ## Storage custody and recovery
 
 Read [custody and recovery](references/canonical-custody.md#storage-custody-and-recovery)

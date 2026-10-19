@@ -57,12 +57,46 @@ source evidence; historical absence still needs a complete relevant horizon.
 definition
   ${CODEX_HOME:-$HOME/.codex}/skills/review-fold/definitions/ledger/counterexample-corpus.json
 
-repo-local store
-  .ledger/review-fold/counterexamples/events.jsonl
+logical slot in Ledger personal custody
+  review-fold/counterexamples/events.jsonl
 ```
 
 Before the first Ledger command in the enclosing workflow, load `$ledger` and
 complete `$ledger ensure` once.
+
+Resolve the personal context through Ledger's canonical-custody guidance and use
+its `native_args` for every corpus operation. Preserve existing repository IDs
+and witness provenance when projecting or retrying an earlier submission; moving
+custody does not rename a semantic scope. New independent scopes may use the
+context's stable `repository_id`.
+
+For an authorized capture, ensure the owner before the first corpus operation:
+
+```bash
+counterexample_definition="$(realpath \
+  "${CODEX_HOME:-$HOME/.codex}/skills/review-fold/definitions/ledger/counterexample-corpus.json")"
+
+uv run "$ledger_skill_root/scripts/ensure_custody.py" --repo "<workspace-root>" \
+  --ensure-owner --definition "$counterexample_definition"
+```
+
+This initializes new managed custody, migrates compatible current-format local
+history, or restores missing bound bytes as needed, then returns the managed
+`native_args`. It waits for active writers and rechecks the protected source
+before publication. Retain the source bytes and original IDs; never continue
+normal capture against a local store because migration or repair failed.
+
+Ledger's [owner upgrade guidance](../../ledger/references/automatic-migration.md#automatic-owner-upgrade)
+owns selection, migration, repair, locking, and refusal rules. Routine migration
+and exact restoration are included in authorized corpus capture; they do not
+require a separate user-maintained migration checklist. Unknown or conflicting
+history still cannot be invented or discarded to force success.
+
+For read-only analysis, use the same helper with `--read-only --definition`
+instead of `--ensure-owner`. It selects intact managed history without creating,
+migrating, or repairing anything. Report unavailable history if maintenance is
+needed. Ledger 1.3.0 remains supported; migration does not impose a new 1.5.3
+minimum on healthy installations.
 
 ## Project before folding
 
@@ -75,7 +109,7 @@ counterexample_definition="$(realpath \
 ledger project \
   --definition "$counterexample_definition" \
   --projection basis \
-  --repo "<repo-root>" \
+  --store-root "<context.store_root>" --store-id "<context.store_id>" \
   --param "repository=<repository-id>" \
   --payload-only \
   --format json
@@ -86,7 +120,7 @@ against the current Goal, exact head, validity horizon, and source evidence.
 Absence from an incomplete horizon never proves `first-observed`, disjointness,
 or family elimination.
 
-An absent store is an empty local corpus, not proof that no historical
+An absent slot in an otherwise valid selected store is not proof that no historical
 counterexamples exist. An invalid store or unresolved binding blocks claims
 that depend on complete historical evidence. Use `bind-existing` or
 `rebind-existing` only when the definition-bound doctor prescribes that exact
@@ -119,7 +153,7 @@ owner-issued evidence and original subject are exact
 ledger transact \
   --definition "$counterexample_definition" \
   --operation capture \
-  --repo "<repo-root>" \
+  --store-root "<context.store_root>" --store-id "<context.store_id>" \
   --input submission=<counterexample.json> \
   --format json
 ```
