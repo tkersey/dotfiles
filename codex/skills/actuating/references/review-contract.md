@@ -354,7 +354,7 @@ Before dispatch on the exact head require:
 accepted Goal and complete proof inventory
 current cumulative evidence and honest source horizon
 source-supported causal explanation for counterexample-driven changes
-preselected sibling/domain discriminator and actual results or explicit limitation
+required verifiers and required sibling/domain discriminators completed successfully on the exact candidate
 required-valid behavior and compatibility preserved
 law-bearing mechanism and supported sanctioned-path/bypass coverage
 all applicable changed-boundary obligations with source-derived coverage evidence
@@ -362,10 +362,13 @@ all selected migrations, residuals, and compensator retirements realized
 all correctness-bearing Git changes supported by accepted authority
 ```
 
-Every proof-inventory entry is unique and has exact-head passing evidence or
-authority-backed nonapplicability. Aggregate proof credit requires actual dependency
-coverage. A known proof may not first run after convergence; discovering a required
-missing proof invalidates the prior reviewability claim.
+Every proof-inventory entry is unique. Required checks need completed exact-head
+passing evidence under [proof acceptance](../SKILL.md#proof-acceptance); only the
+user can authorize retiring or narrowing an accepted check. Establish optional or
+inapplicable status from the accepted scope, never from execution difficulty.
+Aggregate proof credit requires actual dependency coverage. A known proof may not
+first run after convergence; discovering a required missing proof invalidates the
+prior reviewability claim.
 
 Do not implement rejected strengthenings to protect the clean suffix. Remove them
 or reopen their authority. Public claim corrections retain their own authority;

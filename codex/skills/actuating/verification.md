@@ -71,6 +71,12 @@ edit. Avoid a broad retry while existing evidence identifies an unaffected
 obstruction. A broad diagnostic remains appropriate when a specific whole-workflow
 effect cannot be resolved more cheaply; identify what its result will change.
 
+This selects the next diagnostic execution; it does not reduce accepted required
+verification. Retain every required check for final qualification under
+[proof acceptance](SKILL.md#proof-acceptance). Resume or rerun an unfinished
+required check once its obstruction is addressed; if blocked, report the blocker
+and incomplete status. Focused results cannot substitute for the required run.
+
 Use complete qualification when the cumulative candidate plausibly fits the
 accepted job and workflow limits, accounting for known overhead and observed
 variation. Keep required cold and cache-assisted modes distinct. Complete required

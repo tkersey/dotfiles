@@ -36,9 +36,9 @@ function check(src) {
   for (const [h,digest] of Object.entries({
     'Public routes':'8e2aec586fe33dfc69d573c15a9fdc425547bf8bdf8c4952e5f0fbdd8fb6c222',
     'Source binding':'a08472adfb58b7540f832680acac69f92a87e7ee8e4086c9621134194aa4639d',
-    'Realization and common proof obligations':'14bd3233e5cf89c6a805b16782db88a557a6f6d2325cac1bb5a8f10c5b6b87f7',
+    'Realization and common proof obligations':'8f782e151a2c48cca2da1506830376ad597b689fde6985014f30c466f87be6e3',
     'Construction Working Set':'932740e6ab5d55a930290b4daf16aefbf9e3c228e41babe0ff457d06301cc3ef',
-    'Completion':'752122b61b3a561ec1f1ecb820dd71a87ef364573e09072f1b63f8deb29fb70c'
+    'Completion':'dc56a54f2fd79d07f4d801b030cbf5b5a1ec6758be7a8c72eae0e8c2f630f58f'
   })) assert.equal(hash(section(skill,h)),digest,`changed acceptance/authority section: ${h}`);
   const reviewKeys=['required_lenses','focused_file_reviews','review_scheduling','candidate_lifecycle',
     'review_epoch','review_entry','evidence_acquisition','standard_convergence',
@@ -77,7 +77,7 @@ function check(src) {
   assert.equal(policy.universalist_compilation.nomination_result_required,false);
   assert.equal(policy.universalist_compilation.nomination_is_executed_proof,false);
   assert.equal(policy.efficacy.policy_unit_tests_prove_model_efficacy,false);
-  assert.equal(contract.skill.source_fingerprint,'actuating-construction-core-v25');
+  assert.equal(contract.skill.source_fingerprint,'actuating-construction-core-v26');
   const clauses=Object.fromEntries(contract.clauses.map(c=>[c.clause_id,c]));
   assert(clauses['ACT-IMPLEMENT-ENTRY-001'].success_signals.some(s=>s.includes('without a fixed reasoning sequence')));
   assert(clauses['ACT-METANOETIC-ADMISSIBILITY-001'].success_signals.some(s=>s.includes('no required order relative to Universalist')));

@@ -178,6 +178,21 @@ required architectures or intermediate deliverables. Keep the applicable
 
 ## Proof acceptance
 
+Required verification gates completion. Every required check must finish
+successfully against the delivered state before you declare the work passed,
+verified, or complete. Stopped, interrupted, timed-out, missing, or inconclusive
+results leave verification outstanding. Resume or rerun the check; if blocked,
+report the blocker and incomplete status. Do not silently waive a check,
+substitute narrower evidence, or treat absence of a failure as success. Only the
+user can authorize reducing the accepted verification requirement.
+
+Keep each required check's command, mode, inputs, candidate, and terminal result
+in the existing proof inventory. Collect the terminal result of a still-running
+check; an observation timeout does not stop its execution. A skipped required
+check or a successful result for a different candidate or required mode does not
+discharge the obligation. Apply this rule to delegated checks and review-reported
+validation as well as parent-run checks.
+
 Before realizing a selected candidate, identify its actual guarantee, why it
 implies the source-required observation, and a source-supported falsifier or
 decisive source argument. Choose the exact-head verifier before that realization.
@@ -200,7 +215,7 @@ base-to-candidate diff and actual check selection for deleted tests, weakened
 assertions, skipped checks, or reduced coverage, including changes made directly
 by Actuating. Map each affected check to its source-backed obligation; require
 preserved or stronger proof, a source-grounded oracle correction with independent
-evidence, or explicit authority retiring the obligation. A passing weakened suite
+evidence, or explicit user authority retiring the obligation. A passing weakened suite
 cannot discharge an unchanged requirement. Keep unexplained proof loss unresolved
 and block only dependent completion or reviewability. Reuse the existing proof
 inventory; no separate critic, packet, or review stage.
@@ -235,7 +250,7 @@ Every initial construction and correction must establish the applicable obligati
 required relationships realized and required-valid behavior and observations preserved
 current accepted witnesses addressed when present
 supported causal families covered at the declared claim strength when present
-preselected verifier and applicable sibling/domain discriminator executed, or explicit limitation
+required verifiers and required sibling/domain discriminators completed successfully on the exact candidate
 all relevant sanctioned producers, consumers, transitions, and bypasses accounted for
 admission and permitted operations enforce the required law in the declared domain
 proof authority, inputs, domain, and public claim agree
@@ -292,6 +307,8 @@ experiment or an incomplete proof as complete. Read [closure.md](references/clos
 when deciding a publication-bearing or review-closeout terminal state. State the
 law attempted, the conclusion established by the actual construction and evidence,
 and its limits. A narrower supported claim does not complete a broader accepted Goal.
+An explicit limitation or owned residual cannot discharge required verification;
+apply [proof acceptance](#proof-acceptance) before any completion claim.
 
 Bare Actuating continues through authorized Ship and review-closeout; do not
 stop for approval merely because the first implementation exists. Missing
