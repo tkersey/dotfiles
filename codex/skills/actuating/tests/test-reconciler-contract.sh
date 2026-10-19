@@ -179,14 +179,14 @@ for (const rule of [
   'base-to-candidate diff and actual check selection for deleted tests, weakened assertions, skipped checks, or reduced coverage',
   'including changes made directly by Actuating',
   'Map each affected check to its source-backed obligation',
-  'preserved or stronger proof, a source-grounded oracle correction with independent evidence, or explicit authority retiring the obligation',
+  'preserved or stronger proof, a source-grounded oracle correction with independent evidence, or explicit user authority retiring the obligation',
   'A passing weakened suite cannot discharge an unchanged requirement',
   'Keep unexplained proof loss unresolved and block only dependent completion or reviewability',
   'Reuse the existing proof inventory; no separate critic, packet, or review stage'
 ]) assert(proofAcceptance.includes(rule), 'lost verifier-integrity rule: ' + rule);
 const closureProof = d.clauses.find(cl => cl.clause_id === 'ACT-CLOSURE-001');
 assert(closureProof.success_signals.includes('local completion and reviewability inspect deleted tests, weakened assertions, skipped checks, and reduced coverage against source-backed obligations'));
-assert(closureProof.success_signals.includes('test retirement preserves proof or has independent oracle-correction evidence or explicit obligation-retirement authority'));
+assert(closureProof.success_signals.includes('test retirement preserves proof or has independent oracle-correction evidence or explicit user obligation-retirement authority'));
 assert(closureProof.failure_signals.includes('passing a weakened suite discharges an unchanged requirement'));
 // End verifier-integrity regressions.
 // Admission/model-refinement source contracts; not a model-efficacy result.

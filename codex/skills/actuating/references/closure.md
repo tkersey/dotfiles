@@ -42,8 +42,9 @@ weakening them. In particular, coverage is not transition preservation, sampled
 success is not universal proof, and an independent oracle is not redundant merely
 because it checks the producer's law.
 
-Reuse current verifier evidence; an invalidated subject, assumption, domain, or
-claim requires the affected proof again. No route label, review streak, nomination,
+Apply [required verification](../SKILL.md#proof-acceptance) to every closure route.
+Reuse current successful verifier evidence; an invalidated subject, assumption,
+domain, or claim requires the affected proof again. No route label, review streak, nomination,
 or digest substitutes for that evidence. Independent obligations retain their
 own authority even when one successor realizes them.
 
@@ -52,11 +53,14 @@ own authority even when one successor realizes them.
 A candidate remains `realizing` until the selected construction, authority-complete
 diff, migrations, retirements, and all required proof are complete. Only then may
 it become `reviewable`. A newly discovered required proof after convergence
-invalidates the prior credit; the missing proof must run before fresh review.
+invalidates the prior credit; the missing required checks must finish successfully
+before fresh review. A disclosed limitation does not make an unfinished required
+check complete.
 
 For full `complete`, require:
 
 ```text
+every required check finished successfully against the delivered state
 required Ship/provider state matches the exact head
 no review epoch remains open; all terminal semantic outcomes are folded
 all five changeset auxiliary obligations have terminal, adjudicated, credited outcomes
@@ -82,7 +86,8 @@ explanation; neither a local label nor equal opaque digests can preserve the cla
 
 A locally complete implementation awaiting required publication is `ready-to-ship`.
 An accepted unresolved or deferred liability is not unqualified `complete`.
-Return `blocked` for missing authority, unresolved causal/domain evidence needed
-for the requested claim, incomplete cuts, missing required proof, unowned residuals,
+Continue or rerun outstanding required verification while execution is possible.
+Return `blocked` with incomplete status for missing authority, unresolved
+causal/domain evidence needed for the requested claim, incomplete cuts, missing required proof, unowned residuals,
 stale reviews, or publication mismatch. Block the affected claim, not unrelated
 already-authorized implementation.

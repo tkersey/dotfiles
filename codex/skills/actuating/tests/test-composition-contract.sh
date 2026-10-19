@@ -26,7 +26,7 @@ const protectedSections = {
   "Review-epoch immutability and evidence acquisition": "fea7a409fda38f8c71c95e420839469b0e4fafff77a7a6141a0c090a48859137",
   "Review and closure": "f506911bea5b95b97be141a59b86eb714b7209b2d1288ce585b2b07d19f4992b",
   // Apply the same proof bar to initial construction; witnesses are conditional.
-  "Realization and common proof obligations": "14bd3233e5cf89c6a805b16782db88a557a6f6d2325cac1bb5a8f10c5b6b87f7"
+  "Realization and common proof obligations": "8f782e151a2c48cca2da1506830376ad597b689fde6985014f30c466f87be6e3"
 };
 // Relocation changes where the section is read, not its accepted bytes.
 const protectedSources = {

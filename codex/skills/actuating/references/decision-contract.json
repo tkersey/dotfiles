@@ -445,10 +445,11 @@
           "redundant primary compensation retired or justified by distinct obligations",
           "same-claim witness revokes exclusion and reopens its causal explanation",
           "local completion and reviewability inspect deleted tests, weakened assertions, skipped checks, and reduced coverage against source-backed obligations",
-          "test retirement preserves proof or has independent oracle-correction evidence or explicit obligation-retirement authority",
+          "test retirement preserves proof or has independent oracle-correction evidence or explicit user obligation-retirement authority",
           "verification preserves source-backed failure distinctions while inherited physical arrangements remain redesignable unless source-fixed",
           "costly verification changes use proportionate preservation arguments and existing phase evidence to choose the next useful execution",
-          "complete required job and workflow evidence belongs to the accepted candidate in its required modes"
+          "every required check finishes successfully against the delivered state in its required mode before passed, verified, or complete claims",
+          "unfinished required checks are resumed or rerun; an actual blocker is reported with incomplete status and only the user can reduce the accepted verification requirement"
         ],
         "failure_signals": [
           "only reported examples repaired",
@@ -458,7 +459,9 @@
           "passing a weakened suite discharges an unchanged requirement",
           "branch coverage substitutes for resource, sequence, or independence preservation",
           "broad qualification repeats a known unaffected obstruction without a deciding whole-workflow question",
-          "cached artifacts or diagnostics inside a cancelled run are credited as complete execution"
+          "cached artifacts or diagnostics inside a cancelled run are credited as complete execution",
+          "stopped, interrupted, timed-out, missing, or inconclusive required checks are disclosed but work is still called complete",
+          "narrower evidence, another candidate or mode, skipped checks, or absence of failure substitutes for successful required verification"
         ],
         "rationale": "Success is justified behavior in the actual code, not process completion or route classification."
       }
