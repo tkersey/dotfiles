@@ -77,14 +77,15 @@ readiness only while the executable and execution environment are unchanged.
 |---|---|
 | Pure `validate`, `materialize`, or definition inspection | This entrypoint and the owner's exact definition/inputs; no workspace, managed store, or migration scan. |
 | Canonical store read/write, `doctor`, projection, transaction, or managed-context resolution | [canonical-custody.md](references/canonical-custody.md) for the personal catalog and native selector. Historical import completeness does not gate normal access. |
-| Binding, legacy migration, or exact recovery | Canonical custody guidance and the maintenance/migration reference it selects before the effect; availability never grants authority. |
+| Binding, legacy migration, or exact recovery | Canonical custody guidance and the maintenance/migration reference it selects; automatic owner preparation has standing authority, while other maintenance follows its selected effect scope. |
 | Upgrade an existing installation or plan rollback | [personal-store-upgrade.md](references/personal-store-upgrade.md) for identity adoption, writer cutover, retained admissions, and compatible fallback. |
 | Author or debug a passive definition | [definition-authoring.md](references/definition-authoring.md); add custody guidance only if a store operation is selected. |
 
 Never load storage manuals or initialize a store for a pure operation. Conversely,
 calling a canonical projection an inspection does not waive custody checks.
-Read-only recall cannot silently initialize or migrate. Only owners select
-semantic scope; other worktree/session data is not silently relocated.
+Canonical recall for an opted-in owner includes automatic custody preparation
+below. Only owners select semantic scope; other worktree/session data is not
+silently relocated.
 
 ## Baseline native surface
 
@@ -127,6 +128,8 @@ Do not apply a prior result to changed inputs, closure, or store state, reduce i
 to an unqualified "valid," invent metadata, or introduce substitute receipts.
 Retain the separate context identity when interpreting a managed-store result.
 A root-selection error establishes no claim about the unseen source contents.
+Native `authority_granted: false` grants no new semantic or workflow authority;
+it is not an unmet approval condition for automatic custody preparation.
 
 Use `--payload-only` only for an explicit structural pipe whose receiver owns
 interpretation; never imply that the omitted envelope is still present.
@@ -154,23 +157,29 @@ in consumers or `AGENTS.md`, or substitute an empty store for a failed lookup.
 
 ## Resolve personal custody
 
-At first canonical use, run `scripts/ensure_custody.py --repo "<workspace-path>"`
-through `uv run`, or select a known cataloged `--store-id`. Ensure automatically
+At first canonical use for an opted-in owner, use
+[automatic owner upgrade](references/automatic-migration.md#automatic-owner-upgrade)
+with `--ensure-owner --definition` before projection or capture. Invocation
+includes routine custody preparation; do not request separate migration approval
+or gate it on permission to capture new records. Analysis and review use this
+same preparation. Use the returned managed selector for the original operation.
+
+Without owner preparation, run `scripts/ensure_custody.py --repo "<workspace-path>"`
+through `uv run`, or select a known cataloged `--store-id`. Ordinary ensure automatically
 imports a valid existing Git registration into the personal catalog when the
 workspace has no association. It preserves the root, store ID, records, and native
 bindings; it never creates new history or imports legacy records. Repeated ensure
-is read-only. For explicit read-only/no-file work, use `ledger_context.py` instead;
-an uncataloged registration then requires a separately authorized ensure.
+is read-only. For an explicit user prohibition on file/custody maintenance or an
+enforced non-writable environment, use `ledger_context.py` for identity lookup or
+`--read-only --definition` for owner selection. Report unavailable history when
+that constraint prevents preparation; do not invent a migration approval step.
 Missing worktrees, unresolved legacy imports, and absent migration receipts do
 not invalidate owned custody. Read [explicit adoption and migration](references/canonical-custody.md#explicit-adoption-and-migration)
 only when that maintenance is selected. A missing or corrupt established root
 still fails closed; it is never replaced with an empty store.
 
-Before an authorized write for an opted-in owner, use
-[automatic owner upgrade](references/automatic-migration.md#automatic-owner-upgrade)
-with `--ensure-owner --definition`. It initializes, migrates compatible local
-history, or restores missing bound bytes, waiting for active writers. Use the
-returned managed selector for the original operation. `--read-only --definition`
+Automatic preparation initializes, migrates compatible local history, or restores
+missing bound bytes, waiting for active writers. Explicit `--read-only` selection
 never creates or repairs custody; failures never select a local-store fallback.
 
 ## Storage custody and recovery

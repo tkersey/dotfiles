@@ -127,7 +127,9 @@ aggregation.
 
 `construction` is proposal-only, including when a fresh review was requested:
 no GitHub mutations (including own-thread resolution and Viewed), source/index
-changes, corpus writes, implementation, or publication. Its private report is the
+changes, new semantic captures, implementation, or publication. Corpus projection
+uses Ledger's [automatic custody preparation](../ledger/references/automatic-migration.md#automatic-owner-upgrade)
+under its explicit file/custody-maintenance constraints. Its private report is the
 same explicit presentation exception; text-only/no-file limits still suppress it.
 The broader campaign permissions below do not enlarge this route.
 

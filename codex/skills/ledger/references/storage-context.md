@@ -2,8 +2,9 @@
 
 This reference and `../scripts/ledger_context.py` own the Codex integration's
 location policy. The native CLI takes explicit roots and has no Codex/Git default.
-For existing installations, follow [the upgrade guide](personal-store-upgrade.md)
-before initializing or moving any history.
+For a coordinated upgrade of existing installations, follow
+[the upgrade guide](personal-store-upgrade.md). Normal opted-in owner access uses
+automatic preparation below.
 
 ## Catalog and identity
 
@@ -41,7 +42,7 @@ Independent histories remain independent. Never concatenate their event logs or
 join bare numeric IDs across stores. Record references need store/lineage, owner,
 record ID, and the applicable immutable version/evidence.
 
-Normal reads never create metadata. Catalog changes use one private advisory
+Low-level identity lookup never creates metadata. Catalog changes use one private advisory
 lock and atomic, synced publication. Root/marker/control mismatches, symlink
 components, malformed metadata, and alias conflicts fail explicitly. An absent
 known root is never replaced with empty custody. Changing the configured home
@@ -49,6 +50,13 @@ selects another catalog namespace; an unknown store there is an error, not an
 implicit initialization or lookup fallback.
 
 ## Normal selection
+
+Before an opted-in owner's projection or capture, including analysis, run
+[automatic owner preparation](automatic-migration.md#automatic-owner-upgrade)
+with `--ensure-owner --definition` without separate approval. The identity lookup
+commands below do not perform that preparation and are not substitutes for it.
+Use non-mutating owner selection when file/custody maintenance is explicitly
+prohibited, as that owner-preparation policy specifies.
 
 Discover registered identities after a checkout disappears:
 
@@ -95,9 +103,11 @@ A failed projection's managed root admission exits 3, never a clear gate.
 
 `ensure_custody.py --repo ...` performs this lookup and, only for an unregistered
 Git workspace with an existing valid registration, automatically catalogs that
-same identity. Use ensure for ordinary first canonical use; use
-`ledger_context.py` for strictly read-only lookup. No registration means failure,
-not new custody. Adoption preserves native bytes and rejects catalog conflicts.
+same identity. Use this registration-only mode for context resolution without an
+owner; use `ledger_context.py` for strictly non-mutating identity lookup. Missing
+registration fails in these low-level modes; opted-in owner preparation handles
+supported initialization or current-format migration automatically. Adoption
+preserves native bytes and rejects catalog conflicts.
 Migration receipts and complete legacy inventory are never access prerequisites.
 No selector means no implicit default store; select a stable ID or a cataloged
 workspace. Caller code uses `resolve(repo=None, store_id=...)`.
@@ -143,7 +153,7 @@ with the adoption.
 
 ## New custody and historical import
 
-For an authorized new personal history:
+Outside automatic owner preparation, explicitly selected new personal history uses:
 
 ```bash
 uv run "$ledger_skill_root/scripts/ledger_context.py" --initialize
@@ -152,8 +162,10 @@ uv run "$ledger_skill_root/scripts/ledger_context.py" --initialize
 Add `--repo "<workspace-path>"` only when that workspace should select the new
 identity. Retain the returned ID. Initialization with an unknown explicit
 `--store-id` is forbidden, and an established broken root cannot be recreated.
-Known legacy registration or history in the selected workspace requires explicit
-adoption/import. When attaching a verified Git family to new custody, initialization
+This low-level initializer refuses known legacy registration or history in the
+selected workspace. Use owner preparation for supported current-format history,
+or select the historical importer for retired formats. When attaching a verified
+Git family to new custody, initialization
 also inspects its linked worktrees before staging and immediately before catalog
 publication. Sibling history in `.ledger`, including retired
 `.ledger/learnings/learnings.jsonl`, or in `.learnings.jsonl` requires explicit migration.
@@ -162,8 +174,8 @@ resolved. This creation check never gates normal access, direct store selection,
 or adoption of an existing identity, and does not apply to a new Git-free store.
 The helper does not claim coverage of other undiscovered sources.
 
-New isolated roots require no global writer shutdown. Legacy cold transport and
-historical import do require actual quiescence of affected old and managed writers.
+New isolated roots require no global writer shutdown. The manual cold-transport
+and historical-import procedures require actual quiescence of affected old and managed writers.
 Read [automatic-migration.md](automatic-migration.md) and select `--migrate` for
 that maintenance. Its source preservation and owner reconciliation requirements
 do not gate unrelated or already-owned canonical data.

@@ -49,7 +49,7 @@ function check(src) {
   const admissionEnd=counter.indexOf('\n## Compile the first loss of guarantee');
   assert(admissionStart>=0 && admissionEnd>admissionStart);
   assert.equal(hash(counter.slice(admissionStart,admissionEnd)),
-    '2f3e37cf9b595222caee4a0be92c68fba54d03c6649cbe48dfdf98f6e7b5c940','changed witness admission');
+    '1c198a648fa99f9e5ddbe64fe5291d9d33d91c54dfe3b71be88d2b8d4394a859','changed witness admission');
 
   assert(core.includes('No fixed order of diagnosis, algebraic derivation, prototyping, or proof attempts is required'));
   assert(core.includes('Missing proof is not a witnessed defect'));
@@ -77,7 +77,7 @@ function check(src) {
   assert.equal(policy.universalist_compilation.nomination_result_required,false);
   assert.equal(policy.universalist_compilation.nomination_is_executed_proof,false);
   assert.equal(policy.efficacy.policy_unit_tests_prove_model_efficacy,false);
-  assert.equal(contract.skill.source_fingerprint,'actuating-construction-core-v26');
+  assert.equal(contract.skill.source_fingerprint,'actuating-construction-core-v27');
   const clauses=Object.fromEntries(contract.clauses.map(c=>[c.clause_id,c]));
   assert(clauses['ACT-IMPLEMENT-ENTRY-001'].success_signals.some(s=>s.includes('without a fixed reasoning sequence')));
   assert(clauses['ACT-METANOETIC-ADMISSIBILITY-001'].success_signals.some(s=>s.includes('no required order relative to Universalist')));

@@ -71,11 +71,16 @@ first corpus projection or capture in a workflow.
 
 ## Effect authority
 
-`corpus_write_authorized` must follow the enclosing task's actual effect scope;
+`corpus_write_authorized` controls new semantic captures only and must follow the
+enclosing task's actual effect scope;
 review pressure and corpus ownership cannot grant it. It is always false in
 Actuating `analyze`. Adjudication and available read-only projection remain
-permitted without capture. Do not repair bindings, provision a tool, or write a
-source-memory note to evade that boundary. Return accepted in-context evidence
+permitted without capture. Ledger's automatic custody preparation runs before
+projection or capture, independently of this flag and without separate approval,
+including during analysis. Follow its explicit no-file/custody-maintenance
+constraints; an analysis route alone does not prohibit preparation. Do not
+provision a tool or write a source-memory note to evade the capture boundary.
+Return accepted in-context evidence
 and empty `captured_ids` when writing is unauthorized; do not claim persistence
 or block unrelated analysis solely because capture was intentionally skipped.
 
@@ -126,11 +131,10 @@ all decision-relevant evidence without populating inapplicable schema fields.
 
 ## Procedure
 
-1. Project the repository counterexample basis and preserve its exact IDs and
-   source references through Ledger's personal context. An absent slot is not
-   proof of complete history. Authorized capture uses the corpus reference's
-   automatic migration and repair, waiting for active writers; read-only analysis
-   never creates or repairs custody.
+1. Prepare Ledger custody automatically through the corpus reference, then project
+   the repository counterexample basis and preserve its exact IDs and source
+   references. Preparation does not depend on capture authority or require a
+   migration approval prompt. An absent slot is not proof of complete history.
 2. Preserve every current and historical witness's original subject.
 3. Separate reported claim, established fact, suggested repair, and transport
    status; do not copy an allegation into `observed_fact` as proof of itself.

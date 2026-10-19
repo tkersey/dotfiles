@@ -3,6 +3,10 @@
 Read before transaction recovery or a version-dependent storage migration.
 The semantic owner selects the operation; current user or standing authority
 must authorize its effect. Bootstrap readiness alone authorizes neither.
+Routine opted-in owner preparation follows
+[automatic owner upgrade](automatic-migration.md#automatic-owner-upgrade), whose
+standing authority requires no separate approval; this guide governs other
+selected recovery and format changes.
 
 ## Exact transaction recovery
 

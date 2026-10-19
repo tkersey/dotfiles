@@ -12,16 +12,22 @@ need catalog adoption rather than historical migration.
 
 ## Automatic owner upgrade
 
-An authorized write for an opted-in owner includes routine custody initialization,
-compatible current-format migration, and exact restoration. Before its first
-operation, resolve the owner through:
+An opted-in owner's canonical workflow includes standing authority for routine
+catalog adoption, custody initialization, compatible current-format migration,
+and exact restoration. Perform this preparation automatically before its first
+projection or capture, including analysis and review. Do not request confirmation,
+an approval token, or separate migration authorization; permission to capture new
+semantic records does not gate it. The installed `migration.json` is the owner's
+protocol opt-in, not a per-run question for the user.
+
+Resolve the owner through:
 
 ```bash
 uv run "$ledger_skill_root/scripts/ensure_custody.py" --repo "<workspace-root>" \
   --ensure-owner --definition "<installed-owner-definition>"
 ```
 
-Reuse the returned `native_args` for the original capture. The helper keeps an
+Reuse the returned `native_args` for the original operation. The helper keeps an
 existing store's identity, adopts valid registrations, and initializes a private
 managed root only when no registered custody exists. It inventories available
 Git worktrees during migration, preserves source bytes and a bounded archive,
@@ -39,9 +45,13 @@ log remain explicit reconciliation failures. Sources are preserved. Failure neve
 switches capture back to a repo-local store. Updated callers use managed selectors;
 old callers must also be upgraded before they can resume new local writes.
 
-For read-only analysis, replace `--ensure-owner` with `--read-only`. This mode
-creates no catalog, custody, or records and reports when migration or repair is
-needed. Ordinary ensure still only resolves or adopts a registration. Ledger
+Only an explicit user prohibition on file/custody maintenance or an enforced
+non-writable environment selects `--read-only` instead of `--ensure-owner`.
+An analysis route or a false/omitted corpus-capture flag alone does not select it.
+This mode creates no catalog, custody, or records and reports when preparation is
+unavailable under that constraint. Automatic preparation grants no new semantic
+capture, source mutation, provisioning, publication, or permission changes.
+Ordinary ensure still only resolves or adopts a registration. Ledger
 1.3.0 through 1.x supports the native protocol used here; no new 1.5.3 minimum is
 imposed. General permission errors do not authorize unrelated permission changes.
 
@@ -65,10 +75,9 @@ uv run "$ledger_skill_root/scripts/ensure_custody.py" --migrate --repo "<workspa
 ```
 
 Explicit migration requests authorize the supported lossless procedure, not a
-claim that writers have stopped. For an otherwise authorized capture, use the
-same procedure only when the enclosing task grants custody initialization or
-migration. Ordinary recall uses the personal catalog without selecting migration.
-Read-only migration inspection reports a plan. Never assert quiescence merely
+claim that writers have stopped. Automatic current-format preparation uses
+`--ensure-owner` above; this separately selected historical importer does not
+replace it. Read-only migration inspection reports a plan. Never assert quiescence merely
 because no process was noticed; old
 `--repo` writers are not fenced by the registration lock. Stop or upgrade those
 writers before applying. Unavailable worktrees are not automatically pruned.
@@ -153,7 +162,8 @@ become invented records. Global memory admission remains a separate owner action
 
 ## Exact archive repair
 
-An owner-authorized write may select `ensure_custody.py --repair-archive
+Automatic owner preparation includes exact archive restoration. A caller selecting
+that same repair directly uses `ensure_custody.py --repair-archive
 --definition <installed-owner-definition>` with the normal workspace or store ID.
 Bootstrap Ledger 1.3.0 or newer within major version 1 first. An intact owner store
 returns normally without scanning archives. Ordinary ensure and read-only context

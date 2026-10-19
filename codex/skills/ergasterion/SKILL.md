@@ -122,7 +122,9 @@ No route posts review comments, approves, merges or weakens model/permission pol
 
 Pass `corpus_write_authorized: false` for all review, analysis and presentation
 folds. A later constructor handoff can capture accepted witnesses only under its
-actual enclosing write authority; no new corpus/store or fallback writer exists.
+actual enclosing write authority; no second corpus/store or fallback writer exists.
+The false flag governs new semantic captures; Ledger's automatic custody preparation
+still precedes projection under its explicit file/custody-maintenance constraints.
 Parent authority does not authorize worker source, index, branch, or config writes.
 Safe inspected targeted checks and isolated scratch witnesses retain each owner's
 limits; paid calls, external load, new providers and private-data export need their

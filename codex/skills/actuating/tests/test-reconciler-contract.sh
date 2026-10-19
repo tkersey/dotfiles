@@ -27,7 +27,7 @@ const names = ['standard','soundness-skeptic','footgun-finder','invariant-ace','
 assert.equal(c.schema, 'actuating-review-contract/v19');
 assert.equal(c.contract_id, 'actuating-review-contract-v25');
 assert.equal(d.contract_version, 'SKDC-v1');
-assert.equal(d.skill.source_fingerprint, 'actuating-construction-core-v26');
+assert.equal(d.skill.source_fingerprint, 'actuating-construction-core-v27');
 assert(c.candidate_acceptance.common_obligations.includes(
   'required discriminator execution completed successfully against the exact candidate'));
 assert(!c.candidate_acceptance.common_obligations.some(s => s.includes('explicit limitation')));
