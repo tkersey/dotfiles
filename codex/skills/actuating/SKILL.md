@@ -301,6 +301,17 @@ specification. Reuse owner evidence rather than re-expressing it in another pack
 These are working facts, not a report template or durable Actuating store. Surface
 only material decisions and limitations; preserve historical witness provenance.
 
+Make the next construction assignment the source-required relationship to establish,
+with its source, required-valid behavior, and deciding evidence or unresolved
+question. Carry that task into selection, delegation, and resumption, including
+compaction; recover it from the bound source when missing. Finding identities,
+locations, and proposed edits are evidence and revisable means, not the assignment's
+scope or completion condition. Derive narrower implementation subtasks from the
+selected construction; their completion does not discharge the parent's broader
+obligation. Reuse adequate domain and native-guarantee arguments, including those
+supporting a direct correction. Keep the assignment in the existing work, without
+a separate packet, stage, or required presentation.
+
 ## Completion
 
 `implement` stops at local completion, not publication or review convergence.

@@ -316,28 +316,26 @@ Only `reviewable` may dispatch closure review. Closing an invalidated evidence c
 ends its freeze; it does not certify a proposed successor or authorize unentailed
 changes.
 
-Use [counterexample-guided-normalization.md](counterexample-guided-normalization.md)
-to infer the enabling cause from the cumulative basis, select a sibling/domain
-discriminator before implementation, compare adequate constructions, and realize
-one successor. Do not choose a patch from each finding, require a local attempt
-first, or demand a pre-mutation theorem-equality certificate.
-
-A local correction and a redesigned mechanism face the same family, required-valid,
-authority, and path-coverage obligations. Their labels describe the realized delta;
-they cannot switch off proof. Where an owned boundary changes, invoke Universalist
-at the existing architecture decision and prove every applicable construction obligation. Metanoetic
-may challenge a plausible mechanism error before selection without a fictional
-proof that every local alternative is impossible.
+Return the complete admitted basis to the
+[construction core](../SKILL.md#initial-construction) through the existing
+[construction assignment](../SKILL.md#construction-working-set).
+[Counterexample guidance](../counterexamples.md#compile-the-first-loss-of-guarantee)
+governs response selection and deciding evidence;
+[architecture guidance](../architecture.md) owns supporting-skill composition.
+Realize one successor under the
+[common proof obligations](../SKILL.md#realization-and-common-proof-obligations).
+Review findings supply evidence, not separate patch assignments or weaker proof.
 
 ## Source-derived coverage and preservation
 
 Use the construction argument in
 [counterexample-guided-normalization.md](counterexample-guided-normalization.md).
-Universalist nominates a code-bound owner/operation change, not a second Working Set
-projection. Select the verifier before implementation and execute it on the actual
-successor. Prove admission, permitted-transition preservation, source-derived
-coverage, required-valid observations, and migration/retirement/residual obligations.
-Cut passage alone does not establish preservation after admission.
+Use Universalist's [Actuating composition](../../universalist/actuating-composition.md)
+for direct semantic contributions to the same construction. Select the verifier
+before implementation and execute it on the actual successor. Prove admission,
+permitted-transition preservation, source-derived coverage, required-valid
+observations, and migration/retirement/residual obligations. Cut passage alone does
+not establish preservation after admission.
 
 Adequate native construction/operation evidence may discharge coverage directly.
 Where route or migration coverage remains unestablished, use explicit source-derived
