@@ -40,13 +40,15 @@ current family. Persist counterexamples; recompile their meaning.
 
 ## Effect authority
 
-Capture additionally requires `corpus_write_authorized: true` from the enclosing
-task. Omitted or false authority permits available read-only projection and
-adjudication, not `ledger transact`, binding repair, provisioning, or source-memory
-writes. Actuating `analyze` always supplies false. Corpus ownership cannot grant
-these effects. A doctor-prescribed repair still needs the enclosing authority.
+New semantic capture requires `corpus_write_authorized: true` from the enclosing
+task. Omitted or false authority permits projection and adjudication, not
+`ledger transact --operation capture`, provisioning, or source-memory writes.
+Actuating `analyze` always supplies false. This flag does not gate Ledger's
+automatic custody preparation, including its native maintenance transactions.
+Prepare custody before projection or capture without requesting separate approval.
+Corpus ownership cannot grant new semantic captures or unrelated effects.
 
-With no write authority, retain accepted witnesses in context and return empty
+With no capture authority, retain accepted witnesses in context and return empty
 `captured_ids`; report non-persistence only when material to the handoff. This is
 not a failed adjudication or a new workflow mode. Current claims use the available
 source evidence; historical absence still needs a complete relevant horizon.
@@ -70,7 +72,8 @@ and witness provenance when projecting or retrying an earlier submission; moving
 custody does not rename a semantic scope. New independent scopes may use the
 context's stable `repository_id`.
 
-For an authorized capture, ensure the owner before the first corpus operation:
+Ensure the owner automatically before the first corpus projection or capture,
+including analysis with false or omitted `corpus_write_authorized`:
 
 ```bash
 counterexample_definition="$(realpath \
@@ -84,18 +87,20 @@ This initializes new managed custody, migrates compatible current-format local
 history, or restores missing bound bytes as needed, then returns the managed
 `native_args`. It waits for active writers and rechecks the protected source
 before publication. Retain the source bytes and original IDs; never continue
-normal capture against a local store because migration or repair failed.
+normal corpus operations against a local store because migration or repair failed.
 
 Ledger's [owner upgrade guidance](../../ledger/references/automatic-migration.md#automatic-owner-upgrade)
-owns selection, migration, repair, locking, and refusal rules. Routine migration
-and exact restoration are included in authorized corpus capture; they do not
-require a separate user-maintained migration checklist. Unknown or conflicting
+owns selection, migration, repair, locking, and refusal rules. Routine preparation
+is part of using the corpus and requires no separate migration authorization,
+confirmation, or user-maintained checklist. Unknown or conflicting
 history still cannot be invented or discarded to force success.
 
-For read-only analysis, use the same helper with `--read-only --definition`
-instead of `--ensure-owner`. It selects intact managed history without creating,
-migrating, or repairing anything. Report unavailable history if maintenance is
-needed. Ledger 1.3.0 remains supported; migration does not impose a new 1.5.3
+Only when the user explicitly prohibits file/custody maintenance or the environment
+enforces non-writable access, use `--read-only --definition` instead of
+`--ensure-owner`. It selects intact managed history without creating, migrating,
+or repairing anything. Report unavailable history under that constraint; an
+analysis route or false capture flag alone does not select this mode.
+Ledger 1.3.0 remains supported; migration does not impose a new 1.5.3
 minimum on healthy installations.
 
 ## Project before folding

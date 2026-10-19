@@ -22,7 +22,9 @@ Resolve a known stable identity without Git:
 uv run "$ledger_skill_root/scripts/ledger_context.py" --store-id "<store-id>"
 ```
 
-For a selected workspace, ensure usable custody before its first canonical use:
+For an opted-in owner, use automatic owner preparation below before its first
+projection or capture. For context resolution without an owner, ensure the
+selected workspace association:
 
 ```bash
 uv run "$ledger_skill_root/scripts/ensure_custody.py" --repo "<workspace-path>"
@@ -48,7 +50,8 @@ catalog adoption operation. Only catalog metadata changes; identity, native
 custody, and the original registration stay intact. Missing registrations,
 invalid roots, and conflicts still fail; ensure never initializes empty history.
 Reuse successful context within the session. `ledger_context.py` remains strictly
-read-only and is the route for explicit read-only/no-file work.
+read-only and is the route when the user explicitly prohibits file/custody
+maintenance or the environment enforces non-writable access.
 Neither lookup nor registration adoption enumerates sibling worktrees, inspects
 legacy logs, or demands a migration receipt. An absent
 historical source limits a recovery claim, not access to intact owned data.
@@ -76,14 +79,15 @@ register an existing absolute root and its expected ID. This preserves the root,
 its records, and its native custody; it requires no legacy worktree coverage.
 Catalog associations never infer a merge from names, remotes, or branches.
 
-Authorized new custody uses `ledger_context.py --initialize`, optionally with a
+New custody outside automatic owner preparation requires a selected
+`ledger_context.py --initialize` operation, optionally with a
 workspace association. It creates a fresh private identity; it cannot recreate
 an absent selected store or replace an existing alias. A known selected legacy
 registration/history requires explicit adoption or import instead. New isolated
 custody needs no claim that unrelated historical writers have stopped.
 
-Use [automatic-migration.md](automatic-migration.md) only for selected legacy
-inspection/import or interrupted import recovery. `ensure_custody.py --migrate`
+For selected legacy inspection/import or interrupted import recovery, follow
+[automatic-migration.md](automatic-migration.md). `ensure_custody.py --migrate`
 selects this maintenance. `--apply --confirm-no-writers` adds its authorized
 effect with actual quiescence of the affected writers. Unavailable historical
 worktrees can block that import's completeness; they do not block normal access.
@@ -109,13 +113,15 @@ reinterpret, or skip canonical records. Explicit cold transport is not an altern
 semantic writer. Fail closed on unknown closure, ABI, operator, binding, integrity,
 replay, projection, or recovery state.
 
-Before an authorized write for an owner that opts in, use
+Before the first projection or capture for an owner that opts in, use
 [automatic owner upgrade](automatic-migration.md#automatic-owner-upgrade) with
-`--ensure-owner --definition`. It initializes managed custody, transports compatible
+`--ensure-owner --definition` automatically, without separate approval or a
+new-record capture requirement. It initializes managed custody, transports compatible
 current-format history, or restores a missing static slot against its unchanged
 native binding. It waits for active writers under native locks. Continue with the
-returned managed selector; never fall back to a local store on failure. Read-only
-owner selection uses `--read-only --definition` and never creates or repairs custody.
+returned managed selector; never fall back to a local store on failure. Analysis
+and review use this same preparation. Explicit no-maintenance owner selection uses
+`--read-only --definition` and never creates or repairs custody.
 
 Lease expiry does not transfer authority. Recovery is bound to one transaction's
 resource, lock identity, fencing token, owner, and witnessed lease state. Read

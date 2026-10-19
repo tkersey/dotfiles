@@ -4,7 +4,7 @@
 Normal use resolves the personal catalog, automatically adopting a selected
 Git family's existing registration when absent. This only updates catalog
 metadata. --migrate selects historical inspection; --apply additionally requires
-actual writer quiescence. --ensure-owner migrates an authorized owner's current
+actual writer quiescence. --ensure-owner migrates an opted-in owner's current
 history under writer locks; --read-only selects that owner without maintenance.
 Use ledger_context.py for strictly read-only identity lookup.
 """
@@ -249,7 +249,7 @@ def healthy(binary: str, owner: dict, selector: list[str], *, repair: bool = Fal
     if result.get('healthy') is True:
         return result
     if not repair:
-        raise MigrationError(f'Owner custody needs authorized maintenance: {canonical(result)}')
+        raise MigrationError(f'Owner custody requires native maintenance: {canonical(result)}')
     failed = [slot for slot in result.get('slots', []) if slot.get('healthy') is not True]
     if len(failed) != 1 or len(owner['slots']) != 1:
         raise MigrationError(f'Ambiguous custody failure; refusing automatic repair: {canonical(result)}')
@@ -404,7 +404,7 @@ def owner_context(repo: Path | None, definition: Path, *, store_id: str | None =
         else:
             raise MigrationError(f'Selected managed custody needs native recovery: {canonical(result)}')
     if read_only or not maintain:
-        raise MigrationError('Owner history needs authorized automatic migration; read-only selection does not move it')
+        raise MigrationError('Owner history needs --ensure-owner preparation; read-only selection leaves custody unchanged')
     return migrate_owner(repo, definition, store_id=store_id, binary=binary, skill_root=skill_root)
 
 
@@ -977,8 +977,10 @@ def main() -> int:
     parser.add_argument('--ledger-bin', default='ledger')
     parser.add_argument('--framing-controls', type=Path)
     parser.add_argument('--repair-archive', action='store_true')
-    parser.add_argument('--ensure-owner', action='store_true')
-    parser.add_argument('--read-only', action='store_true')
+    parser.add_argument('--ensure-owner', action='store_true',
+                        help='Automatically prepare opted-in owner custody before projection or capture')
+    parser.add_argument('--read-only', action='store_true',
+                        help='Select owner custody without initialization, migration, or repair')
     parser.add_argument('--definition', type=Path)
     args = parser.parse_args()
     try:

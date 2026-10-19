@@ -85,7 +85,7 @@ assert.match(fold,/corpus_write_authorized: true \| false # enclosing task; omit
 assert.match(section(fold,'Effect authority'),/always false in\s+Actuating `analyze`/);
 assert.match(section(fold,'Procedure'),/When `corpus_write_authorized` is true, capture/);
 assert.match(section(corpus,'Capture after folding'),/corpus_write_authorized = true/);
-assert.match(section(corpus,'Effect authority'),/not `ledger transact`/);
+assert.match(section(corpus,'Effect authority'),/not\s+`ledger transact --operation capture`/);
 assert.match(skill,/corpus_write_authorized: false/);
 for (const name of ['challenged_judgment','earliest_failed_premise','claim_strength_consequence'])
   assert(fold.includes(name),`lost judgment-challenge field: ${name}`);

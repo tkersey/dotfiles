@@ -56,13 +56,29 @@ class OwnerUpgradeTests(unittest.TestCase):
         self.assertTrue(self.capture(context['native_args'])['valid'])
         self.assertEqual(self.ensure()['store_id'], context['store_id'])
 
-    def test_local_only_install_migrates_without_rewriting_records(self):
+    def test_local_history_prepares_for_projection_without_new_capture(self):
         self.capture(['--repo', str(self.repo)])
         original = (self.repo / self.slot).read_bytes()
-        context = self.ensure()
+        records = [json.loads(line)['record'] for line in original.splitlines()]
+        prepared = subprocess.run(self.command('--ensure-owner'), stdin=subprocess.DEVNULL,
+                                  capture_output=True, timeout=15)
+        self.assertEqual(prepared.returncode, 0, prepared.stdout + prepared.stderr)
+        context = json.loads(prepared.stdout)
+        projected = subprocess.run([self.binary, 'project', '--definition', str(self.definition),
+            *context['native_args'], '--projection', 'basis',
+            '--param', 'repository=' + records[0]['repository_id'], '--payload-only', '--format', 'json'],
+            capture_output=True, timeout=15)
+        self.assertEqual(projected.returncode, 0, projected.stdout + projected.stderr)
+        self.assertEqual(json.loads(projected.stdout), records)
+        retried = subprocess.run(self.command('--ensure-owner'), stdin=subprocess.DEVNULL,
+                                 capture_output=True, timeout=15)
+        self.assertEqual(retried.returncode, 0, retried.stdout + retried.stderr)
+        repeated = json.loads(retried.stdout)
+        self.assertEqual(repeated['store_id'], context['store_id'])
+        self.assertEqual(repeated['native_args'], context['native_args'])
+        self.assertFalse(repeated['storage_mutated'])
         self.assertEqual((Path(context['store_root']) / self.slot).read_bytes(), original)
         self.assertEqual((self.repo / self.slot).read_bytes(), original)
-        self.assertTrue(self.capture(context['native_args'])['valid'])
 
     def test_empty_registered_owner_imports_local_history_without_an_archive(self):
         registered = self.ctx.resolve(self.repo, initialize=True)

@@ -74,7 +74,7 @@ reasoning sequence. Do not load every workflow or reference at entry.
 | Selected work | Required guidance |
 |---|---|
 | Initial/local `implement` | Source binding, initial construction, proof acceptance, realization, and completion below; no review campaign is required. |
-| `analyze` | The same source and claim discipline, read-only. Load the relevant evidence or architecture guidance; do not execute realization, persist a corpus, publish, or grant closure. |
+| `analyze` | The same source and claim discipline, read-only. Load the relevant evidence or architecture guidance; do not execute realization, capture new corpus records, publish, or grant closure. |
 | A finding, failed check, or counterexample-driven selection | [counterexamples.md](counterexamples.md) before admission; [architecture.md](architecture.md) for automatic reconsideration before selecting a response to each admitted liability. |
 | Using supporting construction skills or a selected architecture technique | [architecture.md](architecture.md) for composition and effect boundaries; its techniques do not add a construction stage. |
 | Designing or reducing materially costly verification, diagnosing slow qualification, or selecting a broad retry while verification cost impedes the Goal | [verification.md](verification.md) for evidence-preserving construction and the next useful execution; ordinary cheap validation needs no additional workflow. |
@@ -86,8 +86,12 @@ An open review epoch forbids successor mutation, including experiments. Read its
 selected contract rather than repairing mid-wave. Use available waiting time for
 [read-only self-review](review-closeout.md#self-review-while-reviewers-are-running)
 of the frozen candidate; route self-discovered findings through Review Fold.
-`corpus_write_authorized: false` always applies to `analyze`; supporting skills
-cannot enlarge effect authority.
+`corpus_write_authorized: false` always applies to `analyze` and governs new
+semantic captures. Read-only routes still use Ledger's
+[automatic custody preparation](../ledger/references/automatic-migration.md#automatic-owner-upgrade)
+before corpus projection without separate approval, subject to explicit
+file/custody-maintenance restrictions. This scoped preparation does not permit
+subject mutation or other effects; supporting skills cannot enlarge effect authority.
 Universalist's existing `candidate`, `preserve-incumbent`, `unresolved`, and
 `obstructed` results remain interpretable; their labels are not required output.
 Actuating retains selection and proof authority.

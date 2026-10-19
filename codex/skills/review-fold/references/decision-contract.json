@@ -4,7 +4,7 @@
     "skill": {
       "name": "review-fold",
       "kind": "mixed",
-      "source_fingerprint": "review-fold-counterexample-corpus-v1-automatic-owner-upgrade"
+      "source_fingerprint": "review-fold-counterexample-corpus-v1-automatic-custody"
     },
     "triggers": [
       {
@@ -255,7 +255,9 @@
           "stored rows preserve source facts and semantic admission only",
           "current applicability, class, family, recurrence, owner, cut, carrier, route, and closure are recomputed",
           "missing history yields an incomplete evidence horizon rather than first-observed",
-          "corpus operations use Ledger personal custody; authorized capture automatically migrates compatible history or restores missing bound bytes, waits for active writers, and preserves existing bindings and source bytes"
+          "before projection or capture, corpus operations automatically prepare Ledger personal custody without separate approval, independently of new semantic capture authority",
+          "automatic preparation includes analysis and review, waits for active writers, and preserves existing bindings and source bytes",
+          "explicit user no-file/custody-maintenance constraints or enforced non-writable access select non-mutating owner lookup"
         ],
         "failure_signals": [
           "CAS transcripts or suggested patches are copied into the corpus",
@@ -263,7 +265,9 @@
           "capture occurs for strengthening, preference, new requirement, underdetermined, rejected, or non-current evidence",
           "one semantic witness is duplicated by reviewer or thread identity",
           "corpus failure is silently ignored while complete historical claims are made",
-          "a failed managed operation falls back to a retired repo-local store or read-only analysis repairs custody"
+          "routine custody preparation waits for migration approval or corpus-write authority",
+          "a failed managed operation falls back to a retired repo-local store, or preparation overrides an explicit file/custody-maintenance constraint",
+          "automatic custody preparation is treated as permission to capture new semantic records"
         ],
         "rationale": "Persist the monotone counterexample source language while recompiling every current interpretation."
       }

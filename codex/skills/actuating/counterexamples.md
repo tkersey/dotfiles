@@ -44,7 +44,9 @@ Review Fold captures newly accepted independent witnesses only with enclosing
 corpus-write authority. Pass `corpus_write_authorized` on every handoff: true when
 that effect is authorized; `corpus_write_authorized: false` for `analyze` or absent
 authority. Read-only analysis may project and adjudicate available evidence but
-never writes repository/source-memory stores or provisions tools for capture.
+never changes the subject, captures new records, or provisions tools for capture.
+Ledger's automatic custody preparation precedes projection independently of that
+capture flag, under its own explicit file/custody-maintenance constraints.
 Other routes inherit their actual effect scope; supporting skills cannot expand it.
 Actuating neither copies the corpus nor persists its current interpretation.
 

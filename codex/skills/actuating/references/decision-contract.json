@@ -4,7 +4,7 @@
     "skill": {
       "name": "actuating",
       "kind": "mixed",
-      "source_fingerprint": "actuating-construction-core-v26"
+      "source_fingerprint": "actuating-construction-core-v27"
     },
     "triggers": [
       {
@@ -131,7 +131,8 @@
           "owner-issued proof, review, counterexample, and publication evidence as applicable"
         ],
         "success_signals": [
-          "Git owns realization; verifiers own executed proof; CAS owns review; Review Fold owns CEX admission; Ship owns public effects",
+          "Git owns realization; verifiers own executed proof; CAS owns review; Review Fold owns CEX admission; Ledger owns automatic custody preparation; Ship owns public effects",
+          "analysis forbids new semantic captures while automatic corpus preparation precedes projection without separate approval, subject to explicit file/custody-maintenance constraints",
           "current causal interpretation and closure are ephemeral",
           "direct source binding preserves outcomes, non-goals, scope, compatibility, migration, and deciding observations",
           "source-fixed requirements remain distinct from proposed means and execution authority",

@@ -73,8 +73,10 @@ uv run "$ledger_skill_root/scripts/ensure_custody.py" --repo "<workspace-path>"
 ```
 
 This performs registration-only adoption, not cold migration. It needs no writer
-quiescence because native custody stays in place. Strictly read-only tasks use
-`ledger_context.py` and cannot perform this catalog update. The explicit
+quiescence because native custody stays in place. An explicit user prohibition
+on file/custody maintenance or enforced non-writable access uses
+`ledger_context.py` and cannot perform this catalog update. Ordinary analysis
+still follows Ledger's automatic preparation policy. The explicit
 `ledger_context.py --import-registration ... --repo ...` maintenance route remains
 available for a specifically selected registration.
 
