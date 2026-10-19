@@ -59,9 +59,9 @@ For full `complete`, require:
 ```text
 required Ship/provider state matches the exact head
 no review epoch remains open; all terminal semantic outcomes are folded
-all five auxiliary obligations have terminal, adjudicated, credited outcomes
-all selected file obligations have terminal, adjudicated, credited outcomes
-five consecutive distinct native/default standard cleans credited on the unchanged head
+all five changeset auxiliary obligations have terminal, adjudicated, credited outcomes
+all six lens obligations for each selected file have terminal, adjudicated, credited outcomes
+five consecutive distinct native/default changeset standard cleans credited on the unchanged head
 no unresolved current accepted liability
 no unauthorized semantic change, containment, narrowing, risk, or deferral
 all completeness and historical claims match their actual evidence horizon
@@ -69,7 +69,7 @@ no later falsifier of the Goal, family, mechanism, proof, publication, or review
 ```
 
 Apply [Review-credit admission](review-contract.md#review-credit-admission) to
-both accounting and user/PR narration. The first credited standard counts as one;
+both accounting and user/PR narration. The first credited changeset standard counts as one;
 the next four run serially. A held required obligation cannot become complete merely
 because all receipts say `clean`; preserve its limitation and actual disposition.
 Material findings or head changes reset all credit. Clean reviews are adversarial

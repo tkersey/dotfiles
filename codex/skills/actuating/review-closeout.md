@@ -8,7 +8,7 @@ open, freeze that subject and forbid successor mutation.
 
 A material current entailed finding invalidates the candidate and all review
 credit immediately. It does not request a patch. Complete the initial inventory
-of six changeset-wide lenses and every selected file review against the frozen
+of six changeset-wide lenses and all six lenses for every selected file against the frozen
 head: parallel siblings are non-cancelling; serial mode continues all remaining
 initial requests for evidence only. Required request-local recovery is part of
 the barrier. Fold the complete cut before closing the epoch.
@@ -57,17 +57,22 @@ their checked-in lenses; none substitutes for standard.
 
 Before dispatch, select up to three of the largest eligible text-file changes under
 [Focused file reviews](references/review-contract.md#focused-file-reviews).
-Give each selected file one independent review in the same initial wave; do not
-multiply files by lenses or repeat file reviews during standard confirmations.
-File focus anchors the inquiry while allowing relevant cross-file evidence.
+Give each selected file all six lenses as independent reviews in the same initial
+wave: up to 24 requests across the changeset and three files. File focus anchors
+the inquiry while allowing relevant cross-file evidence. File standard uses
+general best judgment with custom focus instructions; it is not a native/default
+convergence attempt. Each file auxiliary receives its exact unchanged lens plus
+the file scope. Every reviewer continues beyond the first finding; fold the full
+initial batch before choosing a successor. File reviews are initial-only.
 
 Only a completely realized, locally proved candidate is `reviewable`. Require
 five consecutive distinct native/default standard cleans on one unchanged head,
 each admitted by [Review-credit admission](references/review-contract.md#review-credit-admission).
 The initial credited standard counts as one and the next four run serially. All
-five auxiliaries and all selected file reviews must be terminal, adjudicated,
+five changeset auxiliaries and every selected file/lens pair must be terminal, adjudicated,
 and credited for their own requested obligations before later confirmations.
-File credit never advances the standard streak or completes an auxiliary.
+Later confirmations remain changeset-wide. File credit never advances the native
+standard streak or completes any other scope/lens obligation.
 An acknowledged limitation or raw `clean` receipt is not that decision.
 Use the same dispositions for counts and user/PR completion statements. A material
 finding or head change resets all credit. Reviews falsify; they do not prove
