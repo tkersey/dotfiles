@@ -1,7 +1,7 @@
-# Explicit historical migration
+# Owner upgrade and historical migration
 
 Use `scripts/ensure_custody.py --migrate` only for selected legacy inspection,
-historical import, or interrupted migration. Without `--migrate`, the helper
+historical import, or interrupted migration. Without an owner or migration mode, the helper
 resolves the personal catalog and automatically adopts an existing valid Git
 registration when needed; existing custody needs no migration receipt or complete
 worktree inventory. Both helpers belong to `$ledger`; the context
@@ -9,6 +9,41 @@ helper owns storage home, stable root identity, and catalog associations.
 For a coordinated upgrade of existing installations, start with
 [the upgrade guide](personal-store-upgrade.md); already-managed roots normally
 need catalog adoption rather than historical migration.
+
+## Automatic owner upgrade
+
+An authorized write for an opted-in owner includes routine custody initialization,
+compatible current-format migration, and exact restoration. Before its first
+operation, resolve the owner through:
+
+```bash
+uv run "$ledger_skill_root/scripts/ensure_custody.py" --repo "<workspace-root>" \
+  --ensure-owner --definition "<installed-owner-definition>"
+```
+
+Reuse the returned `native_args` for the original capture. The helper keeps an
+existing store's identity, adopts valid registrations, and initializes a private
+managed root only when no registered custody exists. It inventories available
+Git worktrees during migration, preserves source bytes and a bounded archive,
+and selects a single history covering every selected source by complete-record
+prefix. Existing managed bindings remain unchanged; missing bound slots must
+validate against them. A healthy existing managed history needs no archive scan.
+Retired-format conversion remains the historical importer procedure below.
+
+Active writers are waited out using native recovery, event/binding, and journal
+locks. After obtaining the locks, the helper snapshots and validates protected
+history before publication. It never infers abandoned ownership from lock age or
+reclaims a legacy lease. Unknown damage, pending recovery, unavailable worktree
+coverage, divergent histories, or a local extension beyond an existing managed
+log remain explicit reconciliation failures. Sources are preserved. Failure never
+switches capture back to a repo-local store. Updated callers use managed selectors;
+old callers must also be upgraded before they can resume new local writes.
+
+For read-only analysis, replace `--ensure-owner` with `--read-only`. This mode
+creates no catalog, custody, or records and reports when migration or repair is
+needed. Ordinary ensure still only resolves or adopts a registration. Ledger
+1.3.0 through 1.x supports the native protocol used here; no new 1.5.3 minimum is
+imposed. General permission errors do not authorize unrelated permission changes.
 
 ## Skill workflow
 
@@ -60,7 +95,7 @@ Python importer. The definition must declare static monolithic JSONL event slots
 Repository-local manifests never select executable code. Ledger owns location
 policy and transport; the trusted owner constructor alone interprets old records.
 
-Learnings and Negative Ledger current-format histories opt in. Learnings also
+Learnings, Negative Ledger, and Review Fold current-format histories opt in. Learnings also
 imports its recognized retired files through its owner constructor. Unknown
 artifacts are preserved but never mislabeled as semantically imported. Other
 owners must explicitly opt in; segmented, dynamic, and document-slot migration
@@ -116,10 +151,36 @@ owner receives exact source-digest-bound repair controls; use `--framing-control
 only for such an approved control file. Preserved anonymous fragments do not
 become invented records. Global memory admission remains a separate owner action.
 
+## Exact archive repair
+
+An owner-authorized write may select `ensure_custody.py --repair-archive
+--definition <installed-owner-definition>` with the normal workspace or store ID.
+Bootstrap Ledger 1.3.0 or newer within major version 1 first. An intact owner store
+returns normally without scanning archives. Ordinary ensure and read-only context
+lookup never restore records.
+
+This route handles only native `StoreBindingWithoutSlot` for one declared static
+event slot, with no pending transactions. It verifies retained archive manifests
+and bytes, stages the existing native binding/definition/revision custody, and
+requires native doctor to validate the archived slot against that unchanged
+custody. A selected workspace's local copy, when present, must match. Native
+recovery, binding/event, and journal advisory locks exclude competing publication;
+lock contention waits for the active writer, never declaring it dead. Publication
+creates the absent slot atomically and never replaces an existing path. The final
+native doctor and archive identity are returned in `context.custody_repair`.
+
+No binding is rebuilt, source record rewritten, retired directory made writable,
+or journal removed. Stale/tampered archives, divergent local bytes, existing
+corruption, legacy leases, unknown owners/errors, and unresolved transactions
+remain explicit failures. General `AccessDenied` is not a repair trigger. This
+restores bytes already certified by the selected root's binding. Automatic owner
+upgrade selects this repair when appropriate; other missing current-format owner
+history uses its locked migration path.
+
 ## Release gate
 
 Run the owner historical-import and migration test modules with `LEDGER_BIN` set,
-plus the Ledger context
+including `test_archive_repair.py` and `test_owner_upgrade.py`, plus the Ledger context
 suite. Native tests must pass; mocked native results are not custody evidence.
 The Learnings native compatibility test covers the earlier local recovery
 protocol and its archived definitions alongside new imports and captures.

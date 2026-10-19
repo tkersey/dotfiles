@@ -9,6 +9,10 @@ interface:
     an existing valid Git registration without moving history. Use ledger_context.py
     for strictly read-only lookup; historical migration is separate maintenance
     and never a prerequisite for reading an intact owned store.
+    For an opted-in owner-authorized write, use --ensure-owner --definition to
+    initialize, migrate compatible history, or restore missing bound bytes;
+    wait for active writers and resume with the managed selector. Read-only
+    owner selection never creates or repairs custody. Never fall back locally.
     Operate or debug the owner-selected passive definition through the native
     CLI, explain its definition-relative proof and custody boundary, author the
     smallest bounded owner-local definition when needed, or perform exact

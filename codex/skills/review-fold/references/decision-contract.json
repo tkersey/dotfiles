@@ -4,7 +4,7 @@
     "skill": {
       "name": "review-fold",
       "kind": "mixed",
-      "source_fingerprint": "review-fold-counterexample-corpus-v1-common-class-identity"
+      "source_fingerprint": "review-fold-counterexample-corpus-v1-automatic-owner-upgrade"
     },
     "triggers": [
       {
@@ -254,14 +254,16 @@
           "duplicate reports do not become independent counterexamples",
           "stored rows preserve source facts and semantic admission only",
           "current applicability, class, family, recurrence, owner, cut, carrier, route, and closure are recomputed",
-          "missing history yields an incomplete evidence horizon rather than first-observed"
+          "missing history yields an incomplete evidence horizon rather than first-observed",
+          "corpus operations use Ledger personal custody; authorized capture automatically migrates compatible history or restores missing bound bytes, waits for active writers, and preserves existing bindings and source bytes"
         ],
         "failure_signals": [
           "CAS transcripts or suggested patches are copied into the corpus",
           "a stored family, owner, cut, carrier, route, or closure verdict becomes authority",
           "capture occurs for strengthening, preference, new requirement, underdetermined, rejected, or non-current evidence",
           "one semantic witness is duplicated by reviewer or thread identity",
-          "corpus failure is silently ignored while complete historical claims are made"
+          "corpus failure is silently ignored while complete historical claims are made",
+          "a failed managed operation falls back to a retired repo-local store or read-only analysis repairs custody"
         ],
         "rationale": "Persist the monotone counterexample source language while recompiling every current interpretation."
       }
