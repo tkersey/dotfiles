@@ -19,12 +19,12 @@ const policy = JSON.parse(text('references/review-contract.json'));
 // Protect the accepted review process, not just one count or flag.
 const reviewKeys = ["required_lenses", "focused_file_reviews", "review_scheduling", "candidate_lifecycle", "review_epoch", "review_entry", "evidence_acquisition", "standard_convergence", "material_change", "transport_recovery", "attempt_quality"];
 assert.equal(sha256(JSON.stringify(canonical(Object.fromEntries(reviewKeys.map(k => [k,policy[k]]))))),
-  '1416aed22438bb64afc3aa3e6caa1a570cf3998dfba284b96c1c1accc203c509', 'review process changed');
+  '8c13cc173966b7143d41f967ba6861e4f36fa2909b7cff5d980a747899905f37', 'review process changed');
 const skill = text('SKILL.md');
 const protectedSections = {
   "Public routes": "8e2aec586fe33dfc69d573c15a9fdc425547bf8bdf8c4952e5f0fbdd8fb6c222",
   "Review-epoch immutability and evidence acquisition": "fea7a409fda38f8c71c95e420839469b0e4fafff77a7a6141a0c090a48859137",
-  "Review and closure": "f506911bea5b95b97be141a59b86eb714b7209b2d1288ce585b2b07d19f4992b",
+  "Review and closure": "a4ad82fd16cae9265ff4f3e116f03751466af6ae07ea4c5e2ffbd4be438f32d2",
   // Apply the same proof bar to initial construction; witnesses are conditional.
   "Realization and common proof obligations": "8f782e151a2c48cca2da1506830376ad597b689fde6985014f30c466f87be6e3"
 };

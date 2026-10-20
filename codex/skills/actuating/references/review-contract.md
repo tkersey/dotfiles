@@ -74,27 +74,39 @@ standard review.
 
 Before the first request, read the complete rename-aware base-to-head file
 inventory and additions/deletions, using `git diff --find-renames --numstat -z`
-and `--name-status -z` against those exact commits. Preserve literal paths;
-do not rank a truncated provider listing or split filenames on whitespace.
+and `--name-status -z` against those exact commits. Inspect the actual changed hunks
+and relevant base/head contents; raw file totals do not establish eligibility or
+ranking. Preserve literal paths; do not rank a truncated provider listing or split
+filenames on whitespace.
 
 When the entire changeset has at most one logical file, select no supplement:
 the existing reviews already have that file as their sole change anchor.
-Otherwise rank eligible text-file changes by additions plus deletions descending,
-breaking ties by repository path (head path, or base path for a deletion).
-Select the first three, or all eligible files if fewer. This caps primary file
-assignments per epoch; existing exact-request recovery remains separate.
 
-Include hand-maintained code, tests, schemas, configuration, documentation, and
-skill/workflow instructions. Exclude generated output, vendored snapshots,
-lockfile regeneration, formatting, or moves only when evidence establishes that
-the change is entirely generated or mechanical; a filename alone is insufficient.
-Mixed substantive/mechanical edits remain eligible at their full raw line count.
-Count a rename once, preserve both paths, and include substantive path-only changes
-even at zero line churn. Deletions use their base-side contents and deleted lines.
+Only hand-maintained code with significant non-test changes is eligible. Judge
+significance by changed behavior, contracts, or implementation structure, not a
+minimum line count. Exclude dedicated test files, test-only helpers, fixtures and
+snapshots, non-code changes, generated output, vendored snapshots, and lockfile
+regeneration. Use repository conventions and actual file role/content, not a
+filename alone, to establish these exclusions.
+
+For mixed source/test files, such as Zig files with inline `test` blocks, ignore
+tests and test-only support code in both eligibility and ranking. A source file
+whose diff changes only tests is ineligible. Also ignore comments, formatting,
+and generated or mechanical hunks in mixed edits. Count only substantive non-test
+code additions and deletions; incidental non-test edits do not make a file eligible.
+
+Rank eligible files by that filtered additions-plus-deletions count descending,
+breaking ties by repository path (head path, or base path for a deletion).
+Select the first three, or all eligible files if fewer, including none; never fill
+the quota with ineligible changes. This caps primary file assignments per epoch;
+existing exact-request recovery remains separate. Count a rename once, preserve
+both paths, and include significant path-only code changes even at zero line churn.
+Deletions use their base-side contents and qualifying deleted lines.
 Binary changes have no comparable line score and receive no automatic supplement.
-All exclusions affect only this selection; full changeset scope remains required.
-Retain selected paths, observed counts, and exclusion reasons in the existing
-Working Set. Churn allocates attention; it neither proves risk nor waives scope.
+All exclusions affect only this selection; full changeset scope, including tests,
+remains required. Retain selected paths, filtered counts, significance and exclusion
+reasons in the existing Working Set. Churn allocates attention; it neither proves
+risk nor waives scope.
 
 Freeze the ordered `focused_files` list in `review_context` before dispatch.
 Each entry has `base_path` and `head_path`; use null for an absent side.

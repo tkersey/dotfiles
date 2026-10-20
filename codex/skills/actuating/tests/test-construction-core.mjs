@@ -45,7 +45,7 @@ function check(src) {
     'review_epoch','review_entry','evidence_acquisition','standard_convergence',
     'material_change','transport_recovery','attempt_quality'];
   assert.equal(hash(JSON.stringify(canonical(Object.fromEntries(reviewKeys.map(k=>[k,policy[k]]))))),
-    '1416aed22438bb64afc3aa3e6caa1a570cf3998dfba284b96c1c1accc203c509','changed review process');
+    '8c13cc173966b7143d41f967ba6861e4f36fa2909b7cff5d980a747899905f37','changed review process');
   const admissionStart=counter.indexOf('Before counterexample-driven selection,');
   const admissionEnd=counter.indexOf('\n## Compile the first loss of guarantee');
   assert(admissionStart>=0 && admissionEnd>admissionStart);
@@ -72,7 +72,7 @@ function check(src) {
   assert(normalized(section(skill,'Proof acceptance')).includes('A passing weakened suite cannot discharge an unchanged requirement'));
   assert(normalized(section(skill,'Proof acceptance')).includes('does not demand a finished causal account before authorized exploration'));
 
-  assert.equal(policy.contract_id,'actuating-review-contract-v25');
+  assert.equal(policy.contract_id,'actuating-review-contract-v26');
   assert.equal(policy.construction_selection.reasoning_sequence_required,false);
   assert.equal(policy.construction_selection.metanoetic_before_universalist_when_triggered,false);
   assert.equal(policy.universalist_compilation.nomination_result_required,false);

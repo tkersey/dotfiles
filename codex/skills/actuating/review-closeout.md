@@ -55,7 +55,8 @@ invariant-ace, complexity-mitigator, and fresh-eyes. Standard is Codex's native
 review with no custom Actuating instruction file or argument. Auxiliaries retain
 their checked-in lenses; none substitutes for standard.
 
-Before dispatch, select up to three of the largest eligible text-file changes under
+Before dispatch, inspect the diff and select up to three files with significant
+changes to non-test code under
 [Focused file reviews](references/review-contract.md#focused-file-reviews).
 Give each selected file all six lenses as independent reviews in the same initial
 wave: up to 24 requests across the changeset and three files. File focus anchors
