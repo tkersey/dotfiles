@@ -24,8 +24,8 @@
 
 ## Subagent delegation
 
-- The user explicitly authorizes proactive subagent use without a separate request for each task. Delegate bounded research, implementation, or review when the expected gain in correctness, coverage, or completion time justifies the token and coordination cost.
-- Tokens are a premium resource. Use the smallest useful number of agents, give each a distinct task and only the context needed, and request concise, actionable results. Avoid redundant investigation and speculative fan-out; keep simple or tightly coupled work local.
+- Use subagents proactively for bounded research, implementation, or review when the expected gain in correctness, coverage, or completion time justifies the token and coordination cost. Do not wait for a separate request to delegate.
+- Tokens are a premium resource. Use the smallest useful number of agents, give each a distinct task and only the context needed, and request concise, actionable results. Avoid redundant investigation and speculative fan-out. Prefer direct execution when delegation's coordination and token costs would outweigh its expected contribution.
 - The parent agent owns integration and verification of delegated results. Preserve required review counts, checks, and workflow conditions; cost control does not waive them.
 
 ## Tooling standards
