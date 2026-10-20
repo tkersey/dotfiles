@@ -51,10 +51,6 @@
 - Run scripts, tests, linters, and CLIs through `uv run ...`. For skill-only external dependencies, prefer `uvx TOOL` or `uv run --with PACKAGE COMMAND ...`; do not create or reuse `.venv*` or use `uv pip install` unless a persistent dependency is explicitly requested.
 - For projects that intentionally manage Python dependencies, keep `pyproject.toml` and `uv.lock` authoritative with `uv sync`, or `uv lock` followed by `uv sync`.
 
-### JavaScript and TypeScript
-
-- Keep `fnm` as the workstation Node.js version manager, honoring each repository's existing runtime pins and version requirements.
-
 ### Containers
 
 - When local Linux containers are needed on macOS 26+ with Apple silicon, use
