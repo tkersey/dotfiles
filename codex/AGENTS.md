@@ -53,11 +53,7 @@
 
 ### JavaScript and TypeScript
 
-- Use `pnpm` for Node.js package/project operations unless the user explicitly asks otherwise or the repository requires another package manager. Honor repository instructions, `packageManager`, and the existing lockfile; do not migrate package managers or replace lockfiles solely to apply this preference.
 - Keep `fnm` as the workstation Node.js version manager, honoring each repository's existing runtime pins and version requirements.
-- In pnpm projects, run package scripts with `pnpm run ...`, project-installed CLIs with `pnpm exec ...`, and direct Node commands with `pnpm exec node ...`. Preserve ordinary `node` commands inside package scripts and shebangs.
-- For skill-only external tools, prefer `pnpm dlx PACKAGE ...`; do not add them to project dependencies or install them globally unless a persistent dependency is explicitly requested. Use project-installed versions for project tooling.
-- In pnpm projects, honor the pnpm version pin and keep `pnpm-lock.yaml` authoritative. Use `pnpm install --frozen-lockfile` for CI or verification when a lockfile exists; change version pins or lockfiles only when the task requires it.
 
 ### Containers
 
