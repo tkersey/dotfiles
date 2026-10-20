@@ -239,7 +239,8 @@ assert(investigation.includes('including first-use proposed designs before a bou
 assert(investigation.includes('Include an incumbent, pressure, or challenger only when present'));
 assert(investigation.includes('Stay read-only under the entry contract'));
 const team = text('../universalist/references/workflow/subagent-orchestration.md').replace(/\s+/g, ' ');
-assert(team.includes('the user explicitly asks for subagents'));
+assert(team.includes('applicable repository instructions authorize subagent use'));
+assert(team.includes('Do not impose a second explicit-request gate'));
 assert(team.includes('An architectural axis and typed hole may be provisional or not yet identified'));
 assert(team.includes('Child agents do not choose routes, authorize mutation'));
 const packet = text('../universalist/references/workflow/subagent-packet-contract.md').replace(/\s+/g, ' ');

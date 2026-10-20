@@ -20,7 +20,13 @@
 
 - Invoke `$universalist` within task-relevant semantic design, implementation, review, or simplification. Use algebraic and categorical knowledge to formulate and derive the construction, algorithm, representation, composition, or proof; do not wait for duplication, a failed ordinary design, a named boundary defect, or a preidentified typed hole. Its skill and decision contract own detailed semantics.
 - Ground inquiry in required behavior and concrete evidence. Model-owned formulations are revisable; accepted requirements, authority, effects, resource ceilings, and proof obligations remain binding. A theory may suggest a hypothesis, not certify it. Prefer the least burdensome adequate realization, not the least sophisticated derivation.
-- Reuse adequate derivations and skip purely mechanical work without unresolved semantic questions. Within `$actuating` or `$architectonic`, use the receiving workflow's existing inquiry and authority; never run a duplicate root pass or create a separate report. Team/subagent mode remains explicit-request only.
+- Reuse adequate derivations and skip purely mechanical work without unresolved semantic questions. Within `$actuating` or `$architectonic`, use the receiving workflow's existing inquiry and authority; never run a duplicate root pass or create a separate report.
+
+## Subagent delegation
+
+- Use subagents proactively for bounded research, implementation, or review when the expected gain in correctness, coverage, or completion time justifies the token and coordination cost. Do not wait for a separate request to delegate.
+- Tokens are a premium resource. Use the smallest useful number of agents, give each a distinct task and only the context needed, and request concise, actionable results. Avoid redundant investigation and speculative fan-out. Prefer direct execution when delegation's coordination and token costs would outweigh its expected contribution.
+- The parent agent owns integration and verification of delegated results. Preserve required review counts, checks, and workflow conditions; cost control does not waive them.
 
 ## Tooling standards
 
