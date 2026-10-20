@@ -2,11 +2,15 @@
 
 ## Disclosure contract
 
-**Load only when:** the user explicitly asks for subagents, parallel agents,
-team mode, or the Universalist categorical-substrate team.
+**Load when:** the current session or applicable repository instructions
+authorize subagent use and independent Universalist questions warrant this
+workflow's role-distinct packet contract. Do not impose a second explicit-request
+gate. A user request can select this workflow when higher-priority instructions
+permit it.
 
 **Do not load for:** ordinary implicit activation, one bounded seam, or a task
-whose dominant uncertainty can be resolved by the root.
+whose dominant uncertainty can be resolved by the root. A bounded delegation
+that does not need this workflow's packet contract also does not load it.
 
 ## Authority
 

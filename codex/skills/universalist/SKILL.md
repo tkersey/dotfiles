@@ -35,8 +35,11 @@ semantic work, not file type, diff size, or whether an edit is owner-local.
 
 Reuse adequate derivations and unchanged decisions silently. Do not invent semantic
 work to activate the skill or issue a no-op receipt. Within a receiving workflow,
-use its existing inquiry rather than a duplicate root pass. Team/subagent mode
-remains explicit-request only.
+use its existing inquiry rather than a duplicate root pass. Subagent use follows
+the current session and applicable repository instructions. When they authorize
+delegation, do not impose a second explicit-request gate; choose root, one
+specialist, or the full team according to independent work and expected value
+after coordination and token costs.
 
 <a id="common-path"></a>
 
@@ -153,7 +156,7 @@ Do not load the whole corpus or every linked method at entry.
 | Plausible candidates materially differ (`UNI-CONSEQUENTIAL`) | `references/consequential-boundary.md` | complete native comparison before recommendation or affected mutation |
 | Representation independence, a universal construction, lawful transformation, or bounded approximation is claimed | `references/claim-appropriate-proof.md` | discharge only the applicable proof obligations at the stated strength |
 | A consequential standalone decision needs independent cross-session, actor, migration, or supersession addressing (`UNI-DURABLE`) | `references/durable-decision.md` | existing Ledger-addressed plan and root receipt after standalone adjudication |
-| User explicitly requests team mode | `references/workflow/team-routing.md`, `references/workflow/subagent-packet-contract.md`, `references/workflow/subagent-orchestration.md` | bounded read-only packets and root synthesis under existing authority |
+| Independent questions warrant Universalist team orchestration under current session and repository authorization | `references/workflow/team-routing.md`, `references/workflow/subagent-packet-contract.md`, `references/workflow/subagent-orchestration.md` | bounded read-only packets and root synthesis under existing authority |
 
 Resemblance can suggest a hypothesis, never prove it. An unknown owner or typed
 hole may be the object of inquiry. Missing external authority or unavailable facts
