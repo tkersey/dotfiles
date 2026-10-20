@@ -1,6 +1,6 @@
 {
   "schema": "actuating-review-contract/v19",
-  "contract_id": "actuating-review-contract-v25",
+  "contract_id": "actuating-review-contract-v26",
   "required_lenses": [
     {
       "name": "standard",
@@ -41,7 +41,7 @@
     "selection_ref": "codex/skills/actuating/references/review-contract.md#focused-file-reviews",
     "maximum_files": 3,
     "skip_single_logical_file_changeset": true,
-    "rank_by": "additions-plus-deletions-descending",
+    "rank_by": "substantive-non-test-code-additions-plus-deletions-descending",
     "tie_break": "head-path-or-deleted-base-path",
     "selection_frozen_before_dispatch": true,
     "exact_assignment_in_instruction_digest": true,

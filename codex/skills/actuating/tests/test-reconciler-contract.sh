@@ -25,7 +25,7 @@ const c = json('references/review-contract.json');
 const d = json('references/decision-contract.json').skill_decision_contract;
 const names = ['standard','soundness-skeptic','footgun-finder','invariant-ace','complexity-mitigator','fresh-eyes'];
 assert.equal(c.schema, 'actuating-review-contract/v19');
-assert.equal(c.contract_id, 'actuating-review-contract-v25');
+assert.equal(c.contract_id, 'actuating-review-contract-v26');
 assert.equal(d.contract_version, 'SKDC-v1');
 assert.equal(d.skill.source_fingerprint, 'actuating-construction-core-v28');
 assert(c.candidate_acceptance.common_obligations.includes(
