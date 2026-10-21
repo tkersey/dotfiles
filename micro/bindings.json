@@ -1,0 +1,12 @@
+{
+    "Ctrl-a": "StartOfLine",
+    "Ctrl-e": "EndOfLine",
+    "Ctrl-b": "CursorLeft",
+    "Ctrl-f": "CursorRight",
+    "Ctrl-p": "CursorUp",
+    "Ctrl-n": "CursorDown",
+    "Ctrl-d": "Delete",
+    "Ctrl-k": "Cut|SelectToEndOfLine,Cut|SelectRight,Cut",
+    "Ctrl-y": "Paste",
+    "Alt-x": "CommandMode"
+}
