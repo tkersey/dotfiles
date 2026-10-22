@@ -2,5 +2,5 @@ policy:
   allow_implicit_invocation: true
 interface:
   display_name: "Learnings"
-  short_description: "Capture and admit evidence-backed learnings"
-  default_prompt: "Use $learnings for project-scoped recall, source-local capture, and explicitly authorized retired-source recovery. Activate on a reusable decision, durable footgun, or correction; delivery alone does not require evaluation or a receipt. Evaluate the capture gate for qualifying observations; historical imports follow retired-import.md and preserve original records rather than recapturing them. Retain the source-owned disposition, use the selected personal Ledger store, and admit memory snapshots only after source acceptance. Do not invoke sibling source skills or a coordinator solely because Learnings activated."
+  short_description: "Recall and capture reusable execution learnings"
+  default_prompt: "Use $learnings to recall relevant execution evidence or capture an observed change to a reusable decision, durable footgun, or prior learning, with memory admission only after source acceptance."

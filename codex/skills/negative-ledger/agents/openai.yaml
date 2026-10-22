@@ -2,5 +2,5 @@ policy:
   allow_implicit_invocation: true
 interface:
   display_name: "Negative Ledger"
-  short_description: "Recall and prune witnessed failed routes and regressions"
-  default_prompt: "Use $negative-ledger implicitly when implementation, debugging, review, or validation encounters a witnessed failed or no-effect route, benchmark or test regression, revert, repeated same-cluster retry, abandoned strategy, or a question about what has already been tried. Discover current route-candidates by mechanism, component, and invariant; assess their scope against the current artifact before the exact route-gate. Candidates suggest investigation and never establish exclusions. Treat transient failures and first incomplete attempts as no-op. Retain the source-owned disposition without sibling coordination. The owning root captures only durable decision-shaping evidence with a stable retry key; admit a complete native projection only after the source admission gate passes."
+  short_description: "Check prior failures before retrying a route"
+  default_prompt: "Use $negative-ledger to discover relevant prior failures before selecting a resembling retry, then assess current applicability and the exact route gate; capture only durable evidence that changes future routing."

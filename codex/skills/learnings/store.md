@@ -14,7 +14,12 @@ Set the definition independently of the target workspace:
 learnings_definition="$(realpath "${CODEX_HOME:-$HOME/.codex}/skills/learnings/definitions/ledger/learnings-protocol.json")"
 ```
 
-Resolve the intended store through `$ledger`: `--store-id` works without Git;
+Before the first canonical projection or capture, follow `$ledger`'s automatic
+owner preparation for this definition and reuse its returned context. Explicit
+file/custody restrictions follow Ledger's read-only path; preparation grants no
+new learning capture or memory admission authority.
+
+Select the intended store through `$ledger`: `--store-id` works without Git;
 `--repo` may resolve a cataloged workspace alias. Retain `store_root`, `store_id`,
 and `repository_id`; `workspace_root` is optional provenance. All canonical operations
 use `--store-root "<context.store_root>" --store-id "<context.store_id>"`.
@@ -29,11 +34,9 @@ Retired-source recovery uses the explicit [historical import](retired-import.md)
 maintenance route. It preserves original identities and record fields through
 `import-record`; ordinary new writes continue to use `capture`.
 
-Normal context resolution is read-only and does not scan historical worktrees.
-A first capture can initialize only an explicitly requested new store. Legacy
-import/adoption is separate maintenance, never a prerequisite for access to an
-existing valid store. Existing native binding failures still require owner repair;
-do not change selectors, bind each new worktree, or hand-edit source records.
+Historical recovery completeness does not gate access to an existing valid
+store. Leave custody failures and repairs to `$ledger`; do not change selectors,
+bind each new worktree, or hand-edit source records.
 
 Rows preserve `id`, `captured_at`, `status`, `learning`, `evidence`, `application`,
 `source`, `fingerprint`, `context`, `tags`, `related_ids`, and `supersedes_id`.

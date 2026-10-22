@@ -8,19 +8,7 @@
 ## Editing Constraints Override
 
 - Override generic guidance to stop on unexpected working-tree changes: treat them as concurrent edits and keep working.
-- Ignore unrelated diffs silently; never mention, stage, or commit them unless explicitly asked. For overlapping diffs, re-read and reconcile without clobbering concurrent changes, re-apply only the still-valid patch, and ask only when the files cannot resolve a real semantic conflict.
-
-## Metanoetic intelligence-escalation mandate
-
-- Invoke `$metanoetic` before relevant adjudication when its description's task-relevant pressures apply, or when explicitly requested. A grounded task or question is enough; no identified incumbent, advance challenger, or finished comparison is required. Infer the task from context; do not invent one. Skip routine implicit invocation without a task-relevant reason.
-- Ground inquiry in the accepted objective and available evidence. Model-owned assumptions, representations, and evaluation methods are revisable with justification; user requirements, authorized effects, resource ceilings, and proof obligations remain binding. Develop comparisons and discriminators as needed before selection; do not change expectations merely to agree with a candidate.
-- Apply the canonical line unchanged; do not repeat its injection without a new task-relevant purpose. One activation is not a cap on reasoning, evidence gathering, or useful revision; a new derivation can matter without a code change. Follow useful discoveries within task limits. The receiving workflow retains final selection, execution, and closure authority; retaining the incumbent is valid. Return the resulting work, not an invocation report.
-
-## Universalist generative-abstraction mandate
-
-- Invoke `$universalist` within task-relevant semantic design, implementation, review, or simplification. Use algebraic and categorical knowledge to formulate and derive the construction, algorithm, representation, composition, or proof; do not wait for duplication, a failed ordinary design, a named boundary defect, or a preidentified typed hole. Its skill and decision contract own detailed semantics.
-- Ground inquiry in required behavior and concrete evidence. Model-owned formulations are revisable; accepted requirements, authority, effects, resource ceilings, and proof obligations remain binding. A theory may suggest a hypothesis, not certify it. Prefer the least burdensome adequate realization, not the least sophisticated derivation.
-- Reuse adequate derivations and skip purely mechanical work without unresolved semantic questions. Within `$actuating` or `$architectonic`, use the receiving workflow's existing inquiry and authority; never run a duplicate root pass or create a separate report.
+- Ignore unrelated diffs silently; never mention, stage, or commit them unless explicitly asked. For overlapping diffs, re-read and reconcile without clobbering concurrent changes, re-apply only the still-valid patch, and ask only when available repository and conversation evidence cannot resolve a real semantic conflict.
 
 ## Subagent delegation
 
@@ -30,13 +18,13 @@
 
 ## Tooling standards
 
-- Complete checks required by the task and active workflow, including review counts and reset rules. Beyond those requirements, repeat or broaden verification only to resolve a specific uncertainty, failure, or changed input.
+- Every required check must finish successfully against the delivered state before declaring work passed, verified, or complete. Stopped, interrupted, timed-out, missing, or inconclusive checks remain outstanding: resume or rerun them; if blocked, report the blocker and incomplete status. Do not waive or narrow accepted verification requirements unless explicitly directed. Preserve required review counts and reset rules. Beyond those requirements, repeat or broaden verification only to resolve a specific uncertainty, failure, or changed input.
 
 ### Codex configuration
 
 - Make reusable Codex settings changes in the dotfiles repository's `etc/codex/config.toml`, linked to `/etc/codex/config.toml`.
 - Treat `~/.codex/config.toml` as machine-local configuration: project trust entries, installation-specific paths, and Codex/ChatGPT desktop-managed state belong there. Edit it only for a requested machine-local change, and leave unrelated churn unmodified and uncommitted.
-- User configuration overrides system defaults. Report any local override that masks a shared change; do not mirror shared settings into the user file.
+- User configuration overrides system defaults. When a shared change appears ineffective, check higher-precedence configuration, including project, profile, and command-line settings. Report any masking override; do not mirror shared settings into the user file.
 
 ### Git
 
@@ -54,8 +42,8 @@
 ### Python
 
 - Use `uv` for Python package/project operations; do not use direct `python`, `pip`, `pipx`, `venv`, `virtualenv`, `poetry`, or `conda` unless the user explicitly asks or the repo requires it.
-- Run scripts, tests, linters, and CLIs through `uv run ...`. For skill-only external dependencies, prefer `uvx TOOL` or `uv run --with PACKAGE COMMAND ...`; do not create or reuse `.venv*` or use `uv pip install` unless a persistent dependency is explicitly requested.
-- For projects that intentionally manage Python dependencies, keep `pyproject.toml` and `uv.lock` authoritative with `uv sync`, or `uv lock` followed by `uv sync`.
+- Run Python scripts, tests, linters, and CLIs through `uv run ...`. For project work, use the project's declared dependencies and managed environment; keep `pyproject.toml` and `uv.lock` authoritative with `uv sync`, or `uv lock` followed by `uv sync`.
+- For helpers independent of the project, prefer `uvx TOOL` or `uv run --no-project --isolated --with PACKAGE COMMAND ...`. Do not create or reuse project `.venv*` environments or use `uv pip install` for helper-only dependencies unless persistent dependencies are explicitly requested.
 
 ### Containers
 
@@ -67,46 +55,4 @@
 
 ### JSON
 
-- Use `jaq` instead of `jq` when `jaq` is installed; fall back to `jq` when it is not.
-
-### Source evidence and memory
-
-- `$ledger` is the source of truth for evidence-storage location, context
-  resolution, and custody maintenance. Source owners select semantic definitions
-  and operations. Read and mutate canonical evidence only through those explicit
-  definitions and Ledger operations; never hand-edit records or bypass an invalid
-  native store. Personal store selection does not require a Git checkout or
-  complete legacy-worktree coverage. Do not duplicate lookup or migration policy.
-- Memory-source notes are immutable derived admission snapshots. Phase 2 owns
-  `memory_summary.md`, `MEMORY.md`, and memory-root `skills/*`; do not edit them
-  during ordinary work. Accepted admissions from `$learnings`, `$negative-ledger`,
-  or `$synesthesia` go through `$memory-source-notes` in the same turn. The
-  `memory-note` CLI remains the sole immutable writer, not a skill or bypass.
-- Use `$learnings` when observed evidence changes a reusable decision, reveals a
-  durable footgun, or corrects a prior learning. Delivery alone requires no
-  invocation or receipt. The owning task selects captures after adjudicating
-  worker findings; repeated worker reports do not require separate captures.
-  No-op, duplicate-skip, or failure to append alone never invalidates delivery.
-- Activate sibling sources only for their own evidence: `$negative-ledger` for a
-  witnessed failed/no-effect/regressed/reverted/abandoned route or a request about
-  prior attempts; `$synesthesia` for explicit sensory intent, documented
-  representational ambiguity, or a durable mapping/boundary event. No aggregate
-  packet, forced sibling evaluation, or source-memory delivery gate.
-- Retain native append/transition results; repeat readback only for an uncertain
-  result, a changed consumer, or requested proof. Canonical writes are independent;
-  derived note/digest or Phase 2 failures never roll them back. Keep no-ops
-  internal; report writes, actionable non-durable proposals, admission
-  degradation, and blockers only when they affect the user, repository state,
-  or requested proof.
-
-### Negative-evidence routing
-
-- Before repeating a route resembling a prior failure, load `$negative-ledger`
-  and discover current `route-candidates` from the failure mechanism, component,
-  and invariant. Check material candidates against the current artifact and their
-  declared identities before using the exact `route-gate`. A route-name miss is
-  not evidence that no relevant failure is known. Only active, witnessed,
-  exact-enough, currently artifact-applicable exclusions may block selection.
-- Evaluate capture at material strategy pivots, regression-confirmed reverts,
-  or closeout leaving a failed route likely to recur. The skill owns durable route-shaping capture
-  criteria, disposition, and lifecycle; do not run tools to manufacture a no-op.
+- Prefer `jaq` when installed and compatible with the required operation; otherwise use `jq`.

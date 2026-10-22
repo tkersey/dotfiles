@@ -1,1 +1,1 @@
-/Users/tk/.codex/AGENTS.md
+codex/AGENTS.md
