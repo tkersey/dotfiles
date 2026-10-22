@@ -1,6 +1,6 @@
 ---
 name: negative-ledger
-description: "Recall prior attempts or handle witnessed failed/no-effect routes, regressions, reverts, abandoned strategies, repeated retries, and negative-evidence lifecycle or memory admission. Not ordinary successful closeout."
+description: "Recall prior attempts, or check relevant failure evidence before selecting or retrying a route. Use for failures, no-effect attempts, regressions, reverts, or abandoned strategies that can change future routing, and for negative-evidence lifecycle changes or admission to memory. Skip ordinary successful closeout and transient errors without a durable failed hypothesis."
 metadata:
   version: "8.4.0"
 ---
@@ -34,7 +34,7 @@ Ledger replays/projects the declared protocol without semantic authority.
 whether to compile a route constraint, routing trigger, or reusable memory skill.
 
 Never use memory notes as the operational route gate. For accepted admission,
-load `$memory-source-notes` before invoking `run_memory_note_tool`.
+load `$memory-source-notes` before invoking `run_memory_note_tool` in the same turn.
 
 ## Trigger Cues
 

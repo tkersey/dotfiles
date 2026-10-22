@@ -2,10 +2,8 @@
 
 ## Write Workflow
 
-1. Resolve the intended personal store through `$ledger`, using an explicit
-   `--store-id` or an existing cataloged workspace alias. Git is optional
-   provenance; unavailable legacy worktrees do not block an existing valid store.
-   Only an explicitly requested new store may be initialized.
+1. Resolve the intended personal store through [store guidance](store.md),
+   including `$ledger`'s first-use owner preparation. Reuse its returned selector.
 2. Gather exact evidence, immutable artifact identity where relevant, and changed
    paths. Use stable `repository_id` in `context.repo`, retaining actual branch
    provenance separately (`not-applicable` for non-Git evidence). Use stable,
@@ -30,8 +28,8 @@
 6. Retain the native transaction outcome and returned learning ID. Native
    compare-and-append owns validation, binding, and concurrent-write safety; do
    not surround a successful transaction with repeated doctor or precommit
-   readback. Use a focused `record` projection if the result is uncertain or a
-   changed consumer needs verification. Native failure remains a failure; do not
+   readback. Use a focused `record` projection for an uncertain result, a changed
+   consumer, or requested proof. Native failure remains a failure; do not
    change selectors or reinterpret invalid rows to make an append pass.
 7. Retain the canonical learning outcome in working evidence. Include
    source-memory proof in the final reply only when it changed repo-visible

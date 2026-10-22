@@ -1,6 +1,6 @@
 ---
 name: learnings
-description: "Capture or recall evidence-backed execution learnings at consequential validation transitions, strategy pivots, footguns, or retry loops. Also handle explicit learning-memory admission and supersession. Delivery alone does not require evaluation."
+description: "Capture or recall evidence-backed execution learnings. Use when observed evidence changes a reusable decision, reveals a durable footgun, or corrects a prior learning; also for lessons learned, learning recall, or memory admission and supersession. Delivery alone is not a trigger."
 metadata:
   version: "8.4.0"
 ---
@@ -36,7 +36,7 @@ memory_summary.md / MEMORY.md / skills/*
 `$ledger` alone owns storage location, registration, and migration policy.
 Do not infer custody from the current checkout or duplicate that policy here.
 Do not duplicate every learning into memory notes. For an accepted admission,
-load `$memory-source-notes` before invoking `run_memory_note_tool`.
+load `$memory-source-notes` before invoking `run_memory_note_tool` in the same turn.
 
 ## Trigger Cues
 

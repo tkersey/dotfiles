@@ -28,13 +28,17 @@ with `ledger definition check --definition "$negative_ledger_definition" --forma
 A healthy store doctor does not establish projection compatibility. Reuse this
 check while the definition and executable are unchanged.
 
-Resolve the intended personal store through `$ledger`: `--store-id` requires no
-Git workspace; `--repo` can resolve a cataloged workspace alias. Retain
-`store_root`, `store_id`, and stable `repository_id`; `workspace_root` is optional
-provenance. All canonical operations use that selector, including admission.
-Only an explicitly requested new store may initialize. Reads do not create
-history, scan unavailable worktrees, or require migration-coverage certification.
-Legacy import and binding repair are separate owner-controlled maintenance.
+Before the first canonical projection or capture, follow `$ledger`'s automatic
+owner preparation for this definition. Retain its returned `store_root`,
+`store_id`, and stable `repository_id`; `workspace_root` is optional provenance.
+All canonical operations use that selector, including admission. Direct
+`--store-id` selection requires no Git workspace; `--repo` can resolve a cataloged
+workspace alias.
+
+Explicit file/custody restrictions follow Ledger's read-only path; preparation
+grants no new capture, lifecycle, or admission authority. Historical recovery
+completeness does not gate access to an existing valid store. Ledger owns any
+required custody maintenance.
 
 Native surface:
 

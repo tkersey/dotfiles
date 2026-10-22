@@ -1,6 +1,13 @@
 ---
 name: universalist
-description: "Use algebraic and categorical knowledge to formulate and derive simpler correct constructions, algorithms, representations, compositions, and proofs. Invoke for semantic design, implementation, review, or simplification even before a boundary defect, typed hole, repeated implementation, or candidate abstraction is named. Ground inquiry in the task; earn conclusions with laws and evidence. Preserve adequate designs and skip purely mechanical work."
+description: >-
+  Use algebraic and categorical reasoning to derive simpler correct solutions.
+  Invoke when design, implementation, review, or simplification requires deriving
+  or reconsidering behavior, algorithms, representations, composition,
+  observations, effects, ownership, or proof, including internal choices under
+  an accepted interface. No named boundary defect, duplication, failed ordinary
+  design, or candidate abstraction is required. Reuse adequate derivations and
+  skip purely mechanical execution of settled decisions.
 ---
 
 # Universalist
