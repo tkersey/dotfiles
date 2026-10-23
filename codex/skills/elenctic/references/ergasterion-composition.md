@@ -45,10 +45,10 @@ The coordinator invokes the public Elenctic campaign, never its worker as a
 replacement for preflight, preparation or reconciliation.
 
 A combined or closeout handoff carries the exact PR/epoch and accepted obligations,
-`selection=all-changed`, comments workflow, scheduling/model settings, **no GitHub
+`selection=all-changed`, comments workflow, scheduling/model and selected execution settings, **no GitHub
 mutations**, and deferred presentation. This narrower effect scope disables Viewed
 projection and own-root thread resolution, not complete discussion discovery,
-substantive counter-case adjudication, inspection or required snapshot/seed work.
+substantive counter-case adjudication, inspection or required policy/preparation work.
 Record those writes as intentionally not attempted, not successful or failed.
 Workers stay read-only. Text-only delivery suppresses presentation, not authorized
 private policy/runtime work. An explicit no-file/no-local-write limit still prevents
@@ -64,6 +64,12 @@ independently binding obligations, and a strict source label alone does not
 establish an Elenctic blocker. The joint fold retains factual evidence and source
 dispositions while justifying each current merge obligation.
 
+Carry explicit `execution=fork|subagents` into Elenctic; a new campaign defaults
+to `fork`. Preserve its actual `execution_mode` in the Elenctic source assessment,
+not at the aggregate identity's root or as Architectonic's execution choice.
+The chosen route retains its own context/provenance requirements; subagents do
+not require a seed session. Historical absence is not retroactively filled in.
+
 Elenctic runs exactly one campaign per requested round, finishes runnable selected
 work, and returns its original full findings, adjudications, source identities,
 coverage, policy/context/seed provenance and verdict. It does not run Actuating,
@@ -75,7 +81,7 @@ complete blocked assessment merely to obtain approval.
 The first Architectonic assessment is not a verdict Elenctic must confirm. Shared
 facts are attributed orientation, with normal source revalidation. Preserve the
 actual preparation/history contract and do not inject later aggregate results into
-the frozen seed. Independent source standards remain mandatory.
+the frozen preparation or any seed. Independent source standards remain mandatory.
 
 ## Deferred output, not lost output
 

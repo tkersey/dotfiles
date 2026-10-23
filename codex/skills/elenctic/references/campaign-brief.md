@@ -14,9 +14,13 @@ and causal orientation for each file reviewer:
 exact PR epoch
   -> primary-thread deep analysis
   -> explicit source-bound Campaign Brief
-  -> one immutable campaign seed
-  -> file workers forked from that seed
+  -> frozen shared context under the selected execution mode
+  -> file workers using that same preparation
 ```
+
+`fork` preserves the full prepared history in one immutable seed session.
+`subagents` delivers the same frozen brief directly under
+[subagents.md](subagents.md), without claiming full-history inheritance.
 
 The brief is orientation, not adjudication. It may accelerate discovery and
 cross-file reasoning, but it does not establish review coverage, a finding, a
@@ -59,12 +63,12 @@ preparation.
 
 ## Publish an explicit Campaign Brief
 
-Before creating the campaign seed, publish one concise Campaign Brief in the
+Before launching workers, publish one concise Campaign Brief in the
 coordinator transcript. Private reasoning, implicit model state, scratch notes,
 and a statement that analysis occurred are not transferable context. The brief
-must be present in inherited history, but a fork may also copy earlier coordinator
-history. Its digest identifies the brief bytes, not the whole inherited context
-or independent judgment; seed lineage identifies the shared checkpoint.
+must be present in the fork's inherited history or the subagent's explicitly
+delivered context. A fork may also copy earlier coordinator history. The brief
+digest identifies its bytes, not the whole context or independent judgment.
 
 Use this shape, omitting empty sections and narrative history:
 
@@ -74,6 +78,7 @@ Use this shape, omitting empty sections and narrative history:
 ## Bound candidate
 - Campaign ID:
 - Frozen policy ID / root and selected merge policy:
+- Execution mode and shared-context delivery:
 - Repository / PR:
 - Base tip / review merge base / head:
 - Selected unchecked files:
@@ -150,39 +155,45 @@ adjudication in preparation, reproduce the entire diff, or emit a chronology.
 
 ## Freeze the campaign context
 
-After publishing the brief and before consuming any worker result:
+After publishing the brief and before launching any worker, compute a stable
+digest over its exact UTF-8 bytes using a safe repository-neutral mechanism,
+or use a runtime content identity that binds those exact bytes. Do not invent
+a digest. Record `campaign_context_id` with the epoch and execution mode.
 
-1. Compute a stable digest over the exact UTF-8 Campaign Brief bytes when a safe
-   repository-neutral digest mechanism is available; otherwise use a runtime
-   content identity that binds those exact bytes. Do not invent a digest.
-2. Record the brief identity with the campaign epoch.
-3. Fork the current coordinator exactly once through the selected
+For `subagents`, retain those exact bytes and accessible source references for
+every delivery under [subagents.md](subagents.md). Record a null seed; no native
+session fork is required. Freeze this preparation before any worker findings
+arrive and never revise it with those findings.
+
+For `fork`, before consuming any worker result:
+
+1. Fork the current coordinator exactly once through the selected
    [native route](native-forks.md) to create an immutable campaign seed. Verify
    retention of its full prepared history through the brief before launching
    reviewers. A fork that omits the current preparation turn is not a seed.
-4. Record the seed thread ID, fork receipt or parent edge, and the coordinator
+2. Record the seed thread ID, fork receipt or parent edge, and the coordinator
    checkpoint represented by the seed.
-5. Give the seed a navigation title when supported, but never use its title as
+3. Give the seed a navigation title when supported, but never use its title as
    identity or authority.
-6. Never send a review assignment, worker result, aggregate finding, or follow-up
+4. Never send a review assignment, worker result, aggregate finding, or follow-up
    message to the seed.
 
-The seed preserves one identical full prepared context, including the deep
-analysis that produced the brief. Every file worker must fork directly from
+In `fork` mode the seed preserves one identical full prepared context, including
+the deep analysis that produced the brief. Every file worker must fork directly from
 that seed, not from the evolving coordinator and not from another worker.
 Supplying the brief to a fresh worker does not preserve this requirement.
 
-Use [native-forks.md](native-forks.md) to distinguish unavailable wrappers from
+In that mode use [native-forks.md](native-forks.md) to distinguish unavailable wrappers from
 unavailable native operations. If no qualifying native route can fork the
 coordinator and explicit seed, retain the prepared history, and return direct
 IDs and parent provenance, the campaign is **INCOMPLETE** before worker launch.
-Do not substitute clean tasks, generic subagents, independent `codex exec`
-sessions, or copied summaries.
+Do not silently substitute subagents or copied summaries for the selected fork
+contract. Explicitly selected subagents use their own context/provenance contract.
 
 ## Worker epistemic independence
 
 Use the canonical assignment prompt in [campaign.md](campaign.md). Its
-orientation-not-authority boundary applies to the entire inherited history, not
+orientation-not-authority boundary applies to all supplied or inherited context, not
 just the brief: earlier implementation rationales, abandoned interpretations,
 and prior review conclusions must be revalidated before use. Applicable user
 requirements and constraints retain their authority. Matching brief digests or
@@ -203,27 +214,28 @@ against the current candidate.
 
 ## Invalidation and recovery
 
-Any change to merge policy, PR state, base tip, review merge base, head, complete inventory,
+Any change to execution mode, merge policy, PR state, base tip, review merge base, head, complete inventory,
 initial Viewed-state partition, selected-set identity, or material Campaign Brief
-bytes invalidates the seed for new work.
+bytes invalidates the prepared context for new work.
 
 On invalidation:
 
 ```text
-old brief and seed -> stale context
+old brief and any seed -> stale context
 unadmitted workers -> stale
 admitted reports   -> historical hypotheses only
-new epoch          -> reanalyze, republish, and create a new seed
+new campaign       -> reanalyze, republish, and bind the selected execution context
 ```
 
-Do not patch an old brief in place or mix workers descended from different seed
-contexts under one campaign identity.
+Do not patch an old brief in place or mix execution modes or prepared contexts
+under one campaign identity.
 
 When direct coordinator state is lost, `$seq` may recover campaign, seed, parent,
 worker, and report provenance when physically observable. Existing admissible
-reports may still be aggregated. Launching additional work requires an exact
-recoverable seed bound to the unchanged brief and epoch; otherwise start a new
-campaign instance and preparation phase rather than guessing context lineage.
+reports may still be aggregated. Launching additional work requires the exact
+recoverable brief/policy bound to the unchanged epoch and, for `fork`, its seed.
+Otherwise start a new campaign instance and preparation phase rather than guessing
+context provenance. Recover subagent attempts through their actual native receipts.
 
 ## Privacy and reporting
 
@@ -231,7 +243,7 @@ The brief contains source-backed conclusions and explicit uncertainty, never
 private chain-of-thought. Sanitize secrets and private data exactly as the main
 skill requires.
 
-The final campaign report should identify the brief digest or exact content
-identity, seed thread ID, and whether every admitted worker's fork lineage and
-context identity matched. These facts establish context provenance only; they do
-not establish correctness or approval.
+The final campaign report should identify execution mode, the brief digest or
+exact content identity, actual seed ID or null, and whether each admitted worker's
+mode-specific context and delivery provenance matched. These facts establish
+context provenance only; they do not establish correctness or approval.

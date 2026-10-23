@@ -48,6 +48,16 @@ def merge_policy(source: dict[str, Any]) -> str | None:
     return value
 
 
+def execution_mode(source: dict[str, Any]) -> str | None:
+    """Keep historical fork bindings absent rather than relabeling them."""
+    if "execution_mode" not in source:
+        return None
+    value = source["execution_mode"]
+    require(isinstance(value, str) and value in ("fork", "subagents"),
+            "execution_mode must be fork or subagents when supplied")
+    return value
+
+
 def rows_by_id(rows: Any) -> dict[str, dict[str, Any]]:
     require(isinstance(rows, list), "assignments must be a list")
     result = {}
@@ -134,12 +144,18 @@ def check_report(payload: dict[str, Any]) -> dict[str, Any]:
     bound, observed = payload["bound_epoch"], payload["observed_epoch"]
     check_epoch(bound, observed)
     expected = payload["expected_identity"]
-    require(isinstance(expected, dict) and set(expected) in (
-        IDENTITY_FIELDS, IDENTITY_FIELDS | {"merge_policy"}),
-        "expected_identity needs the fixed v1 single-file bindings and optional merge_policy")
+    require(isinstance(expected, dict), "expected_identity must be an object")
+    execution = execution_mode(expected)
+    fields = IDENTITY_FIELDS | ({"execution_mode"} if execution is not None else set())
+    if execution == "subagents":
+        fields |= {"attempt_id"}
+    require(set(expected) in (fields, fields | {"merge_policy"}),
+            "expected_identity needs the fixed v1 single-file bindings for its execution mode")
     for field, value in expected.items():
         if field == "pr":
             require(type(value) is int and value > 0, "pr must be a positive integer")
+        elif field == "campaign_seed_thread_id" and execution == "subagents":
+            require(value is None, "subagents cannot claim a campaign seed thread")
         else:
             nonempty(value, field)
     require(expected["schema"] == "elenctic-review-identity/v1"
@@ -149,11 +165,24 @@ def check_report(payload: dict[str, Any]) -> dict[str, Any]:
         require(expected[field] == bound[field], f"assignment disagrees with epoch: {field}")
 
     active, report = payload["active_attempt"], payload["report"]
-    for field in ("worker_id", "turn_id"):
-        nonempty(active[field], f"active {field}")
-        require(report[field] == active[field], f"report is not from the recorded active {field}")
     identity = report["identity"]
     require(isinstance(identity, dict), "report identity must be an object")
+    require(execution_mode(identity) == execution,
+            "report execution_mode differs from its assignment binding")
+    if execution == "subagents":
+        nonempty(active.get("attempt_id"), "active attempt_id")
+        require(active["attempt_id"] == expected["attempt_id"],
+                "active attempt_id differs from its assignment binding")
+    else:
+        require("attempt_id" not in active and "attempt_id" not in identity,
+                "attempt_id requires subagents execution")
+    for field in ("worker_id", "turn_id"):
+        require(field in active, f"active {field} is required")
+        if not (field == "turn_id" and execution == "subagents" and active[field] is None):
+            nonempty(active[field], f"active {field}")
+        require(field in report and type(report[field]) is type(active[field])
+                and report[field] == active[field],
+                f"report is not from the recorded active {field}")
     require(merge_policy(identity) == merge_policy(expected),
             "report merge_policy differs from its assignment binding")
     for field, value in expected.items():
@@ -165,11 +194,16 @@ def check_report(payload: dict[str, Any]) -> dict[str, Any]:
         ("incomplete", "INCOMPLETE"), ("incomplete", "BLOCKED"),
     }, "contradictory coverage and verdict")
     require(report["decision"] == verdict, "textual decision differs from identity verdict")
-    return {
+    result = {
         "assignment_id": expected["assignment_id"], "worker_id": active["worker_id"],
         "turn_id": active["turn_id"], "coverage_claim": coverage, "verdict_claim": verdict,
         "completion_claim_consistent": coverage == "complete",
     }
+    if execution is not None:
+        result["execution_mode"] = execution
+    if execution == "subagents":
+        result["attempt_id"] = active["attempt_id"]
+    return result
 
 
 def coverage(payload: dict[str, Any]) -> dict[str, Any]:
@@ -181,6 +215,10 @@ def coverage(payload: dict[str, Any]) -> dict[str, Any]:
     check_selection(selected, rows)
     nonempty(payload["campaign_id"], "campaign_id")
     policy = merge_policy(payload)
+    execution = execution_mode(payload)
+    if execution == "subagents":
+        require(payload["campaign_seed_thread_id"] is None,
+                "subagents cannot claim a campaign seed thread")
     states = Counter(row["state"] for row in rows)
     verdicts = Counter()
     for assignment_id, row in assignments.items():
@@ -194,6 +232,8 @@ def coverage(payload: dict[str, Any]) -> dict[str, Any]:
                     f"accepted report belongs to another {field}")
         require(merge_policy(row["expected_identity"]) == policy,
                 "accepted report belongs to another merge_policy binding")
+        require(execution_mode(row["expected_identity"]) == execution,
+                "accepted report belongs to another execution_mode binding")
         claim = check_report({
             "bound_epoch": payload["bound_epoch"], "observed_epoch": payload["observed_epoch"],
             "expected_identity": row["expected_identity"], "active_attempt": row["active_attempt"],

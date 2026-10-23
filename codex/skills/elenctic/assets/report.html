@@ -223,6 +223,8 @@
   for (const [label,value] of [
     ["Head",report.identity.candidate], ["Merge base",report.identity.base],
     ...(policySource ? [[policyLabel,policyDescription]] : []),
+    ...(!analysis && policySource?.execution_mode ? [[composed ? "Elenctic execution" : "Execution",
+      {fork:"Forked sessions",subagents:"Subagents"}[policySource.execution_mode]]] : []),
     ["Selected scope",analysis ? "Not reviewed" : report.identity.selected_scope_coverage], ["Whole PR",analysis ? "Not established" : report.identity.whole_pr_coverage]
   ]) { $("metadata").append(element("dt",label),element("dd",value,"mono")); }
   $("footer").textContent = `Report generated ${report.generated_at}. Local handling state is separate from the immutable review evidence.`;

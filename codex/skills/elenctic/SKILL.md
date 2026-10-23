@@ -1,6 +1,6 @@
 ---
 name: elenctic
-description: "Explicit-only PR review: adjudicate prior threads, review unchecked (or explicitly all-changed) files and causal consequences, and return evidence-backed findings with a pragmatic default merge policy; request pedantic for stricter engineering gates. Request 'for resolution' for groups, or 'for construction' for feedback-based code-change proposals without implementation."
+description: "Explicit-only PR review: adjudicate prior threads, review unchecked (or explicitly all-changed) files and causal consequences, and return evidence-backed findings with a pragmatic default merge policy; request pedantic for stricter engineering gates. Fork sessions by default; request execution=subagents for native subagents. Request 'for resolution' for groups, or 'for construction' for feedback-based code-change proposals without implementation."
 ---
 
 # Elenctic
@@ -21,6 +21,9 @@ $elenctic this PR
 $elenctic this branch
 $elenctic PR #123
 $elenctic PR #123 with concurrency 10
+$elenctic PR #123 execution=fork
+$elenctic PR #123 execution=subagents
+$elenctic PR #123 execution=subagents merge-policy=pedantic
 $elenctic PR #123 merge-policy=pragmatic
 $elenctic PR #123 merge-policy=pedantic
 $elenctic PR #123 selection=all-changed
@@ -42,8 +45,20 @@ an established campaign when supplied; otherwise analyze existing PR discussions
 Only an explicit fresh-review request (for example `review for construction`)
 starts a review campaign. Authorship does not select any output workflow.
 No workflow implements fixes or publishes comments.
-Extract the PR selector independently from workflow/concurrency instructions;
+Extract the PR selector independently from workflow/execution/concurrency instructions;
 pass only that selector to `gh`. Concurrency remains unchanged (default/cap 20).
+
+New review campaigns use `execution=fork`: the existing full-history session
+forks from one immutable prepared seed. Explicit `execution=subagents` or
+equivalent intent such as "review with subagents" selects native subagents in
+the current runtime. Both modes perform one coordinator deep analysis before
+file reviews. Subagents receive the same frozen source-bound Campaign Brief and
+review policy; they do not claim an identical inherited full-history seed.
+Read [subagents.md](references/subagents.md) for that execution route.
+Record `execution_mode` independently of workflow, merge policy, selection and
+concurrency. Never silently switch execution because the selected route is
+unavailable. An execution option alone does not start a fresh review for
+feedback-only `construction` analysis.
 
 New invocations use `merge-policy=pragmatic`; explicit `merge-policy=pedantic` or
 equivalent caller intent such as "pedantic review" selects the stricter policy.
@@ -81,6 +96,10 @@ Resume the recorded merge policy without applying today's default to old work.
 An absent historic mode remains unrecorded under its original frozen contracts.
 An explicit policy change follows campaign recovery and re-adjudication; changing
 a label cannot reinterpret old approval, coverage, drafts, or handling state.
+Also retain the recorded execution mode. Legacy campaigns without
+`execution_mode` retain their original fork contract and absent field; they do
+not become subagent campaigns. An explicit execution change follows campaign
+recovery as a new campaign instance, preserving the established selection.
 
 Retired standalone selectors remain rejected before target resolution: `file`,
 `single-file`, path-only, `session-corpus`, same-name session aggregation, standalone
@@ -96,9 +115,10 @@ Its selected references own their respective obligations:
 
 - [Prior threads](references/prior-review-threads.md): coordinator preflight,
   justified own-root resolution, and discussion-aware adjudication.
-- [Preparation](references/campaign-brief.md): source-bound orientation followed
-  by one immutable full-history seed; [native forks](references/native-forks.md)
-  owns transport/history checks, not review semantics.
+- [Preparation](references/campaign-brief.md): one source-bound deep analysis and
+  frozen brief; [native forks](references/native-forks.md) owns full-history seed
+  checks for `fork`, and [subagents](references/subagents.md) owns direct context
+  delivery and attempt provenance for `subagents`, without changing review semantics.
 - [Worker review](references/worker-review.md): one integrated causal investigation,
   adjudication, blocker falsification, and rank-free human-approval drafts.
 - [Merge policy](references/merge-policy.md): shared Review Fold admission,

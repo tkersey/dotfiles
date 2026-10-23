@@ -42,6 +42,16 @@ def merge_policy(source: dict[str, Any]) -> str | None:
     return value
 
 
+def execution_mode(source: dict[str, Any]) -> str | None:
+    """Preserve the actual selection and leave historical identities unchanged."""
+    if "execution_mode" not in source:
+        return None
+    value = source["execution_mode"]
+    if not isinstance(value, str) or value not in ("fork", "subagents"):
+        raise ValueError("execution_mode must be fork or subagents when supplied")
+    return value
+
+
 def link(value: Any, name: str) -> str:
     value = text(value, name)
     parsed = urlsplit(value)
@@ -308,6 +318,7 @@ def validate_composition(identity: dict[str, Any], *, analysis: bool) -> None:
             raise ValueError("Elenctic assessment needs actual whole-PR coverage")
         if owner == "elenctic":
             merge_policy(assessment)
+            execution_mode(assessment)
     complete = (assessments.keys() == required
                 and all(a["coverage"] == "complete" for a in assessments.values()))
     full_pr = complete and assessments.get("elenctic", {}).get("whole_pr_coverage") == "complete"
@@ -357,7 +368,8 @@ def prepare(raw: Any, *, previous: dict[str, Any] | None = None) -> dict[str, An
             raise ValueError("construction analysis identities require construction workflow")
         text(identity.get("analysis_id"), "identity.analysis_id")
         for field in ("verdict", "coverage", "selected_scope_coverage", "whole_pr_coverage",
-                      "campaign_id", "campaign_context_id", "campaign_seed_thread_id", "campaign_policy_id"):
+                      "campaign_id", "campaign_context_id", "campaign_seed_thread_id", "campaign_policy_id",
+                      "execution_mode"):
             if field in identity:
                 raise ValueError("comment analysis cannot claim campaign provenance, review coverage or a verdict")
     elif identity.get("schema") != f"{owner}-review-identity/v1" or identity.get("mode") != "campaign":
@@ -392,6 +404,8 @@ def prepare(raw: Any, *, previous: dict[str, Any] | None = None) -> dict[str, An
             if identity["campaign_seed_thread_id"] is not None and (
                     identity["campaign_context_id"] is None or identity["campaign_policy_id"] is None):
                 raise ValueError("a seed requires both prepared context and policy identity")
+            if execution_mode(identity) == "subagents" and identity["campaign_seed_thread_id"] is not None:
+                raise ValueError("subagents cannot claim a campaign seed thread")
 
     if composed:
         validate_composition(identity, analysis=analysis)
@@ -460,6 +474,8 @@ def prepare(raw: Any, *, previous: dict[str, Any] | None = None) -> dict[str, An
     key = {k: identity[k] for k in key_fields}
     policy = merge_policy(identity if not composed else
                           identity.get("assessments", {}).get("elenctic", {}))
+    execution = execution_mode(identity if not composed else
+                               identity.get("assessments", {}).get("elenctic", {}))
     if composed:
         # Assessment availability is progress within a round, not round identity.
         # Policy changes still require a new round once a source has arrived.
@@ -469,9 +485,13 @@ def prepare(raw: Any, *, previous: dict[str, Any] | None = None) -> dict[str, An
             if prior is not None and (
                     current is None or merge_policy(prior) != policy):
                 raise ValueError("Elenctic policy changes require a new campaign")
+            if prior is not None and execution_mode(prior) != execution:
+                raise ValueError("Elenctic execution changes require a new campaign")
     elif policy is not None:
         # Preserve standalone legacy namespaces and policy isolation.
         key["merge_policy"] = policy
+    if not composed and not analysis and execution is not None:
+        key["execution_mode"] = execution
     result["report_key"] = owner + ("-analysis:" if analysis else ":") + digest(key)
     if previous is not None and previous.get("report_key") != result["report_key"]:
         raise ValueError("cannot reuse finding numbers from another campaign")

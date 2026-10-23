@@ -1,5 +1,32 @@
 # Validation record and remaining qualification
 
+## 2026-10-23 subagent execution mode
+
+The optional `execution=subagents` route retains one coordinator preparation and
+the ordinary review semantics. `execution=fork` remains the new-campaign default.
+Subagent identities carry their actual execution choice, null seed and a
+coordinator-owned per-delivery token; the token does not authenticate native
+provenance. Existing legacy identities and report namespaces retain their meaning.
+
+| Check | Observed result | Evidence scope |
+|---|---|---|
+| Elenctic core suites (`test_campaign_state`, `test_report`, `test_policy`, `test_resolution`, `test_construction`, `test_review_cases`) | 113 passed | Mode-specific admission, missing/mismatched/stale attempts, nullable native turn IDs, selected coverage, legacy compatibility, report isolation, policy capture and existing workflow compatibility. |
+| Ergasterion shared-renderer suite | 32 passed | Shared renderer compatibility, aggregate source boundaries and report regeneration. |
+| Skill metadata, 57 relative reference targets, actual frozen-policy capture/verification and whitespace | Passed | Installed-package shape, source binding and availability of the new execution reference. |
+| Actual subagent report generation and JavaScript compilation | Passed | Preserved actual execution identity/null seed and syntactically valid generated report script. |
+| Independent instruction walkthrough on five supplied runtime states | Expected route and recovery actions | Explicit subagents without CAS, default fork obstruction, mode change preserving selection, stale token while a newer attempt is active, and feedback-only construction without worker launch. |
+| Independent contract review | No actionable contradiction found | Default fork history requirements, explicit alternative, context delivery, permission boundaries and legacy recovery. |
+
+The walkthrough was a plan from supplied runtime facts, not a live PR review.
+Native history inheritance is preferred where supported; later subagent waves may
+inherit extra coordinator context and do not claim identical seed histories.
+No end-to-end session/subagent campaign or account-permission comparison was run:
+this environment lacks `gh`, `codex` and `cas`. Browser execution was not run
+(Playwright unavailable); report generation and JavaScript parsing do not qualify
+browser rendering, storage, or prompt reduction across accounts.
+
+## Earlier qualification records
+
 The 2026-09-28 record below is historical. It does not qualify later revisions;
 revision-specific work and the executable comparison assets follow it.
 

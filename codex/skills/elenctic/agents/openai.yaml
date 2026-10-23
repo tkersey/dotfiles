@@ -2,5 +2,5 @@ policy:
   allow_implicit_invocation: false
 interface:
   display_name: "elenctic"
-  short_description: "Pragmatic PR reviews with an explicit pedantic mode"
-  default_prompt: "Use $elenctic for the requested PR, preserving any established merge policy and output workflow; use the pragmatic default for new work unless pedantic is requested."
+  short_description: "Pragmatic PR reviews via session forks or subagents"
+  default_prompt: "Use $elenctic for the requested PR, preserving established execution, merge policy and workflow; new campaigns default to session forks and pragmatic review unless subagents or pedantic are requested."
