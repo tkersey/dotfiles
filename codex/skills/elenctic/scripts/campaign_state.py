@@ -55,6 +55,8 @@ def execution_mode(source: dict[str, Any]) -> str | None:
     value = source["execution_mode"]
     require(isinstance(value, str) and value in ("fork", "subagents"),
             "execution_mode must be fork or subagents when supplied")
+    require(merge_policy(source) is not None,
+            "explicit execution_mode requires merge_policy")
     return value
 
 

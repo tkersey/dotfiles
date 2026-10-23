@@ -49,6 +49,8 @@ def execution_mode(source: dict[str, Any]) -> str | None:
     value = source["execution_mode"]
     if not isinstance(value, str) or value not in ("fork", "subagents"):
         raise ValueError("execution_mode must be fork or subagents when supplied")
+    if merge_policy(source) is None:
+        raise ValueError("explicit execution_mode requires merge_policy")
     return value
 
 
@@ -316,6 +318,8 @@ def validate_composition(identity: dict[str, Any], *, analysis: bool) -> None:
         if owner == "elenctic" and assessment.get("whole_pr_coverage") not in (
                 "complete", "partial", "not-established"):
             raise ValueError("Elenctic assessment needs actual whole-PR coverage")
+        if owner != "elenctic" and "execution_mode" in assessment:
+            raise ValueError("execution_mode belongs only to the Elenctic assessment")
         if owner == "elenctic":
             merge_policy(assessment)
             execution_mode(assessment)
@@ -380,6 +384,8 @@ def prepare(raw: Any, *, previous: dict[str, Any] | None = None) -> dict[str, An
         raise ValueError("identity.pr must be a positive integer")
     if identity["view"] != "pr-head":
         raise ValueError("identity.view must be pr-head")
+    if {"attempt_id", "assignment_id", "target", "worker_id", "turn_id"} & identity.keys():
+        raise ValueError("report identities cannot contain worker-only bindings")
     if not analysis:
         text(identity.get("campaign_id"), "identity.campaign_id")
         if identity.get("verdict") not in {"BLOCKED", "APPROVE", "INCOMPLETE"}:

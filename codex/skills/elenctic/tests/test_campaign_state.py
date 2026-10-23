@@ -51,7 +51,7 @@ def report_input(assignment_id="a", coverage="complete", verdict="BLOCKED", *,
         "base": "merge-base", "candidate": "head", "view": "pr-head",
     }
     if execution is not None:
-        expected["execution_mode"] = execution
+        expected.update(execution_mode=execution, merge_policy="pragmatic")
     active = {"worker_id": f"worker-{assignment_id}", "turn_id": turn_id}
     if execution == "subagents":
         expected.update(campaign_seed_thread_id=None, attempt_id=attempt_id)
@@ -82,7 +82,7 @@ def coverage_input(rows, *, execution=None):
         "selected_paths": [row["path"] for row in rows], "assignments": rows,
     }
     if execution is not None:
-        data["execution_mode"] = execution
+        data.update(execution_mode=execution, merge_policy="pragmatic")
     if execution == "subagents":
         data["campaign_seed_thread_id"] = None
     return data
@@ -187,6 +187,21 @@ class CampaignStateTests(unittest.TestCase):
                     self.assertEqual(result["attempt_id"], "attempt-2")
                 else:
                     self.assertNotIn("attempt_id", result)
+
+    def test_explicit_execution_requires_policy_even_when_both_sides_omit_it(self):
+        for execution in ("fork", "subagents"):
+            data = report_input(execution=execution)
+            del data["expected_identity"]["merge_policy"]
+            del data["report"]["identity"]["merge_policy"]
+            with self.subTest(execution=execution), self.assertRaises(ValueError):
+                campaign.check_report(data)
+            row = admitted(execution=execution)
+            del row["expected_identity"]["merge_policy"]
+            del row["accepted_report"]["identity"]["merge_policy"]
+            data = coverage_input([row], execution=execution)
+            del data["merge_policy"]
+            with self.subTest(execution=execution), self.assertRaises(ValueError):
+                campaign.coverage(data)
 
     def test_worker_execution_cannot_be_changed_or_stripped(self):
         for expected in (None, "fork", "subagents"):

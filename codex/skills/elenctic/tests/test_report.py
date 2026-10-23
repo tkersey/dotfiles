@@ -126,7 +126,7 @@ class ReportTests(unittest.TestCase):
     def test_subagent_campaigns_render_seedless_incomplete_and_complete_scopes(self):
         for verdict in ('INCOMPLETE', 'APPROVE', 'BLOCKED'):
             raw = sample()
-            raw['identity'].update(execution_mode='subagents', campaign_seed_thread_id=None, verdict=verdict)
+            raw['identity'].update(execution_mode='subagents', merge_policy='pragmatic', campaign_seed_thread_id=None, verdict=verdict)
             if verdict != 'BLOCKED':
                 raw['findings'] = []
             if verdict == 'INCOMPLETE':
@@ -143,7 +143,7 @@ class ReportTests(unittest.TestCase):
     def test_subagent_campaigns_cannot_claim_a_seed(self):
         for seed in ('seed-fixture', '', False):
             raw = sample()
-            raw['identity'].update(execution_mode='subagents', campaign_seed_thread_id=seed)
+            raw['identity'].update(execution_mode='subagents', merge_policy='pragmatic', campaign_seed_thread_id=seed)
             with self.subTest(seed=seed), self.assertRaises(ValueError):
                 report.prepare(raw)
 
@@ -202,7 +202,7 @@ class ReportTests(unittest.TestCase):
         self.assertNotIn('execution_mode', legacy['identity'])
         keys = {legacy['report_key']}
         for execution in ('fork', 'subagents'):
-            raw = sample(); raw['identity']['execution_mode'] = execution
+            raw = sample(); raw['identity'].update(execution_mode=execution, merge_policy='pragmatic')
             if execution == 'subagents':
                 raw['identity']['campaign_seed_thread_id'] = None
             parsed = report.prepare(raw)
@@ -215,8 +215,9 @@ class ReportTests(unittest.TestCase):
     def test_execution_cannot_be_changed_or_stripped_on_regeneration(self):
         for execution in (None, 'fork', 'subagents'):
             raw = sample()
+            raw['identity']['merge_policy'] = 'pragmatic'
             if execution is not None:
-                raw['identity']['execution_mode'] = execution
+                raw['identity'].update(execution_mode=execution, merge_policy='pragmatic')
             if execution == 'subagents':
                 raw['identity']['campaign_seed_thread_id'] = None
             previous = report.prepare(raw)
@@ -228,11 +229,29 @@ class ReportTests(unittest.TestCase):
                 if replacement is None:
                     del changed['identity']['execution_mode']
                 else:
-                    changed['identity']['execution_mode'] = replacement
+                    changed['identity'].update(execution_mode=replacement, merge_policy='pragmatic')
                 if replacement == 'subagents':
                     changed['identity']['campaign_seed_thread_id'] = None
                 with self.subTest(execution=execution, replacement=replacement), self.assertRaises(ValueError):
                     report.prepare(changed, previous=previous)
+
+    def test_campaign_rejects_worker_bindings(self):
+        for field in ('attempt_id', 'assignment_id', 'target', 'worker_id', 'turn_id'):
+            raw = sample()
+            raw['identity'].update(execution_mode='subagents', merge_policy='pragmatic',
+                                   campaign_seed_thread_id=None)
+            raw['identity'][field] = 'worker-value'
+            with self.subTest(field=field), self.assertRaises(ValueError):
+                report.prepare(raw)
+
+    def test_campaign_execution_requires_policy(self):
+        for execution in ('fork', 'subagents'):
+            raw = sample()
+            raw['identity']['execution_mode'] = execution
+            if execution == 'subagents':
+                raw['identity']['campaign_seed_thread_id'] = None
+            with self.subTest(execution=execution), self.assertRaises(ValueError):
+                report.prepare(raw)
 
     def test_feedback_only_analysis_rejects_execution_mode(self):
         raw = sample()
@@ -270,7 +289,7 @@ class ReportTests(unittest.TestCase):
         raw = composition_sample(); legacy = report.prepare(raw)
         keys = {legacy['report_key']}
         for execution in ('fork', 'subagents'):
-            raw['identity']['assessments']['elenctic']['execution_mode'] = execution
+            raw['identity']['assessments']['elenctic'].update(execution_mode=execution, merge_policy='pragmatic')
             current = report.prepare(raw)
             self.assertEqual(current['identity']['assessments']['elenctic']['execution_mode'], execution)
             self.assertNotIn('execution_mode', current['identity'])
@@ -287,8 +306,9 @@ class ReportTests(unittest.TestCase):
     def test_composition_cannot_change_or_strip_bound_execution_during_recovery(self):
         for execution in (None, 'fork', 'subagents'):
             raw = composition_sample()
+            raw['identity']['assessments']['elenctic']['merge_policy'] = 'pragmatic'
             if execution is not None:
-                raw['identity']['assessments']['elenctic']['execution_mode'] = execution
+                raw['identity']['assessments']['elenctic'].update(execution_mode=execution, merge_policy='pragmatic')
             previous = report.prepare(raw)
             self.assertEqual(report.prepare(raw, previous=previous)['report_key'], previous['report_key'])
             for replacement in (None, 'fork', 'subagents'):
@@ -299,7 +319,7 @@ class ReportTests(unittest.TestCase):
                 if replacement is None:
                     del source['execution_mode']
                 else:
-                    source['execution_mode'] = replacement
+                    source.update(execution_mode=replacement, merge_policy='pragmatic')
                 with self.subTest(execution=execution, replacement=replacement), self.assertRaises(ValueError):
                     report.prepare(changed, previous=previous)
 
@@ -311,7 +331,7 @@ class ReportTests(unittest.TestCase):
         previous = report.prepare(previous_raw)
         for execution in ('fork', 'subagents'):
             current = composition_sample()
-            current['identity']['assessments']['elenctic']['execution_mode'] = execution
+            current['identity']['assessments']['elenctic'].update(execution_mode=execution, merge_policy='pragmatic')
             with self.subTest(execution=execution):
                 self.assertEqual(report.prepare(current, previous=previous)['report_key'], previous['report_key'])
 
