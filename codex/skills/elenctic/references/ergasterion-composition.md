@@ -64,9 +64,10 @@ independently binding obligations, and a strict source label alone does not
 establish an Elenctic blocker. The joint fold retains factual evidence and source
 dispositions while justifying each current merge obligation.
 
-Carry explicit `execution=fork|subagents` into Elenctic; a new campaign defaults
-to `fork`. Preserve its actual `execution_mode` in the Elenctic source assessment,
-not at the aggregate identity's root or as Architectonic's execution choice.
+Carry the caller's execution choice, such as "with subagents" or "with forked
+sessions", into Elenctic; a new campaign defaults to session forks. Preserve its
+actual `execution_mode` in the Elenctic source assessment, not at the aggregate
+identity's root or as Architectonic's execution choice.
 The chosen route retains its own context/provenance requirements; subagents do
 not require a seed session. Historical absence is not retroactively filled in.
 

@@ -1,8 +1,9 @@
 # Native forks and prepared history
 
-Use this reference for `execution=fork` when resolving campaign capabilities,
-creating the prepared seed, or forking a reviewer. Explicit `execution=subagents`
-uses [subagents.md](subagents.md) instead; it does not claim this history contract.
+Use this reference for session forks, the default execution mode, when resolving
+campaign capabilities, creating the prepared seed, or forking a reviewer. An explicit
+request for subagents uses [subagents.md](subagents.md) instead; it does not claim
+this history contract.
 Preserve the coordinator's full prepared analysis
 history. A copied Campaign Brief, fresh task, or fork of the evolving coordinator
 does not satisfy that requirement.

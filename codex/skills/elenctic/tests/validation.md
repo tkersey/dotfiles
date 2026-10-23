@@ -2,8 +2,8 @@
 
 ## 2026-10-23 subagent execution mode
 
-The optional `execution=subagents` route retains one coordinator preparation and
-the ordinary review semantics. `execution=fork` remains the new-campaign default.
+The optional "with subagents" route retains one coordinator preparation and
+the ordinary review semantics. Session forks remain the new-campaign default.
 Subagent identities carry their actual execution choice, null seed and a
 coordinator-owned per-delivery token; the token does not authenticate native
 provenance. Existing legacy identities and report namespaces retain their meaning.
@@ -16,6 +16,7 @@ provenance. Existing legacy identities and report namespaces retain their meanin
 | Actual subagent report generation and JavaScript compilation | Passed | Preserved actual execution identity/null seed and syntactically valid generated report script. |
 | Independent instruction walkthrough on five supplied runtime states | Expected route and recovery actions | Explicit subagents without CAS, default fork obstruction, mode change preserving selection, stale token while a newer attempt is active, and feedback-only construction without worker launch. |
 | Independent contract review | No actionable contradiction found | Default fork history requirements, explicit alternative, context delivery, permission boundaries and legacy recovery. |
+| Natural-language invocation walkthrough | Expected target, concurrency and transport | `PR #123 with concurrency 3 and subagents` selects PR 123, three requested file reviewers (subject to runtime capacity), and native subagents; the same request without "and subagents" retains session forks. Public examples use ordinary phrasing. |
 
 The walkthrough was a plan from supplied runtime facts, not a live PR review.
 Native history inheritance is preferred where supported; later subagent waves may

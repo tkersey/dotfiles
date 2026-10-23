@@ -1,6 +1,6 @@
 ---
 name: elenctic
-description: "Explicit-only PR review: adjudicate prior threads, review unchecked (or explicitly all-changed) files and causal consequences, and return evidence-backed findings with a pragmatic default merge policy; request pedantic for stricter engineering gates. Fork sessions by default; request execution=subagents for native subagents. Request 'for resolution' for groups, or 'for construction' for feedback-based code-change proposals without implementation."
+description: "Explicit-only PR review: adjudicate prior threads, review unchecked (or explicitly all-changed) files and causal consequences, and return evidence-backed findings with a pragmatic default merge policy; request pedantic for stricter engineering gates. Fork sessions by default; request 'with subagents' for native subagents. Request 'for resolution' for groups, or 'for construction' for feedback-based code-change proposals without implementation."
 ---
 
 # Elenctic
@@ -21,9 +21,9 @@ $elenctic this PR
 $elenctic this branch
 $elenctic PR #123
 $elenctic PR #123 with concurrency 10
-$elenctic PR #123 execution=fork
-$elenctic PR #123 execution=subagents
-$elenctic PR #123 execution=subagents merge-policy=pedantic
+$elenctic PR #123 with forked sessions
+$elenctic PR #123 with subagents
+$elenctic PR #123 with concurrency 3 and subagents
 $elenctic PR #123 merge-policy=pragmatic
 $elenctic PR #123 merge-policy=pedantic
 $elenctic PR #123 selection=all-changed
@@ -48,16 +48,19 @@ No workflow implements fixes or publishes comments.
 Extract the PR selector independently from workflow/execution/concurrency instructions;
 pass only that selector to `gh`. Concurrency remains unchanged (default/cap 20).
 
-New review campaigns use `execution=fork`: the existing full-history session
-forks from one immutable prepared seed. Explicit `execution=subagents` or
-equivalent intent such as "review with subagents" selects native subagents in
-the current runtime. Both modes perform one coordinator deep analysis before
+New review campaigns use session forks by default: the existing full-history
+forks from one immutable prepared seed. Ordinary phrasing such as "with subagents",
+"using subagents", or "with concurrency 3 and subagents" selects native subagents
+in the current runtime. For the combined example above, resolve PR #123, request
+file-review concurrency 3 (subject to available runtime capacity), and record
+`execution_mode: "subagents"`. An explicit request for "forked sessions" selects
+the default route. Both modes perform one coordinator deep analysis before
 file reviews. Subagents receive the same frozen source-bound Campaign Brief and
 review policy; they do not claim an identical inherited full-history seed.
 Read [subagents.md](references/subagents.md) for that execution route.
-Record `execution_mode` independently of workflow, merge policy, selection and
-concurrency. Never silently switch execution because the selected route is
-unavailable. An execution option alone does not start a fresh review for
+Record the internal `execution_mode` independently of workflow, merge policy,
+selection and concurrency. Never silently switch execution because the selected
+route is unavailable. Selecting an execution mode alone does not start a fresh review for
 feedback-only `construction` analysis.
 
 New invocations use `merge-policy=pragmatic`; explicit `merge-policy=pedantic` or

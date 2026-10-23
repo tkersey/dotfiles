@@ -1,8 +1,9 @@
 # Native subagent execution
 
-Use only for an explicitly selected `execution=subagents` campaign. This route
-changes worker transport and context provenance; the shared campaign and worker
-contracts still own preparation, investigation, admission, coverage and authority.
+Use when the caller explicitly requests subagents, for example
+`$elenctic PR #123 with concurrency 3 and subagents`. This route changes worker
+transport and context provenance; the shared campaign and worker contracts still
+own preparation, investigation, admission, coverage and authority.
 Do not open separate sessions, require CAS/app-server fork preflight, or change
 account, model or permission settings to run this mode.
 
