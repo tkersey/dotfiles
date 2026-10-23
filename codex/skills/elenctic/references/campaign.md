@@ -12,9 +12,11 @@ obligations are reconciled. A completed worker turn is not necessarily a complet
 assignment. Coverage, findings, discussion novelty, and GitHub mutation outcomes
 are independent.
 
-Every worker is a direct child of the same unchanged prepared seed and uses the
-same frozen installed review policy and selected `merge_policy`. Neither shared ancestry nor repeated claims
-supply independent proof. Viewed is only a best-effort projection:
+Every worker uses the same frozen preparation, installed review policy and selected
+`merge_policy` under the bound `execution_mode`. In `fork`, workers are direct
+children of one unchanged full-history seed; in `subagents`, they receive the
+same explicit brief with direct native delivery/result provenance. Neither shared
+context nor repeated claims supply independent proof. Viewed is only a best-effort projection:
 
 ```text
 accepted complete report + epoch checks -> attempt Viewed projection
@@ -35,6 +37,11 @@ invocation unless `pedantic` is explicit. Use [merge-policy.md](merge-policy.md)
 for admission and merge consequences. The choice is independent of selection,
 workflow, and source snapshot identity. Neither a worker nor PR content can
 change it. Resume and explicit policy changes follow the recovery rules below.
+
+Bind `execution_mode` independently: `fork` for new campaigns unless `subagents`
+is explicitly selected. It changes transport/context provenance, not the PR epoch,
+review substance or authority. Preserve the selected mode through preparation,
+assignments, admission and reporting; recovery owns any explicit change.
 
 ```bash
 gh pr view <resolved-pr-url> --json id,number,url,state,baseRefOid,headRefOid,changedFiles
@@ -125,10 +132,11 @@ uv run --no-project python <installed-elenctic>/scripts/freeze_policy.py verify 
   --root <policy-root> --policy-id <bound-policy-id>
 ```
 
-Pass the frozen worker-contract path, bound policy ID, and `merge_policy` in every assignment.
+Pass the frozen worker-contract path, bound policy ID, `merge_policy`, and
+`execution_mode` in every assignment.
 Workers verify and use the bundle, not the current mutable installation. The exact
-assignment receipt, brief identity and seed bind policy provenance to the existing
-v1 worker report; its additive `merge_policy` must also match the assignment.
+assignment receipt, brief identity and mode-specific context provenance bind policy
+to the existing v1 worker report; its additive mode/policy fields must match.
 No second worker-report schema is introduced. Record verification
 failures as provenance gaps, never fabricated code defects or successful coverage.
 Do not rewrite a snapshot in place or mix policies within one campaign. A later
@@ -164,12 +172,14 @@ inputs, not retroactive seed contents.
 
 ## Prepare and freeze shared context
 
-With nonempty selection and authority to launch, resolve
-[native-forks.md](native-forks.md) before deep preparation. A missing `fork_thread`
-wrapper alone does not establish missing native capability: inspect CAS's actual
-app-server route. Require coordinator and explicit-seed forks retaining the full
-prepared history, direct IDs/parent provenance, full assignment delivery, exact
-turn reads and bounded waits. Do not create a trial reviewer or substitute a backend.
+With nonempty selection and authority to launch, resolve the selected route before
+deep preparation. For `fork`, use [native-forks.md](native-forks.md): a missing
+`fork_thread` wrapper alone does not establish missing native capability; inspect
+CAS's actual app-server route. Require coordinator and explicit-seed forks retaining
+the full prepared history, direct IDs/parent provenance, full assignment delivery,
+exact turn reads and bounded waits. For `subagents`, use
+[subagents.md](subagents.md) and its native task/context/attempt checks without
+session-fork or CAS preflight. Do not create a trial reviewer or silently change modes.
 If no qualifying route exists, report incomplete file coverage while preserving
 verified prior-thread blockers and all actually completed work.
 
@@ -179,17 +189,17 @@ Preparation owns orientation, not worker adjudication. Establish owners, changed
 contracts, accepted obligations, evidence locations, and discriminating questions;
 workers discharge assigned review obligations; reconciliation resolves their
 cross-file implications. Do not duplicate their investigation or preclassify
-hypotheses as findings. Add the bound policy ID/root and selected `merge_policy`
+hypotheses as findings. Add the bound policy ID/root, `execution_mode` and `merge_policy`
 to the brief's Bound candidate. Record source-supported operating conditions and
 non-goals as facts, without pre-deciding any finding's practical significance.
 
-Publish the exact source-bound brief in the coordinator transcript, compute its
-actual content digest/runtime content identity, then fork the coordinator once.
-Verify observable full-history retention through preparation in the current turn,
-not only brief bytes or a parent ID. Record context identity, seed ID, source
-checkpoint and fork receipt/parent edge. The seed receives no assignments, results,
-follow-ups or subsequent coordinator findings. Do not claim to inspect opaque
-reasoning internals; verify observable retained history under native-forks.md.
+Publish the exact source-bound brief in the coordinator transcript and compute its
+actual content digest/runtime content identity. For `fork`, fork the coordinator
+once, verify full-history retention through current-turn preparation, and record
+the seed ID, source checkpoint and parent receipt under native-forks.md. The seed
+receives no assignments, results or follow-ups. For `subagents`, retain the exact
+brief for explicit delivery and set the seed ID to null. Do not claim full-history
+inheritance from a brief digest or inspect opaque reasoning internals in either mode.
 
 With no selected files, create neither seed nor worker. A policy snapshot is not
 prepared PR context; do not invent a brief or seed to satisfy the report shape.
@@ -201,9 +211,10 @@ in the existing session working set, not a repository ledger:
 
 ```text
 assignment/campaign IDs; ordinal/total; path (and old path for rename)
-policy root/ID; merge_policy; brief context ID; seed ID
+policy root/ID; merge_policy; execution_mode; brief context ID; actual seed ID or null
 base tip / review merge base / head
-worker ID / active turn ID / fork receipt or parent edge
+worker ID / actual turn ID or null / mode-specific delivery and result receipts
+subagent attempt_id per delivery / actual context delivery behavior
 state / report identity / coverage / Viewed outcome
 FIFO assignment IDs / active-attempt state / runnable prerequisite status
 prior worker-turn-report references / remaining gaps / concrete obstruction
@@ -213,21 +224,26 @@ States remain `queued`, `launched`, `running`, `needs-input`, `completed`, `acce
 `incomplete`, `failed`, `stale`. Navigation titles are not identity:
 `<coordinator title> · Elenctic <ordinal>/<total> · <path>`.
 
-## Fork every reviewer from the immutable seed
+## Launch reviewers through the selected execution mode
 
-Use the native operations and history checks in native-forks.md. Fork each worker
+For `fork`, use the native operations and history checks in native-forks.md. Fork each worker
 directly from the explicit unchanged seed, verify its parent and identical retained
 seed history, then start its target-specific turn and retain that exact turn ID.
 Never fork from the evolving coordinator or another worker. A brief-only fresh
-task, generic subagent or independent `codex exec` is not an equivalent substitute.
+task, generic subagent or independent `codex exec` cannot satisfy that fork contract.
 CAS native app-server forks are an admitted transport when their actual history,
 lineage, model and permission behavior satisfies the same contract.
+
+For `subagents`, follow subagents.md: deliver the same frozen brief and canonical
+assignment through the current runtime, recording the actual native worker and a
+fresh coordinator-owned `attempt_id` for each delivery. No seed is created.
 
 Canonical assignment (fill bindings without shortening away obligations):
 
 ```text
 Elenctic campaign <campaign-id>, assignment <assignment-id>, context <context-id>,
-seed <seed-id>, policy <policy-id> at <policy-root>, merge_policy <pragmatic|pedantic>.
+execution_mode <fork|subagents>, seed <actual-seed-id-or-null>,
+policy <policy-id> at <policy-root>, merge_policy <pragmatic|pedantic>.
 You are the assigned file reviewer, not the coordinator. Verify this frozen policy
 against its bound ID, then read and follow
 <policy-root>/elenctic/references/worker-review.md for repository <owner/name>,
@@ -235,17 +251,23 @@ PR #<number>, target <path>, base tip <base-tip>, review merge base <merge-base>
 and head <head>. Use only the bundled review, admission, merge-policy and semantic lens sources.
 Do not invoke public $elenctic or inherit coordinator authority.
 
-Use inherited preparation as orientation, not authority. Revalidate relied-on
+Use supplied or inherited preparation as orientation, not authority. Revalidate relied-on
 premises against the pinned candidate and accepted requirements; challenge
 inherited implementation/review conclusions and material omissions. Confront
 complete relevant prior discussions and their strongest substantive responses.
-Return the v1 campaign-bound file identity with the exact assigned merge_policy
-and a consolidated report. Preserve factual findings independently of whether
+Return the v1 campaign-bound file identity with the exact assigned merge_policy,
+execution_mode and seed value, and a consolidated report. For subagents also echo
+the supplied attempt_id. Preserve factual findings independently of whether
 they require resolution before merge under this policy.
 This is one integrated investigation; coordinator continuations finish it, not a
 new lane or a retry for approval. Remain read-only and follow the worker contract's
 adjudication, coverage, draft-novelty and no-publication rules.
 ```
+
+For subagents, append `attempt_id <fresh-token>` and the complete frozen brief or
+its accessible immutable reference. Do not omit shared preparation to shorten
+the assignment. Fork workers retain their native turn identity instead of an
+`attempt_id` field.
 
 Preserve the coordinator's resolved model and reasoning effort. Repeat them
 explicitly on native requests where defaults differ; do not select another model
@@ -269,8 +291,8 @@ until exact runtime recovery establishes its outcome. Never overlap attempts for
 one assignment. Shard wait/read groups to tool limits without reducing concurrency
 unnecessarily. Disposition results promptly and replenish available slots, including
 after blockers. A permission/input request becomes `needs-input`; do not answer or
-authorize on the user's behalf. Reconcile ambiguous fork/delivery outcomes using
-direct IDs, parentage and campaign/context binding before retry; a timeout is not
+authorize on the user's behalf. Reconcile ambiguous launch/delivery outcomes using
+direct IDs, mode-specific provenance and campaign/context binding before retry; a timeout is not
 a failed turn.
 
 ### Check the existing working set mechanically
@@ -296,15 +318,15 @@ does not fetch or authenticate them and cannot make GitHub reads atomic.
 | Operation | Additional projection and result |
 |---|---|
 | `schedule` | `selected_paths`, `assignments`, FIFO `queue` of assignment IDs and clamped `concurrency`; optionally `requeue` one ID. Each assignment carries `assignment_id`, exact `path`, `state`, Boolean `active` (live or unreconciled delivery), and Boolean `runnable` (prerequisites permit its next turn now). It appends eligible unfinished work, preserves delayed positions, and returns capacity-bounded `dispatchable` IDs plus the resulting queue/rows. Record actual dispatch or recovery before asking for another selection. |
-| `check-report` | `expected_identity` is the canonical assignment's worker-v1 fields, including `merge_policy` for new campaigns and omitting `coverage`/`verdict`. `active_attempt` carries recorded `worker_id`/`turn_id`. `report` carries directly read `worker_id`, `turn_id`, parsed unquoted `identity`, and textual `decision`. It rejects mismatched attempts/bindings, one-sided or mismatched policy, and contradictory coverage/verdicts. Historical identities may omit policy on both sides; absence never supplies a default. A consistent complete BLOCKED claim is as eligible for semantic admission as a complete APPROVE claim. |
-| `coverage` | `selected_paths`, `assignments`, and actual `campaign_id`, `campaign_context_id`, `campaign_seed_thread_id`, plus `merge_policy` when bound. Every `accepted` row also carries its `expected_identity`, `active_attempt` and `accepted_report` in the shapes above. It checks current bindings and policy presence/value across accepted rows, counting each selected path once; incomplete evidence is not completion. It returns counts, no campaign verdict or whole-PR credit. Empty selected counts do not supply approval. |
+| `check-report` | `expected_identity` is the canonical worker-v1 binding, including `merge_policy` and `execution_mode` for new campaigns, plus `attempt_id` for subagents, and omitting `coverage`/`verdict`. `active_attempt` carries actual `worker_id`/`turn_id`, plus the subagent `attempt_id`; only subagents may have null `turn_id` when none is exposed. `report` carries directly attributed `worker_id`, `turn_id`, parsed unquoted `identity`, and textual `decision`. Reject mismatched attempts/bindings, one-sided policy/mode, invalid seed/mode combinations and contradictory coverage/verdicts. Historical policy/mode absence stays absent on both sides. A consistent complete BLOCKED claim is as eligible for semantic admission as complete APPROVE. |
+| `coverage` | `selected_paths`, `assignments`, actual `campaign_id`, `campaign_context_id`, `campaign_seed_thread_id`, and bound `merge_policy`/`execution_mode`. Every `accepted` row also carries `expected_identity`, `active_attempt` and `accepted_report` as above. Check bindings and mode/policy presence/value across accepted rows, counting each path once; incomplete evidence is not completion. Return counts, no campaign verdict or whole-PR credit. Empty selected counts do not supply approval. |
 
 Obtain `active` from exact worker/turn and delivery recovery; derive `runnable`
 from adjudicated prerequisites and provider delays. Do not label uncertain attempts
 idle or blocked prerequisites runnable to make a check pass. Recover missing FIFO
 order under Resume and recover; never invent historical age. Passing
 `check-report` establishes mechanical consistency only: complete terminal-source
-provenance, policy-byte/history verification, consolidation, material-gap closure
+provenance, policy bytes and mode-specific context verification, consolidation, material-gap closure
 and semantic adjudication remain the admission gates below. Preserve evidence on
 any failed check, diagnose the actual mismatch, and continue unaffected work.
 Changed or unverifiable epochs withhold current credit; preserve historical
@@ -321,7 +343,7 @@ incomplete -> preserve evidence/gaps -> queued -> continuation -> admission
 complete  -> accepted (BLOCKED or APPROVE; never retry merely for cleanliness)
 ```
 
-Tail-requeue the same assignment/epoch/selection/context/seed/policy promptly. No new
+Tail-requeue the same assignment/epoch/selection/context/execution/policy promptly. No new
 public resume request, review lane, durable retry ledger, clean streak or fixed
 retry budget is required. Respect provider retry delays; they are not completion.
 Before delivery, recheck epoch and exact worker/active-turn state. After a lost
@@ -329,12 +351,14 @@ acknowledgement or connection, recover that state before another start/fork.
 Late/superseded turns may supply admissible evidence but cannot overwrite the active
 attempt's completion record.
 
-Prefer a new turn on the same verified idle worker. Send precise unfinished paths,
+Prefer a continuation on the same verified idle worker. Send precise unfinished paths,
 prior report/turn references and relevant new evidence, requesting a consolidated
 whole-assignment report. Only when that worker cannot safely continue, establish
-its prior attempt is no longer running and fork a replacement from the original
-seed. Preserve assignment ID, replacement lineage and old attempt references;
-supply bounded prior evidence explicitly after the assignment, never as seed history
+its prior attempt is no longer running and launch a replacement through the bound
+mode: original seed for `fork`, original frozen brief for `subagents`. Preserve
+assignment ID, delivery provenance and old attempt references; allocate a fresh
+subagent attempt token for every continuation or replacement. Supply bounded
+prior evidence explicitly after the assignment, never as shared preparation
 or authority. Do not copy unrelated findings or change model/permissions.
 
 Consolidation retains every earlier finding or explains its evidence-backed
@@ -364,25 +388,29 @@ agreement does not create a continuation prerequisite or select excluded files.
 
 Keep the worker contract's `elenctic-review-identity/v1` single-file identity,
 including repo/PR, campaign/assignment, context/seed, target, merge base, candidate,
-view, coverage and verdict, with additive `merge_policy` for new campaigns.
+view, coverage and verdict, with additive `merge_policy` and `execution_mode` for new campaigns.
 Require its presence/value to match the assignment; preserve absent historical
 values without inventing a mode. `base` means review merge base, not branch tip. Record
 base-tip/integration evidence in coverage notes. Policy is bound by the verified
-bundle in the canonical assignment, brief/context identity and native seed lineage;
+bundle in the canonical assignment, brief/context identity and mode-specific provenance;
 record that receipt with the admitted report, not a guessed policy version.
+Fork workers require the real seed ID. Subagent workers require a null seed and
+the active coordinator-owned `attempt_id`; never fabricate a native turn ID.
 
 Coverage and verdict remain independent. An incomplete BLOCKED report supplies
 supported findings but not a completed file or Viewed eligibility.
 
 ## Admit worker reports
 
-Read the recorded active worker and exact turn's terminal assistant message, not
-the first/latest terminal text anywhere in its history. Require:
+Read the recorded active worker's directly attributed terminal result for the
+current delivery: exact native turn for `fork`, or native completion plus matching
+attempt token for `subagents`. Do not select arbitrary first/latest history text. Require:
 
 - exactly one unquoted expected v1 single-file Review identity with every assigned
   binding matching, and the textual decision equal to the identity verdict;
-- direct seed lineage, identical prepared context and the recorded policy-bound
-  assignment, with snapshot verification still passing;
+- the recorded policy-bound assignment and verified frozen snapshot, with direct
+  seed lineage/identical retained history for `fork` or verified frozen brief
+  delivery/direct native worker provenance for `subagents`;
 - a report after its own assignment/continuation delivery and before the aggregate
   cut, for the current recorded worker/turn and still-open exact epoch;
 - Review Fold admission, the bound merge policy, and ordinary blocker falsification.
@@ -562,7 +590,17 @@ policy bundle and prior-thread preflight. Retain accepted work and the FIFO orde
 recover active attempts by exact worker/turn, tail-requeue runnable incomplete/retryable work, and
 preserve old findings through consolidation. Needs-input never grants permission.
 Ambiguous deliveries require recovery before retry. Same-epoch resume preserves the
-seed/brief/policy/selection; discussion-only updates remain current evidence.
+execution/brief/policy/selection and any seed; discussion-only updates remain current evidence.
+
+Retain `execution_mode` on resume. Its absence in a legacy campaign preserves that
+campaign's original fork contract and absent field, not permission to substitute
+subagents. An explicit execution change authorizes a new campaign instance,
+preparation/context binding and report namespace under the requested route. At
+the same epoch preserve the original selected/excluded partition unless the caller
+also changes selection; earlier Viewed writes must not hide unfinished or reassessed
+files. Preserve old reports/findings with their original provenance for revalidation,
+without transferring completion or relabeling them as the new mode. Resolve live
+or ambiguous old attempts before replacement; a mode change does not end them.
 
 Retain the recorded `merge_policy`; do not apply the new-invocation default on
 resume. An older campaign without this field uses its intact original frozen
@@ -574,7 +612,7 @@ re-adjudication, not an in-place switch or an automatic rerun for approval.
 At the same PR epoch, preserve the established selected/excluded partition unless
 the caller also changes selection: earlier Viewed writes must not hide the files
 being reassessed. Keep old evidence with its original identity. Prepare a new
-brief and seed under the requested policy, and let assignments reuse verified
+brief and execution context under the requested policy, and let assignments reuse verified
 source evidence while discharging that policy's remaining obligations. Do not
 transfer policy-specific completion, verdicts, drafts or handling automatically.
 No new experiment is required when an existing decisive trace suffices. Use a
@@ -601,9 +639,10 @@ and timestamps, and reapply admission. No same-name discovery, direct session-fi
 scanning, removed corpus extraction, or discovery-as-authority. If multiple campaigns
 match and context does not distinguish them, ask rather than mixing them.
 
-Existing admissible reports may still be reconciled when the seed is gone. New work
-requires the exact recoverable seed, brief and policy bundle. Otherwise explicitly
-prepare a new campaign instance rather than guessing lineage or silently rebinding old
+Existing admissible reports may still be reconciled when a seed or worker is gone.
+New work requires the exact recoverable brief and policy bundle, plus the original
+seed for `fork` or recoverable native attempt state under subagents.md. Otherwise
+explicitly prepare a new campaign instance rather than guessing provenance or silently rebinding old
 reports. Legacy campaigns without frozen policy cannot manufacture it retroactively:
 retain their evidence for revalidation, and use fresh preparation for new assignments.
 
@@ -611,7 +650,8 @@ retain their evidence for revalidation, and use fresh preparation for new assign
 
 Give the prior-thread contract's compact linked outcomes, then the ordinary reconciled
 findings and coverage note. Include campaign/repo/PR, base tip/merge base/head, context,
-policy and seed identities, selected merge policy, verified lineage counts/mismatches, changed/selected/excluded
+policy and actual seed identities, execution and merge-policy choices, mode-specific
+context/delivery verification and mismatches, changed/selected/excluded
 counts, complete blocked/approved counts, incomplete/failed/stale/needs-input/running/
 queued counts, Viewed outcomes, aggregate causal blockers and both coverage scopes.
 Do not reproduce worker reports or raw private history.
@@ -624,12 +664,15 @@ Link the actual artifact before the identity and final decision.
 Emit exactly one unquoted canonical JSON identity immediately before the final decision:
 
 ```text
-Review identity: {"schema":"elenctic-review-identity/v1","mode":"campaign","repo":"<owner/name>","pr":123,"campaign_id":"<id>","campaign_context_id":null,"campaign_seed_thread_id":null,"campaign_policy_id":null,"merge_policy":"pragmatic","base":"<merge-base>","candidate":"<head>","view":"pr-head","coverage":"partial","selected_scope_coverage":"partial","whole_pr_coverage":"not-established","verdict":"INCOMPLETE"}
+Review identity: {"schema":"elenctic-review-identity/v1","mode":"campaign","repo":"<owner/name>","pr":123,"campaign_id":"<id>","campaign_context_id":null,"campaign_seed_thread_id":null,"campaign_policy_id":null,"merge_policy":"pragmatic","execution_mode":"fork","base":"<merge-base>","candidate":"<head>","view":"pr-head","coverage":"partial","selected_scope_coverage":"partial","whole_pr_coverage":"not-established","verdict":"INCOMPLETE"}
 ```
 
 Values above illustrate a new pre-preparation result, not defaults to copy.
-All fields are required for new campaigns; `merge_policy` is the actual selected
-value and may be absent only in historical input. Use actual IDs whenever created, otherwise JSON **null**, not the
+All fields are required for new campaigns; `merge_policy` and `execution_mode` are
+the actual selected values and may be absent only in historical input. A subagent
+campaign has `execution_mode: "subagents"` and a null seed even after complete
+review. Attempt tokens belong to worker reports, not this aggregate identity.
+Use actual IDs whenever created, otherwise JSON **null**, not the
 strings `"null"`, `"none"` or invented placeholders. In particular:
 
 | Outcome | Context / seed / policy provenance |
@@ -637,11 +680,13 @@ strings `"null"`, `"none"` or invented placeholders. In particular:
 | Empty selection, no preparation | Context and seed null; policy actual if captured. |
 | Capability obstruction before preparation | Context and seed null; policy actual if captured. |
 | Brief published, seed creation failed | Actual context; seed null; actual policy. |
+| Subagents prepared or completed | Actual context and policy; seed always null. |
 | Policy capture never succeeded | Policy null; no prepared seed/context claimed. |
 | Known seed temporarily inaccessible | Retain its actual ID and state the recovery gap; null does not mean inaccessible. |
 
 The source-policy identity and merge-policy choice are distinct provenance.
-The original worker-v1 bindings remain intact with additive `merge_policy`.
+The worker-v1 report-kind and subject bindings remain intact with additive policy,
+execution and subagent attempt fields; seed nullability is execution-specific.
 `base` is merge base, with base tip retained in summary/coverage. For v1 compatibility,
 `coverage` is complete only when `whole_pr_coverage` is complete; otherwise partial,
 even when whole-PR coverage is not-established. Selected coverage is independently

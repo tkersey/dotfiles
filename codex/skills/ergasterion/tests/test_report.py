@@ -88,6 +88,13 @@ class CompositionReportTests(unittest.TestCase):
         self.assertTrue(r["report_key"].startswith("elenctic-analysis:"))
         self.assertNotIn("verdict", r["identity"])
 
+    def test_other_assessment_cannot_claim_elenctic_execution(self):
+        for execution in (None, 'fork', 'subagents'):
+            raw = fixture()
+            raw['identity']['assessments']['architectonic']['execution_mode'] = execution
+            with self.subTest(execution=execution), self.assertRaises(ValueError):
+                report.prepare(raw)
+
     def test_complete_combined_sources(self):
         r = report.prepare(fixture())
         self.assertTrue(r["report_key"].startswith("ergasterion:"))

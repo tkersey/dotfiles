@@ -41,7 +41,8 @@ def schedule_input(rows, queue, **extra):
     }
 
 
-def report_input(assignment_id="a", coverage="complete", verdict="BLOCKED"):
+def report_input(assignment_id="a", coverage="complete", verdict="BLOCKED", *,
+                 execution=None, turn_id="turn-2", attempt_id="attempt-2"):
     expected = {
         "schema": "elenctic-review-identity/v1", "mode": "single-file",
         "repo": "example/project", "pr": 7, "campaign_id": "campaign-1",
@@ -49,17 +50,23 @@ def report_input(assignment_id="a", coverage="complete", verdict="BLOCKED"):
         "campaign_seed_thread_id": "seed-1", "target": f"{assignment_id}.py",
         "base": "merge-base", "candidate": "head", "view": "pr-head",
     }
-    active = {"worker_id": f"worker-{assignment_id}", "turn_id": "turn-2"}
+    if execution is not None:
+        expected.update(execution_mode=execution, merge_policy="pragmatic")
+    active = {"worker_id": f"worker-{assignment_id}", "turn_id": turn_id}
+    if execution == "subagents":
+        expected.update(campaign_seed_thread_id=None, attempt_id=attempt_id)
+        active["attempt_id"] = attempt_id
     return {
         "bound_epoch": epoch(), "observed_epoch": observation(),
         "expected_identity": expected, "active_attempt": active,
-        "report": {**active, "identity": {**expected, "coverage": coverage, "verdict": verdict},
+        "report": {"worker_id": active["worker_id"], "turn_id": turn_id,
+                   "identity": {**expected, "coverage": coverage, "verdict": verdict},
                    "decision": verdict},
     }
 
 
-def admitted(assignment_id="a", verdict="BLOCKED"):
-    claim = report_input(assignment_id, verdict=verdict)
+def admitted(assignment_id="a", verdict="BLOCKED", *, execution=None, turn_id="turn-2"):
+    claim = report_input(assignment_id, verdict=verdict, execution=execution, turn_id=turn_id)
     return {
         **assignment(assignment_id, "accepted", runnable=False),
         "expected_identity": claim["expected_identity"],
@@ -67,13 +74,18 @@ def admitted(assignment_id="a", verdict="BLOCKED"):
     }
 
 
-def coverage_input(rows):
-    return {
+def coverage_input(rows, *, execution=None):
+    data = {
         "bound_epoch": epoch(), "observed_epoch": observation(),
         "campaign_id": "campaign-1", "campaign_context_id": "context-1",
         "campaign_seed_thread_id": "seed-1",
         "selected_paths": [row["path"] for row in rows], "assignments": rows,
     }
+    if execution is not None:
+        data.update(execution_mode=execution, merge_policy="pragmatic")
+    if execution == "subagents":
+        data["campaign_seed_thread_id"] = None
+    return data
 
 
 class CampaignStateTests(unittest.TestCase):
@@ -158,6 +170,136 @@ class CampaignStateTests(unittest.TestCase):
             with self.subTest(field=field), self.assertRaises(ValueError):
                 campaign.check_report(data)
 
+    def test_worker_execution_preserves_legacy_and_accepts_explicit_modes(self):
+        legacy = campaign.check_report(report_input())
+        self.assertNotIn("execution_mode", legacy)
+        self.assertNotIn("attempt_id", legacy)
+        for execution, turn_id in (("fork", "turn-2"), ("subagents", "turn-2"), ("subagents", None)):
+            data = report_input(execution=execution, turn_id=turn_id)
+            data["expected_identity"]["merge_policy"] = "pragmatic"
+            data["report"]["identity"]["merge_policy"] = "pragmatic"
+            with self.subTest(execution=execution, turn_id=turn_id):
+                result = campaign.check_report(data)
+                self.assertEqual(result["execution_mode"], execution)
+                self.assertEqual(result["turn_id"], turn_id)
+                self.assertTrue(result["completion_claim_consistent"])
+                if execution == "subagents":
+                    self.assertEqual(result["attempt_id"], "attempt-2")
+                else:
+                    self.assertNotIn("attempt_id", result)
+
+    def test_explicit_execution_requires_policy_even_when_both_sides_omit_it(self):
+        for execution in ("fork", "subagents"):
+            data = report_input(execution=execution)
+            del data["expected_identity"]["merge_policy"]
+            del data["report"]["identity"]["merge_policy"]
+            with self.subTest(execution=execution), self.assertRaises(ValueError):
+                campaign.check_report(data)
+            row = admitted(execution=execution)
+            del row["expected_identity"]["merge_policy"]
+            del row["accepted_report"]["identity"]["merge_policy"]
+            data = coverage_input([row], execution=execution)
+            del data["merge_policy"]
+            with self.subTest(execution=execution), self.assertRaises(ValueError):
+                campaign.coverage(data)
+
+    def test_worker_execution_cannot_be_changed_or_stripped(self):
+        for expected in (None, "fork", "subagents"):
+            for returned in (None, "fork", "subagents"):
+                if expected == returned:
+                    continue
+                data = report_input(execution=expected)
+                if returned is None:
+                    del data["report"]["identity"]["execution_mode"]
+                else:
+                    data["report"]["identity"]["execution_mode"] = returned
+                with self.subTest(expected=expected, returned=returned), self.assertRaises(ValueError):
+                    campaign.check_report(data)
+
+    def test_worker_execution_must_be_an_explicit_known_string(self):
+        for value in (None, "", "default", "subagent", "Fork", True, [], {}):
+            for source in ("expected_identity", "report"):
+                data = report_input()
+                identity = data[source] if source == "expected_identity" else data[source]["identity"]
+                identity["execution_mode"] = value
+                with self.subTest(value=value, source=source), self.assertRaises(ValueError):
+                    campaign.check_report(data)
+
+    def test_fork_workers_require_a_real_seed(self):
+        for execution in (None, "fork"):
+            for value in (None, ""):
+                data = report_input(execution=execution)
+                for identity in (data["expected_identity"], data["report"]["identity"]):
+                    identity["campaign_seed_thread_id"] = value
+                with self.subTest(execution=execution, value=value), self.assertRaises(ValueError):
+                    campaign.check_report(data)
+            data = report_input(execution=execution)
+            del data["expected_identity"]["campaign_seed_thread_id"]
+            with self.subTest(execution=execution), self.assertRaises(ValueError):
+                campaign.check_report(data)
+
+    def test_subagent_workers_require_a_seedless_frozen_brief(self):
+        for field, value in (("campaign_seed_thread_id", "seed-1"),
+                             ("campaign_seed_thread_id", ""),
+                             ("campaign_context_id", None), ("campaign_context_id", "")):
+            data = report_input(execution="subagents")
+            for identity in (data["expected_identity"], data["report"]["identity"]):
+                identity[field] = value
+            with self.subTest(field=field, value=value), self.assertRaises(ValueError):
+                campaign.check_report(data)
+
+    def test_subagent_attempt_must_match_active_assignment_and_return(self):
+        for source in ("expected_identity", "active_attempt", "report"):
+            for value in (None, "", "attempt-old", "missing"):
+                data = report_input(execution="subagents", turn_id=None)
+                identity = data[source] if source != "report" else data[source]["identity"]
+                if value == "missing":
+                    del identity["attempt_id"]
+                else:
+                    identity["attempt_id"] = value
+                with self.subTest(source=source, value=value), self.assertRaises(ValueError):
+                    campaign.check_report(data)
+
+    def test_fork_and_legacy_bindings_cannot_gain_attempt_tokens(self):
+        for execution in (None, "fork"):
+            for source in ("expected_identity", "active_attempt", "report"):
+                data = report_input(execution=execution)
+                identity = data[source] if source != "report" else data[source]["identity"]
+                identity["attempt_id"] = "attempt-2"
+                with self.subTest(execution=execution, source=source), self.assertRaises(ValueError):
+                    campaign.check_report(data)
+
+    def test_null_turn_requires_the_matching_observed_subagent_record(self):
+        for execution in (None, "fork"):
+            with self.subTest(execution=execution), self.assertRaises(ValueError):
+                campaign.check_report(report_input(execution=execution, turn_id=None))
+        for recorded, returned in ((None, "invented-turn"), ("turn-2", None)):
+            data = report_input(execution="subagents", turn_id=recorded)
+            data["report"]["turn_id"] = returned
+            with self.subTest(recorded=recorded, returned=returned), self.assertRaises(ValueError):
+                campaign.check_report(data)
+        for source in ("active_attempt", "report"):
+            data = report_input(execution="subagents", turn_id=None)
+            del data[source]["turn_id"]
+            with self.subTest(source=source), self.assertRaises(ValueError):
+                campaign.check_report(data)
+        data = report_input(execution="subagents", turn_id=None)
+        data["report"]["worker_id"] = "another-worker"
+        with self.assertRaises(ValueError):
+            campaign.check_report(data)
+
+    def test_subagent_continuation_rejects_a_stale_return_without_a_turn_id(self):
+        data = report_input(execution="subagents", turn_id=None, attempt_id="attempt-1")
+        campaign.check_report(data)
+        data["expected_identity"]["attempt_id"] = "attempt-2"
+        data["active_attempt"]["attempt_id"] = "attempt-2"
+        with self.assertRaises(ValueError):
+            campaign.check_report(data)
+        data["report"]["identity"]["attempt_id"] = "attempt-2"
+        current = campaign.check_report(data)
+        self.assertEqual(current["assignment_id"], "a")
+        self.assertEqual(current["attempt_id"], "attempt-2")
+
     def test_worker_policy_is_optional_only_for_matching_legacy_bindings(self):
         self.assertTrue(campaign.check_report(report_input())["completion_claim_consistent"])
         for policy in ("pragmatic", "pedantic"):
@@ -209,6 +351,49 @@ class CampaignStateTests(unittest.TestCase):
         invalid = {**coverage_input([]), "merge_policy": None}
         with self.assertRaises(ValueError):
             campaign.coverage(invalid)
+
+    def test_coverage_counts_both_modes_and_binds_the_campaign_execution(self):
+        for execution in ("fork", "subagents"):
+            rows = [admitted("a", execution=execution), admitted("b", "APPROVE", execution=execution)]
+            data = coverage_input(rows, execution=execution)
+            with self.subTest(execution=execution):
+                result = campaign.coverage(data)
+                self.assertEqual(result["complete_files"], 2)
+                self.assertEqual(result["complete_verdict_counts"], {"BLOCKED": 1, "APPROVE": 1})
+                self.assertTrue(result["all_selected_files_have_accepted_reports"])
+            for replacement in (None, "fork" if execution == "subagents" else "subagents"):
+                changed = copy.deepcopy(data)
+                if replacement is None:
+                    del changed["execution_mode"]
+                else:
+                    changed["execution_mode"] = replacement
+                with self.subTest(execution=execution, replacement=replacement), self.assertRaises(ValueError):
+                    campaign.coverage(changed)
+            changed = copy.deepcopy(data)
+            for identity in (changed["assignments"][1]["expected_identity"],
+                             changed["assignments"][1]["accepted_report"]["identity"]):
+                del identity["execution_mode"]
+            with self.subTest(execution=execution), self.assertRaises(ValueError):
+                campaign.coverage(changed)
+        for value in (None, "", "default", []):
+            invalid = {**coverage_input([]), "execution_mode": value}
+            with self.subTest(value=value), self.assertRaises(ValueError):
+                campaign.coverage(invalid)
+
+    def test_coverage_rejects_stale_subagent_attempts(self):
+        row = admitted(execution="subagents", turn_id=None)
+        row["accepted_report"]["identity"]["attempt_id"] = "attempt-1"
+        with self.assertRaises(ValueError):
+            campaign.coverage(coverage_input([row], execution="subagents"))
+
+    def test_seedless_subagent_coverage_handles_unfinished_and_empty_scopes(self):
+        for rows in ([], [assignment("a", "incomplete")]):
+            data = coverage_input(rows, execution="subagents")
+            with self.subTest(rows=rows):
+                self.assertEqual(campaign.coverage(data)["complete_files"], 0)
+                data["campaign_seed_thread_id"] = "seed-1"
+                with self.assertRaises(ValueError):
+                    campaign.coverage(data)
 
     def test_stale_epoch_blocks_admission_and_dispatch(self):
         for field in campaign.EPOCH_FIELDS:

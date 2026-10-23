@@ -30,8 +30,12 @@ existing-thread links never erase a supported blocker or change worker coverage.
 ## Bind the assigned change
 
 1. Require the coordinator's repository, PR, target path, campaign and assignment
-   IDs, context identity, seed thread ID, base-tip SHA, review merge-base SHA,
-   head SHA, and `merge_policy` (`pragmatic` or `pedantic`). Bind exactly that assignment; never infer a different target
+   IDs, context identity, `execution_mode` (`fork` or `subagents`), base-tip SHA,
+   review merge-base SHA, head SHA, and `merge_policy` (`pragmatic` or `pedantic`).
+   Require the actual seed thread ID for `fork`; require a null seed and the
+   assigned `attempt_id` for `subagents`. Verify the exact supplied brief against
+   its bound identity; subagents do not require inherited session history.
+   Bind exactly that assignment; never infer a different target
    from the checkout or inherited invocation. If a binding is missing or
    inconsistent, report the gap to the coordinator without launching work or
    inventing an identity.
@@ -64,7 +68,7 @@ existing-thread links never erase a supported blocker or change worker coverage.
 
 ## Use prior discussion as counterevidence
 
-Use the inherited Prior discussion section and session-local discussion index to
+Use the supplied or inherited Prior discussion section and accessible discussion index to
 locate relevant complete exchanges, including resolved/outdated threads, other
 reviewers' threads, and relevant review summaries or PR comments. Read the actual
 responses and their source evidence before retaining a related finding; a brief
@@ -387,7 +391,7 @@ Unresolved claims remain questions, not confirmed or rejected defects by default
 For a replacement worker, verify supplied prior evidence against the same
 candidate and complete any missing investigation; supplied reports do not grant
 coverage. Do not quote an old Review identity as the new result, invent attempt
-provenance, or treat continuation evidence as part of the immutable seed. Only
+provenance, or treat continuation evidence as part of the frozen preparation. Only
 the coordinator schedules further attempts or handles epoch invalidation. A
 complete review with blockers is complete, not an instruction to keep retrying.
 
@@ -434,11 +438,14 @@ Immediately before this turn's final decision, emit exactly one unquoted
 machine-readable identity line using canonical one-line JSON in this shape:
 
 ```text
-Review identity: {"schema":"elenctic-review-identity/v1","mode":"single-file","repo":"<owner/name>","pr":123,"campaign_id":"<campaign-id>","assignment_id":"<assignment-id>","campaign_context_id":"<brief-digest-or-exact-content-id>","campaign_seed_thread_id":"<seed-thread-id>","merge_policy":"<pragmatic|pedantic>","target":"<path>","base":"<review-merge-base-sha>","candidate":"<head-sha>","view":"pr-head","coverage":"<complete|incomplete>","verdict":"<BLOCKED|APPROVE|INCOMPLETE>"}
+Review identity: {"schema":"elenctic-review-identity/v1","mode":"single-file","repo":"<owner/name>","pr":123,"campaign_id":"<campaign-id>","assignment_id":"<assignment-id>","campaign_context_id":"<brief-digest-or-exact-content-id>","campaign_seed_thread_id":"<seed-thread-id>","merge_policy":"<pragmatic|pedantic>","execution_mode":"fork","target":"<path>","base":"<review-merge-base-sha>","candidate":"<head-sha>","view":"pr-head","coverage":"<complete|incomplete>","verdict":"<BLOCKED|APPROVE|INCOMPLETE>"}
 ```
 
-All shown fields are required; replace the example PR number with the assigned
-number. Preserve `mode: "single-file"` as the v1 report-kind discriminator, not a
+All shown fields are required for a current fork assignment; replace the example
+PR number with the assigned number. For subagents use `execution_mode: "subagents"`,
+`campaign_seed_thread_id: null`, and add `attempt_id` with the exact token supplied
+for this delivery. Do not invent a seed or emit `attempt_id` for fork execution.
+Preserve `mode: "single-file"` as the v1 report-kind discriminator, not a
 public invocation mode. The identity binds the PR-head assignment; identify
 prospective-merge evidence and the assigned base-tip SHA in the coverage note.
 `merge_policy` is an additive binding, not a replacement for `mode` or the
@@ -451,8 +458,9 @@ blocker may coexist with incomplete coverage. Bind every field to the exact
 assignment and reviewed state; never infer missing campaign provenance or
 reconstruct identities from mutable refs. The identity verdict must equal the
 final decision. This line is report provenance, not approval or closure authority.
-Keep the v1 schema and assignment-binding fields unchanged across continuations;
-the coordinator's exact worker/turn references distinguish attempts. Coverage and
+Keep the v1 schema and assignment bindings unchanged across continuations;
+only a subagent's `attempt_id` changes to the newly assigned token. The coordinator's
+native delivery/result references distinguish attempts. Coverage and
 verdict reflect the consolidated current investigation, not the latest gap alone.
 
 ## End with the decision

@@ -86,6 +86,11 @@ not a second source of review truth:
 
 The abbreviated identity above is illustrative: pass the complete actual campaign
 identity from campaign.md, including explicit null provenance where never created.
+New campaign identities include actual `execution_mode: "fork" | "subagents"`;
+subagent campaigns keep `campaign_seed_thread_id: null`, including complete reviews.
+Display the actual choice with the report; historical absence stays absent.
+Execution changes require a new campaign/handling namespace. Feedback-only
+construction analyses have no execution mode or worker provenance.
 New native campaign and construction-analysis identities include the actual
 `merge_policy` (`pragmatic` or `pedantic`). Historical omission stays omitted and
 is labeled **Historical policy · mode unrecorded**, never inferred from a verdict.

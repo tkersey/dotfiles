@@ -123,6 +123,36 @@ class ReportTests(unittest.TestCase):
         self.assertIsNone(parsed['identity']['campaign_seed_thread_id'])
         self.assertEqual(parsed['identity']['verdict'], 'INCOMPLETE')
 
+    def test_subagent_campaigns_render_seedless_incomplete_and_complete_scopes(self):
+        for verdict in ('INCOMPLETE', 'APPROVE', 'BLOCKED'):
+            raw = sample()
+            raw['identity'].update(execution_mode='subagents', merge_policy='pragmatic', campaign_seed_thread_id=None, verdict=verdict)
+            if verdict != 'BLOCKED':
+                raw['findings'] = []
+            if verdict == 'INCOMPLETE':
+                raw['identity'].update(selected_scope_coverage='partial', whole_pr_coverage='not-established',
+                                       campaign_context_id=None, campaign_policy_id=None)
+            else:
+                raw['identity'].update(coverage='complete', whole_pr_coverage='complete')
+            with self.subTest(verdict=verdict):
+                document, parsed = report.render(raw)
+                self.assertEqual(parsed['identity'], raw['identity'])
+                self.assertIn('"execution_mode":"subagents"', document)
+                self.assertIsNone(parsed['identity']['campaign_seed_thread_id'])
+
+    def test_subagent_campaigns_cannot_claim_a_seed(self):
+        for seed in ('seed-fixture', '', False):
+            raw = sample()
+            raw['identity'].update(execution_mode='subagents', merge_policy='pragmatic', campaign_seed_thread_id=seed)
+            with self.subTest(seed=seed), self.assertRaises(ValueError):
+                report.prepare(raw)
+
+    def test_execution_mode_must_be_an_explicit_known_string(self):
+        for value in (None, '', 'default', 'subagent', 'Fork', True, [], {}):
+            raw = sample(); raw['identity']['execution_mode'] = value
+            with self.subTest(value=value), self.assertRaises(ValueError):
+                report.prepare(raw)
+
     def test_regeneration_identity_stable_order_independent_fingerprints(self):
         raw = sample(); first = report.prepare(raw)
         raw['generated_at'] = '2026-09-29T17:00:00Z'; raw['findings'].reverse()
@@ -167,6 +197,76 @@ class ReportTests(unittest.TestCase):
             with self.subTest(policy=policy), self.assertRaises(ValueError):
                 report.prepare(changed, previous=previous)
 
+    def test_execution_separates_campaign_namespaces_without_relabeling_legacy(self):
+        legacy = report.prepare(sample())
+        self.assertNotIn('execution_mode', legacy['identity'])
+        keys = {legacy['report_key']}
+        for execution in ('fork', 'subagents'):
+            raw = sample(); raw['identity'].update(execution_mode=execution, merge_policy='pragmatic')
+            if execution == 'subagents':
+                raw['identity']['campaign_seed_thread_id'] = None
+            parsed = report.prepare(raw)
+            self.assertEqual(parsed['identity']['execution_mode'], execution)
+            self.assertEqual([f['fingerprint'] for f in parsed['findings']],
+                             [f['fingerprint'] for f in legacy['findings']])
+            keys.add(parsed['report_key'])
+        self.assertEqual(len(keys), 3)
+
+    def test_execution_cannot_be_changed_or_stripped_on_regeneration(self):
+        for execution in (None, 'fork', 'subagents'):
+            raw = sample()
+            raw['identity']['merge_policy'] = 'pragmatic'
+            if execution is not None:
+                raw['identity'].update(execution_mode=execution, merge_policy='pragmatic')
+            if execution == 'subagents':
+                raw['identity']['campaign_seed_thread_id'] = None
+            previous = report.prepare(raw)
+            self.assertEqual(report.prepare(raw, previous=previous)['report_key'], previous['report_key'])
+            for replacement in (None, 'fork', 'subagents'):
+                if replacement == execution:
+                    continue
+                changed = deepcopy(raw)
+                if replacement is None:
+                    del changed['identity']['execution_mode']
+                else:
+                    changed['identity'].update(execution_mode=replacement, merge_policy='pragmatic')
+                if replacement == 'subagents':
+                    changed['identity']['campaign_seed_thread_id'] = None
+                with self.subTest(execution=execution, replacement=replacement), self.assertRaises(ValueError):
+                    report.prepare(changed, previous=previous)
+
+    def test_campaign_rejects_worker_bindings(self):
+        for field in ('attempt_id', 'assignment_id', 'target', 'worker_id', 'turn_id'):
+            raw = sample()
+            raw['identity'].update(execution_mode='subagents', merge_policy='pragmatic',
+                                   campaign_seed_thread_id=None)
+            raw['identity'][field] = 'worker-value'
+            with self.subTest(field=field), self.assertRaises(ValueError):
+                report.prepare(raw)
+
+    def test_campaign_execution_requires_policy(self):
+        for execution in ('fork', 'subagents'):
+            raw = sample()
+            raw['identity']['execution_mode'] = execution
+            if execution == 'subagents':
+                raw['identity']['campaign_seed_thread_id'] = None
+            with self.subTest(execution=execution), self.assertRaises(ValueError):
+                report.prepare(raw)
+
+    def test_feedback_only_analysis_rejects_execution_mode(self):
+        raw = sample()
+        raw['workflow'] = 'construction'
+        raw['identity'] = {field: raw['identity'][field] for field in ('repo', 'pr', 'base', 'candidate', 'view')}
+        raw['identity'].update(schema='elenctic-construction-identity/v1', mode='analysis', analysis_id='analysis-1')
+        raw['construction'] = {'status': 'unavailable', 'reason': 'No construction was selected.', 'adjudications': []}
+        for number, finding in enumerate(raw['findings'], 1):
+            finding['number'] = number
+        self.assertNotIn('execution_mode', report.prepare(raw)['identity'])
+        for execution in (None, 'fork', 'subagents'):
+            raw['identity']['execution_mode'] = execution
+            with self.subTest(execution=execution), self.assertRaises(ValueError):
+                report.prepare(raw)
+
     def test_composition_binds_elenctic_source_policy_without_relabeling_other_owners(self):
         raw = composition_sample(); legacy = report.prepare(raw)
         keys = {legacy['report_key']}
@@ -184,6 +284,56 @@ class ReportTests(unittest.TestCase):
         raw = composition_sample(); raw['identity']['merge_policy'] = 'pragmatic'
         with self.assertRaises(ValueError):
             report.prepare(raw)
+
+    def test_composition_preserves_the_actual_elenctic_execution_source(self):
+        raw = composition_sample(); legacy = report.prepare(raw)
+        keys = {legacy['report_key']}
+        for execution in ('fork', 'subagents'):
+            raw['identity']['assessments']['elenctic'].update(execution_mode=execution, merge_policy='pragmatic')
+            current = report.prepare(raw)
+            self.assertEqual(current['identity']['assessments']['elenctic']['execution_mode'], execution)
+            self.assertNotIn('execution_mode', current['identity'])
+            keys.add(current['report_key'])
+        self.assertEqual(len(keys), 1)
+        for value in (None, '', 'default', []):
+            raw['identity']['assessments']['elenctic']['execution_mode'] = value
+            with self.subTest(value=value), self.assertRaises(ValueError):
+                report.prepare(raw)
+        raw = composition_sample(); raw['identity']['execution_mode'] = 'subagents'
+        with self.assertRaises(ValueError):
+            report.prepare(raw)
+
+    def test_composition_cannot_change_or_strip_bound_execution_during_recovery(self):
+        for execution in (None, 'fork', 'subagents'):
+            raw = composition_sample()
+            raw['identity']['assessments']['elenctic']['merge_policy'] = 'pragmatic'
+            if execution is not None:
+                raw['identity']['assessments']['elenctic'].update(execution_mode=execution, merge_policy='pragmatic')
+            previous = report.prepare(raw)
+            self.assertEqual(report.prepare(raw, previous=previous)['report_key'], previous['report_key'])
+            for replacement in (None, 'fork', 'subagents'):
+                if replacement == execution:
+                    continue
+                changed = deepcopy(raw)
+                source = changed['identity']['assessments']['elenctic']
+                if replacement is None:
+                    del source['execution_mode']
+                else:
+                    source.update(execution_mode=replacement, merge_policy='pragmatic')
+                with self.subTest(execution=execution, replacement=replacement), self.assertRaises(ValueError):
+                    report.prepare(changed, previous=previous)
+
+    def test_composition_allows_the_first_execution_source_to_arrive(self):
+        previous_raw = composition_sample()
+        previous_raw['identity'].update(assessments={}, selected_scope_coverage='partial',
+                                        whole_pr_coverage='not-established', verdict='INCOMPLETE')
+        previous_raw['findings'] = []
+        previous = report.prepare(previous_raw)
+        for execution in ('fork', 'subagents'):
+            current = composition_sample()
+            current['identity']['assessments']['elenctic'].update(execution_mode=execution, merge_policy='pragmatic')
+            with self.subTest(execution=execution):
+                self.assertEqual(report.prepare(current, previous=previous)['report_key'], previous['report_key'])
 
     def test_disposition_changes_reopen_finding_evidence_within_bound_policy(self):
         raw = sample(); raw['identity']['merge_policy'] = 'pragmatic'
