@@ -1,3 +1,6 @@
 {
+    "colorscheme": "catppuccin-mocha",
+    "diffgutter": true,
+    "hlsearch": true,
     "softwrap": true
 }
