@@ -30,7 +30,7 @@ remain binding; a method, label, or narrative cannot replace their evidence.
 | Required behavior, compatibility, scope, authorized effects | accepted source or current user authority; bound directly by Actuating |
 | Realized construction and exact diff | Git commit and tree |
 | Executed validation and proof | the exact repository-native verifier |
-| Review attempt, target, verdict, and provenance | CAS |
+| Review attempt, target, verdict, and provenance | selected executor: CAS by default; host runtime and attributed output with subagents |
 | Finding authority, applicability, duplicates, and admitted witnesses | `$review-fold` and `review-fold/counterexample-corpus` |
 | Causal explanation, candidate selection, realization, and closure | `$actuating` |
 | Mechanism reconsideration / generative derivation / redundant factors | `$metanoetic` / `$universalist` / `$reduce`, interpreted by Actuating |
@@ -65,6 +65,23 @@ is required to design software that does not yet exist.
 Review-bearing routes accept `parallel-reviews` (default) or `serial-reviews`.
 These change scheduling only. They do not change authority or the review inventory.
 
+Review execution defaults to CAS. Explicit `with subagents` or `using subagents`
+selects the host's native subagents for every review, including standard. Bind
+`execution_mode: cas | subagents` independently of route and scheduling. For example:
+
+```text
+$actuating review-closeout PR #123 with subagents
+$actuating review-closeout PR #123 with concurrency 3 and subagents
+$actuating review-closeout PR #123 with subagents and serial-reviews
+```
+
+Requested concurrency bounds active reviewers within available capacity; it never
+reduces the inventory or overrides serial scheduling. Preserve the selected mode
+through successor construction and resumption. Do not silently change executors
+when one is unavailable. An explicit mode change starts a newly bound campaign;
+credits from different modes cannot form one streak. Mode selection alone neither
+dispatches review for `implement` nor enlarges `analyze` authority.
+
 ## Selected guidance
 
 Read the applicable source, evidence, claim, and effect rules before their governed
@@ -79,7 +96,8 @@ reasoning sequence. Do not load every workflow or reference at entry.
 | Using supporting construction skills or a selected architecture technique | [architecture.md](architecture.md) for composition and effect boundaries; its techniques do not add a construction stage. |
 | Designing or reducing materially costly verification, diagnosing slow qualification, or selecting a broad retry while verification cost impedes the Goal | [verification.md](verification.md) for evidence-preserving construction and the next useful execution; ordinary cheap validation needs no additional workflow. |
 | An elimination claim meets a current witness, a broader Goal obligation remains unresolved after a narrow repair, or efficacy is being assessed | [recurrence.md](recurrence.md), before retaining the claim or selecting a successor. |
-| `review-closeout`, or bare Actuating reaching review | [review-closeout.md](review-closeout.md) and its required review contract, before the first CAS request; apply all six initial lenses to the whole changeset and individually to up to three files selected for significant non-test code changes under the same frozen-subject and convergence rules. |
+| `review-closeout`, or bare Actuating reaching review | [review-closeout.md](review-closeout.md) and its required review contract, before the first review request; apply all six initial lenses to the whole changeset and individually to up to three files selected for significant non-test code changes under the same frozen-subject and convergence rules. |
+| Review with explicit subagents | [subagent-reviews.md](references/subagent-reviews.md) before dispatch; use the packaged upstream rubric for standard and the unchanged auxiliary lenses. |
 | Bare Actuating reaching publication | `$ship`; publication does not replace subsequent review-closeout. |
 
 An open review epoch forbids successor mutation, including experiments. Read its

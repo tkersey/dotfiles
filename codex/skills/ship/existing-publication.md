@@ -28,8 +28,10 @@ mutation_performed = false
 ```
 
 Actuating computes the receipt digest and includes it in the review context and
-every CAS request fingerprint before dispatch. The echoed CAS workflow binding
-therefore proves that this exact observation existed before review.
+every review request fingerprint before dispatch. Require the selected executor's
+binding to that dispatch and result: the CAS workflow echo, or native subagent
+assignment/result attribution. A digest alone does not establish that the exact
+observation preceded review.
 
 No Actuating event ordering or wall-clock comparison is needed.
 
@@ -44,7 +46,7 @@ Require a non-null `publication_observation_ref` resolving to the exact
 - immutable base and reviewed head;
 - Goal context digest and Review Contract digest;
 - current provider branch readback;
-- CAS review-context binding supplied by Actuating.
+- selected-executor review-context binding supplied by Actuating.
 
 If the exact observation was not bound before the current review, do not adopt a
 historical campaign. Obtain a fresh observation and run a fresh review wave.

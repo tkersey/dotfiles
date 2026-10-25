@@ -123,6 +123,91 @@ add('credit-15', {requested_scope:'Static API/documentation review only; all req
   {credit_disposition:'credit', limitation_disposition:'not-required', auxiliary_count_after:5, public_review_complete:true},
   'The same actually unavailable fixture as credit-05 is nonblocking for an independently justified static scope.');
 
+const subagentRequest = {execution_mode:'subagents', repository:'fixture/review',
+  base_sha:'b1', head_sha:'h1', scope:'changeset', focus:null, lens_name:'standard', role:'standard',
+  request_id:'standard-5', instruction_digest:'synthetic-complete-b1-h1-standard-instructions'};
+const subagentOutput = {findings:[], overall_correctness:'patch is correct',
+  overall_explanation:'Inspected the complete bound changeset and relevant dependencies against the accepted requirements. No supported defect or material evidence gap remains.',
+  overall_confidence_score:0.9};
+const subagentResult = {worker_id:'worker-5', result_ref:'runtime-result-5',
+  terminal:true, raw_output:JSON.stringify(subagentOutput)};
+const earlierStandards = Array.from({length:4}, (_, i) => ({
+  assignment:{...subagentRequest, request_id:`standard-${i+1}`},
+  worker_id:`worker-${i+1}`, result_ref:`runtime-result-${i+1}`,
+  raw_output:JSON.stringify(subagentOutput), credit_disposition:'credit',
+  credit_basis:'Exact current independent standard; full inquiry and evidence adequate.'
+}));
+function addSubagent(id, evidence, decision, basis) {
+  cases.push({id, input:{
+    subject, execution_mode:'subagents', lens:'standard',
+    requested_assignment:subagentRequest, delivered_assignment:subagentRequest,
+    instruction_observation:{source:'synthetic host delivery record',
+      complete_bundle_identity:subagentRequest.instruction_digest,
+      delivered_components:['execution wrapper','pinned Codex rubric','exact assignment and source evidence'],
+      exact_bytes_match:true,
+      rubric_source_sha256:'ec60e7f36a1d1c2679ce095c0205ecc56f7dd8fb57707a13ef362072390f219f'},
+    launch_observation:{worker_id:'worker-5', request_id:'standard-5', delivery_ref:'runtime-delivery-5'},
+    terminal_observation:subagentResult,
+    context_observation:{fresh_context:true, inherited_peer_conclusions:false,
+      full_assignment_delivered:true, accepted_requirements_accessible:true},
+    prior_standard_reviews:earlierStandards, prior_credit:{standard:4, auxiliary:5},
+    requested_scope:'Changeset-wide standard with the pinned Codex rubric. Full source inquiry is complete. All mandatory pre-review proof passed on this exact candidate; no exploratory check was attempted.',
+    other_required_obligations:'All five changeset auxiliaries and the frozen focused-file inventory have exact current subagent evidence, adjudication and credit. No unresolved material findings or limitations.',
+    ...evidence
+  }, expected:{credit_disposition:'hold', limitation_disposition:null,
+    standard_count_after:4, auxiliary_count_after:5,
+    public_review_complete:false, original_check_status:'not-run', ...decision}, basis});
+}
+addSubagent('credit-16', {},
+  {credit_disposition:'credit', standard_count_after:5, public_review_complete:true},
+  'A fifth distinct fresh-context standard with directly attributed exact output completes portable convergence; it is not a CAS or native/default review.');
+addSubagent('credit-17', {terminal_observation:{...subagentResult, worker_id:'unassigned-worker'}}, {},
+  'Matching review prose and a clean object cannot replace runtime attribution. Recover the assigned worker state before replacement; another worker terminating does not establish that this attempt ended.');
+addSubagent('credit-18', {delivered_assignment:{...subagentRequest, head_sha:'h0'}}, {},
+  'A completed review of another head does not discharge the current request; preserve the four unrelated valid standard credits.');
+addSubagent('credit-19', {
+  launch_observation:{worker_id:'worker-4', request_id:'standard-5', delivery_ref:'runtime-continuation-4'},
+  terminal_observation:{...subagentResult, worker_id:'worker-4'},
+  context_observation:{fresh_context:false, inherited_peer_conclusions:false,
+    full_assignment_delivered:true, accepted_requirements_accessible:true,
+    prior_work:'This is a continuation of already credited standard-4 on the same worker.'}},
+  {limitation_disposition:'unresolved'},
+  'Continuing an already credited reviewer does not create another independent standard, even with a new request ID and terminal result.');
+addSubagent('credit-20', {terminal_observation:{...subagentResult, raw_output:'clean'}}, {},
+  'Terminal completion and a bare status have no structured semantic verdict; use the bounded exact-request recovery path, not clean credit.');
+addSubagent('credit-21', {terminal_observation:{...subagentResult, raw_output:'{"findings":[]'}}, {},
+  'Malformed output is not an empty clean review or a model-authored receipt; do not infer missing fields.');
+addSubagent('credit-22', {terminal_observation:{...subagentResult,
+    raw_output:JSON.stringify({...subagentOutput, findings:[{title:'Required migration drops valid entries',
+      body:'The changed migration discards a required valid input, as confirmed by the bound source and reproduction.',
+      confidence_score:1, priority:1, code_location:{absolute_file_path:'/fixture/src/migrate.mjs', line_range:{start:3,end:3}}}]})},
+    review_fold:'The reported current material violation is entailed, accepted, and unresolved.'},
+  {standard_count_after:0, auxiliary_count_after:0},
+  'A clean correctness label cannot erase a nonempty finding array. Preserve the finding for admission; the accepted material violation invalidates all credit.');
+addSubagent('credit-23', {context_observation:{fresh_context:false,
+    inherited_peer_conclusions:true, full_assignment_delivered:true,
+    accepted_requirements_accessible:true,
+    inherited_context:'The parent transcript includes sibling findings, four prior clean verdicts, and the required fifth-clean target.'}},
+  {limitation_disposition:'unresolved'},
+  'An instruction to ignore inherited conclusions does not establish the required fresh independent context.');
+addSubagent('credit-24', {
+  requested_assignment:{...subagentRequest, request_id:'standard-1'},
+  delivered_assignment:{...subagentRequest, request_id:'standard-1'},
+  launch_observation:{worker_id:'worker-5', request_id:'standard-1', delivery_ref:'runtime-delivery-5'},
+  prior_standard_reviews:earlierStandards.map(entry => ({...entry,
+    assignment:{...entry.assignment, execution_mode:'cas'},
+    provenance:'Historical native/CAS campaign, preserved under its original mode.'})),
+  prior_credit:{execution_mode:'cas', standard:4, auxiliary:5},
+  current_campaign:'A newly bound subagent initial wave; this is its first standard. The other required initial portable obligations are complete as described above.'},
+  {credit_disposition:'credit', standard_count_after:1},
+  'The first portable standard earns one portable credit. Four historical CAS standards cannot be combined with it to satisfy a mode-specific streak.');
+addSubagent('credit-25', {launch_observation:null, terminal_observation:null,
+    prior_standard_reviews:[], prior_credit:{standard:5, auxiliary:5},
+    resume_evidence:'Only an earlier summary saying five standards and all auxiliaries clean survives; exact worker results, assignment deliveries, and runtime attribution are unavailable.',
+    other_required_obligations:'No exact auxiliary or focused-file results are recoverable.'},
+  {standard_count_after:0, auxiliary_count_after:0},
+  'Resume cannot reconstruct review evidence from counts or prose. Recover exact results or require a fresh initial wave; retain any separately recoverable findings.');
+
 const fields = {
   credit_disposition:'credit | hold', limitation_disposition:'recovered | covered | not-required | unresolved | null',
   standard_count_after:'integer', auxiliary_count_after:'integer', public_review_complete:'boolean',
@@ -130,8 +215,10 @@ const fields = {
   credit_basis:'source-supported rationale', user_summary:'honest scoped user update', pr_summary:'honest scoped PR update'
 };
 function exported(c) {
-  const guidance = Object.fromEntries(['review-closeout.md','references/review-contract.md',
-    'references/review-contract.json','references/closure.md'].map(path =>
+  const selected = ['review-closeout.md','references/review-contract.md',
+    'references/review-contract.json','references/closure.md'];
+  if (c.input.execution_mode === 'subagents') selected.push('references/subagent-reviews.md');
+  const guidance = Object.fromEntries(selected.map(path =>
     [path, readFileSync(new URL(`../${path}`, import.meta.url), 'utf8')]));
   return {task:'Act as the Actuating owner at review admission. Adjudicate this synthetic result using the supplied current workflow. Return the evaluation fields below, with the evidence basis and public updates. Do not fabricate observations or change the required scope. These fields are for offline evaluation, not a new production handoff schema.',
     guidance, evidence:c.input, response_fields:fields};

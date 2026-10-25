@@ -4,6 +4,9 @@ These offline cases exercise the owner decision described in
 [Review-credit admission](../references/review-contract.md#review-credit-admission):
 receipt -> adjudication -> accounting -> user/PR summary. They are synthetic
 subjects, not new CAS receipts, stored workflow state, or another review lane.
+Portable cases keep raw native-shaped review output separate from synthetic host
+delivery and terminal-result observations; worker text does not authenticate itself.
+The synthetic full-instruction identity is distinct from the rubric source hash.
 
 ## Run the fixture and grader checks
 
@@ -31,8 +34,9 @@ node codex/skills/actuating/tests/test-review-credit.mjs --key
 ```
 
 `--case` includes the current closeout guidance, static review contract, closure
-guidance, synthetic evidence, and evaluation response fields. It omits the expected
-decision and evaluator rationale. The response fields are for measurement only;
+guidance, synthetic evidence, and evaluation response fields. Subagent cases also
+include the selected portable execution guidance. It omits the expected decision
+and evaluator rationale. The response fields are for measurement only;
 production retains the existing per-request handoff and concise owner basis.
 
 `--grade` checks structured decisions, accounting, completion, and preservation of
@@ -52,6 +56,16 @@ matching or a confidence threshold to decide adequacy.
 | 08 | Exit zero while the required test was skipped. |
 | 10 | Held fifth standard preserves earlier valid credit but cannot advance the count or complete review. |
 | 12 / 13 | Material findings and missing pre-review proof still invoke existing invalidation rules. |
+| 16 / 17 / 18 | Adequate fifth portable standard versus wrong-worker attribution or delivery against another head. |
+| 19 / 23 | A continued already credited worker or a context containing sibling conclusions cannot supply a new independent confirmation. |
+| 20 / 21 / 22 | Bare or malformed output receives no clean credit; a clean label cannot erase admitted material findings in the raw result. |
+| 24 | A first portable standard does not combine with historical CAS standards into five clean confirmations. |
+| 25 | A resumed summary without exact outputs and runtime provenance cannot reconstruct review credit. |
+
+Cases 19 and 23 retain authentic attributed output but lack the required new
+independent inquiry. Its disposition is `unresolved`: continuing an already
+credited reviewer or inheriting peer conclusions leaves that obligation open.
+Hold the fifth credit without resetting the four valid standards or completing review.
 
 For a matched comparison, run the same case with baseline and changed workflow
 bytes under the same model/settings, without leaking the key. Preserve actual

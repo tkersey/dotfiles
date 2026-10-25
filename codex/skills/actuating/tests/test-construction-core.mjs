@@ -6,6 +6,7 @@ import {createHash} from 'node:crypto';
 import {readFileSync} from 'node:fs';
 import {dirname, resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
+import {assertNativeReviewPolicy} from './review-policy-compatibility.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const paths = ['SKILL.md', 'architecture.md', 'counterexamples.md',
@@ -15,8 +16,6 @@ const paths = ['SKILL.md', 'architecture.md', 'counterexamples.md',
   'tests/construction-comparison.md'];
 const sources = Object.fromEntries(paths.map(p => [p, readFileSync(resolve(root,p),'utf8')]));
 const hash = s => createHash('sha256').update(s).digest('hex');
-const canonical = v => Array.isArray(v) ? v.map(canonical) : v && typeof v === 'object'
-  ? Object.fromEntries(Object.keys(v).sort().map(k => [k,canonical(v[k])])) : v;
 const section = (s,h) => {
   assert(s.includes(`## ${h}\n`), `missing section: ${h}`);
   return s.split(`## ${h}\n`)[1].split('\n## ')[0];
@@ -34,23 +33,19 @@ function check(src) {
   // Byte-bound safeguards from fc82de2d26052ff2b20f0fe9d4ebae289965091d.
   // Their source authority is unchanged by the construction experiment.
   for (const [h,digest] of Object.entries({
-    'Public routes':'8e2aec586fe33dfc69d573c15a9fdc425547bf8bdf8c4952e5f0fbdd8fb6c222',
+    'Public routes':'18d84587c9a33f319cc4bf28aa7ea1ea8aa7259e994d09cd0d49a5233c96f55c',
     'Source binding':'a08472adfb58b7540f832680acac69f92a87e7ee8e4086c9621134194aa4639d',
     'Realization and common proof obligations':'8f782e151a2c48cca2da1506830376ad597b689fde6985014f30c466f87be6e3',
     'Completion':'dc56a54f2fd79d07f4d801b030cbf5b5a1ec6758be7a8c72eae0e8c2f630f58f'
   })) assert.equal(hash(section(skill,h)),digest,`changed acceptance/authority section: ${h}`);
   assert.equal(hash(section(skill,'Construction Working Set')),
     'becab050638d8517356ae6e57bb49bdd6e726ae47e7207ebeb564ecc6476c86e','changed construction assignment binding');
-  const reviewKeys=['required_lenses','focused_file_reviews','review_scheduling','candidate_lifecycle',
-    'review_epoch','review_entry','evidence_acquisition','standard_convergence',
-    'material_change','transport_recovery','attempt_quality'];
-  assert.equal(hash(JSON.stringify(canonical(Object.fromEntries(reviewKeys.map(k=>[k,policy[k]]))))),
-    '8c13cc173966b7143d41f967ba6861e4f36fa2909b7cff5d980a747899905f37','changed review process');
+  assertNativeReviewPolicy(policy);
   const admissionStart=counter.indexOf('Before counterexample-driven selection,');
   const admissionEnd=counter.indexOf('\n## Compile the first loss of guarantee');
   assert(admissionStart>=0 && admissionEnd>admissionStart);
   assert.equal(hash(counter.slice(admissionStart,admissionEnd)),
-    '1c198a648fa99f9e5ddbe64fe5291d9d33d91c54dfe3b71be88d2b8d4394a859','changed witness admission');
+    'ecd80ffbd34cb57ba11e83d6b671c73dda6123d4faa4621b43a54ad24435d516','changed witness admission');
 
   assert(core.includes('No fixed order of diagnosis, algebraic derivation, prototyping, or proof attempts is required'));
   assert(core.includes('Missing proof is not a witnessed defect'));
@@ -72,7 +67,7 @@ function check(src) {
   assert(normalized(section(skill,'Proof acceptance')).includes('A passing weakened suite cannot discharge an unchanged requirement'));
   assert(normalized(section(skill,'Proof acceptance')).includes('does not demand a finished causal account before authorized exploration'));
 
-  assert.equal(policy.contract_id,'actuating-review-contract-v26');
+  assert.equal(policy.contract_id,'actuating-review-contract-v27');
   assert.equal(policy.construction_selection.reasoning_sequence_required,false);
   assert.equal(policy.construction_selection.metanoetic_before_universalist_when_triggered,false);
   assert.equal(policy.universalist_compilation.nomination_result_required,false);

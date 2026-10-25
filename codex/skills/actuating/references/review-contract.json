@@ -1,12 +1,10 @@
 {
-  "schema": "actuating-review-contract/v19",
-  "contract_id": "actuating-review-contract-v26",
+  "schema": "actuating-review-contract/v20",
+  "contract_id": "actuating-review-contract-v27",
   "required_lenses": [
     {
       "name": "standard",
-      "role": "standard",
-      "instruction_source": "codex-default",
-      "custom_instructions": false
+      "role": "standard"
     },
     {
       "name": "soundness-skeptic",
@@ -34,6 +32,78 @@
       "instructions_ref": "codex/skills/actuating/references/lenses/fresh-eyes-review.md"
     }
   ],
+  "review_execution": {
+    "default_mode": "cas",
+    "subagents_requires_explicit_selection": true,
+    "scheduling_independent": true,
+    "bound_in_review_context": true,
+    "mode_change_requires_new_campaign": true,
+    "mode_change_resets_all_review_credit": true,
+    "mixed_mode_credit_forbidden": true,
+    "silent_fallback_forbidden": true,
+    "modes": {
+      "cas": {
+        "standard_review": {
+          "instruction_source": "codex-default",
+          "custom_instructions": false,
+          "owner": "codex",
+          "source": "native-default",
+          "custom_instructions_argument_forbidden": true,
+          "skill_authored_instruction_file_forbidden": true,
+          "native_default_review_required": true,
+          "custom_instructions_forbidden": true
+        },
+        "file_standard": {
+          "instruction_source": "file-scope-only",
+          "custom_instructions": true,
+          "native_default": false
+        },
+        "attempt_quality": {
+          "strong_principal_required": true,
+          "reduced_principal_forbidden": true,
+          "fallback_forbidden": true,
+          "owner_lived_transport_required": true,
+          "required_backend_class": "cas-start-wait",
+          "required_capability": "cas_workflow_bound_owner_lived_review_v1",
+          "structured_statuses": [
+            "clean",
+            "findings"
+          ],
+          "exact_workflow_binding_required": true
+        }
+      },
+      "subagents": {
+        "guidance_ref": "codex/skills/actuating/references/subagent-reviews.md",
+        "standard_review": {
+          "instruction_source": "pinned-codex-rubric",
+          "instructions_ref": "codex/skills/actuating/references/upstream/codex-review-rubric.md",
+          "source_repository": "openai/codex",
+          "source_path": "codex-rs/prompts/templates/review/rubric.md",
+          "source_commit_sha": "970111f6cb62cc02fe36a82ea7d71b37a2889c97",
+          "source_blob_sha": "85e89cb7eeadb97fa9e4868d2b9977c87225506d",
+          "instruction_sha256": "ec60e7f36a1d1c2679ce095c0205ecc56f7dd8fb57707a13ef362072390f219f",
+          "custom_instructions": true,
+          "native_default_review_required": false
+        },
+        "file_standard": {
+          "instruction_source": "pinned-codex-rubric-and-file-focus",
+          "custom_instructions": true,
+          "native_default": false
+        },
+        "attempt_quality": {
+          "host_issued_identity_required": true,
+          "terminal_output_required": true,
+          "fresh_context_per_request_required": true,
+          "sibling_conclusions_forbidden": true,
+          "exact_dispatch_and_output_required": true,
+          "read_only_required": true,
+          "raw_result_preserved": true,
+          "synthesized_cas_receipt_forbidden": true,
+          "lost_provenance_requires_fresh_initial_wave": true
+        }
+      }
+    }
+  },
   "focused_file_reviews": {
     "scope": "file",
     "lenses": "required_lenses",
@@ -51,9 +121,6 @@
     "phase": "initial-only",
     "file_by_lens_matrix": true,
     "standard_review": {
-      "instruction_source": "file-scope-only",
-      "custom_instructions": true,
-      "native_default": false,
       "counts_toward_standard_convergence": false,
       "best_judgment_unconstrained_by_auxiliary_taxonomy": true
     },
@@ -75,10 +142,6 @@
     ],
     "standard_review": {
       "scope": "changeset",
-      "owner": "codex",
-      "source": "native-default",
-      "custom_instructions_argument_forbidden": true,
-      "skill_authored_instruction_file_forbidden": true,
       "best_judgment_unconstrained_by_auxiliary_taxonomy": true
     },
     "modes": {
@@ -239,8 +302,8 @@
     "initial_standard_counts": true,
     "later_attempts_serial": true,
     "findings_reset_streak": true,
-    "native_default_review_required": true,
-    "custom_instructions_forbidden": true
+    "selected_execution_mode_required": true,
+    "distinct_contexts_required": true
   },
   "material_change": {
     "identity": "git-head",
@@ -253,20 +316,9 @@
   },
   "attempt_quality": {
     "tuple_verdict_required": true,
-    "strong_principal_required": true,
-    "reduced_principal_forbidden": true,
-    "fallback_forbidden": true,
-    "owner_lived_transport_required": true,
     "context_match_required": true,
     "exact_instruction_digest_required": true,
-    "exact_workflow_binding_required": true,
-    "current_tuple_required": true,
-    "required_backend_class": "cas-start-wait",
-    "required_capability": "cas_workflow_bound_owner_lived_review_v1",
-    "structured_statuses": [
-      "clean",
-      "findings"
-    ]
+    "current_tuple_required": true
   },
   "review_credit": {
     "owner": "actuating",
@@ -358,6 +410,7 @@
     "derived_from_current_owner_facts": true,
     "live_relevant_sources": [
       "cas",
+      "host-subagent-runtime",
       "self-review",
       "provider-review",
       "test",

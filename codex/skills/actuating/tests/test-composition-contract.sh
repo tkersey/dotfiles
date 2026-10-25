@@ -6,6 +6,7 @@ import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
 import {readFileSync} from 'node:fs';
 import {resolve} from 'node:path';
+import {pathToFileURL} from 'node:url';
 const root = process.argv[2];
 const text = path => readFileSync(resolve(root,path),'utf8');
 const section = (s, heading) => {
@@ -13,18 +14,14 @@ const section = (s, heading) => {
   return s.split(`## ${heading}\n`)[1].split('\n## ')[0];
 };
 const sha256 = s => createHash('sha256').update(s).digest('hex');
-const canonical = v => Array.isArray(v) ? v.map(canonical) : v && typeof v === 'object'
-  ? Object.fromEntries(Object.keys(v).sort().map(k => [k,canonical(v[k])])) : v;
 const policy = JSON.parse(text('references/review-contract.json'));
-// Protect the accepted review process, not just one count or flag.
-const reviewKeys = ["required_lenses", "focused_file_reviews", "review_scheduling", "candidate_lifecycle", "review_epoch", "review_entry", "evidence_acquisition", "standard_convergence", "material_change", "transport_recovery", "attempt_quality"];
-assert.equal(sha256(JSON.stringify(canonical(Object.fromEntries(reviewKeys.map(k => [k,policy[k]]))))),
-  '8c13cc173966b7143d41f967ba6861e4f36fa2909b7cff5d980a747899905f37', 'review process changed');
+const {assertNativeReviewPolicy} = await import(pathToFileURL(resolve(root,'tests/review-policy-compatibility.mjs')));
+assertNativeReviewPolicy(policy);
 const skill = text('SKILL.md');
 const protectedSections = {
-  "Public routes": "8e2aec586fe33dfc69d573c15a9fdc425547bf8bdf8c4952e5f0fbdd8fb6c222",
-  "Review-epoch immutability and evidence acquisition": "fea7a409fda38f8c71c95e420839469b0e4fafff77a7a6141a0c090a48859137",
-  "Review and closure": "a4ad82fd16cae9265ff4f3e116f03751466af6ae07ea4c5e2ffbd4be438f32d2",
+  "Public routes": "18d84587c9a33f319cc4bf28aa7ea1ea8aa7259e994d09cd0d49a5233c96f55c",
+  "Review-epoch immutability and evidence acquisition": "ae2486bfd71aacf1d8847bb1a278df65ce55367aded6083a9066360ec195fb71",
+  "Review and closure": "fc36faca978a98d0c3da3fa6ba262e449dbe882741efe8edee24c1b0600b96e7",
   // Apply the same proof bar to initial construction; witnesses are conditional.
   "Realization and common proof obligations": "8f782e151a2c48cca2da1506830376ad597b689fde6985014f30c466f87be6e3"
 };
@@ -108,7 +105,7 @@ const freshEyesDoctrine = 'Once again, check over everything again with fresh ey
 assert(freshEyes.split(outputBoundary)[0].includes(`\n\n${freshEyesDoctrine}\n\n`),
   'the verbatim Fresh Eyes doctrine must reach both Actuating and Elenctic semantic review inputs');
 assert.match(text('references/closure.md'),/\.\.\/SKILL\.md#realization-and-common-proof-obligations/);
-console.log('actuating: composition source contracts, unchanged modes, review policy, proof bar, and exact lens bytes passed');
+console.log('actuating: composition source contracts, native review policy, proof bar, and exact lens bytes passed');
 JS
 node "$skill_root/tests/test-construction-core.mjs"
 node "$skill_root/../review-fold/tests/test-counterexample-admission.mjs"
