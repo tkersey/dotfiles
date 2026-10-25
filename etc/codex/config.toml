@@ -76,8 +76,12 @@ label = "sol"
 
 [tui.presets.4]
 input = "We've had enough rounds of review that it’s worth considering how well $actuating has been doing at re-architecting and refactoring based on counterexamples to be correct by construction instead of accreting code."
-label = "analyze correcting counterexamples"
+label = "correcting counterexamples"
 
 [tui.presets.5]
 input = "I want you to do deeper analysis of this using $glaze $metanoetic then save your results as markdown in a secret gist."
-label = "do metanoetic analysis gist"
+label = "metanoetic analysis gist"
+
+[tui.presets.6]
+input = "Reload $actuating, $universalist, $metanoetic, $tune, $glaze and ~/.codex/AGENTS.md. Remember to use $tune liberally."
+label = "reload"
