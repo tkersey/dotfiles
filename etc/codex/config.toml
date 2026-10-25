@@ -61,3 +61,11 @@ theme = "coldark-dark"
 terminal_title = ["spinner", "project", "status", "thread", "task-progress"]
 notification_condition = "always"
 status_line_use_colors = true
+
+[tui.presets.1]
+input = "/model gpt-6-astra --reasoning=high --speed=standard"
+label = "code"
+
+[tui.presets.2]
+input = "/model gpt-6-luna --reasoning=medium --speed=standard"
+label = "task"
