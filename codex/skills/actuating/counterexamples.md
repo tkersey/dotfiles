@@ -75,8 +75,7 @@ is not an entry condition for inquiry.
 Establish the affected domain from the source, not only the reported path or supplied
 records. Before realizing a selected candidate, choose a source-supported
 mechanism discriminator under [proof acceptance](SKILL.md#proof-acceptance).
-Ask whether the claimed premises or evidence remain true but the required behavior
-fails. Establish the observation's applicability: a conditional counter agreeing
+Establish the observation's applicability: a conditional counter agreeing
 with a candidate may mean the relevant mechanism never ran. A decisive source
 argument can suffice; no paired-case quota or forced redesign.
 
