@@ -22,9 +22,10 @@
 
 ### Codex configuration
 
-- Make reusable Codex settings changes in the dotfiles repository's `etc/codex/config.toml`, linked to `/etc/codex/config.toml`.
-- Treat `~/.codex/config.toml` as machine-local configuration: project trust entries, installation-specific paths, and Codex/ChatGPT desktop-managed state belong there. Edit it only for a requested machine-local change, and leave unrelated churn unmodified and uncommitted.
-- User configuration overrides system defaults. When a shared change appears ineffective, check higher-precedence configuration, including project, profile, and command-line settings. Report any masking override; do not mirror shared settings into the user file.
+- Store reusable Codex preferences, including TUI presets (`tui.presets`), in the dotfiles repository's `etc/codex/config.toml`, linked to `/etc/codex/config.toml`. Preferences remain reusable when Codex saves them in the user file.
+- When changing Codex configuration, inspect affected settings in both the shared file and active user config (`$CODEX_HOME/config.toml`, normally `~/.codex/config.toml`). Migrating affected reusable settings belongs to the same task: put them in the shared file, then remove their superseded user entries once the shared file is installed and loads successfully.
+- Keep trust entries, installation-specific paths, application state, and intentional local overrides machine-local. Leave unrelated entries untouched. Do not commit or symlink the user config.
+- Verify affected settings resolve as intended through higher-precedence configuration, including user, profile, project, and command-line settings. Correct unintended masking within the task; preserve intentional overrides and report any that prevent the requested result. If local access is unavailable, report the remaining migration or verification instead of claiming it complete.
 
 ### Git
 

@@ -10,16 +10,21 @@ the one-time tip-cask migration, and local validation.
 
 ### Codex configuration
 
-The two repository configs are installed as symlinks:
+The shared Codex config is installed as a symlink:
 
 | Repository file | Symlink |
 | --- | --- |
 | `etc/codex/config.toml` | `/etc/codex/config.toml` |
-| `home/codex/config.toml` | `~/.codex/config.toml` |
 
-Quit Codex/ChatGPT and running Codex CLI sessions, preserve any config edits
-that should be kept, and update your checkout. Then run the existing installer
-as your normal user:
+The active user config (`$CODEX_HOME/config.toml`, normally
+`~/.codex/config.toml`) remains a writable, machine-local file. It is not
+installed or tracked by this repository.
+
+Quit Codex/ChatGPT and running Codex CLI sessions and preserve any config edits
+that should be kept. If an older installation linked the user config into the
+repository, replace that symlink with a regular file preserving its contents
+before updating your checkout. The installer no longer manages that destination.
+Then update your checkout and run the existing installer as your normal user:
 
 ```sh
 cd ~/.dotfiles
@@ -31,13 +36,16 @@ The default `./install` includes the same symlink step. The installer requests
 config file or old symlink, choose `o` at that destination's overwrite prompt
 to replace it with the new link. Overwrite removes the old file or link; keep
 any needed contents before selecting it. Choose `s` to preserve an existing
-file instead. The separate config-copying operation is removed.
-The installer sets the home config's repository target to mode `0600` before
-linking it, keeping personal settings private.
+file instead.
 
-Reopen Codex after installation. Shared defaults live in
-`etc/codex/config.toml`; personal settings and the Developer Docs MCP server
-live in `home/codex/config.toml`. User values override system defaults.
-Because the live files link into this checkout, edits and repository updates
-are reflected through those links. Keep the checkout at a revision containing
-both files.
+Reopen Codex after installation. Reusable preferences, including TUI presets
+(`tui.presets`), belong in `etc/codex/config.toml`, even when Codex initially
+saves them in the user file. Trust entries, installation-specific paths,
+application state, and intentional local overrides stay in the user config.
+User values override system defaults: when migrating reusable settings, remove
+their superseded user entries once the shared file is installed and loads
+successfully, then verify the affected settings resolve as intended.
+
+The system config links into this checkout, so repository updates affect the
+shared defaults. Keep the checkout at a revision containing
+`etc/codex/config.toml`.
