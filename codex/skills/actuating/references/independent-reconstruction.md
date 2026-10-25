@@ -107,7 +107,7 @@ a new task-relevant question or materially changed evidence may warrant another
 reconstruction, but a new label, reviewer, or commit alone does not. Do not spawn
 fresh contexts repeatedly until one disagrees. Continue the enclosing authorized
 task normally.
-This technique earns no CAS/Elenctic review credit, changes no review counts or
+This technique earns no Actuating/Elenctic review credit, changes no review counts or
 reset rules, and neither replaces nor gates Glaze, Metanoetic, or Universalist.
 
 ## Validation scope

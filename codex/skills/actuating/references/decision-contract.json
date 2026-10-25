@@ -68,7 +68,8 @@
           "review",
           "parallel-reviews",
           "serial-reviews",
-          "review-closeout"
+          "review-closeout",
+          "subagents"
         ],
         "cue_regexes": [],
         "exclusions": []
@@ -131,7 +132,7 @@
           "owner-issued proof, review, counterexample, and publication evidence as applicable"
         ],
         "success_signals": [
-          "Git owns realization; verifiers own executed proof; CAS owns review; Review Fold owns CEX admission; Ledger owns automatic custody preparation; Ship owns public effects",
+          "Git owns realization; verifiers own executed proof; the selected CAS or host subagent runtime owns review execution evidence; Review Fold owns CEX admission; Ledger owns automatic custody preparation; Ship owns public effects",
           "analysis forbids new semantic captures while automatic corpus preparation precedes projection without separate approval, subject to explicit file/custody-maintenance constraints",
           "current causal interpretation and closure are ephemeral",
           "direct source binding preserves outcomes, non-goals, scope, compatibility, migration, and deciding observations",
@@ -169,7 +170,7 @@
         "success_signals": [
           "initial implementation may mutate without review dispatch",
           "existing evidence may inform implementation without opening review",
-          "local completion needs no CAS convergence or publication",
+          "local completion needs no review convergence or publication",
           "required relationships preserve authoritative facts, derived projections, and independently retained history",
           "required results and continuations determine native representations, algorithms, primitive operations, and lawful combinations",
           "primitive meanings and their composition are established under the required observation or refinement relation",
@@ -202,7 +203,7 @@
         "prohibited_routes": [],
         "required_artifacts": [
           "exact reviewable candidate head",
-          "bound CAS requests",
+          "bound requests for the selected review execution mode",
           "frozen ranked focal-file assignments selected from the complete base-to-head change, each crossed with all six lenses",
           "applicable terminal outcomes, recovery, and Review Fold"
         ],
@@ -211,7 +212,7 @@
           "available waiting time supports read-only self-review without delaying required collection, recovery, or dispatch or requiring a completed pass",
           "serial and parallel acquire all six lenses for the changeset and independently for every selected file in the initial wave, including after invalidation",
           "confirmation invalidation requires no new auxiliary wave on the invalid head",
-          "all initial obligations are folded and credited before later native confirmations"
+          "all initial obligations are folded and credited before later selected-mode standard confirmations"
         ],
         "failure_signals": [
           "mutation inside an open epoch",
@@ -400,7 +401,7 @@
         "prohibited_routes": [],
         "required_artifacts": [
           "live owner-source frontier and unavailable-source limitations",
-          "exact CAS receipts and native/default standard review",
+          "exact selected-executor evidence and its bound standard review instructions",
           "five checked-in auxiliary lenses",
           "all six independent initial lenses for each of at most three selected files, alongside all six changeset lenses",
           "projected and captured CEX identities",
@@ -408,19 +409,21 @@
         ],
         "success_signals": [
           "all current and applicable historical sources inform one causal basis",
-          "admitted current material entailed self-findings invalidate the candidate and all credit under existing phase rules even when CAS returns clean",
-          "self-review supplies evidence without a CAS receipt, independent confirmation, or clean credit",
+          "admitted current material entailed self-findings invalidate the candidate and all credit under existing phase rules even when the selected executor returns clean",
+          "self-review supplies evidence without an independent reviewer result, confirmation, or clean credit",
           "unavailable provider quota is not a clean verdict",
-          "six-lens inventory per scope and five changeset-native-standard-clean convergence are preserved",
+          "six-lens inventory per scope and five distinct changeset-standard cleans under one selected execution mode are preserved",
           "every file/lens request completes its own causal inquiry beyond the first supported finding; all initial findings inform one cumulative basis",
-          "file standard uses general best judgment with focus-only customization and earns only its exact file/lens credit"
+          "file standard uses the selected mode with file focus and earns only its exact file/lens credit",
+          "cas remains the default; explicit subagents changes execution and standard instructions without changing scheduling, scope, adjudication, recovery, or convergence"
         ],
         "failure_signals": [
-          "custom instructions replace the changeset-native standard review or file-standard credit enters its convergence streak",
+          "custom instructions replace changeset-native standard in cas mode, or file-standard credit enters changeset convergence",
           "live provider finding omitted while dependent action proceeds",
           "self-discovered material evidence omitted from adjudication before convergence",
           "absence in incomplete history proves first occurrence or elimination",
-          "one file result replaces its six independent lenses, or credit substitutes for another scope, lens, or changed head"
+          "one file result replaces its six independent lenses, or credit substitutes for another scope, lens, or changed head",
+          "execution modes mix credit, subagent output impersonates a CAS receipt, or an unavailable executor silently falls back"
         ],
         "rationale": "Review supplies falsification evidence; it neither chooses repairs nor silently adds requirements."
       },
@@ -441,7 +444,7 @@
           "all applicable changed-boundary construction obligations",
           "authority-complete semantic diff",
           "complete Goal proof inventory",
-          "Ship/provider and CAS convergence when required"
+          "Ship/provider and selected-mode review convergence when required"
         ],
         "success_signals": [
           "required laws hold at the declared strength, applicable families are excluded, and required-valid behavior survives",

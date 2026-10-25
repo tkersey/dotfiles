@@ -3,11 +3,11 @@
 Closure is a current judgment over owner facts, not stored workflow state:
 
 ```text
-Close(Goal, Git, validation, CAS, ReviewFoldCorpus, Ship, current evidence)
+Close(Goal, Git, validation, review execution evidence, ReviewFoldCorpus, Ship, current evidence)
 -> continue | ready-to-ship | complete | blocked
 ```
 
-`implement` requires local realization and proof, not CAS or publication. Bare
+`implement` requires local realization and proof, not review or publication. Bare
 Actuating and `review-closeout` additionally require publication and convergence.
 `analyze` never mutates or claims closure. No review epoch may remain open at
 closure; an epoch freezes its exact candidate, not initial implementation.
@@ -19,7 +19,7 @@ preference, new-requirement, or underdetermined. Only accepted current liabiliti
 create automatic correctness work. Historical CEX records retain their original
 subjects; current meaning is re-evaluated rather than copied from the corpus.
 
-Reconcile relevant CAS, self-review, provider, tests, incidents, migrations,
+Reconcile relevant executor evidence, self-review, provider, tests, incidents, migrations,
 verifiers, and corpus sources. An omitted live finding keeps the evidence cut open.
 Unavailable sources make the affected horizon incomplete; quota exhaustion is not
 a clean review. Do not claim historical absence, first occurrence, or complete closure
@@ -65,7 +65,7 @@ required Ship/provider state matches the exact head
 no review epoch remains open; all terminal semantic outcomes are folded
 all five changeset auxiliary obligations have terminal, adjudicated, credited outcomes
 all six lens obligations for each selected file have terminal, adjudicated, credited outcomes
-five consecutive distinct native/default changeset standard cleans credited on the unchanged head
+five consecutive distinct changeset standard cleans credited on the unchanged head under the selected execution mode and bound policy
 no unresolved current accepted liability
 no unauthorized semantic change, containment, narrowing, risk, or deferral
 all completeness and historical claims match their actual evidence horizon
@@ -76,7 +76,9 @@ Apply [Review-credit admission](review-contract.md#review-credit-admission) to
 both accounting and user/PR narration. The first credited changeset standard counts as one;
 the next four run serially. A held required obligation cannot become complete merely
 because all receipts say `clean`; preserve its limitation and actual disposition.
-Material findings or head changes reset all credit. Clean reviews are adversarial
+Material findings or head changes reset all credit. Executor or standard-policy
+changes require a newly bound campaign; never mix native and subagent streaks.
+Clean reviews are adversarial
 attempts, not a universal soundness proof. Retain the authorized bounded or
 non-complete outcome when required evidence remains unavailable.
 

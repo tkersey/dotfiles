@@ -87,7 +87,7 @@ ship_observation_record:
 
 Canonicalize the complete record as JSON and hash those exact bytes with
 SHA-256. Actuating includes that digest in the canonical review context before
-CAS dispatch.
+review dispatch.
 
 Observation succeeds only when:
 
@@ -154,8 +154,9 @@ ship_adoption_record:
 Ship resolves `publication_observation_ref`, recomputes its digest, and
 exact-matches repository, canonical ref, base/head, Goal context, and Review
 Contract. Actuating supplies the exact current review context whose digest
-contains the same observation reference; the credited CAS receipts echo request
-fingerprints derived from that context.
+contains the same observation reference; credited execution evidence binds request
+fingerprints derived from that context through CAS workflow echoes or native
+subagent dispatch/result attribution.
 
 This binding proves observation-before-review without an Actuating event log.
 A campaign lacking the bound observation is ineligible; obtain a fresh

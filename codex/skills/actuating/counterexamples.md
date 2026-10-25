@@ -6,7 +6,7 @@ Apply the root's [proof acceptance](SKILL.md#proof-acceptance), including exact
 subject binding and verifier-integrity checks. They have one authority here, not a
 second counterexample-specific formulation.
 
-Before counterexample-driven selection, reconcile relevant CAS, self-review,
+Before counterexample-driven selection, reconcile relevant executor, self-review,
 provider/PR, test, incident, migration, compatibility, verifier, and corpus evidence.
 Each live source is folded, proven non-current, or explicitly unavailable. An omitted
 live finding keeps the cut open; an unavailable source makes the affected horizon

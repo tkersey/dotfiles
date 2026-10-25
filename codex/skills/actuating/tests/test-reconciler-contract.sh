@@ -18,28 +18,63 @@ import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
 import {readFileSync, readdirSync, existsSync} from 'node:fs';
 import {resolve, dirname, relative} from 'node:path';
+import {pathToFileURL} from 'node:url';
 const root = resolve(process.argv[2]);
 const text = p => readFileSync(resolve(root,p), 'utf8');
 const json = p => JSON.parse(text(p));
 const c = json('references/review-contract.json');
 const d = json('references/decision-contract.json').skill_decision_contract;
 const names = ['standard','soundness-skeptic','footgun-finder','invariant-ace','complexity-mitigator','fresh-eyes'];
-assert.equal(c.schema, 'actuating-review-contract/v19');
-assert.equal(c.contract_id, 'actuating-review-contract-v26');
+assert.equal(c.schema, 'actuating-review-contract/v20');
+assert.equal(c.contract_id, 'actuating-review-contract-v27');
 assert.equal(d.contract_version, 'SKDC-v1');
 assert.equal(d.skill.source_fingerprint, 'actuating-construction-core-v28');
 assert(c.candidate_acceptance.common_obligations.includes(
   'required discriminator execution completed successfully against the exact candidate'));
 assert(!c.candidate_acceptance.common_obligations.some(s => s.includes('explicit limitation')));
 assert.deepEqual(c.required_lenses.map(l => l.name), names);
-assert.deepEqual(c.required_lenses[0], {name:'standard',role:'standard',instruction_source:'codex-default',custom_instructions:false});
+assert.deepEqual(c.required_lenses[0], {name:'standard',role:'standard'});
+const {assertNativeReviewPolicy} = await import(pathToFileURL(resolve(root,'tests/review-policy-compatibility.mjs')));
+assertNativeReviewPolicy(c);
+const execution = c.review_execution;
+assert.equal(execution.default_mode,'cas');
+assert.deepEqual(Object.keys(execution.modes).sort(),['cas','subagents']);
+for (const key of ['subagents_requires_explicit_selection','scheduling_independent',
+  'bound_in_review_context','mode_change_requires_new_campaign','mode_change_resets_all_review_credit',
+  'mixed_mode_credit_forbidden','silent_fallback_forbidden']) assert.equal(execution[key],true,key);
+const {cas,subagents} = execution.modes;
+assert.deepEqual(cas.standard_review, {
+  instruction_source:'codex-default',custom_instructions:false,owner:'codex',source:'native-default',
+  custom_instructions_argument_forbidden:true,skill_authored_instruction_file_forbidden:true,
+  native_default_review_required:true,custom_instructions_forbidden:true
+});
+assert.equal(subagents.guidance_ref,'codex/skills/actuating/references/subagent-reviews.md');
+assert.deepEqual(subagents.standard_review, {
+  instruction_source:'pinned-codex-rubric',
+  instructions_ref:'codex/skills/actuating/references/upstream/codex-review-rubric.md',
+  source_repository:'openai/codex',source_path:'codex-rs/prompts/templates/review/rubric.md',
+  source_commit_sha:'970111f6cb62cc02fe36a82ea7d71b37a2889c97',
+  source_blob_sha:'85e89cb7eeadb97fa9e4868d2b9977c87225506d',
+  instruction_sha256:'ec60e7f36a1d1c2679ce095c0205ecc56f7dd8fb57707a13ef362072390f219f',
+  custom_instructions:true,native_default_review_required:false
+});
+const rubric = readFileSync(resolve(root,subagents.standard_review.instructions_ref.replace('codex/skills/actuating/','')));
+assert.equal(createHash('sha256').update(rubric).digest('hex'),subagents.standard_review.instruction_sha256);
+assert.equal(createHash('sha1').update(`blob ${rubric.length}\0`).update(rubric).digest('hex'),subagents.standard_review.source_blob_sha);
+for (const key of ['host_issued_identity_required','terminal_output_required','fresh_context_per_request_required',
+  'sibling_conclusions_forbidden','exact_dispatch_and_output_required','read_only_required',
+  'raw_result_preserved','synthesized_cas_receipt_forbidden','lost_provenance_requires_fresh_initial_wave'])
+  assert.equal(subagents.attempt_quality[key],true,key);
 assert.deepEqual(c.review_scheduling.initial_lens_order, names);
 assert.equal(c.focused_file_reviews.scope, 'file');
 assert.equal(c.focused_file_reviews.lenses, 'required_lenses');
 assert.equal(c.focused_file_reviews.file_by_lens_matrix, true);
 assert.equal(c.focused_file_reviews.maximum_files, 3);
-assert.equal(c.focused_file_reviews.standard_review.custom_instructions, true);
-assert.equal(c.focused_file_reviews.standard_review.native_default, false);
+for (const mode of Object.values(execution.modes)) {
+  assert.equal(mode.file_standard.custom_instructions,true);
+  assert.equal(mode.file_standard.native_default,false);
+}
+assert.equal(subagents.file_standard.instruction_source,'pinned-codex-rubric-and-file-focus');
 assert.equal(c.focused_file_reviews.standard_review.counts_toward_standard_convergence, false);
 assert.equal(c.review_scheduling.standard_review.scope, 'changeset');
 assert.equal(c.review_scheduling.default_mode, 'parallel-reviews');
@@ -52,14 +87,21 @@ assert.deepEqual(c.standard_convergence, {
   scope:'changeset',
   required_consecutive_clean_attempts:5, initial_standard_counts:true,
   later_attempts_serial:true, findings_reset_streak:true,
-  native_default_review_required:true, custom_instructions_forbidden:true
+  selected_execution_mode_required:true,distinct_contexts_required:true
 });
 assert.equal(c.transport_recovery.maximum_fresh_recovery_attempts, 1);
 assert.equal(c.transport_recovery.required_recovery_is_part_of_semantic_barrier, true);
-assert.equal(c.attempt_quality.required_backend_class, 'cas-start-wait');
-assert.equal(c.attempt_quality.required_capability, 'cas_workflow_bound_owner_lived_review_v1');
-for (const key of ['strong_principal_required','current_tuple_required','exact_instruction_digest_required',
-  'exact_workflow_binding_required','owner_lived_transport_required','fallback_forbidden']) assert.equal(c.attempt_quality[key], true, key);
+assert.equal(cas.attempt_quality.required_backend_class, 'cas-start-wait');
+assert.equal(cas.attempt_quality.required_capability, 'cas_workflow_bound_owner_lived_review_v1');
+for (const key of ['strong_principal_required','reduced_principal_forbidden','owner_lived_transport_required','fallback_forbidden',
+  'exact_workflow_binding_required'])
+  assert.equal(cas.attempt_quality[key],true,key);
+for (const key of ['tuple_verdict_required','current_tuple_required','context_match_required',
+  'exact_instruction_digest_required']) assert.equal(c.attempt_quality[key],true,key);
+assert(!Object.hasOwn(c.attempt_quality,'required_backend_class'));
+assert(!Object.hasOwn(c.attempt_quality,'exact_workflow_binding_required'));
+assert(!Object.hasOwn(subagents.attempt_quality,'exact_workflow_binding_required'));
+assert(!Object.hasOwn(subagents.attempt_quality,'strong_principal_required'));
 assert.equal(c.review_epoch.initial_implementation_requires_review_dispatch, false);
 assert.equal(c.review_epoch.successor_mutation_forbidden_while_open, true);
 assert.equal(c.review_epoch.confirmation_invalidation_requires_new_initial_wave, false);
@@ -275,12 +317,8 @@ for (const [name, digest] of Object.entries({"glaze": "eef7f7f41fd14f255bf3f36f9
   for (const retired of ['one candidate-generation pass', 'a plausible nonlocal reframe',
     'Use $metanoetic once to challenge a concrete incumbent']) assert(!wrapper.includes(retired), retired);
 }
-const mandate = text('../../AGENTS.md').split('## Metanoetic intelligence-escalation mandate\n')[1]
-  .split('\n## ')[0].replace(/\s+/g, ' ');
-assert(mandate.includes('no identified incumbent, advance challenger, or finished comparison is required'));
-assert(mandate.includes('user requirements, authorized effects, resource ceilings, and proof obligations remain binding'));
-assert(mandate.includes('The receiving workflow retains final selection, execution, and closure authority'));
-assert(!mandate.includes('It generates candidates only'));
+assert(text('../metanoetic/agents/openai.yaml').includes('allow_implicit_invocation: true'));
+assert(text('../metanoetic/SKILL.md').replace(/\s+/g,' ').includes('no identified incumbent, advance alternative, or finished comparison is required'));
 assert(text('SKILL.md').replace(/\s+/g,' ').includes('a named defect, owner, axis, or typed hole is not a prerequisite'));
 assert(rootStep.includes('Task resource limits, read-only routes, and review-epoch freezes still apply'));
 assert(text('SKILL.md').includes('does not demand a finished causal account before authorized'));
