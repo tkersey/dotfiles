@@ -1,8 +1,8 @@
 ---
 name: seq
-description: "Reconstruct provenance-preserving observations from Codex and OpenCode execution/session evidence with Seq 1.x. Use for explicit `$seq`, session/tool/message forensics, skill activation and outcome audits, decision provenance, `$tune` evidence, watched-session deltas, worker attribution, or reproducible historical reports. Use native commands only for physical session structure; use the owning passive observation definition for every higher-level question."
+description: "Reconstruct provenance-preserving observations from Codex, Pi, and OpenCode execution/session evidence with Seq 1.x. Use for explicit `$seq`, session/tool/message forensics, skill activation and outcome audits, decision provenance, `$tune` evidence, watched-session deltas, worker attribution, or reproducible historical reports. Use native commands only for physical session structure; use the owning passive observation definition for every higher-level question."
 metadata:
-  version: "2.0.0"
+  version: "2.1.0"
 ---
 
 # Seq
@@ -23,6 +23,7 @@ publication, or closure authority.
 Seq reads only:
 
 - Codex rollout JSONL and session/state metadata needed to locate or interpret it;
+- upstream Pi session JSONL selected with `--path`, `--root`, or Pi current-session hints;
 - supported OpenCode execution/session sources;
 - explicit immutable input relations supplied by the caller.
 
@@ -30,6 +31,33 @@ Select OpenCode prompt history explicitly with
 `--path ~/.local/state/opencode/prompt-history.jsonl`; its prompts, parts, and
 tool lifecycle use the canonical physical relations, never a source-specific
 command.
+
+Select Pi sessions explicitly; the default Codex source remains unchanged:
+
+```bash
+pi_session_root="${PI_CODING_AGENT_SESSION_DIR:-${PI_CODING_AGENT_DIR:-$HOME/.pi/agent}/sessions}"
+seq sessions --root "$pi_session_root" --format json
+```
+
+Use `--path <pi-session.jsonl>` for one file, or `--path "$PI_SESSION_FILE"`
+when the host supplies that variable. `seq tail --current --once` uses Pi's
+`PI_SESSION_FILE`, or resolves `PI_SESSION_ID` under the selected Pi session
+root. If both Codex and Pi current-session hints are present, select `--path`
+explicitly to resolve the ambiguity. Scope this adapter to upstream Pi; do not
+infer support for Oh My Pi from a shared name or ancestry.
+
+Treat Pi evidence as all persisted branches in append order, not a replay of
+only the active branch. Preserve raw entry `id` and `parentId`; attribute user
+turns through branch ancestry rather than adjacency in the file. Pi message
+text and ordinary source payloads exclude thinking blocks; explicit `raw_json`
+retains the original entry. `toolCall`/`toolResult` records use the
+canonical tool lifecycle. Do not interpret branch navigation as a worker graph
+or the `parentSession` file path as a worker session ID.
+
+One user entry remains one turn: its final-answer field holds the latest
+persisted answer to that entry, while message/source rows retain alternative
+answers. Compaction and context edits remain physical evidence; Seq does not
+replay them to reconstruct Pi's effective model context.
 
 Seq does not scan memory roots, Ledger stores, artifact directories, or another
 durable source implicitly. Compose durable facts explicitly:
@@ -62,6 +90,9 @@ seq capabilities --format json
 Check once per unchanged executable and execution environment; reuse the result
 across observations. Recheck the selected definition when its closure or required
 operators change.
+
+Before reading Pi evidence, require `pi-session-jsonl/v1` in `source_adapters`.
+If it is absent, upgrade Seq; do not interpret Pi files with a Codex-only reader.
 
 Capabilities report only physical adapters, native operators, renderers, cache
 format, and generic limits. A missing skill-specific flag is never a fallback
@@ -128,7 +159,7 @@ Those questions require an owning passive definition over lineage-owned token
 deltas; if the installed Seq ABI does not expose that relation or operator,
 report obstruction rather than summing `turns` or `sessions` token fields.
 
-`token-usage.json` is the owning corpus-usage definition. It reconstructs
+`token-usage.json` is the owning Codex corpus-usage definition. It reconstructs
 cumulative token transitions in source order from both `total_token_usage` and
 `last_token_usage`. For modern rows, the transition is `(total - last) -> total`
 and the counted delta is `last`; null-info events are observations without usage
@@ -140,6 +171,19 @@ Total-only legacy rows use an estimated snapshot fallback. Inconsistent
 modern tuples make the result `invalid` and its token totals null. Its cached
 percentage denominator is input tokens:
 `cached_input_tokens / input_tokens * 100`.
+
+Do not apply that Codex cumulative-counter definition to Pi corpus or billing
+questions; requests for Pi cumulative token events fail with
+`PiCumulativeTokenEventsUnavailable`. Pi normalizes each assistant message's
+usage as `input_tokens = input + cacheRead + cacheWrite`,
+`cached_input_tokens = cacheRead`, and `output_tokens = output`; reported
+`reasoning` is already included in `output`, and `totalTokens` supplies the
+reported total. Use observed Pi session/turn totals only for the selected
+assistant requests with usage, and label the scope. These sums may be partial
+when other assistant requests omit usage; turn counts do not prove request-level
+usage completeness. If no usage was observed, totals remain null.
+Standalone compaction/summary usage remains raw and is excluded from these
+totals. These sums do not establish deduplicated fork/worker usage or billing.
 
 ```bash
 seq_definition_root="$(realpath "${CODEX_HOME:-$HOME/.codex}/skills/seq/definitions/seq")"
