@@ -7,6 +7,7 @@
     "Ctrl-n": "CursorDown",
     "Ctrl-d": "Delete",
     "Ctrl-k": "Cut|SelectToEndOfLine,Cut|SelectRight,Cut",
+    "Ctrl-u": "Cut|SelectToStartOfLine,Cut",
     "Ctrl-y": "Paste",
     "Alt-x": "CommandMode"
 }
