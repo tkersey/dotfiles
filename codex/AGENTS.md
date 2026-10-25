@@ -20,25 +20,12 @@
 
 - Every required check must finish successfully against the delivered state before declaring work passed, verified, or complete. Stopped, interrupted, timed-out, missing, or inconclusive checks remain outstanding: resume or rerun them; if blocked, report the blocker and incomplete status. Do not waive or narrow accepted verification requirements unless explicitly directed. Preserve required review counts and reset rules. Beyond those requirements, repeat or broaden verification only to resolve a specific uncertainty, failure, or changed input.
 
-### Codex configuration
-
-- Store reusable Codex preferences, including TUI presets (`tui.presets`), in the dotfiles repository's `etc/codex/config.toml`, linked to `/etc/codex/config.toml`. Preferences remain reusable when Codex saves them in the user file.
-- When changing Codex configuration, inspect affected settings in both the shared file and active user config (`$CODEX_HOME/config.toml`, normally `~/.codex/config.toml`). Migrating affected reusable settings belongs to the same task: put them in the shared file, then remove their superseded user entries once the shared file is installed and loads successfully.
-- Keep trust entries, installation-specific paths, application state, and intentional local overrides machine-local. Leave unrelated entries untouched. Do not commit or symlink the user config.
-- Verify affected settings resolve as intended through higher-precedence configuration, including user, profile, project, and command-line settings. Correct unintended masking within the task; preserve intentional overrides and report any that prevent the requested result. If local access is unavailable, report the remaining migration or verification instead of claiming it complete.
-
 ### Git
 
-- Prefer rebase and fast-forward integration over merge commits. Use merge
-  commits only when explicitly requested, required by repository policy, or
-  necessary to preserve shared history or required commit provenance; explain
-  the exception. Rebase conflicts alone are not an exception. This preference
-  does not authorize rewriting history others depend on.
+- Prefer rebase and fast-forward integration over merge commits. Use merge commits only when explicitly requested, required by repository policy, or necessary to preserve shared history or required commit provenance; explain the exception. Rebase conflicts alone are not an exception. This preference does not authorize rewriting history others depend on.
 - Prefix `git merge --continue` and `git rebase --continue` with `GIT_EDITOR=true`.
 - Do not force-add paths matching `.git/info/exclude` unless explicitly asked.
-- Before `git commit`, inspect session-owned changes and stage only authorized,
-  publishable artifacts. Source owners govern publication; `$ledger` governs custody.
-  Do not infer publishability merely because evidence explains work.
+- Before `git commit`, inspect session-owned changes and stage only authorized, publishable artifacts. Source owners govern publication; `$ledger` governs custody. Do not infer publishability merely because evidence explains work.
 
 ### Python
 
@@ -48,11 +35,7 @@
 
 ### Containers
 
-- When local Linux containers are needed on macOS 26+ with Apple silicon, use
-  Apple's `container` CLI instead of Docker unless the user explicitly requests
-  Docker or a required capability is unavailable in `container`. If missing,
-  install it with `brew install container`; start its service as needed with
-  `container system start`.
+- When local Linux containers are needed on macOS 26+ with Apple silicon, use Apple's `container` CLI instead of Docker unless the user explicitly requests Docker or a required capability is unavailable in `container`. If missing, install it with `brew install container`; start its service as needed with `container system start`.
 
 ### JSON
 
