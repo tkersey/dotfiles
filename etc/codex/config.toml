@@ -5,7 +5,7 @@ sandbox_mode = "danger-full-access"
 approvals_reviewer = "auto_review"
 
 model = "gpt-6-astra"
-model_reasoning_effort = "medium"
+model_reasoning_effort = "high"
 plan_mode_reasoning_effort = "max"
 suppress_unstable_features_warning = true
 web_search = "live"
@@ -73,3 +73,11 @@ label = "luna"
 [tui.presets.3]
 input = "/model gpt-6.1-sol --reasoning=high --speed=standard"
 label = "sol"
+
+[tui.presets.4]
+input = "We've had enough rounds of review that it’s worth considering how well $actuating has been doing at re-architecting and refactoring based on counterexamples to be correct by construction instead of accreting code."
+label = "analyze correcting counterexamples"
+
+[tui.presets.5]
+input = "I want you to do deeper analysis of this using $glaze $metanoetic then save your results as markdown in a secret gist."
+label = "do metanoetic analysis gist"
