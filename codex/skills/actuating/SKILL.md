@@ -215,12 +215,19 @@ check or a successful result for a different candidate or required mode does not
 discharge the obligation. Apply this rule to delegated checks and review-reported
 validation as well as parent-run checks.
 
-Before realizing a selected candidate, identify its actual guarantee, why it
-implies the source-required observation, and a source-supported falsifier or
-decisive source argument. Choose the exact-head verifier before that realization.
-This selection rule does not demand a finished causal account before authorized
-exploration; experiments remain subject to the common proof and effect rules.
-Acceptance requires the actual mechanism, migrations, and retirements, not intent.
+Before realizing a selected candidate, derive the required relationship from the
+accepted source and identify the candidate's proposed guarantee. Ask whether that
+guarantee could hold while the source-required relationship still fails. Check the
+implication across the required consumers, phases, enclosing operation, and
+evidence lifetime, including composition and resource growth when the source
+constrains them. Preserve distinct historical and current-authority judgments when
+reusing immutable evidence. A narrower improvement remains partial; a desirable
+stronger property is not a correctness liability without source authority. Choose
+a source-supported falsifier or decisive source argument and the exact-head
+verifier before that realization. This selection rule does not demand a finished
+causal account before authorized exploration; experiments remain subject to the
+common proof and effect rules. Acceptance requires the actual mechanism,
+migrations, and retirements, not intent.
 
 At entry and after material change, bind the Goal, immutable base, exact head,
 current construction, proof inventory, and any publication state. Read the
