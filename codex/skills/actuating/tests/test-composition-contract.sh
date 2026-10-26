@@ -20,7 +20,7 @@ assertNativeReviewPolicy(policy);
 const skill = text('SKILL.md');
 const protectedSections = {
   "Public routes": "18d84587c9a33f319cc4bf28aa7ea1ea8aa7259e994d09cd0d49a5233c96f55c",
-  "Review-epoch immutability and evidence acquisition": "ae2486bfd71aacf1d8847bb1a278df65ce55367aded6083a9066360ec195fb71",
+  "Review-epoch immutability and evidence acquisition": "c56ab6cd715441dce8a7b7eb659e450254d840e548eac57de7f4a65ea5bd4e05",
   "Review and closure": "fc36faca978a98d0c3da3fa6ba262e449dbe882741efe8edee24c1b0600b96e7",
   // Apply the same proof bar to initial construction; witnesses are conditional.
   "Realization and common proof obligations": "8f782e151a2c48cca2da1506830376ad597b689fde6985014f30c466f87be6e3"

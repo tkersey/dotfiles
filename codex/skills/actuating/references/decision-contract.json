@@ -4,7 +4,7 @@
     "skill": {
       "name": "actuating",
       "kind": "mixed",
-      "source_fingerprint": "actuating-construction-core-v28"
+      "source_fingerprint": "actuating-construction-core-v29"
     },
     "triggers": [
       {
@@ -139,7 +139,9 @@
           "source-fixed requirements remain distinct from proposed means and execution authority",
           "source revisions reclassify applicable evidence without erasing unresolved provenance",
           "adequate bindings reuse the Working Set and existing owner formats without a separate Goal Contract packet",
-          "the next construction assignment preserves the source-required relationship, required-valid behavior, and deciding uncertainty through selection, delegation, resumption, and compaction"
+          "the next construction assignment preserves the source-required relationship, required-valid behavior, and deciding uncertainty through selection, delegation, resumption, and compaction",
+          "compact working history retains or recovers completed review epochs, relevant terminal unsuccessful verification attempts, persistent obligations or obstructions, interventions and expected versus actual results, last supported progress, and the prior activation basis from existing evidence",
+          "attempt history survives head and credit resets, resumption, and compaction; unknown history remains unknown rather than restarting at zero"
         ],
         "failure_signals": [
           "agent-authored labels or equal digests certify semantics",
@@ -212,7 +214,8 @@
           "available waiting time supports read-only self-review without delaying required collection, recovery, or dispatch or requiring a completed pass",
           "serial and parallel acquire all six lenses for the changeset and independently for every selected file in the initial wave, including after invalidation",
           "confirmation invalidation requires no new auxiliary wave on the invalid head",
-          "all initial obligations are folded and credited before later selected-mode standard confirmations"
+          "all initial obligations are folded and credited before later selected-mode standard confirmations",
+          "one closed invalidated review epoch counts as one attempt; individual lenses, clean confirmations, polls, and matrix fanout do not inflate attempt counts"
         ],
         "failure_signals": [
           "mutation inside an open epoch",
@@ -327,11 +330,15 @@
           "applicable inquiry is reused only across witnesses covered by the same supported causal mechanism; new causal distinctions reopen the explanation",
           "canonical Glaze then Metanoetic instructions share one context; encouragement does not change admissibility or proof",
           "inquiry needs no identified incumbent, advance challenger, or finished comparison",
-          "one activation limits duplicate injection, not investigation or useful revision within task limits",
+          "one activation limits duplicate injection while its evidence remains applicable; new stagnation evidence requires fresh shared Glaze then Metanoetic activation",
+          "recent attempt history and last supported progress are compared after failed or inconclusive terminal required verification, after a closed invalidated review epoch, and before the next correction or broad retry",
+          "a failed predicted remedy, materially repeated obstruction after correction, cycling, accumulating compensators, or successive attempts without deciding evidence or progress requires fresh shared activation even without an admitted product liability",
+          "two relevant unsuccessful terminal verification attempts without deciding new evidence and each third completed invalidated review epoch prompt progress assessment; counts are heuristic backstops, not proof of stagnation or round limits",
+          "reframing may change the mechanism, assumptions, oracle, verification strategy, or decomposition while new evidence may justify retaining the incumbent; activation alone earns no progress",
           "new derivations may revise understanding without a code change",
           "model-owned evaluation methods remain revisable without weakening user-fixed criteria or proof obligations",
           "selection obligations are developed during inquiry, not demanded as entry artifacts",
-          "read-only routes, review-epoch freezes, and resource ceilings remain binding",
+          "read-only routes, review-epoch freezes, and resource ceilings remain binding; frozen-epoch analysis may reconsider the approach while successor mutation remains deferred",
           "incumbent-generated burdens may be eliminated while required observations survive",
           "adopted mechanism change updates actual proof obligations"
         ],
@@ -340,6 +347,7 @@
           "construction reconsideration waits for a user reminder, recurrence, a failed local repair, or a preidentified redesign",
           "hard constraints ignored or new authority silently adopted",
           "passages reinjected for a new label, commit, reviewer, or review wave alone",
+          "an earlier activation excuses a fresh stagnation signal, or retry counts substitute for deciding evidence",
           "a useful inquiry stops solely because a candidate was generated or the code did not change",
           "evaluation expectations changed merely to agree with the candidate",
           "Glaze adds a trigger, separate stage, report, review, or acceptance authority"

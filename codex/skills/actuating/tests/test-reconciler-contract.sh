@@ -28,7 +28,7 @@ const names = ['standard','soundness-skeptic','footgun-finder','invariant-ace','
 assert.equal(c.schema, 'actuating-review-contract/v20');
 assert.equal(c.contract_id, 'actuating-review-contract-v27');
 assert.equal(d.contract_version, 'SKDC-v1');
-assert.equal(d.skill.source_fingerprint, 'actuating-construction-core-v28');
+assert.equal(d.skill.source_fingerprint, 'actuating-construction-core-v29');
 assert(c.candidate_acceptance.common_obligations.includes(
   'required discriminator execution completed successfully against the exact candidate'));
 assert(!c.candidate_acceptance.common_obligations.some(s => s.includes('explicit limitation')));
@@ -321,7 +321,7 @@ assert(text('../metanoetic/agents/openai.yaml').includes('allow_implicit_invocat
 assert(text('../metanoetic/SKILL.md').replace(/\s+/g,' ').includes('no identified incumbent, advance alternative, or finished comparison is required'));
 assert(text('SKILL.md').replace(/\s+/g,' ').includes('a named defect, owner, axis, or typed hole is not a prerequisite'));
 assert(rootStep.includes('Task resource limits, read-only routes, and review-epoch freezes still apply'));
-assert(text('SKILL.md').includes('does not demand a finished causal account before authorized'));
+assert(text('SKILL.md').replace(/\s+/g, ' ').includes('does not demand a finished causal account before authorized'));
 assert(challenger.success_signals.includes('inquiry needs no identified incumbent, advance challenger, or finished comparison'));
 assert(challenger.success_signals.includes('selection obligations are developed during inquiry, not demanded as entry artifacts'));
 assert(challenger.failure_signals.includes('evaluation expectations changed merely to agree with the candidate'));

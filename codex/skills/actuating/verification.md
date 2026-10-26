@@ -57,6 +57,11 @@ alone do not establish a shorter workflow or lower total cost.
 
 ## Choose the next execution
 
+After unsuccessful or inconclusive terminal qualification, apply the
+[progress assessment](recurrence.md#progress-before-another-iteration) before
+another correction or broad retry. Carry comparable attempts across candidate
+heads; distinguish a live check's observation timeout from a terminal result.
+
 Use existing phase observations and actual dependencies to assess all currently
 plausible limiting paths. Separate setup, compilation, execution, transfer,
 queueing, and finalization; distinguish workflow elapsed time from total runner
