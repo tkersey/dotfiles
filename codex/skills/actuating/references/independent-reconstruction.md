@@ -1,8 +1,10 @@
 # Independent reconstruction
 
-Use when explicitly requested, or when Actuating judges that deriving a design
-or explanation without the accumulated rationale could materially improve a
-task-relevant decision. The user need not name the technique.
+Use when [architecture selection](../architecture.md) requires reconstruction
+after a guarantee fails to establish required behavior, when explicitly requested,
+or when Actuating judges that deriving a design or explanation without the
+accumulated rationale could materially improve a task-relevant decision. The user
+need not name the technique.
 
 Reasons may include repeated repair under a disputed explanation, an unsupported
 incumbent assumption constraining the candidate set, an unresolved consequential
@@ -10,22 +12,22 @@ representation or ownership choice, or a fresh-eyes request that would benefit
 from a separate reasoning context. These are examples, not prerequisites. Do not
 require proof of anchoring, an advance alternative, or a failed ordinary pass.
 
-Select proportionately: a settled question, straightforward task, or uncertainty
-resolved by a direct source lookup does not need another context. A long history
-alone is not a reason. Reuse applicable reconstruction rather than adding routine
-fan-out. Keep autonomous selection internal; return the resulting work, not a
-selection receipt.
+Outside that required selection, choose proportionately: a settled question,
+straightforward task, or uncertainty resolved by a direct source lookup does not
+need another context. A long history alone is not a reason. Reuse applicable
+reconstruction rather than adding routine fan-out. Keep autonomous selection
+internal; return the resulting work, not a selection receipt.
 
 Existing delegation authority, privacy limits, and resource ceilings still govern.
 Respect a no-delegation instruction. Choosing this technique does not authorize
 tool installation, new paid evaluations, additional data disclosure, or increased
 budgets; missing authority blocks only that effect, not independent authorized work.
 
-This is a discretionary technique, not a public mode, CLI command, default
-architecture pass, or review lane. A fresh-eyes request, `$glaze`, or `$metanoetic`
-may motivate selection but does not mandate another worker. Their independent
-entry points and canonical passages remain unchanged; reconstruction is never a
-prerequisite for them or for Universalist.
+This technique adds no public mode, CLI command, general architecture pass, or
+review lane. A fresh-eyes request, `$glaze`, or `$metanoetic` alone may motivate
+selection but does not mandate another worker. Their independent entry points
+and canonical passages remain unchanged; reconstruction is never a prerequisite
+for them or for Universalist.
 
 The intervention separates requirements and evidence from the parent's persuasive
 account of why the incumbent is necessary. It does not erase the existing code,
@@ -58,7 +60,8 @@ brief directly in the agent request, not a new durable packet:
   the relevant code or read access to it;
 - observed failures, known counterexamples, prior disconfirming results, relevant
   measurements, their provenance and applicability, and material uncertainty;
-- the question to reconstruct and the read-only boundary.
+- the required relationship, required-valid behavior, deciding question, and
+  read-only boundary.
 
 Preserve factual reasons an earlier route failed, even when they favor the
 incumbent. Initially withhold only the parent's persuasive interpretation, preferred
@@ -94,8 +97,10 @@ Any experiment belongs to Actuating under current mutation authority and outside
 an open review epoch; the read-only reconstruction grants no experimental effects.
 If the source or head changes, refresh applicability before selection.
 
-Accept, adapt, reject, or retain through the existing selector. Agreement is not
-independent proof; disagreement is not a defect or a reason to prefer novelty.
+Bring the reconstructed relationship and construction into the existing selector
+before choosing the successor. Accept, adapt, reject, or retain against the same
+source and evidence. Agreement is not independent proof; disagreement is not a
+defect or a reason to prefer novelty.
 An unresolved difference blocks only dependent claims or actions under the existing
 contract. Return the useful conclusion and material limitations, not an invocation
 report or new receipt. A stronger explanation can be the result without an edit.
