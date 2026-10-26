@@ -197,7 +197,7 @@ and decision, not whether the answer repeats a doctrine word or the example's fi
 | A new representation preserves behavior and improves the relevant end-to-end objective under comparable measurements | Evaluate that evidence rather than treating the historical regression as a permanent ban on consolidation |
 | Only line count, unmatched workloads, or recalled historical numbers favor a candidate | Do not claim a performance or causal win; identify the missing comparison |
 
-## Discretionary independent reconstruction
+## Independent reconstruction
 
 Validate the conditional link in Actuating's `architecture.md` and its
 [independent-reconstruction reference](../../actuating/references/independent-reconstruction.md).
@@ -207,11 +207,14 @@ cannot establish that rationale isolation occurred.
 | Case | Expected behavior |
 |---|---|
 | User explicitly requests independent reconstruction; an authorized read-only new-context facility is available | Brief one worker with the accepted Goal, exact subject, source evidence, counterexamples, limits, and question, initially without the parent's design-defense narrative; retain its initial conclusion before revealing that narrative and reconciling |
+| Accepted evidence satisfies the candidate's guarantee but violates the source-required relationship, and no existing complete executable definition settles the correction | Reuse an applicable independent reconstruction or select one separate-context read-only reconstruction before selecting a successor; supply the factual evidence before the incumbent rationale or preferred fix |
+| The same discrepancy is repaired by directly reusing a complete source-backed operation or inline initializer, with its domain and required-valid behavior already established | Continue directly when reuse needs no new interpretation, representation, authority, or lifetime assumption; an existing helper name is unnecessary |
+| A proposed new canonical helper or wrapper would encode a still-disputed interpretation | Do not treat the proposed definition as the existing-definition exception; reconstruct the required relationship before choosing the successor |
 | No explicit reconstruction request; repeated repairs retain a disputed explanation and an independent derivation could change the next investigation | Actuating may select one read-only reconstruction within existing authority and budget; do not require the user to name it or seek redundant approval |
 | An unresolved consequential representation choice rests on an unsupported assumption; no alternative or earlier failed pass exists | Permit independent reconstruction without proof of anchoring, an advance challenger, or exhaustion of ordinary reasoning; judge plausible task value, not demonstrated success in advance |
 | A fresh-eyes request follows rejection of the incumbent framing | Actuating may choose a separate reasoning context when useful; the phrase neither forbids nor mandates delegation |
 | Ordinary architecture work is already settled, a source lookup answers the question, or only conversation length is offered as a reason | Continue directly without routine reconstruction or a selection receipt |
-| Explicit `$glaze` / `$metanoetic` or a native Universalist trigger | Preserve the canonical invocation and independent entry point; reconstruction is an optional receiving-workflow technique, never a prerequisite or automatic extra worker |
+| Explicit `$glaze` / `$metanoetic` or a native Universalist trigger without the accepted semantic discrepancy above | Preserve the canonical invocation and independent entry point; these alone do not require reconstruction or an extra worker |
 | Reconstruction seems useful, but the caller prohibits delegation or it needs unapproved spending, disclosure, or a higher resource ceiling | Respect the limit; do not delegate or expand authority, and continue independent authorized work rather than treating technique selection as permission |
 | An applicable reconstruction already exists and only a reviewer, label, or commit changed | Reuse it and refresh subject applicability where necessary; do not start another context without a new task-relevant reason |
 | Materially changed evidence or a new task-relevant question makes an independent account useful | Permit a new proportionate reconstruction within existing limits; the earlier activation is not a permanent veto |

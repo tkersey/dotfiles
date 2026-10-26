@@ -31,10 +31,27 @@ reasoning, evidence gathering, or useful revision. Encouragement changes neither
 admissibility nor the proof bar. Add no separate Glaze report or adjudication stage.
 
 Use `$first-principles` or `$reduce` when their methods resolve a material question,
-not as compulsory construction stages. Independent reconstruction remains
-discretionary; read [its effect and isolation rules](references/independent-reconstruction.md)
-before using a separate context. No automatic fan-out or standing architecture
-worker is introduced. Supporting skills cannot expand the task's authority.
+not as compulsory construction stages.
+
+When an admitted witness shows that the candidate's guarantee holds while a
+source-required relationship fails, use [independent reconstruction](references/independent-reconstruction.md)
+before selecting the successor. Reuse an applicable reconstruction on the same
+evidential basis; a new head or review round alone does not require another.
+
+A direct correction suffices when the accepted source and existing code already
+establish the complete required relation and its required-valid domain, and the
+correction merely delegates to or extracts that executable definition, including
+an inline initializer. It must introduce no new semantic interpretation or
+representation, authority rule, or lifetime assumption. Establish this from evidence
+independent of the failing check; a newly named canonical helper or agreement with that check cannot
+justify the exception. Keep the deciding evidence in the existing selection work.
+
+Outside that witness-triggered selection, independent reconstruction remains
+discretionary. Read its effect and isolation rules before using a separate context.
+A selected reconstruction replaces the inquiry into the implicated successor;
+it adds no standing worker, review lane,
+or parallel implementation requirement. Supporting skills cannot expand the task's
+authority or resource limits.
 
 Before selecting a changed construction, justify required observations,
 compatibility, effects, host capabilities, and feasibility against authorized

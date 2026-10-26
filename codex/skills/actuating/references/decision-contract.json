@@ -4,7 +4,7 @@
     "skill": {
       "name": "actuating",
       "kind": "mixed",
-      "source_fingerprint": "actuating-construction-core-v29"
+      "source_fingerprint": "actuating-construction-core-v30"
     },
     "triggers": [
       {
@@ -289,7 +289,10 @@
           "model adequacy, permitted-operation preservation, and sanctioned-path participation remain distinct",
           "a supported sibling retaining the enabling freedom reopens the broader Goal decision even when the narrower elimination claim remains true",
           "the smallest adequate semantic boundary is considered between a local exception and a broad redesign",
-          "uncertain subsequent preservation is discriminated through a source-permitted operation that can overwrite, invalidate, or reinterpret a premise, or settled by adequate native evidence without inventing another writer"
+          "uncertain subsequent preservation is discriminated through a source-permitted operation that can overwrite, invalidate, or reinterpret a premise, or settled by adequate native evidence without inventing another writer",
+          "accepted evidence that the candidate guarantee holds while the source-required relationship fails selects independent reconstruction before successor selection; reuse applicable reconstruction or an existing source-backed complete executable definition that covers the domain and required-valid behavior without new interpretation, representation, authority, or lifetime assumptions",
+          "reconstruction starts in a separate read-only context with the accepted source, code, full factual witnesses and failed results; retain its initial derivation before revealing the incumbent rationale and preferred fix",
+          "unavailable isolation and authority or resource limits remain explicit limitations; reconstruction grants no mutation, review credit, additional review inventory, or proof"
         ],
         "failure_signals": [
           "one special case per finding",
@@ -300,7 +303,9 @@
           "a shared predicate, exhaustive switch, or new type is treated as proof of meaning or coverage",
           "the supplied evidence being validated defines which evidence must exist",
           "code-path coverage is credited as required-content completeness",
-          "broader Goal reconsideration falsely revokes a narrower claim without contradicting its predicate and domain"
+          "broader Goal reconsideration falsely revokes a narrower claim without contradicting its predicate and domain",
+          "a new definition, wrapper, or unsupported assumption masquerades as direct reuse of an existing complete definition",
+          "an ordinary finding, architecture question, or doctrine invocation alone makes reconstruction compulsory"
         ],
         "rationale": "The required law determines the repair domain; a causal explanation removes the independently repeatable mistake within that domain."
       },
