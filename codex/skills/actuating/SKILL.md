@@ -95,7 +95,7 @@ reasoning sequence. Do not load every workflow or reference at entry.
 | A finding, failed check, or counterexample-driven selection | [counterexamples.md](counterexamples.md) before admission; [architecture.md](architecture.md) for automatic reconsideration before selecting a response to each admitted liability. |
 | Using supporting construction skills or a selected architecture technique | [architecture.md](architecture.md) for composition and effect boundaries; its techniques do not add a construction stage. |
 | Designing or reducing materially costly verification, diagnosing slow qualification, or selecting a broad retry while verification cost impedes the Goal | [verification.md](verification.md) for evidence-preserving construction and the next useful execution; ordinary cheap validation needs no additional workflow. |
-| An elimination claim meets a current witness, a broader Goal obligation remains unresolved after a narrow repair, or efficacy is being assessed | [recurrence.md](recurrence.md), before retaining the claim or selecting a successor. |
+| Unsuccessful required verification, an invalidated review epoch, repeated corrective work, a current witness against an elimination claim, an unresolved broader Goal after a narrow repair, or efficacy assessment | [recurrence.md](recurrence.md), before another correction, broad retry, successor review wave, or retained claim; assess accumulated progress even without an admitted code liability. |
 | `review-closeout`, or bare Actuating reaching review | [review-closeout.md](review-closeout.md) and its required review contract, before the first review request; apply all six initial lenses to the whole changeset and individually to up to three files selected for significant non-test code changes under the same frozen-subject and convergence rules. |
 | Review with explicit subagents | [subagent-reviews.md](references/subagent-reviews.md) before dispatch; use the packaged upstream rubric for standard and the unchanged auxiliary lenses. |
 | Bare Actuating reaching publication | `$ship`; publication does not replace subsequent review-closeout. |
@@ -325,6 +325,12 @@ unresolved work in the active thread or accepted implementation
 specification. Reuse owner evidence rather than re-expressing it in another packet.
 These are working facts, not a report template or durable Actuating store. Surface
 only material decisions and limitations; preserve historical witness provenance.
+
+Carry the [recent attempt history](recurrence.md#progress-before-another-iteration)
+with these facts through successor heads, delegation, and resumption, including
+compaction. Review-credit resets do not erase unsuccessful approaches or the
+evidence needed to reconsider them. Recover missing history from its owners;
+unknown history is not a fresh start.
 
 Make the next construction assignment the source-required relationship to establish,
 with its source, required-valid behavior, and deciding evidence or unresolved

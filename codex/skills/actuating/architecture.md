@@ -21,7 +21,12 @@ When considering a response to a current applicable liability admitted by Review
 Fold, or when another existing Metanoetic trigger fires, read both skills and apply `$glaze`
 then `$metanoetic` verbatim in one shared activation. This pairing does not impose
 an order relative to Universalist or require an advance challenger. Reuse applicable
-findings rather than reinjecting the passages. One activation is not a cap on
+findings rather than reinjecting the passages for unchanged evidence. A
+[stalled attempt trajectory](recurrence.md#progress-before-another-iteration)
+is a fresh trigger: apply the pair again when failed predictions or accumulated
+attempts undermine the earlier framing, including investigation or verification
+trouble without an admitted code liability. A new label, commit, reviewer, or
+review wave alone does not require reinjection. One activation is not a cap on
 reasoning, evidence gathering, or useful revision. Encouragement changes neither
 admissibility nor the proof bar. Add no separate Glaze report or adjudication stage.
 

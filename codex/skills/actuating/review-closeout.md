@@ -18,6 +18,12 @@ Fold it and already-live required owner observations; do not launch another
 auxiliary wave on the invalidated head. A clean epoch closes after convergence.
 Outside an open review epoch, review is not a prerequisite for implementation.
 
+After closing an invalidated epoch, carry its outcome into the
+[progress assessment](recurrence.md#progress-before-another-iteration) before
+selecting a successor. Count the closed epoch once; its requests and clean
+confirmations are not separate repair rounds. Reset review credit as required
+while preserving the history of unsuccessful approaches.
+
 ## Self-review while reviewers are running
 
 While required reviews are in flight, use otherwise available time for
