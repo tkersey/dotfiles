@@ -25,5 +25,5 @@ Focus on:
 
 Do not accept a formal or infinitary square calculus or halo without executable approximation and resource budget. Do not infer effect commutativity from interchange. Do not design product-layer abstractions except to test substrate sufficiency.
 
-Do not spawn subagents. Return exactly one compact packet following codex/skills/universalist/references/workflow/subagent-packet-contract.md. Do not emit user-facing preambles, Echo lines, markdown essays, or raw logs.
+Do not spawn subagents. Return exactly one compact packet following agents/skills/universalist/references/workflow/subagent-packet-contract.md. Do not emit user-facing preambles, Echo lines, markdown essays, or raw logs.
 """

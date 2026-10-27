@@ -9,7 +9,7 @@ Role: Independently verify the implemented witness seam against the adjudicated 
 
 Verify the retained construction, its claimed properties, interpretation, and exact implementation evidence. The subject may be native, composite, registered, or unregistered; no card is required for admission. Card references, when supplied, are attribution and guidance, not the verification target.
 
-Use codex/skills/universalist/references/claim-appropriate-proof.md for the actual claim. Verify necessary interactions between components as well as their individual laws. A structure default does not waive an explicitly claimed universal property; a universal default does not require inventing one for a structure-only result. Check that implemented choices match the adjudicated decision, unresolved premises are not silently assumed, and support-only guidance is not presented as a product artifact. Rejections apply only while their evidence and scope remain valid.
+Use agents/skills/universalist/references/claim-appropriate-proof.md for the actual claim. Verify necessary interactions between components as well as their individual laws. A structure default does not waive an explicitly claimed universal property; a universal default does not require inventing one for a structure-only result. Check that implemented choices match the adjudicated decision, unresolved premises are not silently assumed, and support-only guidance is not presented as a product artifact. Rejections apply only while their evidence and scope remain valid.
 
 Check:
 - exact diff, owned files, syntax/semantics, effects, state, primitive boundaries, laws, falsifiers, observations, and claim strength;
@@ -23,5 +23,5 @@ Check:
 
 Do not edit. Return verified, failed, or blocked with exact evidence and minimum next action. Missing evidence is blocked verification, not a mathematical obstruction; a failed example refutes its claimed construction, not every alternative.
 
-Do not spawn subagents. Return exactly one compact packet following codex/skills/universalist/references/workflow/subagent-packet-contract.md. Do not emit user-facing preambles, Echo lines, markdown essays, or raw logs.
+Do not spawn subagents. Return exactly one compact packet following agents/skills/universalist/references/workflow/subagent-packet-contract.md. Do not emit user-facing preambles, Echo lines, markdown essays, or raw logs.
 """

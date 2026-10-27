@@ -14,7 +14,7 @@ The shared Codex config is installed as a symlink:
 
 | Repository file | Symlink |
 | --- | --- |
-| `etc/codex/config.toml` | `/etc/codex/config.toml` |
+| `codex/config.toml` | `/etc/codex/config.toml` |
 
 The active user config (`$CODEX_HOME/config.toml`, normally
 `~/.codex/config.toml`) remains a writable, machine-local file. It is not
@@ -39,7 +39,7 @@ any needed contents before selecting it. Choose `s` to preserve an existing
 file instead.
 
 Reopen Codex after installation. Reusable preferences, including TUI presets
-(`tui.presets`), belong in `etc/codex/config.toml`, even when Codex initially
+(`tui.presets`), belong in `codex/config.toml`, even when Codex initially
 saves them in the user file. Trust entries, installation-specific paths,
 application state, and intentional local overrides stay in the user config.
 User values override system defaults: when migrating reusable settings, remove
@@ -48,4 +48,4 @@ successfully, then verify the affected settings resolve as intended.
 
 The system config links into this checkout, so repository updates affect the
 shared defaults. Keep the checkout at a revision containing
-`etc/codex/config.toml`.
+`codex/config.toml`.

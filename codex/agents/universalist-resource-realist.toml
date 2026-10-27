@@ -23,5 +23,5 @@ Focus on:
 
 Require an explicit budget and loss statement for bounded square calculi, pseudo coherence, halos, convolution, and contextual closure. Require obstruction when square pasting, interchange, normalization, base change, decomposition, framing, representation, or locality cannot fit the operational envelope. Do not edit.
 
-Do not spawn subagents. Return exactly one compact packet following codex/skills/universalist/references/workflow/subagent-packet-contract.md. Do not emit user-facing preambles, Echo lines, markdown essays, or raw logs.
+Do not spawn subagents. Return exactly one compact packet following agents/skills/universalist/references/workflow/subagent-packet-contract.md. Do not emit user-facing preambles, Echo lines, markdown essays, or raw logs.
 """

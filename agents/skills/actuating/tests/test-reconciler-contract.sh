@@ -1,0 +1,342 @@
+#!/bin/sh
+set -eu
+# Default includes the unchanged Review Fold/Ledger integration suite.
+# --local-only runs all Actuating checks without invoking that external owner.
+case "${1:-}" in
+  '') local_only=false ;;
+  --local-only) local_only=true ;;
+  *) echo "usage: $0 [--local-only]" >&2; exit 2 ;;
+esac
+[ "$#" -le 1 ] || { echo "too many arguments" >&2; exit 2; }
+skill_root=$(CDPATH='' cd -- "$(dirname -- "$0")/.." && pwd)
+if [ -n "${JAQ_BIN:-}" ]; then jaq_bin=$JAQ_BIN
+elif command -v jaq >/dev/null 2>&1; then jaq_bin=jaq
+else jaq_bin=jq
+fi
+node --input-type=module - "$skill_root" <<'JS'
+import assert from 'node:assert/strict';
+import {createHash} from 'node:crypto';
+import {readFileSync, readdirSync, existsSync} from 'node:fs';
+import {resolve, dirname, relative} from 'node:path';
+import {pathToFileURL} from 'node:url';
+const root = resolve(process.argv[2]);
+const text = p => readFileSync(resolve(root,p), 'utf8');
+const json = p => JSON.parse(text(p));
+const c = json('references/review-contract.json');
+const d = json('references/decision-contract.json').skill_decision_contract;
+const names = ['standard','soundness-skeptic','footgun-finder','invariant-ace','complexity-mitigator','fresh-eyes'];
+assert.equal(c.schema, 'actuating-review-contract/v20');
+assert.equal(c.contract_id, 'actuating-review-contract-v27');
+assert.equal(d.contract_version, 'SKDC-v1');
+assert.equal(d.skill.source_fingerprint, 'actuating-construction-core-v30');
+assert(c.candidate_acceptance.common_obligations.includes(
+  'required discriminator execution completed successfully against the exact candidate'));
+assert(!c.candidate_acceptance.common_obligations.some(s => s.includes('explicit limitation')));
+assert.deepEqual(c.required_lenses.map(l => l.name), names);
+assert.deepEqual(c.required_lenses[0], {name:'standard',role:'standard'});
+const {assertNativeReviewPolicy} = await import(pathToFileURL(resolve(root,'tests/review-policy-compatibility.mjs')));
+assertNativeReviewPolicy(c);
+const execution = c.review_execution;
+assert.equal(execution.default_mode,'cas');
+assert.deepEqual(Object.keys(execution.modes).sort(),['cas','subagents']);
+for (const key of ['subagents_requires_explicit_selection','scheduling_independent',
+  'bound_in_review_context','mode_change_requires_new_campaign','mode_change_resets_all_review_credit',
+  'mixed_mode_credit_forbidden','silent_fallback_forbidden']) assert.equal(execution[key],true,key);
+const {cas,subagents} = execution.modes;
+assert.deepEqual(cas.standard_review, {
+  instruction_source:'codex-default',custom_instructions:false,owner:'codex',source:'native-default',
+  custom_instructions_argument_forbidden:true,skill_authored_instruction_file_forbidden:true,
+  native_default_review_required:true,custom_instructions_forbidden:true
+});
+assert.equal(subagents.guidance_ref,'agents/skills/actuating/references/subagent-reviews.md');
+assert.deepEqual(subagents.standard_review, {
+  instruction_source:'pinned-codex-rubric',
+  instructions_ref:'agents/skills/actuating/references/upstream/codex-review-rubric.md',
+  source_repository:'openai/codex',source_path:'codex-rs/prompts/templates/review/rubric.md',
+  source_commit_sha:'970111f6cb62cc02fe36a82ea7d71b37a2889c97',
+  source_blob_sha:'85e89cb7eeadb97fa9e4868d2b9977c87225506d',
+  instruction_sha256:'ec60e7f36a1d1c2679ce095c0205ecc56f7dd8fb57707a13ef362072390f219f',
+  custom_instructions:true,native_default_review_required:false
+});
+const rubric = readFileSync(resolve(root,subagents.standard_review.instructions_ref.replace('agents/skills/actuating/','')));
+assert.equal(createHash('sha256').update(rubric).digest('hex'),subagents.standard_review.instruction_sha256);
+assert.equal(createHash('sha1').update(`blob ${rubric.length}\0`).update(rubric).digest('hex'),subagents.standard_review.source_blob_sha);
+for (const key of ['host_issued_identity_required','terminal_output_required','fresh_context_per_request_required',
+  'sibling_conclusions_forbidden','exact_dispatch_and_output_required','read_only_required',
+  'raw_result_preserved','synthesized_cas_receipt_forbidden','lost_provenance_requires_fresh_initial_wave'])
+  assert.equal(subagents.attempt_quality[key],true,key);
+assert.deepEqual(c.review_scheduling.initial_lens_order, names);
+assert.equal(c.focused_file_reviews.scope, 'file');
+assert.equal(c.focused_file_reviews.lenses, 'required_lenses');
+assert.equal(c.focused_file_reviews.file_by_lens_matrix, true);
+assert.equal(c.focused_file_reviews.maximum_files, 3);
+for (const mode of Object.values(execution.modes)) {
+  assert.equal(mode.file_standard.custom_instructions,true);
+  assert.equal(mode.file_standard.native_default,false);
+}
+assert.equal(subagents.file_standard.instruction_source,'pinned-codex-rubric-and-file-focus');
+assert.equal(c.focused_file_reviews.standard_review.counts_toward_standard_convergence, false);
+assert.equal(c.review_scheduling.standard_review.scope, 'changeset');
+assert.equal(c.review_scheduling.default_mode, 'parallel-reviews');
+assert.deepEqual(Object.keys(c.review_scheduling.modes).sort(), ['parallel-reviews','serial-reviews']);
+assert.equal(c.review_scheduling.modes['parallel-reviews'].non_cancelling, true);
+assert.equal(c.review_scheduling.modes['parallel-reviews'].all_launched_semantic_outcomes_before_cut, true);
+assert.equal(c.review_scheduling.modes['serial-reviews'].continue_remaining_initial_requests_after_invalidation, true);
+assert.equal(c.review_scheduling.modes['serial-reviews'].post_invalidation_requests_are_evidence_only, true);
+assert.deepEqual(c.standard_convergence, {
+  scope:'changeset',
+  required_consecutive_clean_attempts:5, initial_standard_counts:true,
+  later_attempts_serial:true, findings_reset_streak:true,
+  selected_execution_mode_required:true,distinct_contexts_required:true
+});
+assert.equal(c.transport_recovery.maximum_fresh_recovery_attempts, 1);
+assert.equal(c.transport_recovery.required_recovery_is_part_of_semantic_barrier, true);
+assert.equal(cas.attempt_quality.required_backend_class, 'cas-start-wait');
+assert.equal(cas.attempt_quality.required_capability, 'cas_workflow_bound_owner_lived_review_v1');
+for (const key of ['strong_principal_required','reduced_principal_forbidden','owner_lived_transport_required','fallback_forbidden',
+  'exact_workflow_binding_required'])
+  assert.equal(cas.attempt_quality[key],true,key);
+for (const key of ['tuple_verdict_required','current_tuple_required','context_match_required',
+  'exact_instruction_digest_required']) assert.equal(c.attempt_quality[key],true,key);
+assert(!Object.hasOwn(c.attempt_quality,'required_backend_class'));
+assert(!Object.hasOwn(c.attempt_quality,'exact_workflow_binding_required'));
+assert(!Object.hasOwn(subagents.attempt_quality,'exact_workflow_binding_required'));
+assert(!Object.hasOwn(subagents.attempt_quality,'strong_principal_required'));
+assert.equal(c.review_epoch.initial_implementation_requires_review_dispatch, false);
+assert.equal(c.review_epoch.successor_mutation_forbidden_while_open, true);
+assert.equal(c.review_epoch.confirmation_invalidation_requires_new_initial_wave, false);
+assert.equal(c.evidence_acquisition.initial_implementation_requires_initial_falsification_wave, false);
+assert.equal(c.counterexample_corpus.definition, 'review-fold/counterexample-corpus');
+assert.equal(c.counterexample_corpus.current_applicability_recomputed, true);
+assert.equal(c.counterexample_corpus.actuating_copy_or_store_forbidden, true);
+assert.equal(c.construction_selection.objective, 'required-law-realization-with-family-exclusion-and-required-valid-preservation');
+for (const key of ['cumulative_causal_basis_before_candidate_selection','discriminator_selected_before_implementation',
+  'mechanical_defect_requires_no_invented_sibling_quota',
+  'live_boundary_not_route_label_triggers_universalist']) assert.equal(c.construction_selection[key], true, key);
+for (const key of ['local_repair_first_required','incumbent_preservation_is_dominance',
+  'pre_mutation_theorem_equality_required','two_complete_implementations_required',
+  'metanoetic_before_universalist_when_triggered','reasoning_sequence_required']) assert.equal(c.construction_selection[key], false, key);
+assert.equal(c.review_entry.common_candidate_proof_regardless_of_label, true);
+assert.equal(c.review_entry.actual_semantic_diff_authority_required, true);
+assert.equal(c.candidate_acceptance.labels_grant_mutation_or_weaker_proof, false);
+assert.equal(c.candidate_acceptance.self_authored_semantic_digests_are_evidence, false);
+for (const key of ['strongest_repository_native_authority_required','independently_governed_axes_require_split',
+  'exact_head_source_coverage_required_before_reviewable','factorized_routes_cross_cut_or_owned_residual_required',
+  'factorization_closure_verifier_selected_before_mutation','claim_strength_may_not_increase'])
+  assert.equal(c.universalist_compilation[key], true, key);
+const compilation = c.universalist_compilation;
+assert.equal(compilation.one_axis_and_typed_hole_per_invocation, false);
+assert.equal(compilation.grounded_semantic_inquiry_before_axis_and_typed_hole, true);
+assert.equal(compilation.axis_and_typed_hole_may_be_derived, true);
+assert.equal(compilation.self_authored_omission_list_sufficient, false);
+assert.equal(compilation.nomination_is_executed_proof, false);
+assert(!Object.hasOwn(compilation, 'complete_actuating_projection_required'));
+assert(!Object.hasOwn(compilation, 'total_topology_transformation_required'));
+assert.deepEqual(compilation.explicit_topology.allowed_element_dispositions,
+  ['factor-through','retire','privatize','derived-adapter','residual']);
+assert.deepEqual(compilation.explicit_topology.required_relations,
+  ['T1 = tau(T0)','domain(F) = T1','every factorized trusted route crosses K']);
+assert.match(compilation.explicit_topology.when, /cannot otherwise establish route or migration coverage/);
+assert.match(compilation.native_coverage, /opacity or a passing build alone is insufficient/);
+for (const obligation of ['admission and transition preservation','source-derived sanctioned-path coverage',
+  'migration and retirement','residual obligations']) assert(compilation.required_obligation_classes.includes(obligation));
+assert.match(c.construction_selection.causal_target, /construction or transition/);
+assert.match(c.construction_selection.discriminator_target, /valid-state transition/);
+const universalist = [text('../universalist/SKILL.md'), text('../universalist/actuating-composition.md')].join('\n');
+const reduction = text('../reduce/SKILL.md').split('## Actuating composition')[1].split('## Implementation mode')[0];
+assert(!universalist.includes('Selected counterexample theory:'));
+assert(!universalist.includes('single bounded co-refinement'));
+assert(!reduction.includes('Return exactly:'));
+assert(!text('tests/fixtures/semantic-hotspot-scenarios.json').includes('co_refinement_used'));
+assert.equal(c.same_family_recurrence.same_claim_revokes_exclusion_immediately, true);
+assert.equal(c.same_family_recurrence.unmodeled_sanctioned_topology_element_revokes_immediately, true);
+assert.equal(c.owner_source_frontier.omitted_live_finding_keeps_cut_open, true);
+assert.equal(c.owner_source_frontier.unavailable_source_limits_only_dependent_claims, true);
+assert.equal(c.efficacy.policy_unit_tests_prove_model_efficacy, false);
+assert.equal(c.efficacy.counterexample_count_is_distance_to_correctness, false);
+assert.deepEqual(d.routes.map(r => r.route_id).sort(),
+  ['ACT-IMPLEMENT','ACT-ANALYZE','ACT-REVIEW-CLOSEOUT','ACT-CLOSE'].sort());
+assert.deepEqual(d.routes.find(r => r.route_id === 'ACT-ANALYZE').aliases, ['analyze']);
+for (const field of ['routes','triggers','clauses']) {
+  const key = {routes:'route_id',triggers:'trigger_id',clauses:'clause_id'}[field];
+  assert.equal(new Set(d[field].map(x => x[key])).size, d[field].length, field);
+}
+for (const cl of d.clauses) {
+  for (const id of cl.trigger_refs) assert(d.triggers.some(t => t.trigger_id === id), id);
+  for (const id of [...cl.expected_routes,...cl.prohibited_routes]) assert(d.routes.some(r => r.route_id === id), id);
+}
+assert.deepEqual(json('definitions/manifest.json'), {schema:'skill-definition-set/v1',skill:'actuating',seq:[],ledger:[]});
+const retired = [
+  'references/theorem-directed-response.md','references/standard-review.md',
+  'references/architecture-reconciliation.md','references/semantic-hotspots.md',
+  'definitions/ledger/direct-repair-admission.json',
+  'tests/test-direct-repair-admission.sh','tests/fixtures/direct-repair-admission-valid.json'
+];
+for (const p of retired) assert(!existsSync(resolve(root,p)), `retired surface: ${p}`);
+const walk = p => readdirSync(p,{withFileTypes:true}).flatMap(e => e.isDirectory() ? walk(resolve(p,e.name)) : [resolve(p,e.name)]);
+assert.deepEqual(walk(resolve(root,'definitions')).map(p => relative(root,p)), ['definitions/manifest.json']);
+for (const lens of c.required_lenses.slice(1)) {
+  assert.equal(lens.role, 'auxiliary');
+  assert(lens.instructions_ref.startsWith('agents/skills/actuating/'));
+  assert(text(lens.instructions_ref.replace('agents/skills/actuating/','')).length > 0);
+}
+const forbidden = /direct-repair-admission|theorem-directed-response|predecessor_semantic_model_digest|successor_semantic_model_digest|theorem_directed_response|route_specific_construction_proof/;
+for (const p of walk(root).filter(p => !relative(root,p).startsWith('tests/'))) {
+  const s = readFileSync(p,'utf8');
+  assert(!forbidden.test(s), `retired mechanism reference in ${p}`);
+  if (p.endsWith('.json')) JSON.parse(s);
+  if (p.endsWith('.md')) for (const m of s.matchAll(/\[[^\]]+\]\(([^)]+)\)/g)) {
+    if (/^(https?:|#)/.test(m[1])) continue;
+    assert(existsSync(resolve(dirname(p),m[1].split('#')[0])), `broken link: ${p} -> ${m[1]}`);
+  }
+}
+assert(!/\$actuating (triage|remediation-plan)/.test(text('SKILL.md')));
+assert(text('SKILL.md').includes('It dispatches no\nreview'));
+assert(text('references/review-contract.md').includes('codex-default-review/v1'));
+assert(text('agents/openai.yaml').includes('allow_implicit_invocation: true'));
+// Source-binding regressions; source consistency is not model-efficacy evidence.
+const sourceBinding = text('SKILL.md').split('## Source binding\n')[1]?.split('\n## ')[0].replace(/\s+/g, ' ');
+assert(sourceBinding, 'missing direct source binding');
+assert(!text('SKILL.md').includes('$goal-contract'), 'Actuating still delegates source binding');
+for (const rule of [
+  'read the exact source, not just a prior summary',
+  'outcomes, non-goals, hard constraints, compatibility contracts, permitted breaks, and migration obligations',
+  'Bind repository, immutable base, and authorized path scope',
+  'Do not promote a suggested mechanism into a law or demote an explicit requirement',
+  'Keep semantic requirements distinct from execution authority',
+  'For each required law, retain applicability and its deciding observation',
+  'block only the dependent action or claim; continue independent authorized work',
+  'Before affected mutation, refresh these bindings',
+  'reclassify all available applicable findings and failures against the refreshed Goal',
+  'preserve unresolved evidence and original provenance',
+  'Existing review-epoch and proof-invalidation rules apply',
+  'No separate skill invocation, mandatory Goal Contract packet, durable record, or new identity is required'
+]) assert(sourceBinding.includes(rule), 'lost source-binding rule: ' + rule);
+const ownerFacts = d.clauses.find(cl => cl.clause_id === 'ACT-OWNER-FACTS-001');
+assert(ownerFacts.required_artifacts.includes('accepted Goal bound directly to current source and effect authority'));
+assert(ownerFacts.success_signals.includes('source revisions reclassify applicable evidence without erasing unresolved provenance'));
+// End source-binding regressions.
+// Verifier-integrity regressions; source consistency is not model-efficacy evidence.
+const proofAcceptance = text('SKILL.md').split('## Proof acceptance\n')[1]?.split('\n## ')[0].replace(/\s+/g, ' ');
+assert(proofAcceptance, 'missing root proof acceptance');
+for (const rule of [
+  'Before accepting validation for local completion or reviewability',
+  'base-to-candidate diff and actual check selection for deleted tests, weakened assertions, skipped checks, or reduced coverage',
+  'including changes made directly by Actuating',
+  'Map each affected check to its source-backed obligation',
+  'preserved or stronger proof, a source-grounded oracle correction with independent evidence, or explicit user authority retiring the obligation',
+  'A passing weakened suite cannot discharge an unchanged requirement',
+  'Keep unexplained proof loss unresolved and block only dependent completion or reviewability',
+  'Reuse the existing proof inventory; no separate critic, packet, or review stage'
+]) assert(proofAcceptance.includes(rule), 'lost verifier-integrity rule: ' + rule);
+const closureProof = d.clauses.find(cl => cl.clause_id === 'ACT-CLOSURE-001');
+assert(closureProof.success_signals.includes('local completion and reviewability inspect deleted tests, weakened assertions, skipped checks, and reduced coverage against source-backed obligations'));
+assert(closureProof.success_signals.includes('test retirement preserves proof or has independent oracle-correction evidence or explicit user obligation-retirement authority'));
+assert(closureProof.failure_signals.includes('passing a weakened suite discharges an unchanged requirement'));
+// End verifier-integrity regressions.
+// Admission/model-refinement source contracts; not a model-efficacy result.
+assert(text('counterexamples.md').includes('for review findings and failed checks before treating either as a liability'));
+assert(text('SKILL.md').includes('[counterexamples.md](counterexamples.md)'), 'counterexample guide not routed');
+const causal = text('counterexamples.md').split('## Compile the first loss of guarantee\n')[1].split('\n## ')[0].replace(/\s+/g, ' ');
+for (const rule of [
+  'Acceptance establishes a supported disagreement, not the causal explanation',
+  'Before realizing a selected candidate, choose a source-supported mechanism discriminator',
+  'retain or derive the missing distinction',
+  'Distinguish model adequacy, required semantic content, and operation coverage',
+  'without merging away independent verification',
+  'no paired-case quota or forced redesign'
+]) assert(causal.includes(rule), 'lost model-refinement rule: ' + rule);
+const lawAdmission = d.clauses.find(cl => cl.clause_id === 'ACT-LAW-AUTHORITY-001');
+assert(lawAdmission.success_signals.includes('failed checks use counterexample admission without granting expectations authority or rewriting failed results as passes'));
+const construction = d.clauses.find(cl => cl.clause_id === 'ACT-CONSTRUCTION-COMPILER-001');
+const initialConstruction = d.clauses.find(cl => cl.clause_id === 'ACT-IMPLEMENT-ENTRY-001');
+assert.deepEqual(initialConstruction.trigger_refs, ['ACT-BARE', 'ACT-ROUTE']);
+assert.deepEqual(initialConstruction.expected_routes, ['ACT-IMPLEMENT']);
+assert.deepEqual(construction.trigger_refs, ['ACT-COUNTEREXAMPLE', 'ACT-POST-ELIMINATION']);
+assert(construction.success_signals.includes('model adequacy, permitted-operation preservation, and sanctioned-path participation remain distinct'));
+assert(construction.failure_signals.includes('a shared predicate, exhaustive switch, or new type is treated as proof of meaning or coverage'));
+// End admission/model-refinement source contracts.
+// Pairing source-contract regressions; these do not measure model efficacy.
+assert(text('SKILL.md').includes('[architecture.md](architecture.md)'), 'architecture guide not routed');
+const rootStep = text('architecture.md').split('## Architecture compilation')[1].split('\n## ')[0].replace(/\s+/g, ' ');
+assert(rootStep.includes('When considering a response to a current applicable liability admitted by Review Fold'));
+assert(rootStep.includes('apply `$glaze` then `$metanoetic` verbatim in one shared activation'));
+assert(rootStep.includes('This pairing does not impose an order relative to Universalist'));
+assert(rootStep.includes('One activation is not a cap on reasoning, evidence gathering, or useful revision'));
+assert(rootStep.includes('Reuse applicable findings rather than reinjecting the passages'));
+assert(rootStep.includes('Encouragement changes neither admissibility nor the proof bar'));
+assert(rootStep.includes('Add no separate Glaze report or adjudication stage'));
+assert(text('SKILL.md').includes('No fixed order of'));
+assert(rootStep.includes('Keep the accepted Goal fixed'));
+assert(rootStep.includes('Use `$universalist` within initial construction or subsequent task-relevant semantic inquiry'));
+assert(rootStep.includes('An unknown owner or typed hole is investigable, not an admission failure'));
+assert(rootStep.includes('mechanical realization alone needs no renewed invocation'));
+assert(!rootStep.includes('Only when architecture is live'));
+const inquiry = d.clauses.find(cl => cl.clause_id === 'ACT-UNIVERSALIST-COMPILATION-001');
+assert(inquiry.success_signals.includes('grounded semantic inquiry begins without a preidentified owner, axis, or typed hole'));
+assert(inquiry.failure_signals.includes('a preidentified owner, axis, or typed hole is required before semantic inquiry'));
+// Follow the mandatory composed paths, including first-use and explicit-team entry.
+const investigation = text('../architectonic/references/investigation.md').replace(/\s+/g, ' ');
+assert(investigation.includes('including first-use proposed designs before a boundary defect is named'));
+assert(investigation.includes('Include an incumbent, pressure, or challenger only when present'));
+assert(investigation.includes('Stay read-only under the entry contract'));
+const team = text('../universalist/references/workflow/subagent-orchestration.md').replace(/\s+/g, ' ');
+assert(team.includes('applicable repository instructions authorize subagent use'));
+assert(team.includes('Do not impose a second explicit-request gate'));
+assert(team.includes('An architectural axis and typed hole may be provisional or not yet identified'));
+assert(team.includes('Child agents do not choose routes, authorize mutation'));
+const packet = text('../universalist/references/workflow/subagent-packet-contract.md').replace(/\s+/g, ' ');
+assert(packet.includes('axis and typed hole may be derived or revised during inquiry'));
+assert(packet.includes('do not invent an incumbent, axis, or hole'));
+const categorical = text('../../agents/universalist-categorical-architect.toml');
+assert(categorical.includes('focused theory lookup before ordinary comparison'));
+assert(categorical.includes('theory suggests hypotheses but does not certify applicability'));
+assert(!categorical.includes('Only when ordinary comparison leaves a concrete typed hole'));
+assert(text('counterexamples.md').includes('never changed expectations merely to agree with the candidate'));
+assert(causal.includes('Prefer making an equivalent omission unavailable to other operations'));
+assert(text('references/counterexample-guided-normalization.md').includes('required-valid observation preservation'));
+assert(text('agents/openai.yaml').includes('Glaze then Metanoetic verbatim in one shared activation'));
+const challenger = d.clauses.find(cl => cl.clause_id === 'ACT-METANOETIC-ADMISSIBILITY-001');
+// Preserve the resource obligation in the existing decision, not a new artifact.
+assert(challenger.required_artifacts.includes('resource account, smallest witness, and falsifier'));
+assert(rootStep.includes('feasibility against authorized resource ceilings using applicable evidence or a concrete bound'));
+assert(rootStep.includes('Leave unestablished feasibility unresolved'));
+assert(rootStep.includes('Reuse evidence only while its subject and assumptions remain applicable'));
+assert(rootStep.includes('No separate comparison packet or benchmark stage is required'));
+assert(challenger.success_signals.includes('every current applicable admitted liability triggers shared Glaze-primed Metanoetic reconsideration before response selection, beginning with the first finding, with no required order relative to Universalist'));
+assert(challenger.success_signals.includes('canonical Glaze then Metanoetic instructions share one context; encouragement does not change admissibility or proof'));
+assert(challenger.failure_signals.includes('Glaze adds a trigger, separate stage, report, review, or acceptance authority'));
+// Canonical byte preservation and wrapper boundaries; not model-efficacy evidence.
+for (const [name, digest] of Object.entries({"glaze": "eef7f7f41fd14f255bf3f36f9ff143e45f6db416af87e835cddfdadf41edd808", "metanoetic": "ade816044394c7dda348b3f0ba920354865197344042988fa6d43710f0b21a6a"})) {
+  const source = text(`../${name}/SKILL.md`);
+  const boundary = source.indexOf('\n---\n');
+  assert(boundary >= 0, `${name}: missing frontmatter boundary`);
+  assert.equal(createHash('sha256').update(source.slice(boundary + 5)).digest('hex'), digest,
+    `${name}: canonical body changed`);
+  const wrapper = source.slice(0, boundary) + text(`../${name}/agents/openai.yaml`);
+  for (const retired of ['one candidate-generation pass', 'a plausible nonlocal reframe',
+    'Use $metanoetic once to challenge a concrete incumbent']) assert(!wrapper.includes(retired), retired);
+}
+assert(text('../metanoetic/agents/openai.yaml').includes('allow_implicit_invocation: true'));
+assert(text('../metanoetic/SKILL.md').replace(/\s+/g,' ').includes('no identified incumbent, advance alternative, or finished comparison is required'));
+assert(text('SKILL.md').replace(/\s+/g,' ').includes('a named defect, owner, axis, or typed hole is not a prerequisite'));
+assert(rootStep.includes('Task resource limits, read-only routes, and review-epoch freezes still apply'));
+assert(text('SKILL.md').replace(/\s+/g, ' ').includes('does not demand a finished causal account before authorized'));
+assert(challenger.success_signals.includes('inquiry needs no identified incumbent, advance challenger, or finished comparison'));
+assert(challenger.success_signals.includes('selection obligations are developed during inquiry, not demanded as entry artifacts'));
+assert(challenger.failure_signals.includes('evaluation expectations changed merely to agree with the candidate'));
+// End pairing source-contract regressions.
+console.log('actuating: contract, routing, proof ownership, challenger pairing, retired surfaces, and reference links passed');
+JS
+node "$skill_root/tests/test-construction-core.mjs"
+node "$skill_root/tests/test-review-credit.mjs"
+sh "$skill_root/tests/test-construction-cycle-scenarios.sh"
+sh "$skill_root/tests/test-post-elimination-scenarios.sh"
+JAQ_BIN="$jaq_bin" sh "$skill_root/tests/test-semantic-hotspot-scenarios.sh"
+if [ "$local_only" = true ]; then
+  echo "actuating local suite: pass; Review Fold/Ledger integration explicitly not run"
+else
+  review_fold_root="$skill_root/../review-fold"
+  JAQ_BIN="$jaq_bin" sh "$review_fold_root/tests/test-counterexample-corpus.sh"
+  echo "actuating reconciler and Review Fold corpus integration: pass"
+fi

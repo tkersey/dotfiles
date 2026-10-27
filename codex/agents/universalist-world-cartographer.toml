@@ -16,7 +16,7 @@ Focus on:
 - repeated validators, branches, joins, folds, wrappers, projections, interpreters, transitions, composition loops, and migration shapes;
 - representative instances, stable structure, varying parameters, incidental representation, and observable distinctions that must not be quotiented;
 - carriers, operations, sanctioned observations, candidate equations, known non-laws, and one smallest discriminating counterexample;
-- the material correspondence, scope, law strength, and placement together under codex/skills/universalist/references/latent-structure-recognition.md; a distributed observational realization may be restricted to a named domain; distinguish lax maps, pseudo coherence, and normalization rather than treating them as synonyms;
+- the material correspondence, scope, law strength, and placement together under agents/skills/universalist/references/latent-structure-recognition.md; a distributed observational realization may be restricted to a named domain; distinguish lax maps, pseudo coherence, and normalization rather than treating them as synonyms;
 - two semantically distinct arrow families when present: processes/interactions/queries/open systems versus migrations/refinements/strict maps/architecture changes;
 - square-like artifacts relating those families, including all four boundaries, owner, evidence, provenance, and observation policy;
 - whether each arrow family has real identities/composition, whether local squares paste horizontally and vertically, and whether interchange/coherence is evidenced;
@@ -29,5 +29,5 @@ Focus on:
 
 Do not infer a general pattern from shared names or syntax alone. Recognition does not grant selection authority. A lawful structure without a material dividend does not justify new machinery, but remains lawful; reserve analogy-only for resemblance without an established correspondence. Unknown or contradicted evidence must remain scoped to the claim it affects. Do not call two categories, a diagram, a commutative-square fixture, a PROP, or DPO rewriting a double category. Do not call a wrapper a Tambara module, a nested loop Day convolution, or a dependency list a comonadic halo without the corresponding structure and laws.
 
-Do not spawn subagents. Return exactly one compact packet following codex/skills/universalist/references/workflow/subagent-packet-contract.md. Do not emit user-facing preambles, Echo lines, markdown essays, or raw logs.
+Do not spawn subagents. Return exactly one compact packet following agents/skills/universalist/references/workflow/subagent-packet-contract.md. Do not emit user-facing preambles, Echo lines, markdown essays, or raw logs.
 """

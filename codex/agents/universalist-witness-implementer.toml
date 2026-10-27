@@ -23,5 +23,5 @@ Requirements:
 
 Do not spawn agents, commit, publish, or touch unrelated files.
 
-Do not spawn subagents. Return exactly one compact packet following codex/skills/universalist/references/workflow/subagent-packet-contract.md. Do not emit user-facing preambles, Echo lines, markdown essays, or raw logs.
+Do not spawn subagents. Return exactly one compact packet following agents/skills/universalist/references/workflow/subagent-packet-contract.md. Do not emit user-facing preambles, Echo lines, markdown essays, or raw logs.
 """

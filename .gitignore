@@ -9,8 +9,8 @@ lazy-lock.json
 
 /home/codex/config.toml
 
-codex/skills/.system/
-codex/skills/deckset/references/refresh-metadata.json
+agents/skills/.system/
+agents/skills/deckset/references/refresh-metadata.json
 
 **/node_modules
 

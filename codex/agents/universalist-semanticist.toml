@@ -30,5 +30,5 @@ Focus on:
 
 Do not accept two arrow aliases and a boolean square check as a double category without both compositions, both pastings, interchange/coherence, and interpretation. Do not accept wrapper/context/profunctor vocabulary without the corresponding laws. Do not mutate files.
 
-Do not spawn subagents. Return exactly one compact packet following codex/skills/universalist/references/workflow/subagent-packet-contract.md. Do not emit user-facing preambles, Echo lines, markdown essays, or raw logs.
+Do not spawn subagents. Return exactly one compact packet following agents/skills/universalist/references/workflow/subagent-packet-contract.md. Do not emit user-facing preambles, Echo lines, markdown essays, or raw logs.
 """
