@@ -75,9 +75,30 @@ is not an entry condition for inquiry.
 Establish the affected domain from the source, not only the reported path or supplied
 records. Before realizing a selected candidate, choose a source-supported
 mechanism discriminator under [proof acceptance](SKILL.md#proof-acceptance).
-Establish the observation's applicability: a conditional counter agreeing
-with a candidate may mean the relevant mechanism never ran. A decisive source
-argument can suffice; no paired-case quota or forced redesign.
+Before crediting a new or materially changed regression as deciding evidence,
+establish that it detects the particular source-backed violation claimed repaired.
+Reuse an applicable failing execution or decisive independent source argument.
+Otherwise use the smallest safe negative control: run the focused witness on the
+faulty predecessor, or on an isolated copy with only the implicated defect restored.
+Keep the source-derived expectation fixed. The control must reach the claimed
+transition and expose its relevant wrong observation; an earlier rejection,
+unrelated build failure, skipped check, or timeout does not establish sensitivity.
+Use a targeted control when whole-predecessor failure cannot isolate that claim.
+
+If the witness still passes, correct its setup, selection, or assertion from the
+accepted source before crediting it. Do not change production semantics merely to
+kill an artificial mutant. The control must represent an admitted violation, not
+require a particular implementation. Confirm the same witness passes on the actual
+repaired candidate. Reaching a phase alone does not prove sensitivity to its defect;
+passing this control does not prove general coverage or required-valid preservation.
+
+Keep these executions in the existing proof inventory. Reuse adequate evidence;
+there is no per-test or per-entry-point quota, new review lane, or fixed reasoning
+sequence. Controls require mutation authority, safe isolation, and no open review
+epoch; never contaminate the delivered candidate. If a safe, proportionate control
+is unavailable, use a decisive independent source argument or leave the affected
+coverage claim unresolved. This neither waives required verification nor narrows
+the accepted Goal.
 
 When preservation through subsequent behavior is uncertain, inspect source-permitted
 operations that can overwrite, invalidate, or reinterpret a premise of the proposed
