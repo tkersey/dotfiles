@@ -72,6 +72,22 @@ disagreement, not the causal explanation. Investigate the implementation, model,
 oracle, and claim as evidence warrants; a completed family narrative or nomination
 is not an entry condition for inquiry.
 
+Before selecting a counterexample-driven change, remove the report's confidence,
+repetition, and preferred patch from its justification while retaining independently
+established evidence. Identify the current accepted obligation that still supports
+the contemplated semantic change. A rejected or materially unresolved allegation
+cannot supply that basis merely because its proposed correction seems safer or
+would satisfy a reviewer. A separately supported, authorized obligation may justify
+the same edit; initial implementation still derives directly from the accepted Goal.
+
+Carry the disposition, decisive evidence, unresolved premises, and their effect on
+permitted corrective work in the existing assignment through delegation, resumption,
+and compaction. Do not reduce a rejected allegation to a task title saying to fix it.
+During the existing diff/proof inspection, compare actual changes to that basis,
+including test expectations, check selection, compatibility, and completion claims.
+Correct rejection in prose does not excuse an unsupported change. This adds no
+packet, review lane, or separate pass; reuse an adequate source argument or observation.
+
 Establish the affected domain from the source, not only the reported path or supplied
 records. Before realizing a selected candidate, choose a source-supported
 mechanism discriminator under [proof acceptance](SKILL.md#proof-acceptance).
@@ -99,6 +115,17 @@ epoch; never contaminate the delivered candidate. If a safe, proportionate contr
 is unavailable, use a decisive independent source argument or leave the affected
 coverage claim unresolved. This neither waives required verification nor narrows
 the accepted Goal.
+
+When a controlled comparison could settle a material disputed premise, keep the
+source-backed obligation and original allegation fixed. Distinguish an observed
+behavior change from a changed reviewer judgment. Establish that a purported repair
+reaches the relevant behavior and that a defect-preserving control really preserves
+it; a build failure, unavailable premise, or earlier rejection is inconclusive for
+that comparison. A failed proposed repair does not refute a supported finding.
+Choose diagnostic changes to isolate the uncertainty, not to prescribe the production
+patch. Claim withdrawal proves neither required-valid preservation nor family-wide
+elimination. Reuse decisive evidence and the existing authority/freeze rules above;
+comparisons are optional techniques, not an intervention quota or acceptance gate.
 
 When preservation through subsequent behavior is uncertain, inspect source-permitted
 operations that can overwrite, invalidate, or reinterpret a premise of the proposed
