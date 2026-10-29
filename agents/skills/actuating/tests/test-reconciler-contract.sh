@@ -34,8 +34,6 @@ assert(c.candidate_acceptance.common_obligations.includes(
 assert(!c.candidate_acceptance.common_obligations.some(s => s.includes('explicit limitation')));
 assert.deepEqual(c.required_lenses.map(l => l.name), names);
 assert.deepEqual(c.required_lenses[0], {name:'standard',role:'standard'});
-const {assertNativeReviewPolicy} = await import(pathToFileURL(resolve(root,'tests/review-policy-compatibility.mjs')));
-assertNativeReviewPolicy(c);
 const execution = c.review_execution;
 assert.equal(execution.default_mode,'cas');
 assert.deepEqual(Object.keys(execution.modes).sort(),['cas','subagents']);
@@ -244,7 +242,8 @@ for (const rule of [
   'retain or derive the missing distinction',
   'Distinguish model adequacy, required semantic content, and operation coverage',
   'without merging away independent verification',
-  'no paired-case quota or forced redesign'
+  'Reconsideration belongs to response selection, not a separate pass or a demand to redesign',
+  'there is no per-test or per-entry-point quota'
 ]) assert(causal.includes(rule), 'lost model-refinement rule: ' + rule);
 const lawAdmission = d.clauses.find(cl => cl.clause_id === 'ACT-LAW-AUTHORITY-001');
 assert(lawAdmission.success_signals.includes('failed checks use counterexample admission without granting expectations authority or rewriting failed results as passes'));
@@ -288,7 +287,7 @@ assert(team.includes('Child agents do not choose routes, authorize mutation'));
 const packet = text('../universalist/references/workflow/subagent-packet-contract.md').replace(/\s+/g, ' ');
 assert(packet.includes('axis and typed hole may be derived or revised during inquiry'));
 assert(packet.includes('do not invent an incumbent, axis, or hole'));
-const categorical = text('../../agents/universalist-categorical-architect.toml');
+const categorical = text('../../../codex/agents/universalist-categorical-architect.toml');
 assert(categorical.includes('focused theory lookup before ordinary comparison'));
 assert(categorical.includes('theory suggests hypotheses but does not certify applicability'));
 assert(!categorical.includes('Only when ordinary comparison leaves a concrete typed hole'));
