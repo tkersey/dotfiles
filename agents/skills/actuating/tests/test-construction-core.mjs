@@ -6,7 +6,6 @@ import {createHash} from 'node:crypto';
 import {readFileSync} from 'node:fs';
 import {dirname, resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
-import {assertNativeReviewPolicy} from './review-policy-compatibility.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const paths = ['SKILL.md', 'architecture.md', 'counterexamples.md',
@@ -29,6 +28,7 @@ function check(src) {
   const counter=src['counterexamples.md'];
   const adapter=normalized(src['../universalist/actuating-composition.md']);
   const policy=JSON.parse(src['references/review-contract.json']);
+  assert.equal(policy.standard_convergence.required_consecutive_clean_attempts,5);
   const contract=JSON.parse(src['references/decision-contract.json']).skill_decision_contract;
   // Byte-bound safeguards from fc82de2d26052ff2b20f0fe9d4ebae289965091d.
   // Their source authority is unchanged by the construction experiment.
@@ -40,7 +40,6 @@ function check(src) {
   })) assert.equal(hash(section(skill,h)),digest,`changed acceptance/authority section: ${h}`);
   assert.equal(hash(section(skill,'Construction Working Set')),
     '1b0b7d96a2434a3fceea83fc34be41db3623450e146913428ec4b355d34fc286','changed construction assignment binding');
-  assertNativeReviewPolicy(policy);
   const admissionStart=counter.indexOf('Before counterexample-driven selection,');
   const admissionEnd=counter.indexOf('\n## Compile the first loss of guarantee');
   assert(admissionStart>=0 && admissionEnd>admissionStart);

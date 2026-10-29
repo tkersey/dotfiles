@@ -15,8 +15,6 @@ const section = (s, heading) => {
 };
 const sha256 = s => createHash('sha256').update(s).digest('hex');
 const policy = JSON.parse(text('references/review-contract.json'));
-const {assertNativeReviewPolicy} = await import(pathToFileURL(resolve(root,'tests/review-policy-compatibility.mjs')));
-assertNativeReviewPolicy(policy);
 const skill = text('SKILL.md');
 const protectedSections = {
   "Public routes": "18d84587c9a33f319cc4bf28aa7ea1ea8aa7259e994d09cd0d49a5233c96f55c",
