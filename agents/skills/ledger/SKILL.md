@@ -1,6 +1,6 @@
 ---
 name: ledger
-description: "Operate Ledger for owner-defined artifact validation, materialization, personal custody, migration, and recovery. Use for runtime bootstrap, passive definitions, stable store selection, or explicit historical import; not merely because work creates history or a receipt."
+description: "Operate Ledger for owner-defined artifact validation, materialization, personal custody, migration, and recovery. Use for runtime bootstrap, passive definitions, stable store selection, explicit historical import, or storage-lifecycle design and pressure diagnosis; not merely because work creates history or a receipt."
 ---
 
 # Ledger
@@ -22,7 +22,10 @@ owner definition + explicit inputs + selected custody when needed
 
 Ledger is constructive and custodial. It can admit artifacts into a declared
 protocol world and preserve that world's identity, integrity, transitions,
-replay, and projections. It does not choose the world.
+replay, and projections. It does not choose the world. Lifecycle meaning also
+belongs to the owner specification; native storage mechanics must remain generic.
+Storage-lifecycle extensions described in this package are a gated implementation
+target, not additional commands available in the baseline runtime.
 
 ## Authority boundary
 
@@ -79,6 +82,7 @@ readiness only while the executable and execution environment are unchanged.
 | Canonical store read/write, `doctor`, projection, transaction, or managed-context resolution | [canonical-custody.md](references/canonical-custody.md) for the personal catalog and native selector. Historical import completeness does not gate normal access. |
 | Binding, legacy migration, or exact recovery | Canonical custody guidance and the maintenance/migration reference it selects; automatic owner preparation has standing authority, while other maintenance follows its selected effect scope. |
 | Upgrade an existing installation or plan rollback | [personal-store-upgrade.md](references/personal-store-upgrade.md) for identity adoption, writer cutover, retained admissions, and compatible fallback. |
+| Storage lifetimes, resource pressure, or lifecycle capability design | [storage-lifecycle.md](references/storage-lifecycle.md) for ownership, current limitations, and native release gates. Do not turn this route into a routine full-store scan. |
 | Author or debug a passive definition | [definition-authoring.md](references/definition-authoring.md); add custody guidance only if a store operation is selected. |
 
 Never load storage manuals or initialize a store for a pure operation. Conversely,
@@ -148,6 +152,16 @@ needed. Before authoring or debugging definitions, read
 [definition-authoring.md](references/definition-authoring.md) for bounded
 vocabulary, counterexample discipline, and the native extension law.
 
+## Specification-driven storage lifecycle
+
+Owners declare retention meaning and retaining relationships in passive specs;
+Ledger supplies generic accounting, preservation, and safe reclamation mechanics.
+Host policy supplies resource budgets, scheduling, and notification delivery.
+Do not add native branches for named skills, review verdicts, or workspace layouts.
+Read [storage-lifecycle.md](references/storage-lifecycle.md) when this work is
+selected. Keep unsupported fields out of active owner definitions and do not
+replace current helpers before a released native replacement is qualified.
+
 ## Storage-context ownership
 
 This skill alone owns physical storage-location and migration policy. Read
@@ -201,3 +215,10 @@ verdict, storage mutation, exact addressed source/transaction when relevant, and
 remaining owner action. Missing metadata limits the claim. Keep pure validation,
 transactions, doctor, context failures, and recovery outcomes distinct rather
 than forcing them into one generic status template.
+
+When storage pressure or a custody limit affects the selected operation, surface
+it with the actual phase, selected scope, available counters, and mutation state.
+Do not infer sustainable capacity from a healthy doctor result, or successful
+recovery from cleanup alone. Preserve a committed semantic operation's outcome
+separately from any maintenance failure; do not retry the committed write merely
+to obtain a clean housekeeping status. Missing measurements remain unknown.

@@ -42,6 +42,27 @@ law is wrong. Change a definition only when owner intent and evidence justify
 that change; do not weaken it merely to obtain a successful receipt. Recheck
 the same cases and the affected consumers against the changed closure.
 
+## Storage lifetime design
+
+For each durable artifact family, identify the retention obligation, retaining
+references, explicit holds, release condition, and reconstruction dependencies.
+Retain canonical history by default. A superseded revision may still be required
+for replay or idempotency; a checkpoint is not permission to truncate history.
+Do not prescribe an expiry merely because an artifact is old or a workflow ended.
+
+Follow [storage-lifecycle.md](storage-lifecycle.md) for the split between owner
+semantics, runtime overhead, and host resource policy. Until the corresponding
+native operators are released and qualified, record lifecycle requirements as
+design evidence, not unsupported JSON in an active definition. Do not implement
+missing lifecycle support with shell cleanup, executable definitions, or a
+second skill-local storage engine.
+
+Qualify a lifecycle extension with a motivating retention counterexample and a
+required-valid neighboring case, including retaining references, active recovery,
+repeated failure, and an unrelated owner. Three unrelated fixture protocols must
+exercise the same native vocabulary without owner-name branches. Capability
+availability does not grant semantic deletion or publication authority.
+
 ## Extension law
 
 Add or change an owner-local passive definition first. Add a native Ledger
