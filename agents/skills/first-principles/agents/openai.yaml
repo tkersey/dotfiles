@@ -3,4 +3,4 @@ policy:
 interface:
   display_name: "first-principles"
   short_description: "Re-derive axiomatically from irreducible premises"
-  default_prompt: "Use $first-principles and preserve the original verbatim axiomatic first-principles text."
+  default_prompt: "Use $first-principles on the current task. Reconstruct the supported premises, preserve accepted obligations, and return the resulting conclusion or unresolved discriminator."
