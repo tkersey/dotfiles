@@ -1,9 +1,11 @@
 # Claim-appropriate proof
 
-Load only when a representation-independence, universal-construction,
-lawful-transformation, or bounded-approximation claim is live. Use only the applicable
-sections. Reuse the existing argument; this module adds neither a packet nor a route.
-Ordinary boundary contracts already carry their construction and preservation laws.
+Use the applicable section when a decision-critical premise needs investigation,
+a model result needs implementation correspondence, or a representation-independence,
+universal-construction, lawful-transformation, or bounded-approximation claim is
+live. Inquiry needs no finished proof. Reuse the existing argument; this module
+adds neither a packet nor a route. Ordinary boundary contracts already carry
+their construction and preservation laws.
 
 Use [universal witnesses](#universal-witness-contract) for universal claims,
 [transport](#transport-across-interpretations) when moving an argument between
@@ -39,7 +41,95 @@ operations and required future observations, not merely today's examples.
 Lower caller burden is a context-relative design benefit, not an initiality,
 finality, parametricity, equivalence, or uniqueness proof. Preserve the selected
 claim's existing proof profile; an ordinary encapsulation needs no invented
-universal construction, and a genuine universal claim still needs the following.
+universal construction, and a genuine universal claim still needs its witness.
+
+## Premise-guided investigation
+
+When resolving uncertainty can change the construction or deciding proof, ask:
+**which premise supports the conclusion, and what available evidence would
+separate it from a plausible alternative?** Inspect source when it can decide the
+question; use an already-authorized safe experiment only when needed. Reuse a
+sufficient argument without manufacturing doubt, a dependency graph, a competing
+model, or a probe quota. The argument may still be developing.
+
+Follow dependencies, but also inspect the relevant source-permitted behavior that
+the model omits: ingress, recovery, aliases, effects, or observations may cross its
+boundary without appearing in its proof. Reuse the receiving workflow's independent
+coverage evidence; a candidate-authored list of transitions cannot certify its own
+completeness. Focus on behavior material to the claim, not a speculative whole-system
+inventory. Missing access stays evidence debt, not proof of impossibility.
+
+For example, `check receipt; perform external effect; persist receipt` cannot get
+an at-most-once guarantee merely from a two-state model that combines the effect
+and receipt into one transition. The deciding premise is atomicity across their
+actual owners. Inspect that boundary or, when authorized, interrupt after effect
+commit but before durable receipt and then recover. Observe the external effect
+count, not just the final receipt. Two distinct logical operations with identical
+payloads remain a required-valid control when the contract distinguishes them.
+
+A transaction covering both operations or evidenced durable external idempotency
+may support a construction; their mere names do not. Otherwise keep the affected
+guarantee unresolved or expose its residual failure behavior. A local enum cannot
+supply missing external atomicity. A contradiction may require changing the model's
+states, operations, observation, or interpretation rather than patching the code to
+conform to a false model. Accepted requirements remain binding.
+
+In Actuating, return the deciding discriminator through its existing argument;
+Actuating owns experiments, mutation, and review epochs. In read-only analysis,
+propose rather than execute an experiment. A new premise does not authorize a
+production fault injection, nested workflow, or separate evidence store.
+
+## Claim-directed correspondence
+
+Keep structural lawfulness, a theorem about a model, and its application to the
+implementation separate. Select the weakest adequate connection for the actual
+claim, not a complete simulator or equivalence proof by default. For a function
+`alpha` from relevant real traces to model traces, one sufficient safety transfer is:
+
+```text
+alpha(T_real) subseteq T_model
+Bad_real(t) => Bad_model(alpha(t))
+no trace in T_model is Bad_model
+therefore no trace in T_real is Bad_real
+```
+
+The abstraction must cover the claimed real initial states and transitions and
+preserve the violation being excluded. A model may overapproximate behavior; it
+must not silently omit a real counterexample. Successful recorded traces alone
+establish neither that coverage nor impossibility. Use a relation/simulation or
+direct argument when a functional abstraction is inappropriate; this equation is
+one sufficient form, not a new required representation.
+
+A successful model plan needs realization of that particular witness, including
+its preconditions, observations, authority, effects, failures, and resources. An
+overapproximation can contain spurious successes. A behavioral replacement needs
+the promised equivalence or refinement under required continuations; do not infer
+it from one-way safety transfer. Eventual completion needs its own progress and,
+when relevant, scheduling/fairness assumptions, not just an invariant.
+
+Often the actual implementation admits a smaller direct certificate:
+
+```text
+Init(s) => I(s)
+I(s) and R(s,a,s_next) => I(s_next)
+I(s) => P(s)
+```
+
+For all admitted initial states and relevant implementation transitions `R`,
+induction establishes `P` on reachable states. Cover ingress, recovery, and external
+behavior relevant to the claim at their actual owners; do not call a restricted
+surrogate `R` complete. Reuse an adequate native proof or existing model rather than
+requiring a second implementation. A property-specific proof view need not replace
+production state or preserve observations outside that property; its limitations
+must not be inherited by the production contract.
+
+When a machine-checked proof supplies evidence, bind the actual theorem statement,
+definitions, assumptions, admitted initial states, goal, source version, and
+implementation interpretation. Check trusted assumptions and unfinished proof
+placeholders using the proof system's facilities. Kernel acceptance validates the
+formal statement, not its intended meaning or its parser/implementation connection.
+A short definitional proof can be exactly the benefit of a sound construction;
+proof length is not evidence strength. Keep runtime-cost claims separately grounded.
 
 ## Universal witness contract
 
@@ -187,3 +277,10 @@ functorial transport; §§15.3–15.4 and 22.6 (pp. 194–200, 336–337) for ca
 and determination; §21.5 (pp. 322–327) for full and faithful functors. Page numbers
 are printed pages. The builder, adapter, observer, and failure-diagnosis guidance
 above is an engineering application under the stated hypotheses.
+
+*Algebraic World Model: From Exploration to Proofs*,
+[sections 4.3–4.4 and appendix C.6](https://arxiv.org/html/2610.40503v1), motivates
+premise-directed investigation and the distinction between model proofs and
+implementation transfer. The trace conditions, direct certificate, and receipt
+example above are engineering applications, not a mandatory reproduction of its
+pipeline or evidence of Universalist efficacy.

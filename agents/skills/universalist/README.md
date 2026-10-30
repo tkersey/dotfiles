@@ -1,4 +1,4 @@
-# Universalist 18.0.1
+# Universalist 18.0.2
 
 Universalist uses algebraic and categorical knowledge to **formulate and derive**
 solutions, not only recognize abstractions after a boundary decision is named.
@@ -46,7 +46,7 @@ extra review lane, or separate discovery report are introduced.
 | What carrier, operations, equations, or observation should be derived? | `references/domain-algebra/algebra-driven-design.md` |
 | Which mathematical construction might resolve the question? | `advanced-mechanics.md`, the selector, and relevant registry/theory fragments |
 | Which materially different native realization should be retained? | `references/consequential-boundary.md` |
-| What proof does the actual claim need? | `references/claim-appropriate-proof.md` |
+| Which premise needs investigation, or what proof/correspondence does the actual claim need? | `references/claim-appropriate-proof.md` |
 | Do accumulation, feedback, adaptation, or recovery change the claim? | `references/system-dynamics.md` |
 | Should data be materialized or eliminated directly? | `references/syntax-semantics-pivot.md` |
 
@@ -62,6 +62,31 @@ double categories, and universal constructions remains available. The ADD refere
 adds an ordered resource-trace derivation: concatenation determines a three-field
 summary and its combination law. This illustrates deriving an algorithm without
 a generic framework; it is not a required architecture for unrelated tasks.
+
+## Premise-guided derivation in 18.0.2
+
+Use uncertain, decision-critical premises to select a useful source inspection or
+already-authorized discriminator; include relevant behavior omitted from the model.
+A contradiction may revise the formulation instead of producing another code patch.
+The existing proof reference now connects this inquiry to claim-directed model
+correspondence and direct implementation certificates. No completed proof is needed
+to begin, and an adequate native argument needs no simulator or formalization.
+
+The algebra reference derives an operation carrier from a conservation law, with
+its domain hypotheses and per-instance correspondence kept explicit. Recognition
+distinguishes shared semantics from case packaging. Property-test guidance preserves
+justified discrimination during simplification without freezing an intentionally
+corrected model's old verdicts. A property-specific proof view need not replace
+production state.
+
+These are techniques under the existing correspondence, discriminator, dividend,
+claim-strength, and authority requirements, not new semantic gates. The decision
+contract and fingerprint, durable plan schema, routes, triggers, construction-card
+inventory, adapters, and JSON corpora are unchanged. Bind evaluations to exact source
+commits and loaded files; shared contract metadata does not establish shared results.
+Eight [audit-only scenario families](references/efficacy-evaluation.md#premise-guided-derivation-and-model-correspondence)
+cover the additions. They remain authored expectations, not replayed model evidence.
+No new workflow, report, runtime script, dependency, or proof-system requirement is added.
 
 ## Claim-consistent references in 18.0.1
 

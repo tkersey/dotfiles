@@ -80,6 +80,18 @@ certify that hypothesis. A task-grounded question is enough to consult a focused
 reference. Develop laws, alternatives, and discriminators during inquiry rather
 than demand the finished discovery as its admission condition.
 
+When an uncertain premise could change the decision, use the developing argument
+to choose the smallest available discriminator: which source inspection or
+already-authorized observation would separate that premise from a plausible
+alternative? Include relevant source-permitted behavior omitted from the model;
+a proof's own dependencies cannot establish its coverage. A contradiction may
+revise the carrier, operations, observation, or interpretation, not just the code.
+Use [premise-guided investigation](references/claim-appropriate-proof.md#premise-guided-investigation)
+and the claim's required correspondence when that question is live. A direct
+native argument may suffice; do not require a finished proof, complete simulator,
+formalization, dependency graph, or experiment quota. Reuse the receiving
+workflow's evidence and experiment authority.
+
 Use whichever constructive move advances the problem: change a carrier to preserve
 necessary distinctions and remove accidental ones; derive an orthogonal operation
 basis; change the unit of composition; reify, interpret, specialize, or fuse behavior;
@@ -161,7 +173,7 @@ Do not load the whole corpus or every linked method at entry.
 | What operations, equations, carrier, or observation should be derived? | `references/domain-algebra/algebra-driven-design.md` | distinguish candidate laws from accepted requirements and preserve required uses |
 | Where could a categorical construction resolve the question? | `advanced-mechanics.md`, relevant selector/registry fragments and exact theory references | actual prerequisites and claim-appropriate witness before retention; no mandatory prior failed ordinary candidate |
 | Plausible candidates materially differ (`UNI-CONSEQUENTIAL`) | `references/consequential-boundary.md` | complete native comparison before recommendation or affected mutation |
-| Representation independence, a universal construction, lawful transformation, or bounded approximation is claimed | `references/claim-appropriate-proof.md` | discharge only the applicable proof obligations at the stated strength |
+| Which uncertain premise decides the question, or what correspondence transfers a model claim? Representation independence, universality, lawful transformation, or bounded approximation may also be live. | `references/claim-appropriate-proof.md` | use a deciding discriminator or discharge the actual claim's correspondence and proof obligations; no finished proof is required to inquire |
 | A consequential standalone decision needs independent cross-session, actor, migration, or supersession addressing (`UNI-DURABLE`) | `references/durable-decision.md` | existing Ledger-addressed plan and root receipt after standalone adjudication |
 | Independent questions warrant Universalist team orchestration under current session and repository authorization | `references/workflow/team-routing.md`, `references/workflow/subagent-packet-contract.md`, `references/workflow/subagent-orchestration.md` | bounded read-only packets and root synthesis under existing authority |
 
