@@ -129,6 +129,54 @@ trace cannot be quotiented to a bag. Bounds, overflow, identity, provenance, and
 failure behavior retain their actual contracts. Commutative reward accounting
 neither permits reordering external effects nor proves effect-safe retries.
 
+## Derive the operation carrier from a required law
+
+Required observations can constrain admissible operations before an implementation
+or familiar structure has been selected. Here is a derivation, not a recipe for
+every domain. Let `P` be finite and admit every binary labeling `w : P -> {0,1}`.
+For a fixed parameter choice, hypothesize a total reindexing `f : P -> P`, independent
+of the labels, with `T_f(w)(p) = w(f(p))`. Require preservation of the number of
+ones for every admitted labeling. For the singleton labeling `w_q` at each `q`:
+
+```text
+count1(w_q) = 1
+count1(T_f(w_q)) = |{p in P : f(p) = q}|
+conservation => every fiber of f has size one => f is a permutation
+```
+
+Conversely, a permutation preserves the count by bijective reindexing. Thus the
+law selects the carrier under these hypotheses; a native index permutation may
+replace independent movement implementations. One generic conservation argument
+can serve them all, but each concrete operation still needs its actual mapping
+and correspondence to required behavior. Establish bijectivity for imported maps
+at their admission owner; the word `permutation` does not validate an arbitrary
+index list. No generic group interface or new construction card is required.
+
+Keep the hypotheses visible. A restricted reachable-state domain may not contain
+the singleton labelings; count preservation there does not prove global bijectivity.
+A nonbijective map preserves counts on every constant board. Label-dependent
+selection or recoloring also falls outside this fixed-reindexing derivation.
+Revisit the argument rather than silently extending its conclusion.
+
+The law chooses a carrier, not the required member. Opposite rotations both
+preserve counts; an asymmetric required observation distinguishes them. Mathematical
+invertibility neither authorizes an inverse operation nor proves reversibility of
+external effects or affordability under a budget. Preserve those separate contracts.
+
+A histogram can be a sufficient **proof view** for showing that an absent color
+cannot appear, while being insufficient to decide a positional goal or implement
+the next required transition. Use that view for the property without quotienting
+production state unless its full observation/continuation obligation also holds.
+Use [claim-directed correspondence](../claim-appropriate-proof.md#claim-directed-correspondence)
+when moving the property to the implementation; a complete second simulator is
+not required. The dividend is obligations genuinely removed, net of the remaining
+per-instance correspondence, admission, and migration work.
+
+The permutation example is motivated by *Algebraic World Model: From Exploration
+to Proofs*, [section 2.5](https://arxiv.org/html/2610.40503v1#S2.SS5). The fiber-counting
+derivation and software guidance here are Universalist's application, not a
+reported theorem or coding-agent efficacy result from that paper.
+
 ## Derive a unifying observation
 
 When observations independently traverse or simulate the same structure, ask

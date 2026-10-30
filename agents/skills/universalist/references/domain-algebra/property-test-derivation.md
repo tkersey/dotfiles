@@ -72,6 +72,32 @@ Fresh samples can challenge a candidate but cannot supply missing source authori
 Do not require QuickSpec, Haskell, or new discovery tooling for an adequate native
 property or model test.
 
+## Preserve discrimination without preserving a false model
+
+For a claimed semantics-preserving simplification, retain the justified distinctions
+that support the decision: required-valid cases, established counterexamples, and
+their relevant observations and continuations. Compare applicability as well as
+verdicts. Dropping an ingress path, shrinking the generated domain, returning
+not-applicable for a difficult case, removing a parser field, or ignoring an effect
+in the comparator does not establish preservation. Checker exceptions, timeouts,
+and unavailable observations remain unresolved evidence, not successful checks.
+Reuse the existing discriminator; do not impose a new corpus or mutation quota.
+
+For an intentional model correction, an old verdict may properly change. Identify
+which prior judgments change and why their supporting hypothesis was false or
+superseded; preserve the underlying observation and source authority, not a known
+wrong interpretation. Do not turn old checker outputs into requirements. A
+synthetically perturbed trace may be legitimate behavior the old model excluded;
+justify its negative classification independently. Rejecting more mutants is not
+improvement when a reject-all checker or narrowed applicability explains it.
+
+Keep the positive control and the deciding observation independent of the candidate
+when they supply distinct evidence. If no adequate correspondence can yet be shown,
+limit the conclusion rather than reporting a semantics-preserving simplification.
+A contradiction can revise the law, carrier, observer, or interpretation under
+[premise-guided investigation](../claim-appropriate-proof.md#premise-guided-investigation);
+it does not automatically require another production patch.
+
 ## Generator, observer, and shrinker adequacy
 
 When generated tests materially support the claim, inspect their effective domain:

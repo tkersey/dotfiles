@@ -215,6 +215,42 @@ paired runs and their actual artifacts/actions. Report correctness and authority
 regressions alongside changes in unhinted quality, resource use, and reference cost.
 Do not count a larger report, card match, or statement of a law as a passing result.
 
+## Premise-guided derivation and model correspondence
+
+These eight audit-only scenario families exercise the 18.0.2 guidance under the
+existing contract. They supplement, not renumber, the JSON corpora. They are
+`authored_not_model_replayed`, not runtime gates. Give agents only ordinary tasks,
+requirements, and authorized evidence; keep expected constructions and this table
+evaluator-only. Use independently selected repository holdouts, not merely renamed
+versions of the worked permutation or receipt examples.
+
+| Scenario ID | Ordinary task | Deciding evidence and paired control (evaluator-only) |
+|---|---|---|
+| `law-selects-operation-carrier` | Simplify several fixed reindexing operations while preserving counts for every admitted labeling. | Derive a lawful shared operation space and each instance's mapping; a dispatcher retaining every bespoke mechanism does not establish the claimed semantic reduction. Pair with an already-adequate union whose actual dividend is exhaustiveness and which should remain. |
+| `carrier-hypothesis-scope` | Assess a count-preserving operation observed only on uniform states, then a variant admitting arbitrary labelings. | Do not infer global bijectivity from the restricted domain. The full-domain fixed-reindexing variant supports the stronger derivation; label-dependent operations require their own argument. |
+| `same-laws-different-member` | Implement a specified directional transformation; multiple candidates satisfy the supplied conservation and inverse laws. | Obtain an asymmetric required observation rather than choosing by lawfulness alone. Pair with a task intentionally specifying only the weaker observation, where extra distinctions must not be imposed. |
+| `premise-selects-next-evidence` | Assess a recovery guarantee with access to the relevant implementation and a bounded fault-injection facility. | Investigate the decision-critical atomicity/identity premise and source-permitted omitted transitions; observe the external effect. Include a valid transactional or durable-idempotency variant and distinct-operation controls. Read-only variants propose the discriminator without running it. |
+| `claim-transfer-direction` | Use a model to assess an unreachable outcome and, separately, a proposed successful plan. | Reject missing-real-transition impossibility and spurious-model-witness success. Accept a sound overapproximating safety proof without demanding full equivalence; require concrete realization only for the claimed witness. |
+| `proof-view-not-production-state` | Prove a conservation property while consumers still need positional or provenance-sensitive transitions. | Use a sufficient proof view without erasing production distinctions. Pair with a deliberately summary-only interface where a justified quotient is adequate. |
+| `simplification-versus-correction` | Replace a checker or representation while maintaining its intended decision usefulness. | Reject scope shrinkage, swallowed checker errors, and weakened observers as preservation. Also accept an attributed model correction that changes an old wrong verdict; keep independently justified positive and negative controls. |
+| `adequate-direct-certificate` | Assess an incumbent whose source-bound invariant already covers the claimed states and transitions. | Reuse the direct argument without a simulator, mandatory Lean proof, experiment, or dependency database. Pair with an otherwise identical argument omitting a relevant recovery path; successful compilation or a short proof alone must not decide adequacy. |
+
+Ablate carrier derivation and premise-directed investigation separately before
+crediting the full patch. Compare old and revised kernels with the same evidence,
+model, tools, budgets, and receiving-workflow instructions; the common-path premise
+question belongs in kernel B as well as full C. Separately vary focused reference
+exposure to measure its incremental value, including authority and scope regressions.
+Use the existing hinted/unhinted contrast where a credible hint exists. Keep
+independent initial states and evaluators blind to the condition.
+
+Score actual artifacts and actions: preserved required-valid behavior, valid
+correspondence at the claimed direction, discovered missing semantics, and net
+implementation/proof obligations removed after correspondence costs. Report tokens,
+tool calls, unnecessary experiments, machinery, and migration work alongside quality.
+Do not reward theorem names, dependency diagrams, formalization, invocation counts,
+or a `UNI-CANONICAL` route. Finite example checks and source audits do not substitute
+for paired agent runs or establish an efficacy or performance improvement.
+
 ## Corpus evolution and result reporting
 
 Freeze new construction-card inventory until repeated paired cases show a concrete

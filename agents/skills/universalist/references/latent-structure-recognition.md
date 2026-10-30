@@ -184,6 +184,18 @@ derive the carrier and operation vocabulary from required uses and observations;
 neither needs to be fixed on entry. Anti-unification is inapplicable without
 neighboring instances.
 
+Distinguish packaging cases from deriving shared semantics. A coproduct of the
+input types for `r_i : C_i -> V` gives one dispatcher, but may retain every
+original mechanism and proof obligation. Even a factorization `r_i = h o e_i`
+can hide the same case split in `h` or the encoders. For a claimed semantic
+reduction, identify the common law-bearing carrier and the work actually removed;
+include the remaining per-instance correspondence obligations in the comparison.
+A tagged union may still be the best result for exhaustiveness or invalid-state
+exclusion; do not require a shared algorithm when that is not the claimed dividend.
+Use [carrier derivation](domain-algebra/algebra-driven-design.md#derive-the-operation-carrier-from-a-required-law)
+when the required law can determine the operation space. Keep independent
+verification independent even when production semantics are unified.
+
 When a shared abstraction is disputed, state the exact common principle and the
 distinctions it forgets. Determine whether the objection exposes an omitted,
 more specific premise that changes required behavior, or invokes a broader
