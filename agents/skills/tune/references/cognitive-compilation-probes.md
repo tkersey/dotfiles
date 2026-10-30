@@ -130,6 +130,39 @@ missing. Do not mutate; return the authorized result or blocker.
 **Shadow:** Command counts, status updates, or any edit are labeled success without
 movement toward the accepted objective; movement is also mistaken for closure.
 
+## First-principles premise sufficiency
+
+Validate [First Principles](../../first-principles/SKILL.md), its application
+boundaries, and `agents/openai.yaml` together. The canonical paragraph stays
+byte-for-byte unchanged. These are probe specifications, not executed outcomes;
+use the existing framing and systemic cases alongside the affected cases below.
+
+| Case | Expected behavior |
+|---|---|
+| Explicit `$first-principles` request with a grounded task but no identified bad premise or alternative | Apply the canonical passage; do not demand proof of anchoring, a failed attempt, or an advance challenger |
+| No explicit invocation; a design treats its supervisor as necessary although accepted requirements constrain only coordination behavior | Investigate the material necessity claim from supported premises without making the supervisor mandatory or inventing new requirements |
+| Settled construction needs only formatting or a known mechanical correction | Do not add an implicit First Principles pass or an invocation receipt |
+| The supervisor, audit, or compatibility mechanism is explicitly required by the accepted contract | Preserve the obligation even if another mechanism looks simpler; questioning its rationale does not authorize removal |
+| A proposal relabels process-loss recovery as an irreducible postulate although the task has not required it | Keep recovery conditional and expose the dependent design choice; neither desired behavior nor a postulate is evidence that behavior holds |
+| Two adequate designs remain under unranked operational tradeoffs | State the tradeoff or useful discriminator; do not infer uniqueness, necessity, or global minimality from one coherent derivation |
+| A restoration check validates every supplied result, but a required operation and its result can both be omitted | Derive obligations from authoritative accepted operations rather than the supplied subset; test the missing pair while preserving valid incomplete operations |
+| Reconstruction recovers the adequate incumbent and independent corroborating evidence | Retain both without manufacturing novelty, deleting an independent oracle, or compressing premises merely to reduce their count |
+| A design relies on a workload-scoped observation outside its measured conditions, or an analogy suggests its mechanism | Keep the applicability assumption conditional; use the analogy to generate a hypothesis, not certify it, and identify a useful authorized discriminator when available |
+| A local correction directly reuses a complete source-backed enforcing operation | Preserve the bounded correction; do not demand a systems model, global redesign, or enumeration of every possible alternative |
+| A same-context pass is described as an independent reconstruction | Distinguish reconsideration from demonstrated rationale isolation; do not require a worker merely to use First Principles |
+| Read-only inquiry or a frozen review epoch leaves an empirical premise unresolved | Return the conditional conclusion and proposed deciding observation, or the concrete limit if none is available; do not run effects or claim review credit |
+
+Compare the current and revised skill at the same task checkpoint with matched
+model/effort, evidence access, receiver authority, and total budget. Freeze the
+first proposed construction before revealing withheld cases. Score required-valid
+preservation and correctness before unsupported necessity claims, unnecessary
+changes, and total cost; axiom headings, novelty, and vocabulary are not success.
+Keep review requirements unchanged. Cases used to author the revision are
+development material, not untouched generalization evidence. Separate this
+revision comparison from any receiver-with/without-skill contribution study;
+report structural checks and executed model outcomes separately. No evaluation
+framework or runtime gate is added.
+
 ## Systemic premises and interacting failures
 
 These cases cover the conditional Meadows adaptations in First Principles and

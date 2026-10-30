@@ -2,8 +2,8 @@
 
 Use only within an already selected First Principles pass when interactions,
 accumulated state, or delayed consequences determine premise sufficiency. Apply
-the canonical passage unchanged. This reference supplies causal distinctions;
-it adds no architecture selector, invocation prerequisite, or mutation authority.
+the unchanged canonical passage and its [application boundaries](../SKILL.md#application).
+This reference supplies only the causal distinctions needed for that question.
 
 ## Make the basis sufficient for the question
 
@@ -25,8 +25,7 @@ Retain relationships needed to recompose the parts. Check only implicated premis
   authority gap; demonstrated capability limitations still matter.
 - Distinguish the intended outcome from the proxy reinforced by stopping rules
   or allocation. A perfect-compliance/failed-purpose case can refute their assumed
-  equivalence. Observed behavior diagnoses a mismatch; it cannot replace the
-  user's objective or retire an independently required procedure.
+  equivalence.
 - State assumed driving conditions separately from the response claimed under
   them. Historical fit or a plausible scenario does not prove that the response
   model survives an intervention. Keep conclusions conditional when inputs are
@@ -49,11 +48,8 @@ and decisions that create contention or stale feedback. Use a source argument or
 the smallest authorized discriminator that can separate them. Supply the resulting
 basis to the existing owner; do not run effects merely to fill this example.
 
-An explicitly required supervisor or audit remains an obligation even if another
-mechanism looks simpler. A routine parsing defect with a decisive local witness
-does not need a systemic reconstruction. Stop when the basis is sufficient for
-the requested derivation or the remaining premise and deciding observation are
-explicit; uncertainty is not an excuse to invent a universal causal model.
+A routine parsing defect with a decisive local witness does not need a systemic
+reconstruction. Uncertainty is not an excuse to invent a universal causal model.
 
 Source: Donella H. Meadows, *Thinking in Systems: A Primer*, edited by Diana
 Wright, Earthscan, 2009: purposes pp. 14-17; conditional models pp. 45-48;
