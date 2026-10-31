@@ -2,12 +2,8 @@
 name: kanon
 description: >-
   Investigate the textual sources behind evaluation successes, failures,
-  regressions, and inconsistent behavior in agents, prompts, and skills. Invoke
-  implicitly whenever evaluation results, grader feedback, behavioral tests,
-  benchmarks, or execution reports inform their explanation or revision, even
-  without an explicit skill request, repeated failure, or suspected passage.
-  Trace effective instructions to exact source spans, test their contributions
-  with controlled edits, and verify changes on the native task.
+  regressions, or mixed results in agents, prompts, and skills. Use when
+  interpreting these results or revising their textual sources.
 ---
 
 # Kanon
@@ -17,15 +13,12 @@ decision, but it is not, by itself, an explanation. Investigate which textual
 sources contributed to success or failure, under what conditions, and what the
 evidence justifies retaining, changing, or removing.
 
-## Activate on evaluation evidence
+## Scope
 
-Apply on the first relevant result, including an all-passing suite, a regression,
-mixed outcomes, or a report encountered inside another workflow. Do not wait for
-`$kanon`, an explicit root-cause question, or unsuccessful prompt rewrites.
-Activation is automatic; investigation depth is proportional. Reuse adequate
+Keep investigation depth proportional to the unresolved question. Reuse adequate
 source mappings and completed comparisons rather than rerunning settled work.
 Honor run-only/read-only scope, authorized experiments and budgets, and the
-receiving workflow's verification gates. Activation grants no new effects.
+receiving workflow's verification gates.
 
 ## Trace outcomes to the text that was used
 

@@ -5,11 +5,6 @@
 - Prioritize the requested result over unsolicited process infrastructure. Ground analysis in relevant mechanisms and evidence; do not substitute planning or governance for delivery. Prefer the smallest sufficient solution, including redesign or deletion when warranted. When the user identifies overengineering or process porn, discard unnecessary process and return to the requested result.
 - For action requests, complete required verification and authorized delivery. Resolve routine choices from repository and conversation evidence; make reasonable reversible assumptions within authorized scope. Ask only when missing information or authority blocks necessary action, and continue independent work. Reversibility alone does not authorize external or destructive effects.
 
-## Evaluation-driven text investigation
-
-- Whenever evaluation results, grader feedback, behavioral tests, benchmarks, or execution reports of agents, prompts, or skills arise, implicitly invoke `$kanon` before explaining outcomes or revising their textual sources. Apply to successes, failures, regressions, and mixed results; do not wait for an explicit request, repeated failure, or a preselected suspect passage.
-- Keep activation proportional: reuse sufficient evidence and settled findings, honor run-only/read-only scope and authorized experiment budgets, and preserve the enclosing workflow's verification gates. Trace outcomes to exact source passages and verify delivered text; a passing score alone does not identify its cause. Activation grants no additional execution or mutation authority.
-
 ## Editing Constraints Override
 
 - Override generic guidance to stop on unexpected working-tree changes: treat them as concurrent edits and keep working.
