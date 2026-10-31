@@ -1,0 +1,10 @@
+policy:
+  allow_implicit_invocation: true
+interface:
+  display_name: "CYBERNATE"
+  short_description: "Iterate prompts and skills for accuracy and latency"
+  default_prompt: >-
+    Use $cybernate to carry a prompt or skill optimization goal through Kanon
+    investigation, attributable source changes, matched accuracy/latency
+    evaluation, fresh qualification, and authorized delivery. Preserve the
+    accepted task and budgets; do not substitute code-review counts for evidence.
