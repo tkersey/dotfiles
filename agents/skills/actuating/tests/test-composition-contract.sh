@@ -17,7 +17,6 @@ const sha256 = s => createHash('sha256').update(s).digest('hex');
 const policy = JSON.parse(text('references/review-contract.json'));
 const skill = text('SKILL.md');
 const protectedSections = {
-  "Public routes": "18d84587c9a33f319cc4bf28aa7ea1ea8aa7259e994d09cd0d49a5233c96f55c",
   "Review-epoch immutability and evidence acquisition": "c56ab6cd715441dce8a7b7eb659e450254d840e548eac57de7f4a65ea5bd4e05",
   "Review and closure": "fc36faca978a98d0c3da3fa6ba262e449dbe882741efe8edee24c1b0600b96e7",
   // Apply the same proof bar to initial construction; witnesses are conditional.
@@ -25,6 +24,7 @@ const protectedSections = {
 };
 // Relocation changes where the section is read, not its accepted bytes.
 const protectedSources = {
+  "Realization and common proof obligations": text('construction.md'),
   "Review-epoch immutability and evidence acquisition": text('review-closeout.md'),
   "Review and closure": text('review-closeout.md')
 };
@@ -105,6 +105,7 @@ assert(freshEyes.split(outputBoundary)[0].includes(`\n\n${freshEyesDoctrine}\n\n
 assert.match(text('references/closure.md'),/\.\.\/SKILL\.md#realization-and-common-proof-obligations/);
 console.log('actuating: composition source contracts, native review policy, proof bar, and exact lens bytes passed');
 JS
+node "$skill_root/tests/test-instruction-routing.mjs"
 node "$skill_root/tests/test-construction-core.mjs"
 node "$skill_root/../review-fold/tests/test-counterexample-admission.mjs"
 node "$skill_root/tests/test-auxiliary-discovery.mjs"

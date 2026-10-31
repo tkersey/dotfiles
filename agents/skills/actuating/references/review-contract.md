@@ -253,23 +253,17 @@ a summary does not itself recover the obligation or change the receipt.
 
 ## Review epoch
 
-The epoch is ephemeral and derived from owner facts. First dispatch against an
-exact locally proved `reviewable` candidate opens it. Freeze that candidate while
-review is open. All requests and credit remain bound to that same head.
-
-Initial implementation occurs outside review and requires no review receipt or wave.
-Existing closed owner evidence may inform it without dispatching a fresh review.
-An incomplete candidate may be implemented but may not enter closure review.
-
-A material current entailed finding invalidates the candidate and resets all
-credit, but does not authorize editing. The initial epoch closes only after every
-required initial outcome, required recovery, and the cumulative Review Fold are
-complete. A clean epoch remains open through standard convergence and folding of
-all terminal semantic outcomes, including recovered outcomes.
-A material confirmation finding closes its epoch after that finding and already-live
-required owner evidence are folded; no new auxiliary wave runs on the invalid head.
+[Review-closeout](../review-closeout.md#review-epoch-immutability-and-evidence-acquisition)
+owns opening, freezing, invalidation, the initial evidence barrier, and closing.
+The epoch is ephemeral, derived from owner facts; all requests and credit stay
+bound to its exact head. An incomplete candidate can be implemented outside review
+but cannot enter closure review.
 
 ## Scheduling
+
+`parallel-reviews` is the default; `serial-reviews` changes scheduling only.
+Requested concurrency bounds active reviewers within available capacity; it never
+reduces the inventory or overrides serial scheduling.
 
 Use available waiting time for [read-only self-review](../review-closeout.md#self-review-while-reviewers-are-running)
 of the frozen subject. This supplies evidence without adding a required lens or
@@ -305,54 +299,34 @@ A verdictless terminal has no semantic outcome. Permit one fresh exact-request
 recovery; it remains part of the barrier after invalidation. A second verdictless
 terminal blocks. Do not interpret an observation timeout as terminal failure.
 
-Complete and fold the entire initial inventory before any later confirmation;
-proceed only while the candidate remains valid and all initial obligations have
-credit. The initial credited changeset-wide standard counts as one. Four later standard confirmations
-run serially, producing five consecutive distinct changeset standard cleans from
-the selected executor under one bound policy, admitted under Review-credit admission
-on one unchanged head. CAS standards remain native/default; each subagent standard
-uses the pinned rubric in a fresh context. A material finding stops confirmation. A material head change
-resets all review credit; rerank files for the proved successor and start a new
-initial wave under the selected scheduling mode. Confirmations have changeset scope
-only. File-standard outcomes neither advance nor break the changeset standard suffix;
-a material finding from any scope still invalidates all credit. For `N` selected
-files, a fully clean epoch has `6 * (1 + N)` initial requests and four later changeset
-standards: at most 24 initial and 28 total, excluding required recovery. File lenses
-do not acquire their own confirmation streaks; request count is not a token or time bound.
+[Review and closure](../review-closeout.md#review-and-closure) owns the unchanged
+five-clean convergence and reset rules. CAS confirmations remain native/default;
+subagent confirmations use the pinned rubric in fresh contexts. Rerank files from
+the full bound base for each proved successor. File-standard outcomes neither
+advance nor break the changeset standard suffix; any material finding still
+invalidates all credit. For `N` selected files, a clean epoch requires
+`6 * (1 + N)` initial requests plus four later changeset standards: at most 24
+initial and 28 total, excluding recovery. File lenses have no confirmation streaks;
+request count is not a token or time bound.
 
 ## Live owner-source frontier
 
-Before a counterexample-driven selection or a completion claim, reconcile relevant
-executor evidence, self-review, provider/PR, tests, incidents, migrations, compatibility,
-repository verifiers, and historical corpus evidence. Each source is folded,
-proven non-current, or explicitly unavailable. An omitted live finding keeps the
-cut open. Quota exhaustion or a missing tool result is unavailable, never a clean
-semantic verdict.
+Use [counterexample admission](../counterexamples.md#observe-and-adjudicate)
+before response selection or a completion claim. Reconcile every relevant live
+source as folded, non-current, or unavailable; quota exhaustion is unavailable,
+not clean. Do not create an Actuating source registry.
 
-Self-discovered findings retain their own provenance and pass Review Fold admission;
-they are not executor outcomes. Once admitted as current, material, and entailed, they
-invalidate the candidate and all review credit under the same phase rules as any
-other finding, regardless of clean executor results. An unfinished self-review pass
-does not make a required review source unavailable; discovered material evidence
-still needs adjudication before closure.
-
-Unavailable evidence limits the claims that depend on it. It does not force a
-new review campaign or block unrelated authorized initial implementation. A required
-completion source cannot be silently waived. Derive this view from owners; do not
-create an Actuating source registry.
+[Self-review](../review-closeout.md#self-review-while-reviewers-are-running) owns
+self-discovered findings and their invalidation consequences. An unfinished
+self-review pass alone does not make a required source unavailable.
 
 ## Counterexample history projection
 
-Before current family synthesis, have `$review-fold` project
-`review-fold/counterexample-corpus`. Recompute applicability, Goal-law authority,
-recurrence, and family hypotheses against the current head. A CEX row proves its
-original admission, not that it is a current liability or a complete family.
-
-Absent local history is not evidence of absence. Unknown history cannot support
-first-observed, disjointness, or post-elimination claims. Current evidence may
-still support a properly bounded construction. Review Fold captures each new
-independent current entailed accepted witness; it does not persist classes,
-families, repair choices, rejected preferences, or current architecture.
+[Counterexample admission](../counterexamples.md#observe-and-adjudicate) owns
+corpus projection, current applicability, source horizons, capture authority, and
+custody preparation. Before family synthesis, project the existing Review Fold
+corpus; do not copy it or persist current families, repair choices, rejected
+preferences, or architecture. A historical admission is not current applicability.
 
 ## Candidate lifecycle and causal response
 
@@ -378,50 +352,28 @@ Review findings supply evidence, not separate patch assignments or weaker proof.
 
 ## Source-derived coverage and preservation
 
-Use the construction argument in
-[counterexample-guided-normalization.md](counterexample-guided-normalization.md).
-Use Universalist's [Actuating composition](../../universalist/actuating-composition.md)
-for direct semantic contributions to the same construction. Select the verifier
-before implementation and execute it on the actual successor. Prove admission,
-permitted-transition preservation, source-derived coverage, required-valid
-observations, and migration/retirement/residual obligations. Cut passage alone does
-not establish preservation after admission.
-
-Adequate native construction/operation evidence may discharge coverage directly.
-Where route or migration coverage remains unestablished, use explicit source-derived
-`T0`, `K`, `tau`, `F`, and independently derived `T1` with the same obligations.
-A candidate-authored list cannot be its own verification domain. New unaccounted
-sanctioned paths invalidate coverage under either representation. Residual invalidity
-precludes complete family exclusion; samples do not become universal proof.
+Apply the [common proof obligations](../construction.md#realization-and-common-proof-obligations)
+to the actual candidate. They own admission, transition preservation, source-derived
+coverage, required-valid observations, and migration/retirement/residual obligations.
+Use the [construction repertoire](counterexample-guided-normalization.md) when the
+affected domain or coverage argument needs it, not as another mandatory review pass.
+Native coverage evidence remains sufficient when it establishes those obligations.
 
 ## Review entry and authority-complete diff
 
-Before dispatch on the exact head require:
+Only the `reviewable` candidate defined above can enter review. Apply
+[proof acceptance](../construction.md#proof-acceptance),
+[counterexample admission and response selection](../counterexamples.md), and the
+[common proof obligations](../construction.md#realization-and-common-proof-obligations)
+before dispatch. This includes the complete proof inventory, current cumulative
+evidence and honest source horizon, the supported causal explanation for corrective
+changes, actual migrations/retirements, and authority for every correctness-bearing
+delta. Rejected strengthenings cannot enter the code to protect a clean streak.
 
-```text
-accepted Goal and complete proof inventory
-current cumulative evidence and honest source horizon
-source-supported causal explanation for counterexample-driven changes
-required verifiers and required sibling/domain discriminators completed successfully on the exact candidate
-required-valid behavior and compatibility preserved
-law-bearing mechanism and supported sanctioned-path/bypass coverage
-all applicable changed-boundary obligations with source-derived coverage evidence
-all selected migrations, residuals, and compensator retirements realized
-all correctness-bearing Git changes supported by accepted authority
-```
-
-Every proof-inventory entry is unique. Required checks need completed exact-head
-passing evidence under [proof acceptance](../SKILL.md#proof-acceptance); only the
-user can authorize retiring or narrowing an accepted check. Establish optional or
-inapplicable status from the accepted scope, never from execution difficulty.
-Aggregate proof credit requires actual dependency coverage. A known proof may not
-first run after convergence; discovering a required missing proof invalidates the
-prior reviewability claim.
-
-Do not implement rejected strengthenings to protect the clean suffix. Remove them
-or reopen their authority. Public claim corrections retain their own authority;
-containment and deferral are not full elimination. Mixed changes must preserve each
-obligation's authority rather than laundering them through one restoration label.
+Every proof-inventory entry is unique; aggregate credit requires actual dependency
+coverage. A known proof may not first run after convergence. Discovering missing
+required pre-review proof invalidates the prior reviewability claim. Optional or
+inapplicable status follows accepted scope, never execution difficulty.
 
 ## Falsification and resumption
 
