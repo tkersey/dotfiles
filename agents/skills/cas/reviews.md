@@ -130,5 +130,38 @@ select paths but do not grant filesystem access; keep paths inside the already
 permitted area. Preserve configured secrets privately and never log credential
 response bodies.
 
+## Recover incomplete review inquiry
+
+When a terminal review leaves a material observation or reasoning gap and the
+caller authorizes recovery, use the [exact-thread follow-up route](queueing.md).
+This is new work on the original obligation, not passive waiting or another
+independent review. Preserve the frozen Git subject, assigned scope/lens,
+configuration, permissions, and existing recovery budget. Native standard review
+launches remain uncustomized.
+
+A matching thread ID does not establish continuity of the delegated reviewer's
+source observations or reasoning. Supply the continuation with the original
+assignment and result, the concrete gap, and relevant source-read evidence from
+that invocation. Identify the exact commits, paths, delivered ranges, and failed
+or truncated reads needed to resume the inquiry. Reuse accessible artifacts;
+do not send unrelated logs or private reasoning, or create a coverage registry.
+If earlier coverage cannot be established, identify that uncertainty and acquire
+the necessary source within the existing scope and budget.
+
+Ask the continuation to complete the missing observation and reassess the reasoning
+that depends on it, retaining original findings and naming any remaining gap.
+Returned source ranges alone do not establish completed review reasoning. Preserve
+the original native structured output unchanged and attribute follow-up execution
+and conclusions separately to the same request. A continuation response is
+supplemental evidence, not a replacement native verdict or an additional clean.
+
+Return unresolved limitations to the caller's existing adjudication. If the
+continuation says the inquiry is still incomplete, identify the affected obligation
+and its evidence; do not erase the limitation because commands succeeded or all
+source ranges are now present. The caller decides whether it is recovered,
+covered by applicable evidence, not required for the requested scope, or still
+unresolved. When independent reasoning remains missing, parent acquisition alone
+does not complete it. CAS supplies attributable evidence, not review credit.
+
 [Review proof boundary](references/review-proof-boundary.md) separates these
 execution facts from finding truth, evidence adequacy, and closure.
