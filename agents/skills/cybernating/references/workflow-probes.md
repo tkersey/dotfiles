@@ -1,4 +1,4 @@
-# Cybernate workflow probes
+# cybernating workflow probes
 
 These are authored acceptance cases for changing this skill, not executed model
 results, a mandatory runtime suite, or a new rubric for the target being optimized.
@@ -7,20 +7,20 @@ available. Structural checks cannot establish live activation or efficacy.
 
 ## Invocations and neighboring owners
 
-- `$cybernate Improve this skill's task accuracy and completion latency; keep
+- `$cybernating Improve this skill's task accuracy and completion latency; keep
   iterating through evaluation and open a PR.` Select the authorized campaign,
   invoke Kanon at investigative decisions, edit the source, confirm, and Ship.
-- `$cybernate Use this plan and evaluation corpus to optimize the system prompt;
+- `$cybernating Use this plan and evaluation corpus to optimize the system prompt;
   retain required refusals and the pinned model.` Preserve the plan and those
   constraints; choose evidence-bearing iterations, not a new model or weaker task.
 - `Investigate why these evaluations improved after my prompt edit; do not edit.`
-  Kanon is the natural owner; explicit Cybernate stays on its read-only analyze
+  Kanon is the natural owner; explicit cybernating stays on its read-only analyze
   route. No optimization loop, scratch writes, or publication without authority.
 - `Replace this exact skill phrase with the supplied text.` Tune edit, not an
   implicit optimization campaign. A new skill request uses Tune create.
-- `Implement the parser plan and close its code reviews.` Actuating, not Cybernate.
+- `Implement the parser plan and close its code reviews.` Actuating, not cybernating.
 - `Optimize this native algorithm's allocations.` Tune software performance, not
-  Cybernate unless it is a scoped dependency of a prompt/skill campaign.
+  cybernating unless it is a scoped dependency of a prompt/skill campaign.
 
 ## Campaign behavior
 
@@ -64,4 +64,4 @@ case, and one invalid-comparison case through only their selected guidance. Repo
 static inspection separately from executed model trials. When running a live
 comparison, retain full source versions, matched tasks, configured model/effort,
 raw outcomes and timings, and the adopted/rejected decision; do not score success
-by the presence of CYBERNATE, Kanon, or doctrine words in the output.
+by the presence of cybernating, Kanon, or doctrine words in the output.

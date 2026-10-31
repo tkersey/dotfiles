@@ -1,5 +1,5 @@
 ---
-name: cybernate
+name: cybernating
 description: >-
   Drive repeated prompt and skill optimization from a goal or evaluation results
   through Kanon investigation, source edits, measured accuracy/latency comparison,
@@ -7,7 +7,7 @@ description: >-
   one-off evaluation explanation, specified text edit, or code-review closeout.
 ---
 
-# CYBERNATE
+# cybernating
 
 Improve the behavior, not the score's appearance. Carry prompt and skill work
 through goal binding, construction, execution, investigation, correction,
@@ -17,7 +17,7 @@ or import its reviewer inventory, clean streak, or review-credit machinery.
 
 ## Authority and collaborators
 
-Cybernate owns campaign selection, candidate adoption, continuation, and closure.
+cybernating owns campaign selection, candidate adoption, continuation, and closure.
 Kanon owns source-grounded investigation, not adoption authority. The native runner
 owns execution results; the accepted task and evaluation contract own correctness.
 Reuse Tune's authoring and agent-measurement methods without starting a second
@@ -30,7 +30,7 @@ references; for prompt or agent measurements, use
 under this workflow's authority. Do not copy their manuals or invent commands.
 Use relevant language skills for changed fixtures, scripts, or code.
 
-- **Optimize (default):** an explicit improvement request or `$cybernate` with an
+- **Optimize (default):** an explicit improvement request or `$cybernating` with an
   established optimization goal authorizes in-scope source iteration and already
   authorized evaluations. Finish through PR delivery when requested; otherwise
   finish locally. Do not stop to seek renewed permission for each authorized edit.

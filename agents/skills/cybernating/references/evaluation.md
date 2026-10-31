@@ -1,6 +1,6 @@
 # Evaluation discipline
 
-Use when Cybernate designs or interprets comparisons and confirmation. Kanon
+Use when cybernating designs or interprets comparisons and confirmation. Kanon
 still owns textual-source investigation. Reuse the task's runner, records, and
 Tune's agent-measurement guide; this is not another evaluation platform.
 
