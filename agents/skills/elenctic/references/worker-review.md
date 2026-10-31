@@ -4,7 +4,7 @@ Use this reference only for a file assignment from the Elenctic campaign
 coordinator. Perform one integrated investigation in the assigned worker; this
 is not a public entry point or a separately invocable skill. Do not invoke
 `$elenctic`, create or resume a campaign, spawn reviewers, invoke auxiliary
-skills, dispatch CAS reviews, or run separate lens passes, verdicts, confirmation
+skills, dispatch additional native reviews, or run separate lens passes, verdicts, confirmation
 streaks, or fix/review loops. Coordinator-directed continuation finishes this
 same investigation; it is not another review lane. Never expand the assignment
 to every changed file or independently spawn a retry.

@@ -37,13 +37,14 @@ try {
   } finally { rmSync(dir, {recursive:true, force:true}); }
 }
 const observations = fixtureObservations();
-const receipt = {
-  status:'clean', clean:true, findingCount:0, failureCode:null,
+// These are evaluator-supplied native observations, not a production receipt format.
+const observation = {
+  execution:{source:'synthetic host invocation record',process_exit:0,thread_id:'native-thread',root_turn_id:'native-root-turn',exact_subject_and_instructions:true},
   native_result:{findings:[], overall_correctness:'patch is correct',
     overall_confidence_score:0.53,
     overall_explanation:'No actionable defects were established in the inspected paths. The ReleaseSafe check was blocked by sandbox permission errors; cross-repository runtime integration was not verified.'}
 };
-const fixtureReceipt = {...receipt, native_result:{...receipt.native_result,
+const fixtureObservation = {...observation, native_result:{...observation.native_result,
   overall_explanation:'No actionable defects in inspected code. Generated fixture execution was unavailable (ENOENT).'}};
 const subject = {head:'h1', base:'b1', inputs:'i1', environment:'e1'};
 const prior = {ref:'proof-1', ...subject, command:'zig build check',
@@ -52,7 +53,7 @@ const cases = [];
 function add(id, evidence, decision, basis) {
   cases.push({id, input:{
     subject, lens:'fresh-eyes',
-    authenticated_current_receipt:true, receipt,
+    execution_mode:'codex', host_attributed_current_observation:true, observation,
     prior_credit:{standard:5, auxiliary:4},
     requested_scope:'Independent end-to-end inspection. All pre-review proof obligations were satisfied; relevance of the newly blocked reviewer check has not been adjudicated.',
     other_required_obligations:'Complete and unchanged. Only this review remains.',
@@ -72,11 +73,11 @@ add('credit-03', {requested_scope:'Independent source inspection plus ReleaseSaf
 add('credit-04', {requested_scope:'Independent source inspection plus ReleaseSafe validation. Inspection is complete; exact ReleaseSafe execution evidence is required.', prior_evidence:[{...prior, mode:null}]}, {},
   'A generic passing check with unspecified optimization flags cannot establish ReleaseSafe equivalence.');
 add('credit-05', {requested_scope:'Review the generated fixture behavior. The reviewer says it cannot finish its reasoning without the generated fixture.',
-  receipt:fixtureReceipt, reviewer_execution:observations.missing, parent_execution:observations.recovered,
+  observation:fixtureObservation, reviewer_execution:observations.missing, parent_execution:observations.recovered,
   recovery_scope:'Same candidate and authorized generated fixture; no code, input contract, or review binding changed.'}, {},
   'Parent validation passed, but missing reviewer reasoning remains. Preserve both observations and do not award a reviewer confirmation.');
 add('credit-06', {requested_scope:'Review the generated fixture behavior. The reviewer initially could not finish without it.',
-  receipt:fixtureReceipt, reviewer_execution:observations.missing, parent_execution:observations.recovered,
+  observation:fixtureObservation, reviewer_execution:observations.missing, parent_execution:observations.recovered,
   recovery_scope:'Same candidate and authorized generated fixture; no code, input contract, or review binding changed.',
   reviewer_followup:'The same bound reviewer inspected the recovered fixture and result, completed the dependent reasoning, and reported no findings.'},
   {credit_disposition:'credit', limitation_disposition:'recovered', auxiliary_count_after:5, public_review_complete:true},
@@ -86,26 +87,26 @@ add('credit-07', {requested_scope:'The review must inspect the accepted migratio
   reviewer_note:'The required migration contract is inaccessible; its digest is available.'}, {},
   'Matching identity is not delivery of a required premise.');
 add('credit-08', {requested_scope:'Execute the fixture check; source inspection is already complete.',
-  receipt:{...receipt, native_result:{...receipt.native_result,
+  observation:{...observation, native_result:{...observation.native_result,
     overall_explanation:'No defects found; the command exited zero but its only test was skipped.'}},
   reviewer_execution:observations.skipped}, {original_check_status:'skipped'},
   'Exit zero with zero executed tests does not discharge a required execution check.');
-add('credit-09', {receipt:{...receipt, native_result:{...receipt.native_result,
+add('credit-09', {observation:{...observation, native_result:{...observation.native_result,
     overall_explanation:'No actionable findings.'}}, historical_handoff:null,
-  coverage_evidence:'The old receipt has no scope/adequacy evidence beyond its labels.'},
+  coverage_evidence:'The old observation has no scope/adequacy evidence beyond its result.'},
   {original_check_status:'unknown'},
-  'An old receipt with unknown required coverage gets no implicit credit.');
+  'An old observation with unknown required coverage gets no implicit credit.');
 add('credit-10', {lens:'standard', prior_credit:{standard:4, auxiliary:5}},
   {standard_count_after:4, auxiliary_count_after:5},
   'Hold the fifth standard, pause further standard confirmations, and preserve the four valid standards and five auxiliaries.');
 add('credit-11', {requested_scope:'Static API/documentation review only; all required paths were inspected. Runtime execution is explicitly out of scope.',
-  receipt:{...receipt, native_result:{...receipt.native_result,
+  observation:{...observation, native_result:{...observation.native_result,
     overall_explanation:'No actionable findings in the required static paths. Runtime execution was not requested or attempted.'}}},
   {credit_disposition:'credit', limitation_disposition:'not-required', auxiliary_count_after:5,
     public_review_complete:true, original_check_status:'not-run'},
   'A justified omitted optional check is not a universal blocker.');
-add('credit-12', {receipt:{...receipt, status:'findings', clean:false, findingCount:1,
-    native_result:{...receipt.native_result, findings:[{title:'Accepted current material counterexample', body:'Fixture violation admitted by Review Fold.',
+add('credit-12', {observation:{...observation,
+    native_result:{...observation.native_result, findings:[{title:'Accepted current material counterexample', body:'Fixture violation admitted by Review Fold.',
       confidence_score:1, priority:1, code_location:{absolute_file_path:'/fixture/src/check.mjs', line_range:{start:1,end:1}}}],
       overall_correctness:'patch is incorrect'}},
   review_fold:'The current material counterexample is entailed, accepted, and unresolved.'},
@@ -119,7 +120,7 @@ add('credit-14', {requested_scope:'Independent inspection plus exact-head Releas
   prior_evidence:[{...prior, head:'h0'}]}, {},
   'A stale subject cannot discharge the current validation obligation.');
 add('credit-15', {requested_scope:'Static API/documentation review only; all required paths were inspected. Generated fixture execution is explicitly outside this task and unnecessary to its conclusion.',
-  receipt:fixtureReceipt, reviewer_execution:observations.missing},
+  observation:fixtureObservation, reviewer_execution:observations.missing},
   {credit_disposition:'credit', limitation_disposition:'not-required', auxiliary_count_after:5, public_review_complete:true},
   'The same actually unavailable fixture as credit-05 is nonblocking for an independently justified static scope.');
 
@@ -176,7 +177,7 @@ addSubagent('credit-19', {
 addSubagent('credit-20', {terminal_observation:{...subagentResult, raw_output:'clean'}}, {},
   'Terminal completion and a bare status have no structured semantic verdict; use the bounded exact-request recovery path, not clean credit.');
 addSubagent('credit-21', {terminal_observation:{...subagentResult, raw_output:'{"findings":[]'}}, {},
-  'Malformed output is not an empty clean review or a model-authored receipt; do not infer missing fields.');
+  'Malformed output is not an empty clean review or a model-authored observation; do not infer missing fields.');
 addSubagent('credit-22', {terminal_observation:{...subagentResult,
     raw_output:JSON.stringify({...subagentOutput, findings:[{title:'Required migration drops valid entries',
       body:'The changed migration discards a required valid input, as confirmed by the bound source and reproduction.',

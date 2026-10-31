@@ -4,7 +4,7 @@
     "skill": {
       "name": "review-fold",
       "kind": "mixed",
-      "source_fingerprint": "review-fold-counterexample-corpus-v1-automatic-custody"
+      "source_fingerprint": "review-fold-counterexample-corpus-v1-native-observations"
     },
     "triggers": [
       {
@@ -260,7 +260,7 @@
           "explicit user no-file/custody-maintenance constraints or enforced non-writable access select non-mutating owner lookup"
         ],
         "failure_signals": [
-          "CAS transcripts or suggested patches are copied into the corpus",
+          "Execution transcripts or suggested patches are copied into the corpus",
           "a stored family, owner, cut, carrier, route, or closure verdict becomes authority",
           "capture occurs for strengthening, preference, new requirement, underdetermined, rejected, or non-current evidence",
           "one semantic witness is duplicated by reviewer or thread identity",

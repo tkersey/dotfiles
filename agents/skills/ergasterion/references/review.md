@@ -97,7 +97,7 @@ auxiliaries into this strategy: the reviewers already own their engineering conc
 Preserve actual model and reasoning parity with construction, or the caller's
 explicit reviewed configuration for a review-only task. Read realized runtime facts;
 requested settings alone do not prove parity. Native task completion/provenance comes
-from the actual runtime/owner. Do not invent CAS semantic receipts for Architectonic
+from the actual runtime/owner. Do not invent native execution evidence for Architectonic
 or count an Elenctic campaign as a Codex native standard review.
 
 ## Credit and closeout

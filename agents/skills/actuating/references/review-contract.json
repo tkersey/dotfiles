@@ -1,6 +1,6 @@
 {
-  "schema": "actuating-review-contract/v20",
-  "contract_id": "actuating-review-contract-v27",
+  "schema": "actuating-review-contract/v21",
+  "contract_id": "actuating-review-contract-v28",
   "required_lenses": [
     {
       "name": "standard",
@@ -33,7 +33,7 @@
     }
   ],
   "review_execution": {
-    "default_mode": "cas",
+    "default_mode": "codex",
     "subagents_requires_explicit_selection": true,
     "scheduling_independent": true,
     "bound_in_review_context": true,
@@ -42,7 +42,7 @@
     "mixed_mode_credit_forbidden": true,
     "silent_fallback_forbidden": true,
     "modes": {
-      "cas": {
+      "codex": {
         "standard_review": {
           "instruction_source": "codex-default",
           "custom_instructions": false,
@@ -59,18 +59,19 @@
           "native_default": false
         },
         "attempt_quality": {
-          "strong_principal_required": true,
-          "reduced_principal_forbidden": true,
-          "fallback_forbidden": true,
-          "owner_lived_transport_required": true,
-          "required_backend_class": "cas-start-wait",
-          "required_capability": "cas_workflow_bound_owner_lived_review_v1",
-          "structured_statuses": [
-            "clean",
-            "findings"
-          ],
-          "exact_workflow_binding_required": true
-        }
+          "host_attributed_execution_required": true,
+          "fresh_native_thread_required": true,
+          "native_structured_review_output_required": true,
+          "exact_thread_and_root_turn_required": true,
+          "successful_terminal_execution_required": true,
+          "exact_dispatch_and_instruction_binding_required": true,
+          "current_git_subject_required": true,
+          "raw_result_preserved": true,
+          "executor_fallback_forbidden": true,
+          "fabricated_legacy_receipt_forbidden": true,
+          "process_exit_or_rendered_text_sufficient": false
+        },
+        "guidance_ref": "agents/skills/cas/reviews.md"
       },
       "subagents": {
         "guidance_ref": "agents/skills/actuating/references/subagent-reviews.md",
@@ -409,7 +410,7 @@
   "owner_source_frontier": {
     "derived_from_current_owner_facts": true,
     "live_relevant_sources": [
-      "cas",
+      "codex-native-runtime",
       "host-subagent-runtime",
       "self-review",
       "provider-review",

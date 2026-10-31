@@ -49,21 +49,21 @@ bytes; use native `turn/start` instead of shortening an oversized assignment.
 Do not change global Codex settings, switch models, or start summary-based
 sessions to obtain a tool name.
 
-## Use CAS's existing app-server transport
+## Use the native app-server directly
 
-Follow CAS's compatibility gate for the exact executable and selected transport.
-For a stateful local stream:
+Use the selected installed Codex executable and native schema. There is no CAS
+executable or external compatibility-profile prerequisite. For a stateful local
+stream, preserve the selected repository/configuration:
 
 ```bash
-cas app-server preflight --cwd <repo> --codex-path <exact-codex-executable> \
-  --profile core --app-server-transport stdio --json
-cas app-server session --codex-path <exact-codex-executable> --listen stdio://
+cd "$repo"
+"$codex" app-server --listen stdio://
 ```
 
 Keep that session alive for requests, notifications, and running worker turns.
 Initialize the connection once, including `experimentalApi: true` when using
 pagination or `excludeTurns`, and send `initialized` before other requests.
-For an explicit remote endpoint, use CAS's corresponding transport and prove
+For an explicit remote endpoint, use a supported native-protocol client and prove
 that endpoint can read the source; a fresh local server is not its substitute.
 
 Resolve the coordinator's actual source thread ID from the runtime or
@@ -95,15 +95,16 @@ differ, and verify the realized repository and permission settings before
 assignment. Repeating the existing selection is not authority to choose a new
 model, weaken permissions, or replace inherited instructions.
 
-`cas instance_runner --instances 1` can perform isolated stored-thread reads or
-forks. Its `--raw-sample` result is JSON text inside `sample_results[].raw_result`;
-decode it before inspecting fields. It executes one request and exits, so do not
-use it to own a worker's `turn/start` lifecycle. Use the persistent session above.
+Use the persistent native session above for reads, forks, assignments, and worker
+lifecycles. `codex exec fork` may create a native fork, but a new ID alone does not
+establish this full prepared-history contract. Do not replace explicit-seed forks
+with a fresh coding task, copied summary, or a fork of the evolving coordinator.
 
 Capture raw replies in private scratch storage and inspect them without echoing
 inherited messages, reasoning payloads, or raw tool output. Expose only sanitized
 IDs, statuses, counts, digests, and admitted report excerpts. Handle server
-requests under CAS's existing policy; never grant worker-requested permission
+requests under the native client responsibilities in [app-server.md](../../cas/app-server.md);
+never grant worker-requested permission
 or answer user questions on the user's behalf. If the connection is lost, recover
 exact worker and turn state before any retry; do not duplicate assignments.
 
@@ -136,8 +137,7 @@ For an authorized qualification, use a disposable representative PR under an
 explicit no-GitHub-mutations limit. This is a separate qualification run, not a
 trial reviewer inserted into a production campaign. Use the commands and native
 operations above with the exact selected executable/endpoint; inspect current
-schemas rather than copying historical request fields. A `core` compatibility
-receipt is necessary transport evidence, not proof of this complete sequence.
+schemas rather than copying historical request fields. Schema compatibility alone is not proof of this complete sequence.
 
 1. Capture policy and prepare source analysis plus the exact brief in the current
    coordinator turn. Record the source thread, current turn/item checkpoint,
@@ -162,6 +162,6 @@ receipt is necessary transport evidence, not proof of this complete sequence.
    IDs and content digests. Native history/source checks, working-set helper tests,
    model review efficacy, and GitHub mutations are separate evidence scopes.
 
-Without `codex`, `cas`, source-thread access, or the selected transport, report
+Without `codex`, source-thread access, or the selected transport, report
 the missing qualification explicitly. Mocked traces and passing helper tests
 cannot qualify the native route or establish semantic review efficacy.

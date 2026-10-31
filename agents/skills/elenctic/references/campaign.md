@@ -121,7 +121,7 @@ explicitly; never silently drop a required concern.
 
 Use the snapshot's `elenctic/` as the skill root for this campaign's semantic
 contracts and renderer. Applicable user/repository requirements retain their own
-authority. CAS/Seq are runtime/provenance providers, not copied semantic policy;
+authority. Codex/Seq are runtime/provenance providers, not copied semantic policy;
 use their installed routes and current compatibility checks when needed.
 
 Verify snapshot bytes against the externally recorded identity before seed creation,
@@ -175,11 +175,11 @@ inputs, not retroactive seed contents.
 With nonempty selection and authority to launch, resolve the selected route before
 deep preparation. For `fork`, use [native-forks.md](native-forks.md): a missing
 `fork_thread` wrapper alone does not establish missing native capability; inspect
-CAS's actual app-server route. Require coordinator and explicit-seed forks retaining
+Codex's actual app-server route. Require coordinator and explicit-seed forks retaining
 the full prepared history, direct IDs/parent provenance, full assignment delivery,
 exact turn reads and bounded waits. For `subagents`, use
 [subagents.md](subagents.md) and its native task/context/attempt checks without
-session-fork or CAS preflight. Do not create a trial reviewer or silently change modes.
+session-fork qualification. Do not create a trial reviewer or silently change modes.
 If no qualifying route exists, report incomplete file coverage while preserving
 verified prior-thread blockers and all actually completed work.
 
@@ -231,7 +231,7 @@ directly from the explicit unchanged seed, verify its parent and identical retai
 seed history, then start its target-specific turn and retain that exact turn ID.
 Never fork from the evolving coordinator or another worker. A brief-only fresh
 task, generic subagent or independent `codex exec` cannot satisfy that fork contract.
-CAS native app-server forks are an admitted transport when their actual history,
+Direct native app-server forks are an admitted transport when their actual history,
 lineage, model and permission behavior satisfies the same contract.
 
 For `subagents`, follow subagents.md: deliver the same frozen brief and canonical

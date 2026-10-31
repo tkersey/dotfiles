@@ -2,5 +2,5 @@ policy:
   allow_implicit_invocation: true
 interface:
   display_name: "cas"
-  short_description: "Local Codex operations, effects, and observed facts"
-  default_prompt: "Use $cas for the authorized local Codex operation. Load only its selected guidance; preserve the caller's target, rubric, effect authority, and recovery boundaries. Let review perform its built-in live gate rather than duplicating preflight."
+  short_description: "Direct native Codex operations and evidence"
+  default_prompt: "Use $cas for the authorized native Codex operation. Call codex directly, load only the selected guidance, and preserve the caller's subject, instructions, permissions, and recovery boundaries."

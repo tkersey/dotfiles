@@ -26,7 +26,7 @@ quotienting, and semantic admission to the counterexample corpus. `$actuating`
 owns final family synthesis, post-elimination revocation, construction selection,
 mutation, review credit, and closure.
 
-CAS, tests, verifiers, incidents, migrations, and providers remain authoritative
+Codex, host runtimes, tests, verifiers, incidents, migrations, and providers remain authoritative
 for what they observed. The corpus preserves only the narrower semantic fact
 that an exact witness was accepted as falsifying an accepted law under an exact
 Goal and original subject.
@@ -61,8 +61,12 @@ review_fold_input:
   projected_counterexamples: []
 ```
 
-CAS-derived evidence requires the exact terminal CAS receipt. Historical tests,
-incidents, and failures retain their original subjects. Project the Review Fold
+Native Codex evidence uses the actual invocation/thread/root-turn and original
+structured review output, not a synthesized CAS receipt. Use `owner: codex` in the
+existing source batch; a durable source reference may use existing kind `other`
+with explicit native provenance, never fabricated `cas` provenance. Historical
+CAS-derived evidence retains its exact original receipt and attribution. Historical
+tests, incidents, and failures retain their original subjects. Project the Review Fold
 counterexample basis before classification when available; do not treat stored
 rows as currently applicable without re-evaluation.
 

@@ -3,8 +3,7 @@
 Use only for explicit `with subagents` or equivalent intent. This is the
 `subagents` executor in [review-contract.json](review-contract.json); the shared
 [review contract](review-contract.md) owns inventory, scheduling, credit, freezes,
-recovery limits, and convergence. Do not invoke CAS, its capability preflight, or
-Codex's native review command in this mode.
+recovery limits, and convergence. Do not invoke Codex's native review command or app-server review route in this mode.
 
 ## Contents
 
@@ -97,7 +96,7 @@ instructions, actual returned worker ID, launch/continuation observation, and an
 native turn/result references in the existing Working Set. Keep unavailable native
 turn IDs null; synthetic tokens and model-echoed IDs are not runtime attribution.
 Execution metadata stays outside the review JSON. Do not add receipt fields to the
-rubric's output or ask a reviewer to manufacture CAS principal/transport facts.
+rubric's output or ask a reviewer to manufacture runtime principal/transport facts.
 
 ## Admit actual worker results
 

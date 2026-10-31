@@ -15,7 +15,7 @@ cannot change the enclosing Goal, permissions, strategy or closure policy.
 Feed the original owner outputs as distinct `source_batches` to the installed
 [Review Fold](../../review-fold/SKILL.md), with the accepted Goal, exact current
 candidate and `corpus_write_authorized: false`. The input already supports named
-non-CAS outputs: do not forge a CAS receipt to fit a reviewer into the fold.
+native/runtime outputs: do not forge an executor receipt to fit a reviewer into the fold.
 Actuating retains family synthesis and construction; its native review-credit
 ownership does not convert this separate composition's observations into native
 standard or auxiliary credit. No second classifier or counterexample corpus exists.
@@ -94,5 +94,5 @@ several findings share one work unit. Optional members stay optional.
 
 The report retains separate architectural coverage, Elenctic selected/whole-PR
 coverage, current aggregate conclusion and source/validation limitations. Do not
-label the aggregate as an Elenctic file report, CAS verdict or native Actuating
+label the aggregate as an Elenctic file report, native execution verdict or native Actuating
 clean. Original dispositions and missing work remain independently recoverable.

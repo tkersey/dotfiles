@@ -18,11 +18,11 @@ const policy = JSON.parse(text('references/review-contract.json'));
 const skill = text('SKILL.md');
 const protectedSections = {
   "Review-epoch immutability and evidence acquisition": "c56ab6cd715441dce8a7b7eb659e450254d840e548eac57de7f4a65ea5bd4e05",
-  "Review and closure": "fc36faca978a98d0c3da3fa6ba262e449dbe882741efe8edee24c1b0600b96e7",
+  "Review and closure": "f3f5c48880509207ad1b049403babf5cafa0fce63003f323c118837ddd063a17",
   // Apply the same proof bar to initial construction; witnesses are conditional.
   "Realization and common proof obligations": "8f782e151a2c48cca2da1506830376ad597b689fde6985014f30c466f87be6e3"
 };
-// Relocation changes where the section is read, not its accepted bytes.
+// Native executor naming changes; the freeze, credit, count, and proof laws remain intact.
 const protectedSources = {
   "Realization and common proof obligations": text('construction.md'),
   "Review-epoch immutability and evidence acquisition": text('review-closeout.md'),
@@ -60,7 +60,7 @@ for (const [name, digest] of Object.entries(lensBlobs)) {
 }
 // The reduced construction contract is checked by test-construction-core.mjs.
 // Source-contract checks below validate the declared handoffs. They do not
-// simulate an agent, execute Ledger/CAS, or prove model effectiveness.
+// simulate an agent, execute Ledger/Codex, or prove model effectiveness.
 const nominationResults = ['candidate','preserve-incumbent','unresolved','obstructed'];
 assert.deepEqual(policy.universalist_compilation.allowed_nomination_results,nominationResults);
 for (const path of ['SKILL.md',
@@ -90,7 +90,7 @@ assert.match(admission,/never rewrites\s+an owner-issued `findings` verdict into
 const visibility = text('../cas/references/review-proof-boundary.md');
 assert.match(visibility,/does not deliver the hashed context or prove that a reviewer saw it/);
 assert.match(visibility,/parent-only conversation premises are not implicitly inherited/);
-assert.match(visibility,/adds no context packet, prompt argument, review gate, attempt/);
+assert.match(visibility,/adds no context packet, prompt argument,\s+review gate, attempt/);
 const lensPrefix = 'agents/skills/actuating/';
 for (const {name,instructions_ref} of policy.required_lenses.filter(lens => lens.role === 'auxiliary')) {
   assert(instructions_ref.startsWith(`${lensPrefix}references/lenses/`),`${name}: auxiliary source must belong to Actuating`);

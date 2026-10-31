@@ -83,7 +83,7 @@ Do not infer a new correctness liability from an unavailable premise.
 ## Counterexample admission
 
 Review findings, failed assertions, differential mismatches, and verification
-failures use the same admission decision. A CAS receipt establishes what was
+failures use the same admission decision. An attributed native result or historical CAS receipt establishes what was
 reported; a test result establishes its recorded execution and disagreement,
 not the authority of its expectation or a production defect. Before admission,
 establish each witness independently:

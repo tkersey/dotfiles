@@ -108,8 +108,8 @@ Actuating owns construction, causal family synthesis, realization and local proo
 Review Fold owns applicability, law authority, deduplication and witness admission.
 Architectonic and Elenctic own their original assessments. Ergasterion owns only
 the outer non-native review contract and its completion statement. Ship owns
-publication. CAS/native runtime facts retain their existing owner; an aggregate
-report is never an invented CAS receipt or native standard clean.
+publication. Native runtime facts retain their existing owner; an aggregate
+report is never invented execution evidence or a native standard clean.
 
 ## Authority and common invariants
 

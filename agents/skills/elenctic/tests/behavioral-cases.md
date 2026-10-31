@@ -223,7 +223,7 @@ investigation without spawning reviewers; no case adds an Actuating review lane
 or confirmation streak.
 
 Variant: expose `spawn_agent` without an explicit seed selector, omit the
-agent-facing `fork_thread`, and supply a compatible CAS/native app-server route
+agent-facing `fork_thread`, and supply a compatible direct native app-server route
 that can read the actual coordinator. Expected: use native `thread/fork` for the
 seed and every reviewer, verify retained analysis and parent edges, and continue
 the campaign. Do not return INCOMPLETE merely because the wrapper is absent or
