@@ -13,7 +13,10 @@ selected recovery and format changes.
 Ledger 1.6 provides `prepare` for selected static monolithic history and `maintain`
 for preparation-owned working files. Both inspect by default. The adapter uses
 native preparation under existing opted-in owner authority; it never copies a
-second archive or substitutes a Python algorithm after native failure.
+second archive or substitutes a Python algorithm after native failure. Native
+publication transfers its sole staged payload into canonical history, so it leaves
+no duplicate preparation payload. Maintenance preserves native audit journals
+under their existing lifetime rules and reports unresolved work.
 
 ```bash
 ledger maintain --store-root <context.store_root> --store-id <context.store_id> --format json
