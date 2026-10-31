@@ -29,7 +29,7 @@ mutation_performed = false
 
 Actuating computes the receipt digest and includes it in the review context and
 every review request fingerprint before dispatch. Require the selected executor's
-binding to that dispatch and result: the CAS workflow echo, or native subagent
+binding to that dispatch and result: the native Codex invocation/thread/turn and original result, or native subagent
 assignment/result attribution. A digest alone does not establish that the exact
 observation preceded review.
 

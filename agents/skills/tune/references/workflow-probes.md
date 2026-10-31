@@ -113,7 +113,7 @@ only through supported runtime behavior and then inspect the actual recovery.
 Retain accepted requirements/non-goals, current authority, exact base/head,
 selected route, unresolved accepted evidence, proof applicability and public-effect
 state. A summary is navigation, never a replacement for source authority or an
-unrecoverable CAS receipt. Missing evidence limits the dependent claim.
+unrecoverable original execution result. Missing evidence limits the dependent claim.
 
 Exercise three distinct changes: (1) an unrelated concurrent edit, (2) a relevant
 head/requirement change, and (3) a substantive discussion update without a head

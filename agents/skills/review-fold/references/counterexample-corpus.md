@@ -20,7 +20,7 @@ architecture store, or workflow control plane.
 ## Authority split
 
 ```text
-CAS / test / verifier / incident / provider
+Codex / host runtime / test / verifier / incident / provider
   owns what was observed and the exact source evidence
 
 Review Fold

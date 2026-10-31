@@ -34,8 +34,8 @@ gauntlet. Evaluation results earn **no production review, Viewed, thread,
 publication, or closure credit**. A prospective variant is not a completed
 Actuating or Elenctic run and cannot be used as a fallback for one.
 
-Use existing Tune evidence/reporting, [CAS](../../cas/SKILL.md) for supported
-review execution/receipts, and [Seq](../../seq/SKILL.md) for session observations.
+Use existing Tune evidence/reporting, [native Codex guidance](../../cas/SKILL.md) for supported
+review execution and original evidence, and [Seq](../../seq/SKILL.md) for session observations.
 Read the owner before its operation. Do not invent CLI switches, fork support,
 receipts, agent capabilities, or usage fields. Do not add a review lane, native
 mode, mandatory receipt, durable store, or inference service to run these cases.

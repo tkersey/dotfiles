@@ -4,7 +4,7 @@ Use when the caller explicitly requests subagents, for example
 `$elenctic PR #123 with concurrency 3 and subagents`. This route changes worker
 transport and context provenance; the shared campaign and worker contracts still
 own preparation, investigation, admission, coverage and authority.
-Do not open separate sessions, require CAS/app-server fork preflight, or change
+Do not open separate sessions, require app-server fork qualification, or change
 account, model or permission settings to run this mode.
 
 ## Contents

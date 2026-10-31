@@ -3,7 +3,7 @@
 This is a proposal-only composition with the installed `$actuating analyze`, not
 another reviewer, patch scheduler, or implementation loop. SKILL.md owns selection
 and the narrower effect authority. Do not invoke bare Actuating, `implement`,
-`review-closeout`, Ship, CAS reviews, or corpus capture through this route.
+`review-closeout`, Ship, native reviews, or corpus capture through this route.
 
 ## Select evidence before campaign preflight
 

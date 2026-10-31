@@ -25,23 +25,23 @@ const json = p => JSON.parse(text(p));
 const c = json('references/review-contract.json');
 const d = json('references/decision-contract.json').skill_decision_contract;
 const names = ['standard','soundness-skeptic','footgun-finder','invariant-ace','complexity-mitigator','fresh-eyes'];
-assert.equal(c.schema, 'actuating-review-contract/v20');
-assert.equal(c.contract_id, 'actuating-review-contract-v27');
+assert.equal(c.schema, 'actuating-review-contract/v21');
+assert.equal(c.contract_id, 'actuating-review-contract-v28');
 assert.equal(d.contract_version, 'SKDC-v1');
-assert.equal(d.skill.source_fingerprint, 'actuating-construction-core-v30');
+assert.equal(d.skill.source_fingerprint, 'actuating-construction-core-v31');
 assert(c.candidate_acceptance.common_obligations.includes(
   'required discriminator execution completed successfully against the exact candidate'));
 assert(!c.candidate_acceptance.common_obligations.some(s => s.includes('explicit limitation')));
 assert.deepEqual(c.required_lenses.map(l => l.name), names);
 assert.deepEqual(c.required_lenses[0], {name:'standard',role:'standard'});
 const execution = c.review_execution;
-assert.equal(execution.default_mode,'cas');
-assert.deepEqual(Object.keys(execution.modes).sort(),['cas','subagents']);
+assert.equal(execution.default_mode,'codex');
+assert.deepEqual(Object.keys(execution.modes).sort(),['codex','subagents']);
 for (const key of ['subagents_requires_explicit_selection','scheduling_independent',
   'bound_in_review_context','mode_change_requires_new_campaign','mode_change_resets_all_review_credit',
   'mixed_mode_credit_forbidden','silent_fallback_forbidden']) assert.equal(execution[key],true,key);
-const {cas,subagents} = execution.modes;
-assert.deepEqual(cas.standard_review, {
+const {codex,subagents} = execution.modes;
+assert.deepEqual(codex.standard_review, {
   instruction_source:'codex-default',custom_instructions:false,owner:'codex',source:'native-default',
   custom_instructions_argument_forbidden:true,skill_authored_instruction_file_forbidden:true,
   native_default_review_required:true,custom_instructions_forbidden:true
@@ -89,11 +89,17 @@ assert.deepEqual(c.standard_convergence, {
 });
 assert.equal(c.transport_recovery.maximum_fresh_recovery_attempts, 1);
 assert.equal(c.transport_recovery.required_recovery_is_part_of_semantic_barrier, true);
-assert.equal(cas.attempt_quality.required_backend_class, 'cas-start-wait');
-assert.equal(cas.attempt_quality.required_capability, 'cas_workflow_bound_owner_lived_review_v1');
-for (const key of ['strong_principal_required','reduced_principal_forbidden','owner_lived_transport_required','fallback_forbidden',
-  'exact_workflow_binding_required'])
-  assert.equal(cas.attempt_quality[key],true,key);
+assert.equal(codex.guidance_ref, 'agents/skills/cas/reviews.md');
+assert.deepEqual(codex.attempt_quality, {
+  host_attributed_execution_required:true,fresh_native_thread_required:true,
+  native_structured_review_output_required:true,exact_thread_and_root_turn_required:true,
+  successful_terminal_execution_required:true,exact_dispatch_and_instruction_binding_required:true,
+  current_git_subject_required:true,raw_result_preserved:true,executor_fallback_forbidden:true,
+  fabricated_legacy_receipt_forbidden:true,process_exit_or_rendered_text_sufficient:false
+});
+for (const retired of ['required_backend_class','required_capability','strong_principal_required',
+  'owner_lived_transport_required','exact_workflow_binding_required'])
+  assert(!Object.hasOwn(codex.attempt_quality,retired),retired);
 for (const key of ['tuple_verdict_required','current_tuple_required','context_match_required',
   'exact_instruction_digest_required']) assert.equal(c.attempt_quality[key],true,key);
 assert(!Object.hasOwn(c.attempt_quality,'required_backend_class'));
@@ -333,6 +339,7 @@ node "$skill_root/tests/test-review-credit.mjs"
 sh "$skill_root/tests/test-construction-cycle-scenarios.sh"
 sh "$skill_root/tests/test-post-elimination-scenarios.sh"
 JAQ_BIN="$jaq_bin" sh "$skill_root/tests/test-semantic-hotspot-scenarios.sh"
+node "$skill_root/../cas/tests/test-native-contract.mjs"
 if [ "$local_only" = true ]; then
   echo "actuating local suite: pass; Review Fold/Ledger integration explicitly not run"
 else

@@ -155,10 +155,12 @@ Ship resolves `publication_observation_ref`, recomputes its digest, and
 exact-matches repository, canonical ref, base/head, Goal context, and Review
 Contract. Actuating supplies the exact current review context whose digest
 contains the same observation reference; credited execution evidence binds request
-fingerprints derived from that context through CAS workflow echoes or native
+fingerprints derived from that context through native Codex invocation/result association or native
 subagent dispatch/result attribution.
 
-This binding proves observation-before-review without an Actuating event log.
+The observed publication-read and native dispatch/result facts establish
+observation-before-review; equality of caller-authored hashes alone does not.
+No Actuating event log is introduced.
 A campaign lacking the bound observation is ineligible; obtain a fresh
 observation and fresh review.
 

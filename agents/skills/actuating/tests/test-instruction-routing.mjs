@@ -31,13 +31,14 @@ const coreHashes = {
   'Construction Working Set': '1b0b7d96a2434a3fceea83fc34be41db3623450e146913428ec4b355d34fc286',
   'Completion': 'dc56a54f2fd79d07f4d801b030cbf5b5a1ec6758be7a8c72eae0e8c2f630f58f'
 };
+// Native-executor migration changes bindings, not the preserved credit/construction sections.
 const reviewHashes = {
-  "Binding and owner authority": "2e9edaa0e078b9a777b67a43f1886377478a79dd2cb5c6b733af68aefe2fa15a",
-  "Focused file reviews": "582c39e1d407d87381c8024231f41a0e3097b458308495eb3c61a1b62ad8b4b7",
+  "Binding and owner authority": "8ccff9adb49fdc328bc237b31dadce812f16bbb37f8f631620799a161c37fb9f",
+  "Focused file reviews": "3f5bc67a099c0bdcc81917e936fd137771d60fd1708a3ab55d244a31247b980f",
   "Review-credit admission": "e86ce67f5abed7dd8427a7191117fb2c41288ae53a9be247a410a4aeb456768e",
   "Candidate lifecycle and causal response": "a887cf18ee794184cb80e1319500a0af833f94cd8031182f0de3a6af28718bdd",
-  "Falsification and resumption": "17f87445bb36ab41373998afa14ac9a27667a9931103b04112d58ebd5989c591",
-  "Lens ownership and evaluation": "dfae71b906890431a76b08118a70af3e022c69928c3b356869cd6f4e4cb62d95"
+  "Falsification and resumption": "fc04ccedccd9e906335c1129d7fc7ce0eb4f5fb9b0013b89cd82d4f8fb898ee6",
+  "Lens ownership and evaluation": "9f0fc802cbf5d1effdbc44b47337efdc39ccbc0aff770e0270f2b102f2dc7e39"
 };
 const closureHash = "d45edd0daf0d8c7ad7d852409b3f2c6c1d61e59cdfaf7eaaae2da93761b6e73d";
 
@@ -84,8 +85,8 @@ function check(src) {
   }
   for (const [heading, digest] of Object.entries(reviewHashes))
     assert.equal(hash(section(review, heading)), digest, heading);
-  assert.equal(blob(src['review-closeout.md']), '776aee88aff2e4428d50ae32b0dc9fa2838dda4d');
-  assert.equal(blob(src['references/review-contract.json']), '9119a8d8b362d729f5905af061b4aed700bfb8a0');
+  assert.equal(blob(src['review-closeout.md']), '71a86f4a33c3cc8e24fd9a2ce0136861f6630e38');
+  assert.equal(blob(src['references/review-contract.json']), '68d619748733cb54a466f99b91d859124ee7d2ec');
   const complete = src['references/closure.md'].split('For full `complete`, require:\n\n```text\n')[1];
   assert(complete, 'missing terminal contract');
   assert.equal(hash(complete.split('\n```')[0]), closureHash);

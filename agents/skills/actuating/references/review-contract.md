@@ -21,25 +21,25 @@ Actuating derives credit and construction consequences from exact owner facts.
 ## Binding and owner authority
 
 Read the exact contract bytes and each custom instruction source without trimming
-or normalization. Bind `execution_mode` before dispatch: `cas` by default,
+or normalization. Bind `execution_mode` before dispatch: `codex` by default,
 `subagents` only when explicitly requested. Scheduling and capacity are separate.
 
 | Executor | Standard | Execution evidence |
 |---|---|---|
-| `cas` | Codex native/default changeset review, with no custom instructions argument or skill-authored prompt | Exact CAS receipt under its [review proof boundary](../../cas/references/review-proof-boundary.md) |
+| `codex` | Codex native/default changeset review, with no custom instructions argument or skill-authored prompt | Host-attributed native execution and exact native structured result under [reviews.md](../../cas/reviews.md) |
 | `subagents` | Packaged upstream Codex rubric, with the exact assignment | Host-attributed terminal output under [subagent-reviews.md](subagent-reviews.md) |
 
 Only native changeset standard uses instruction identity `codex-default-review/v1`.
 It records deliberate absence of customization and does not reproduce or constrain
 Codex's internal prompt. Portable standard hashes its actual delivered instructions.
 File standards in either mode have no changeset convergence credit. Never silently
-switch executors, mix their credits, or represent subagent output as CAS evidence.
+switch executors, mix their credits, or represent subagent output as native Codex review evidence.
 
 Use the existing canonical ephemeral context:
 
 ```yaml
 review_context:
-  execution_mode: cas | subagents
+  execution_mode: codex | subagents
   repository:
   base_sha:
   head_sha:
@@ -63,7 +63,7 @@ frozen selection. Scope and lens are independent dimensions of the obligation.
 
 ```text
 campaign_id = sha256(
-  "actuating-review-campaign/v3" || NUL ||
+  "actuating-review-campaign/v4" || NUL ||
   repository || NUL || base_sha || NUL || head_sha || NUL ||
   target_fingerprint || NUL || review_contract_digest || NUL ||
   review_context_digest
@@ -72,35 +72,44 @@ campaign_id = sha256(
 scope_digest = sha256(canonical JSON of {scope, focus})
 
 instruction_digest =
-  (execution_mode == cas and scope == changeset and lens_name == standard)
+  (execution_mode == codex and scope == changeset and lens_name == standard)
     ? sha256("codex-default-review/v1")
     : sha256(exact delivered custom instruction bytes)
 
 request_fingerprint = sha256(
-  "actuating-review-request/v4" || NUL ||
+  "actuating-review-request/v5" || NUL ||
   campaign_id || NUL || request_id || NUL || lens_name || NUL ||
   role || NUL || scope_digest || NUL || instruction_digest
 )
 ```
 
-In CAS mode, supply only request ID and fingerprint through CAS's workflow binding.
-Accept structured `clean` or `findings` outcomes for adjudication only with the
-exact current tuple, instruction and workflow bindings, strong principal,
-owner-lived transport, and required backend capability. Preserve these native
-requirements; subagent mode uses its own direct runtime-attribution contract.
+In `codex` mode, bind the actual host invocation/process, exact instruction
+bytes or their deliberate absence, observed native thread/root-turn IDs, original
+structured result, and before/after Git subject to this request in the existing
+Working Set. Follow [native review readback](../../cas/reviews.md) rather than
+minting a wrapper receipt. Require successful terminal execution and the exact
+native `ExitedReviewMode.review_output` artifact (or an evidenced native equivalent).
+Exec JSONL, final-message text, process exit, or a caller-authored clean label alone
+is insufficient. A nonempty findings array remains findings; contradictory or
+unusable output is held. There is no CAS workflow echo, principal field, backend
+class, or compatibility capability to synthesize. Subagent mode retains its own
+direct runtime-attribution contract.
 
 Both modes require the current exact subject, assigned scope/lens, instruction
 identity, and original output. Execution admission does not award review credit.
 Process exit, prose, and worker/thread handles are not semantic verdicts. Hashes
 do not prove semantic equivalence or evidence delivery. Keep required scope and
 usable prior evidence accessible through repository/task sources or supported
-context delivery, without customizing the CAS changeset standard.
+context delivery, without customizing the native Codex changeset standard.
 
 The context digest binds execution mode; the contract and delivered instructions
 bind the standard policy. Mode or standard-policy changes start a newly bound
 campaign and reset credit. Resume under the recorded mode and exact contract.
-Historical requests without a mode retain their original CAS contract, not a
-retroactively edited binding; unresolved original evidence requires a fresh wave.
+Historical CAS requests, including requests without an explicit mode, retain
+their original attribution; they do not become native Codex requests. Finish/drain
+old campaigns before cutover, or resolve possibly live work and start a newly bound
+native initial wave without transferring old credit. Preserve all findings. No
+legacy executor or automatic fallback is retained by the new workflow.
 
 ## Focused file reviews
 
@@ -149,18 +158,18 @@ target as every changeset review. Scope focuses attention without changing the G
 subject or restricting access to causal evidence in other files.
 
 File standard is a general best-judgment review with file focus and no auxiliary
-rubric. In CAS mode it uses custom focus instructions, since CAS has no native
+rubric. In `codex` mode it uses custom focus instructions, since native Codex has no
 file-target selector. In subagent mode it receives the pinned standard rubric
 and file focus. Neither is a changeset-standard convergence attempt.
 
-In CAS mode, compose each file request from the exact
+In `codex` mode, compose each file request from the exact
 [file-focus instructions](focused-file-review.md), then, for an auxiliary, its
 exact unchanged checked-in lens bytes, then a JSON assignment containing
 `repository`, `base_sha`, `head_sha`, `lens_name`, `scope: "file"`, and
 `focus: {base_path, head_path}`. Separate segments with two newlines; preserve
 source bytes. File standard has no auxiliary segment. Hash all delivered bytes,
 including separators and assignment. A digest alone does not deliver the accepted
-requirements or source evidence. CAS changeset auxiliaries retain their existing
+requirements or source evidence. Native changeset auxiliaries retain their existing
 exact instruction delivery. In subagent mode, use the composition in
 [subagent-reviews.md](subagent-reviews.md#deliver-the-exact-assignment); the same
 file-focus and auxiliary source bytes remain unchanged.
@@ -300,7 +309,7 @@ recovery; it remains part of the barrier after invalidation. A second verdictles
 terminal blocks. Do not interpret an observation timeout as terminal failure.
 
 [Review and closure](../review-closeout.md#review-and-closure) owns the unchanged
-five-clean convergence and reset rules. CAS confirmations remain native/default;
+five-clean convergence and reset rules. Native Codex confirmations remain native/default;
 subagent confirmations use the pinned rubric in fresh contexts. Rerank files from
 the full bound base for each proved successor. File-standard outcomes neither
 advance nor break the changeset standard suffix; any material finding still
@@ -388,7 +397,9 @@ adequate correction, but it must satisfy the same actual-candidate proof bar.
 Never append a named-member guard as evidence of complete family elimination.
 
 Reuse only exact resolvable execution evidence under its original mode and contract:
-CAS receipts or host-attributed subagent outputs and assignments. If any result
+native Codex execution/artifacts or host-attributed subagent outputs and assignments.
+Historical CAS records remain evidence of their original work, not new-mode credit.
+If any result
 required for the current wave or streak cannot be resolved and revalidated,
 restart the full initial inventory; summaries and remembered counts supply no
 credit. Resolve possibly live attempts and fold their material evidence first.
@@ -398,7 +409,7 @@ successor realization; intermediate commits receive no closure credit.
 
 ## Lens ownership and evaluation
 
-Changeset standard uses Codex's native default in CAS mode and the pinned upstream
+Changeset standard uses Codex's native default in `codex` mode and the pinned upstream
 rubric in subagent mode; file standard uses that general investigative remit within
 its custom file scope. Each auxiliary has a distinct
 investigative starting point, defined by its exact checked-in instruction file:

@@ -57,7 +57,7 @@ corpus-write authority still govern every handoff.
 ## Review and closure
 
 The changeset-wide inventory remains standard, soundness-skeptic, footgun-finder,
-invariant-ace, complexity-mitigator, and fresh-eyes. In default CAS mode, standard
+invariant-ace, complexity-mitigator, and fresh-eyes. In default native Codex mode, standard
 is Codex's native review with no custom Actuating instruction file or argument.
 Explicit subagent mode uses the pinned Codex rubric under
 [subagent-reviews.md](references/subagent-reviews.md). Auxiliaries retain their

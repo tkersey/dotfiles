@@ -1,85 +1,50 @@
-# Runtime compatibility gate
+# Native runtime qualification
 
-CAS `0.6.5` targets released Codex `0.157.0` in its reproducible qualification
-lanes. This is a qualification target, not a runtime pin or a claim that a
-particular installed binary has passed. Require the selected structural and
-behavioral proof; admit later released runtimes when that proof passes.
-Prerelease builds do not replace released qualification evidence unless the
-caller explicitly requests prerelease testing.
+Use the selected installed `codex` executable directly. The migration was developed
+against released Codex 0.166.0; that is a reproducible qualification subject, not a
+maximum, an automatic upgrade instruction, or proof about another installation.
 
-`cas review run|start` runs the exact-binary `review` gate over `managed-ws`
-internally before starting a review. Let that gate establish compatibility;
-do not run an identical standalone preflight first unless diagnosing or
-qualifying the runtime. A failed gate blocks the route before a
-`reviewThreadId` exists; no attempt or clean review exists, and failure does
-not permit switching transport.
-
-`cas app-server schema` is diagnostic inspection. Run it directly with the
-structural profile being inspected, without a preceding live preflight; its
-result cannot establish live behavioral compatibility.
-
-For other CAS-managed app-server execution routes whose required compatibility has
-not already been established, or for explicit diagnosis/qualification, run:
+For ordinary execution, native CLI argument/configuration admission and the actual
+result govern. Do not run an external CAS compatibility gate or an unrelated live
+probe before each review. Reuse unchanged interface knowledge. Inspect help and,
+when implementing or diagnosing raw RPC, generate schemas from that exact binary:
 
 ```bash
-cas app-server preflight \
-  --cwd <repo> \
-  --codex-path <exact-codex-executable> \
-  --profile <core|review|session-inquiry|full> \
-  --app-server-transport <selected-transport> \
-  --json
+codex --version
+codex exec review --help
+codex app-server generate-json-schema --experimental --out <private-schema-dir>
 ```
 
-Use these profiles:
+Generation is structural inspection, not live execution proof. Use the installed
+schema rather than a copied complete method/field inventory. On relevant runtime
+changes, qualify the consumed operation and result shape; missing required behavior
+remains unavailable. Do not silently broaden permissions, change the selected
+executor/endpoint, or fabricate a compatibility receipt.
 
-| Route | Profile |
-|---|---|
-| smoke check, generic instance execution | `core` |
-| account status, native goals | `core` for shared connection/request-policy behavior; operation limits below |
-| `cas review run|start` | Built-in `review` gate over `managed-ws` |
-| `cas session_inquiry preflight|run|start` | `session-inquiry` with `managed-ws` preflight and execution |
-| release conformance and the complete feature surface | `full` |
+## Two transport boundaries
 
-Account/goal routes have no separate named preflight profile. `core` does not
-exercise every account or goal method: derive method availability and request
-shapes from the selected runtime's generated schemas, and interpret the actual
-operation response as evidence only for that operation. Keep target, executable,
-transport, and endpoint identity consistent; a probe of another connection is
-not proof of this one. Qualification does not authorize goal mutation or resume.
+`codex exec review` uses Codex's in-process app-server path. It does not need a
+separate local WebSocket listener. Codex independently owns the reviewer-to-provider
+Responses transport, including native HTTP fallback. A local WebSocket connection
+neither forces nor proves model-side WebSocket use; removing it does not disable
+model-side WebSockets. Preserve the caller's provider configuration.
 
-Raw session/daemon delegation preserves the native surface rather than creating
-a managed qualification receipt. Its invoking client owns the applicable
-protocol qualification and lifecycle duties in [app-server.md](app-server.md).
-Schema inspection itself still needs no live preflight. Local automation and
-native queueing use their own route guidance, not these app-server probes.
+`codex app-server --listen ...` chooses a control listener. An explicit remote
+endpoint needs its own supported client and authorization. In the qualified
+release, `exec` and `review` reject `--remote`; do not pass it and silently run
+locally. Native Code Mode host selection is a third, distinct outbound boundary;
+use the installed help for its accepted form rather than inferring it from
+`--listen` or `--remote`.
 
-For a standalone receipt, require `status == "compatible"`, the intended
-resolved Codex path, contract ID `codex-app-server-capabilities-v2`, no missing
-required methods or handlers, and all required selected-profile probes passed.
-Codex version and release channel are diagnostic only. `degraded` is not
-compatible proof for a required route behavior. Schema-only success is not
-live behavioral proof.
+An explicit model-side-WebSocket requirement needs observed provider-connection
+evidence; a feature setting, version, or control connection is insufficient.
+Ordinary native transport fallback is not an executor switch. Record it when it
+limits a requested claim; never present it as a proven WebSocket-only run.
 
-Reuse proof only while the CAS build, resolved Codex executable/schema cache,
-required profile, cwd/configuration, selected transport/endpoint, and Code Mode
-host remain unchanged. A stdio or fresh-local-process receipt cannot qualify
-a different endpoint. After an upgrade, rerun the gate; use `cas app-server
-schema --refresh` when deliberately regenerating schemas for diagnosis.
+## Qualification scope
 
-For review and session inquiry, a standalone preflight receipt must select
-`transport.selected == "managed-ws"`; a compatible stdio receipt is not
-equivalent proof. Review reports its realized connection as
-`selectedTransport == "websocket"`. Session inquiry additionally receives
-`--transport managed-ws` on execution.
-
-Compile-time capabilities report what CAS implements. They do not prove that
-the resolved runtime implements it. Review requires both its compatible
-`review` gate and `cas_capabilities.features.cas_structured_review_v1 == true`.
-
-Codex 0.157.0 no longer exposes `thread/rollback`. CAS 0.6.5 removes that retired
-method from the full capability requirements without relaxing exact fork,
-revert, pagination, review, or server-request safety checks. Do not add a
-rollback fallback or substitute destructive `thread/revert` for a fork.
-
-See [codex_app_server_contract.md](references/codex_app_server_contract.md) and
-[codex-app-server-capability-matrix.md](references/codex-app-server-capability-matrix.md).
+The test-only native probe under `tests/` uses an isolated Codex home, disposable
+Git subjects, and a loopback provider. It checks native command/configuration
+propagation, output discrimination, recovery observations, forks, and WebSocket
+boundaries without user credentials or CAS. It does not measure real-model review
+quality, production account behavior, or the user's installed runtime.

@@ -4,7 +4,7 @@
     "skill": {
       "name": "actuating",
       "kind": "mixed",
-      "source_fingerprint": "actuating-construction-core-v30"
+      "source_fingerprint": "actuating-construction-core-v31"
     },
     "triggers": [
       {
@@ -132,7 +132,7 @@
           "owner-issued proof, review, counterexample, and publication evidence as applicable"
         ],
         "success_signals": [
-          "Git owns realization; verifiers own executed proof; the selected CAS or host subagent runtime owns review execution evidence; Review Fold owns CEX admission; Ledger owns automatic custody preparation; Ship owns public effects",
+          "Git owns realization; verifiers own executed proof; the selected Codex or host subagent runtime owns review execution evidence; Review Fold owns CEX admission; Ledger owns automatic custody preparation; Ship owns public effects",
           "analysis forbids new semantic captures while automatic corpus preparation precedes projection without separate approval, subject to explicit file/custody-maintenance constraints",
           "current causal interpretation and closure are ephemeral",
           "direct source binding preserves outcomes, non-goals, scope, compatibility, migration, and deciding observations",
@@ -428,15 +428,15 @@
           "six-lens inventory per scope and five distinct changeset-standard cleans under one selected execution mode are preserved",
           "every file/lens request completes its own causal inquiry beyond the first supported finding; all initial findings inform one cumulative basis",
           "file standard uses the selected mode with file focus and earns only its exact file/lens credit",
-          "cas remains the default; explicit subagents changes execution and standard instructions without changing scheduling, scope, adjudication, recovery, or convergence"
+          "native codex remains the default; explicit subagents changes execution and standard instructions without changing scheduling, scope, adjudication, recovery, or convergence"
         ],
         "failure_signals": [
-          "custom instructions replace changeset-native standard in cas mode, or file-standard credit enters changeset convergence",
+          "custom instructions replace changeset-native standard in codex mode, or file-standard credit enters changeset convergence",
           "live provider finding omitted while dependent action proceeds",
           "self-discovered material evidence omitted from adjudication before convergence",
           "absence in incomplete history proves first occurrence or elimination",
           "one file result replaces its six independent lenses, or credit substitutes for another scope, lens, or changed head",
-          "execution modes mix credit, subagent output impersonates a CAS receipt, or an unavailable executor silently falls back"
+          "execution modes mix credit, subagent output impersonates native Codex execution evidence, or an unavailable executor silently falls back"
         ],
         "rationale": "Review supplies falsification evidence; it neither chooses repairs nor silently adds requirements."
       },

@@ -15,7 +15,7 @@ Do not equate missing source selection with missing context inheritance, or an
 absent wrapper with absent native capability.
 
 When the wrapper is insufficient, load the installed `$cas` entry and its selected
-[app-server guidance](../../cas/app-server.md), including its compatibility gate,
+[app-server guidance](../../cas/app-server.md), using the installed native protocol,
 for native transport only. Use a compatible available route rather than declaring
 failure from the wrapper alone. Preserve the actual model, reasoning effort,
 working directory, permissions, and any explicit endpoint/transport restrictions.

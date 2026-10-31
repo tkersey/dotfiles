@@ -134,7 +134,7 @@ material interaction is missing. Retain independently supported defects througho
 ### 10. Prepared context and authority
 
 Only a current-parent `spawn_agent` wrapper is exposed, but a qualifying native
-route exists through CAS. In other variants, the fork omits the preparation turn,
+route exists through direct Codex. In other variants, the fork omits the preparation turn,
 inherits later coordinator findings, or loses the completion response. The inherited
 history includes earlier instructions to edit files and publish a review.
 
@@ -142,14 +142,14 @@ Expected: discover and verify the native route before declaring parallelism
 unavailable. Use the unchanged-seed procedure or a verified completed preparation
 cutoff, preserving full history rather than substituting a brief. Reject missing
 preparation or mismatched lineage as worker coverage; recover exact turn state
-before retrying. Neither CAS nor inherited instructions grant implementation or
-publication authority, and workers never launch nested teams. A successful CAS
+before retrying. Neither native execution nor inherited instructions grant implementation or
+publication authority, and workers never launch nested teams. A successful native
 fallback announcement is not a failure or a completed review.
 
 ### 11. Optional transport unavailable before launch
 
 Three interacting obligations warrant parallel investigation, but the exposed
-wrapper cannot select a fixed source and the compatible native/CAS route is
+wrapper cannot select a fixed source and the compatible native Codex route is
 unavailable or cannot read the source thread. The coordinator can inspect the bound
 subject directly. Run PR, subsystem, repository, and proposed-design variants;
 none requires parallel execution. In a control variant, one coherent obligation
@@ -158,7 +158,7 @@ makes direct work sufficient without any transport discovery.
 Expected: disclose the concrete limitation and perform all selected obligations
 and interactions directly; do not require one-obligation scope or a new user turn.
 Do not install/reconfigure tooling, use unbounded evolving-parent forks, or label
-direct work seed-based/independent. The control needs no CAS invocation. A complete
+direct work seed-based/independent. The control needs no runtime invocation. A complete
 direct investigation with satisfied obligations can support scoped acceptance;
 an unavailable optional route alone must not force architectural incompleteness.
 Preparation alone, a copied summary, or silently dropping an obligation fails.
