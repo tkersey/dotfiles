@@ -106,6 +106,12 @@ causal account before authorized exploration; experiments remain subject to the
 common proof and effect rules. Acceptance requires the actual mechanism,
 migrations, and retirements, not intent.
 
+When acceptance relies on a model, abstraction, or assumed operating condition,
+use [claim-directed correspondence](../universalist/references/claim-appropriate-proof.md#claim-directed-correspondence)
+to establish the connection required by the actual claim. Reuse adequate native
+evidence; it needs no second model, formalization, or new proof artifact. Keep the
+model's limitations separate from the accepted production contract.
+
 When deciding evidence compares a projection, normalization, summary, or round
 trip, and the claim requires more than that comparison directly observes, use
 [determination before cancellation](../universalist/references/claim-appropriate-proof.md#determination-before-cancellation).

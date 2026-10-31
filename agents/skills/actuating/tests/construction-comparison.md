@@ -261,3 +261,56 @@ Git/tree identity externally, and exclude concurrent edits. The codec is self-co
 helper imports, extra side effects, and altered inputs require inspection rather than
 blind trust in an artifact-pass flag. Never assess inside an open production review
 epoch or confer production review credit on these development runs.
+
+## Premise-guided Actuating integration
+
+Status: **authored, not model-replayed**. This separate comparison tests the two
+conditional links in proof acceptance and recurrence, not Universalist's methods
+in isolation. Reuse the exposure controls, trial isolation, freezing, and scoring
+above; it adds no delivery gate or permission for paid model runs.
+
+| Arm | Frozen guidance | Result |
+|---|---|---|
+| Control: existing integration | Dotfiles `8df45b596459cd3d3d51ec3a3aefd0be99072055`, including the existing Universalist premise-guided investigation and claim-directed correspondence guidance. | Not run. |
+| Candidate: targeted integration | The exact candidate commit containing only the two Actuating guidance edits and evaluator-only changes; bind its SHA before replay. | Not run. |
+
+Both arms retain the same Universalist methods, source access, model/version,
+reasoning effort, authority, budget, review policy, and required endpoint. Do not
+withhold those methods from the control or attribute their shared capabilities
+to the new links. Keep this section and grading notes out of implementation
+contexts. Other concurrent guidance changes make the comparison bundled, not
+attributable to these links alone. These disclosed families are calibration
+material; use fresh undisclosed task instances for an adoption claim.
+
+| Task family | Deciding observation and nearby control |
+|---|---|
+| Unjustified atomic boundary | Inspect actual ownership or safely interrupt at the disputed boundary; observe the external effect, not only a final receipt. A genuinely atomic or durably idempotent implementation needs no redesign. |
+| Omitted sanctioned path | Discover a relevant decoder, recovery operation, or alias independently of the candidate's path list. Pair with a source-closed surface whose existing coverage argument is adequate. |
+| Projection hiding a future effect | Continue original and restored states through the required effect or cleanup; do not certify them through the same lossy projection. Pair with an intentionally lossy contract that needs no representation equality. |
+| Wrong rejection oracle | Preserve a required-valid retry or input despite an inherited rejection; correct the oracle only with independent source evidence. Pair with a nearby genuinely invalid operation that must remain rejected. |
+| Adequate native construction | Reuse the existing invariant or transition owner and make the direct correction. Pair with a superficially similar construction whose missing premise really requires investigation. |
+| External verification blocker | Preserve incomplete status and continue independent authorized work without inventing a production defect. Pair with an actual code defect producing a similar symptom. |
+
+An independent evaluator establishes each source-backed distinction before model
+runs. Observe whether the selected inspection or authorized experiment can settle
+the material uncertainty; vocabulary, link reads, and extra narration earn no
+credit. Score claim-appropriate correspondence, first-candidate behavior under
+withheld continuations, required-valid preservation, and justified no-change or
+direct-fix decisions. Keep model, oracle, implementation, and claim corrections
+distinct; an honest unresolved requirement is not task completion.
+
+Freeze the first candidate, no-change decision, or unfinished attempt before
+revealing withheld cases; permit no intervening repair for that score. Report
+whole-task cost, including investigation, failures, incomplete runs, validation,
+coordination, and closeout, with all attempts retained in the denominators. Assess
+quality before cost under the same accepted correctness bar. Preserve the existing
+review inventory and five-clean requirement when the selected route needs them;
+these development comparisons earn no production review credit.
+
+Predeclare repetitions, stopping rules, and meaningful quality/cost thresholds.
+Retain the links only if untouched cases support better decisions or lower total
+cost at the same correctness bar. A tie or underpowered result is inconclusive;
+more premise-related prose alone does not support adoption. Consider separate
+link ablations only after a useful combined signal; do not add more directives
+in response to an inconclusive comparison. Source-contract tests establish neither
+model efficacy nor the paper's causal contribution.
