@@ -33,10 +33,17 @@ managed root only when evidence establishes a genuinely new owner. It discovers
 finite source contexts from the catalog, workspace and existing archive manifests,
 then invokes native `prepare`. Preparation copies only the selected history and
 required native metadata into one bounded workspace; it creates no archive.
-It selects a single covering history by complete-record prefix. Existing managed
+It selects a single covering history through native bindings and complete-record
+prefixes, including the corresponding archived epoch after a supported replacement. Existing managed
 bindings remain unchanged; missing bound slots must
 validate against them. A healthy existing managed history needs no archive scan.
 Retired-format conversion remains the historical importer procedure below.
+
+A recorded pending identity can resume creation of its empty target under the
+existing initialization lock. Retries retain the same root and store ID. One
+bounded marker candidate is reused when complete and matching; partial or
+conflicting metadata and foreign contents remain explicit blockers. Existing
+markers are never replaced. Read-only selection does not finish initialization.
 
 Participating current writers use native recovery, event/binding and journal
 locks. The native engine validates protected history before publication. Empty

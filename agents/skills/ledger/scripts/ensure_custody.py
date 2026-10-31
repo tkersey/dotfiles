@@ -662,28 +662,92 @@ def reject_unregistered_custody(root: Path, common: Path | None, home: Path, ctx
                 raise MigrationError('Unregistered custody exists; resolve its identity before creating a replacement')
 
 
-def pending_target(root: Path, common: Path | None, locator: Path, home: Path, ctx) -> dict:
+def check_pending_skeleton(custody: Path, ctx) -> None:
+    ctx.no_symlinks(custody)
+    if not os.path.lexists(custody):
+        return
+    if not custody.is_dir():
+        raise MigrationError('Invalid pending custody root')
+    for entry in custody.iterdir():
+        if entry.name != '.ledger':
+            raise MigrationError('Pending custody contains unverified files; reconcile explicitly')
+    control = custody / '.ledger'
+    ctx.no_symlinks(control)
+    if os.path.lexists(control) and (not control.is_dir() or any(control.iterdir())):
+        raise MigrationError('Pending custody contains unverified control data; reconcile explicitly')
+
+
+def pending_target(root: Path, common: Path | None, locator: Path, home: Path, ctx, *, apply: bool = False) -> dict:
     if os.path.lexists(locator):
         value = ctx.read_document(locator)
         if (not isinstance(value, dict) or set(value) != {'schema', 'store_id', 'store_root', 'workspace_root', 'git_common_dir'}
                 or not all(isinstance(value[key], str) for key in ('schema', 'store_id', 'store_root', 'workspace_root'))
                 or value['schema'] != ctx.REGISTRATION_SCHEMA
                 or value['git_common_dir'] != (str(common) if common is not None else None)
+                or not Path(value['workspace_root']).is_absolute()
                 or (common is None and value['workspace_root'] != str(root))):
             raise MigrationError('Conflicting pending custody identity; reconcile explicitly')
-        return ctx.checked_root(Path(value['store_root']), value['store_id'], root, common)
-    reject_unregistered_custody(root, common, home, ctx)
+        ctx.valid_store_id(value['store_id'])
+        if value['store_root'] != str(home / 'repos' / value['store_id']):
+            raise MigrationError('Invalid pending custody target')
+    else:
+        if not apply:
+            raise MigrationError('Pending custody initialization requires owner preparation')
+        reject_unregistered_custody(root, common, home, ctx)
+        selected_id = uuid.uuid4().hex
+        value = {'schema': ctx.REGISTRATION_SCHEMA, 'store_id': selected_id,
+                 'store_root': str(home / 'repos' / selected_id),
+                 'workspace_root': str(root), 'git_common_dir': str(common) if common is not None else None}
+        ctx.no_symlinks(Path(value['store_root']))
+        if os.path.lexists(value['store_root']):
+            raise MigrationError('New custody target already exists; refusing identity reuse')
+        ctx.write_json(locator, value)
+    selected_id = value['store_id']
+    custody = Path(value['store_root'])
+    ctx.no_symlinks(custody)
+    if os.path.lexists(custody / ctx.MARKER):
+        return ctx.checked_root(custody, selected_id, root, common)
+    if not apply:
+        raise MigrationError('Pending custody initialization requires owner preparation; custody is unchanged')
+    check_pending_skeleton(custody, ctx)
     repos = home / 'repos'
     ctx.no_symlinks(repos)
     repos.mkdir(parents=True, exist_ok=True, mode=0o700)
-    selected_id = uuid.uuid4().hex
-    custody = repos / selected_id
-    value = {'schema': ctx.REGISTRATION_SCHEMA, 'store_id': selected_id, 'store_root': str(custody),
-             'workspace_root': str(root), 'git_common_dir': str(common) if common is not None else None}
-    ctx.write_json(locator, value)
-    custody.mkdir(mode=0o700)
-    (custody / '.ledger').mkdir(mode=0o700)
-    ctx.write_json(custody / ctx.MARKER, {'schema': ctx.MARKER_SCHEMA, 'store_id': selected_id})
+    custody.mkdir(exist_ok=True, mode=0o700)
+    (custody / '.ledger').mkdir(exist_ok=True, mode=0o700)
+    check_pending_skeleton(custody, ctx)
+    candidate = locator.parent / '.root-marker.json'
+    expected_marker = {'schema': ctx.MARKER_SCHEMA, 'store_id': selected_id}
+    ctx.no_symlinks(candidate)
+    try:
+        fd = os.open(candidate, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW | os.O_NONBLOCK, 0o600)
+    except FileExistsError:
+        if ctx.read_json(candidate, {'schema', 'store_id'}) != expected_marker:
+            raise MigrationError('Conflicting pending custody marker candidate; reconcile explicitly')
+        fd = os.open(candidate, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
+        try:
+            os.fsync(fd)
+        finally:
+            os.close(fd)
+    else:
+        created = os.fstat(fd)
+        try:
+            with os.fdopen(fd, 'wb') as handle:
+                handle.write((canonical(expected_marker) + '\n').encode())
+                handle.flush()
+                os.fsync(handle.fileno())
+        except Exception:
+            try:
+                current = candidate.lstat()
+            except FileNotFoundError:
+                pass
+            else:
+                if (current.st_dev, current.st_ino) == (created.st_dev, created.st_ino):
+                    candidate.unlink()
+                    ctx.sync_directory(locator.parent)
+            raise
+    publish_absent(candidate, custody / ctx.MARKER)
+    ctx.sync_directory(locator.parent)
     ctx.sync_directory(custody / '.ledger')
     ctx.sync_directory(custody)
     ctx.sync_directory(repos)
@@ -721,7 +785,7 @@ def migrate_owner(repo: Path | None, definition: Path, *, store_id: str | None =
             try:
                 context = ctx.resolve(repo, store_id=store_id)
             except ctx.UnregisteredContext:
-                context = pending_target(root, common, controls / 'registration.json', home, ctx)
+                context = pending_target(root, common, controls / 'registration.json', home, ctx, apply=True)
         sources, trees = preparation_sources(repo, context, owner, ctx, discover_archives=discover_archives)
         prepared = prepare_native(binary, owner, context, sources, confirm_no_writers=confirm_no_writers)
         if repo is not None and preparation_trees(repo, ctx) != trees:

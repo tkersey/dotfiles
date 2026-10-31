@@ -113,6 +113,239 @@ class PreparationAdapterTests(unittest.TestCase):
         self.assertEqual(result['preparation']['outcome'], 'covered')
         self.assertEqual(self.ctx.resolve(self.repo)['store_id'], result['store_id'])
 
+    def interrupt_pending_target(self, boundary):
+        mkdir = Path.mkdir
+        write_json = self.ctx.write_json
+
+        def interrupted_mkdir(path, *args, **kwargs):
+            result = mkdir(path, *args, **kwargs)
+            selected_root = path.parent == self.home / 'repos' and len(path.name) == 32
+            selected_control = path.name == '.ledger' and path.parent.parent == self.home / 'repos'
+            if (boundary == 'root' and selected_root) or (boundary == 'control' and selected_control):
+                raise OSError('interrupted target initialization')
+            return result
+
+        def interrupted_write(path, value):
+            write_json(path, value)
+            if boundary == 'locator' and path.name == 'registration.json':
+                raise OSError('interrupted target initialization')
+
+        with patch.object(Path, 'mkdir', new=interrupted_mkdir), \
+             patch.object(self.ctx, 'write_json', side_effect=interrupted_write), \
+             patch.object(custody, 'prepare_native') as native:
+            with self.assertRaisesRegex(OSError, 'interrupted target initialization'):
+                self.prepare()
+        native.assert_not_called()
+        locator, = (self.home / 'preparations').glob('*/registration.json')
+        return locator, json.loads(locator.read_bytes())
+
+    def assert_pending_target_resumes(self, boundary):
+        locator, identity = self.interrupt_pending_target(boundary)
+        original = locator.read_bytes()
+        before = self.home_snapshot()
+        with patch.object(custody, 'prepare_native', side_effect=AssertionError('read-only preparation')), \
+             patch.object(custody, 'native', side_effect=AssertionError('read-only native invocation')):
+            with self.assertRaisesRegex(custody.MigrationError, 'read-only selection'):
+                custody.owner_context(self.repo, self.definition, read_only=True)
+            with self.assertRaisesRegex(custody.MigrationError, 'read-only selection'):
+                custody.owner_context(self.repo, self.definition)
+            with self.assertRaisesRegex(custody.MigrationError, 'initialization requires owner preparation'):
+                custody.check_pending_context(self.repo, None, self.home, identity, self.ctx)
+            with self.assertRaisesRegex(custody.MigrationError, 'initialization requires owner preparation'):
+                custody.pending_target(self.repo, None, locator, self.home, self.ctx)
+        self.assertEqual(self.home_snapshot(), before)
+        with patch.object(custody, 'prepare_native', return_value=self.receipt()), \
+             patch.object(custody, 'healthy', return_value={'healthy': True, 'preparation_pending': False}):
+            resumed = self.prepare()
+        self.assertEqual(resumed['store_id'], identity['store_id'])
+        self.assertEqual(resumed['store_root'], identity['store_root'])
+        self.assertEqual(locator.read_bytes(), original)
+        self.assertEqual(list((self.home / 'repos').iterdir()), [Path(identity['store_root'])])
+        self.assertEqual(self.ctx.resolve(self.repo)['store_id'], identity['store_id'])
+
+    def test_pending_target_resumes_after_control_directory_creation(self):
+        self.assert_pending_target_resumes('control')
+
+    def test_pending_target_resumes_after_locator_publication(self):
+        self.assert_pending_target_resumes('locator')
+
+    def test_pending_target_resumes_after_root_directory_creation(self):
+        self.assert_pending_target_resumes('root')
+
+    def home_snapshot(self):
+        return {str(path.relative_to(self.home)): (
+            path.lstat().st_mode, path.lstat().st_ino, path.lstat().st_mtime_ns,
+            os.readlink(path) if path.is_symlink() else path.read_bytes() if path.is_file() else None,
+        ) for path in (self.home, *self.home.rglob('*'))}
+
+    def assert_pending_target_blocked(self):
+        before = self.home_snapshot()
+        with patch.object(custody, 'prepare_native') as native:
+            with self.assertRaises((RuntimeError, OSError, ValueError)):
+                self.prepare()
+        native.assert_not_called()
+        self.assertEqual(self.home_snapshot(), before)
+
+    def test_pending_target_preserves_foreign_contents_without_marker(self):
+        _, identity = self.interrupt_pending_target('control')
+        root = Path(identity['store_root'])
+        for path in (root / 'foreign', root / '.ledger/foreign'):
+            with self.subTest(path=path):
+                path.write_bytes(b'foreign evidence')
+                self.assert_pending_target_blocked()
+                path.unlink()
+
+    def test_pending_target_rejects_invalid_reserved_paths_and_identity(self):
+        locator, identity = self.interrupt_pending_target('locator')
+        for change in ({'store_root': str(self.root / 'foreign')}, {'store_root': 'relative'},
+                       {'store_root': identity['store_root'] + '/../other'}, {'store_id': '../other'},
+                       {'workspace_root': str(self.root / 'other')}, {'git_common_dir': str(self.root / '.git')}):
+            with self.subTest(change=change):
+                self.ctx.write_json(locator, {**identity, **change})
+                self.assert_pending_target_blocked()
+        self.assertFalse((self.root / 'foreign').exists())
+
+    def test_pending_target_preserves_conflicting_and_malformed_markers(self):
+        _, identity = self.interrupt_pending_target('control')
+        marker = Path(identity['store_root']) / self.ctx.MARKER
+        for content in (b'not-json', json.dumps({'schema': self.ctx.MARKER_SCHEMA, 'store_id': 'a' * 32}).encode()):
+            with self.subTest(content=content):
+                marker.write_bytes(content)
+                self.assert_pending_target_blocked()
+
+    def test_pending_target_never_recreates_control_after_marker_publication(self):
+        _, identity = self.interrupt_pending_target('control')
+        root = Path(identity['store_root'])
+        self.ctx.write_json(root / self.ctx.MARKER, {'schema': self.ctx.MARKER_SCHEMA, 'store_id': identity['store_id']})
+        (root / '.ledger').rmdir()
+        self.assert_pending_target_blocked()
+
+    def test_pending_target_rejects_symlinked_control_marker_and_root(self):
+        _, identity = self.interrupt_pending_target('control')
+        root = Path(identity['store_root'])
+        control = root / '.ledger'
+        foreign = self.root / 'foreign'
+        foreign.mkdir()
+        marker_source = foreign / self.ctx.MARKER
+        self.ctx.write_json(marker_source, {'schema': self.ctx.MARKER_SCHEMA, 'store_id': identity['store_id']})
+        control.rmdir()
+        control.symlink_to(foreign, target_is_directory=True)
+        self.assert_pending_target_blocked()
+        control.unlink()
+        control.mkdir()
+        (root / self.ctx.MARKER).symlink_to(marker_source)
+        self.assert_pending_target_blocked()
+        (root / self.ctx.MARKER).unlink()
+        control.rmdir()
+        root.rmdir()
+        root.symlink_to(foreign, target_is_directory=True)
+        self.assert_pending_target_blocked()
+        self.assertEqual(list(foreign.iterdir()), [marker_source])
+
+    def test_pending_target_rejects_non_directory_root_and_control(self):
+        _, identity = self.interrupt_pending_target('control')
+        root = Path(identity['store_root'])
+        control = root / '.ledger'
+        control.rmdir()
+        control.write_bytes(b'foreign control')
+        self.assert_pending_target_blocked()
+        control.unlink()
+        root.rmdir()
+        root.write_bytes(b'foreign root')
+        self.assert_pending_target_blocked()
+
+    def test_pending_target_reuses_matching_established_root_without_writing(self):
+        with patch.object(custody, 'prepare_native', side_effect=custody.MigrationError('fixture failure')):
+            with self.assertRaisesRegex(custody.MigrationError, 'fixture failure'):
+                self.prepare()
+        locator, = (self.home / 'preparations').glob('*/registration.json')
+        identity = json.loads(locator.read_bytes())
+        (Path(identity['store_root']) / '.ledger/retained').write_bytes(b'established contents')
+        before = self.home_snapshot()
+        selected = custody.pending_target(self.repo, None, locator, self.home, self.ctx)
+        custody.check_pending_context(self.repo, None, self.home, selected, self.ctx)
+        self.assertEqual(selected['store_id'], identity['store_id'])
+        self.assertEqual(self.home_snapshot(), before)
+        with patch.object(custody, 'prepare_native', side_effect=custody.MigrationError('fixture failure')):
+            with self.assertRaisesRegex(custody.MigrationError, 'fixture failure'):
+                self.prepare()
+        self.assertEqual(self.home_snapshot(), before)
+
+    def test_pending_target_never_overwrites_marker_appearing_before_publication(self):
+        locator, identity = self.interrupt_pending_target('control')
+        original = locator.read_bytes()
+        publish_absent = custody.publish_absent
+        conflicting = {'schema': self.ctx.MARKER_SCHEMA, 'store_id': 'b' * 32}
+
+        def competing_marker(source, target):
+            self.ctx.write_json(target, conflicting)
+            publish_absent(source, target)
+
+        with patch.object(custody, 'publish_absent', side_effect=competing_marker), \
+             patch.object(custody, 'prepare_native') as native:
+            with self.assertRaises(FileExistsError):
+                self.prepare()
+        native.assert_not_called()
+        self.assertEqual(locator.read_bytes(), original)
+        self.assertEqual(self.ctx.read_document(Path(identity['store_root']) / self.ctx.MARKER), conflicting)
+        self.assertFalse(list(locator.parent.glob('.root-marker-*')))
+        self.assertEqual(self.ctx.read_document(locator.parent / '.root-marker.json'),
+                         {'schema': self.ctx.MARKER_SCHEMA, 'store_id': identity['store_id']})
+        self.assert_pending_target_blocked()
+
+    def test_pending_target_reuses_matching_marker_candidate(self):
+        locator, identity = self.interrupt_pending_target('control')
+        original = locator.read_bytes()
+        candidate = locator.parent / '.root-marker.json'
+        expected = {'schema': self.ctx.MARKER_SCHEMA, 'store_id': identity['store_id']}
+        self.ctx.write_json(candidate, expected)
+        candidate_inode = candidate.stat().st_ino
+        with patch.object(custody, 'prepare_native', return_value=self.receipt()), \
+             patch.object(custody, 'healthy', return_value={'healthy': True, 'preparation_pending': False}):
+            resumed = self.prepare()
+        self.assertEqual(resumed['store_id'], identity['store_id'])
+        self.assertEqual(locator.read_bytes(), original)
+        marker = Path(identity['store_root']) / self.ctx.MARKER
+        self.assertEqual(self.ctx.read_document(marker), expected)
+        self.assertEqual(marker.stat().st_ino, candidate_inode)
+        self.assertFalse(candidate.exists())
+
+    def test_pending_target_retains_conflicting_and_partial_marker_candidates(self):
+        locator, _ = self.interrupt_pending_target('control')
+        candidate = locator.parent / '.root-marker.json'
+        conflicting = {'schema': self.ctx.MARKER_SCHEMA, 'store_id': 'b' * 32}
+        for content in (b'', b'{"schema":', json.dumps(conflicting).encode()):
+            with self.subTest(content=content):
+                candidate.write_bytes(content)
+                self.assert_pending_target_blocked()
+                self.assert_pending_target_blocked()
+                self.assertEqual(list(locator.parent.glob('.root-marker*')), [candidate])
+
+    def test_pending_target_cleans_only_its_created_candidate_after_write_failure(self):
+        locator, identity = self.interrupt_pending_target('control')
+        original = locator.read_bytes()
+        fsync = os.fsync
+        failed = False
+
+        def fail_once(fd):
+            nonlocal failed
+            if not failed:
+                failed = True
+                raise OSError('candidate sync failed')
+            fsync(fd)
+
+        with patch.object(custody.os, 'fsync', side_effect=fail_once), \
+             patch.object(custody, 'prepare_native') as native:
+            with self.assertRaisesRegex(OSError, 'candidate sync failed'):
+                self.prepare()
+        native.assert_not_called()
+        self.assertFalse((locator.parent / '.root-marker.json').exists())
+        self.assertEqual(locator.read_bytes(), original)
+        with patch.object(custody, 'prepare_native', return_value=self.receipt()), \
+             patch.object(custody, 'healthy', return_value={'healthy': True, 'preparation_pending': False}):
+            resumed = self.prepare()
+        self.assertEqual(resumed['store_id'], identity['store_id'])
+
     def test_current_learnings_does_not_require_retired_import(self):
         self.definition = SKILLS / 'learnings/definitions/ledger/learnings-protocol.json'
         with patch.object(custody, 'prepare_native', return_value=self.receipt()), \
