@@ -74,10 +74,7 @@ Reconsider the implicated mechanism, assumptions, oracle, environment, verificat
 arrangement, or task decomposition while keeping the accepted Goal fixed. Select
 a next step that changes a relevant intervention or resolves a stated uncertainty.
 Use [premise-guided investigation](../universalist/references/claim-appropriate-proof.md#premise-guided-investigation)
-when the current argument or failed predictions leave a decision-critical premise
-unsettled; include relevant source-permitted behavior omitted from that argument.
-Prefer the smallest useful inspection or authorized experiment that can decide
-the question; reuse adequate evidence without manufacturing doubt or a probe quota.
+when an unsettled premise or omitted source-permitted behavior could change that choice.
 Retain the incumbent when evidence justifies continuing it. Reuse an earlier
 activation only while its basis still addresses the current evidence. Do not
 repeat an equivalent attempt with neither a relevant change nor a deciding
