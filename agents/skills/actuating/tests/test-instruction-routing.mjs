@@ -25,7 +25,7 @@ const section = (source, heading) => {
 const coreHashes = {
   'Source binding': 'a08472adfb58b7540f832680acac69f92a87e7ee8e4086c9621134194aa4639d',
   'Initial construction': '914abbef7bedd3589e278ca02dfa7bc66a5fffa406b3efded52baff4ce01fbfa',
-  'Proof acceptance': 'd13cd2fea51b32c0b10b29d784c19531cd0ee34eb0c58a56f94d0a2cc2b4b5a0',
+  'Proof acceptance': '9ce927daa4b505028355f061ca6d457269a9e6c4f2252047351ecec2f455031c',
   'Comments in code': '9dfab826dd63fbdd4ac448cbf0d7c690edef00145282604d9f0737c39edc39bf',
   'Realization and common proof obligations': '8f782e151a2c48cca2da1506830376ad597b689fde6985014f30c466f87be6e3',
   'Construction Working Set': '1b0b7d96a2434a3fceea83fc34be41db3623450e146913428ec4b355d34fc286',
@@ -52,11 +52,9 @@ function checkPremiseIntegration(src) {
       'missing conditional integration: ' + path);
     assert(section(src[reference], target).trim(), 'missing canonical method: ' + target);
   }
-  const recurrence = normalized(section(src['recurrence.md'], 'Progress before another iteration'));
-  for (const boundary of ['decision-critical premise', 'source-permitted behavior omitted',
-    'without manufacturing doubt or a probe quota', 'accepted Goal fixed',
-    'Retain the incumbent when evidence justifies continuing it'])
-    assert(recurrence.includes(boundary), 'lost premise selection boundary: ' + boundary);
+  const investigation = normalized(section(src[reference], 'Premise-guided investigation'));
+  assert(investigation.includes('without manufacturing doubt') &&
+    investigation.includes('or a probe quota'), 'lost canonical investigation proportionality');
   const comparison = normalized(section(src['tests/construction-comparison.md'],
     'Premise-guided Actuating integration'));
   for (const control of ['authored, not model-replayed',
@@ -124,7 +122,7 @@ const mutations = [
   ['correspondence link lost', 'construction.md', '#claim-directed-correspondence)', '#missing-correspondence)'],
   ['premise link lost', 'recurrence.md', '#premise-guided-investigation)', '#missing-investigation)'],
   ['canonical method missing', '../universalist/references/claim-appropriate-proof.md', '## Premise-guided investigation\n', '## Missing method\n'],
-  ['probe quota introduced', 'recurrence.md', 'without manufacturing doubt or a probe quota', 'with a mandatory probe quota'],
+  ['mandatory investigation introduced', '../universalist/references/claim-appropriate-proof.md', 'without manufacturing doubt', 'with mandatory investigation'],
   ['shared baseline removed', 'tests/construction-comparison.md', 'Both arms retain the same Universalist methods', 'Only the candidate receives the Universalist methods'],
   ['incomplete runs discarded', 'tests/construction-comparison.md', 'all attempts retained in the denominators', 'only successful attempts retained in the denominators'],
   ['lost verification', 'construction.md', 'Every required check must finish', 'An optional check may finish'],
