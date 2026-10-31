@@ -3,4 +3,4 @@ policy:
 interface:
   display_name: "cas"
   short_description: "Native Codex control-plane routes and observed facts"
-  default_prompt: "Use $cas to select the exact native control-plane route for app-server, account, automation, goal, review, session inquiry, smoke, instances, or conformance. Load only the selected route reference, run the required app-server preflight profile when applicable, and preserve caller-owned semantic authority."
+  default_prompt: "Use $cas to select the exact native control-plane route for app-server, account, automation, goal, review, session inquiry, smoke, instances, or conformance. For authorized existing-thread follow-ups, use codex queue directly under the skill's native queueing guidance. Load only the selected route reference, run the required app-server preflight profile when applicable, and preserve caller-owned semantic authority."

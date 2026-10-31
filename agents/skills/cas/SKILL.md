@@ -1,6 +1,6 @@
 ---
 name: cas
-description: "Operate the CAS Codex control-plane CLI: app-server, automations, account/goal facts, reviews, session inquiry, smoke/conformance checks, and instance fanout. Callers retain semantic authority."
+description: "Operate the CAS Codex control-plane CLI: app-server, automations, account/goal facts, reviews, session inquiry, smoke/conformance checks, and instance fanout; use native Codex queueing for existing-thread follow-ups. Callers retain semantic authority."
 ---
 
 # CAS
@@ -11,6 +11,9 @@ Use CAS as the single local Codex control-plane product. Its primary runtime
 boundary is the Codex app-server protocol. Automation is a direct adapter over
 the existing local Codex database and files because app-server has no
 automation CRUD or scheduler API.
+
+For existing-thread follow-ups, use `codex queue` directly as the native
+exception to CAS command routing; no CAS wrapper is required.
 
 CAS owns route execution and facts it directly observes. It does not decide
 Goal semantics, review credit, finding truth, repairs, mutation, publication,
@@ -39,7 +42,8 @@ used. They do not create another product identity.
 
 ## Selected guidance
 
-Load the selected route before issuing its commands. Before an app-server-backed
+Load the selected route before issuing its commands. Native queueing follows
+the guidance below without a separate CAS preflight. Before a CAS app-server-backed
 route, read [runtime-compatibility.md](runtime-compatibility.md). Establish the
 required profile for the exact runtime and transport, or reuse unchanged proof.
 `cas review run|start` performs its required live gate internally; do not add a
@@ -53,6 +57,7 @@ Version strings alone are not compatibility proof.
 | Session inquiry | [session-inquiry.md](session-inquiry.md) plus `session-inquiry`/`managed-ws` compatibility |
 | Automation | Automation below; use its store/scheduler doctor, not an unrelated app-server preflight. |
 | Account and native goals | Account and goals below |
+| Queue a follow-up to an existing thread | Native queueing below; invoke `codex queue` directly. |
 
 Read a deeper reference only where the selected route requires it. Do not preload
 review, inquiry, and automation manuals together.
@@ -67,6 +72,30 @@ App-server, smoke, and instances: [app-server.md](app-server.md).
 Review: [reviews.md](reviews.md).
 <a id="session-inquiry"></a>
 Session inquiry: [session-inquiry.md](session-inquiry.md).
+
+## Native queueing
+
+Use the latest released Codex CLI for an authorized follow-up to an existing
+thread. Codex `0.166.0` provides:
+
+```bash
+codex queue --thread <UUID-or-exact-name> --message "Continue with the tests" --resume
+```
+
+Omit `--resume` when only enqueueing is requested. With `--resume`, Codex queues
+the message first, then attempts to resume the thread only if it is not loaded.
+It uses the local daemon or the server selected with `--remote`; an embedded
+server cannot perform the resume step. It does not open an interactive session.
+Preserve an explicitly selected endpoint and its authentication options.
+
+Report enqueueing and resumption separately: failed resumption emits a warning
+but leaves the message queued and the command successful. Do not enqueue it
+again merely because resumption failed. Neither success nor the absence of a
+warning proves that the message executed or the requested work completed.
+
+This route does not replace review or session-inquiry lifecycle requirements,
+grant review credit, or authorize new work. Keep their existing routes when
+those workflows are requested. See the [released implementation](https://github.com/openai/codex/blob/rust-v0.166.0/codex-rs/tui/src/session_queue_commands.rs).
 
 ## Automation
 
