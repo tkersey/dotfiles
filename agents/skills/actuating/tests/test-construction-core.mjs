@@ -8,7 +8,7 @@ import {dirname, resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const paths = ['SKILL.md', 'architecture.md', 'counterexamples.md',
+const paths = ['SKILL.md', 'construction.md', 'architecture.md', 'counterexamples.md',
   'agents/openai.yaml', 'references/review-contract.json',
   'references/decision-contract.json', '../universalist/actuating-composition.md',
   '../universalist/SKILL.md', '../universalist/README.md',
@@ -22,7 +22,9 @@ const section = (s,h) => {
 const normalized = s => s.replace(/\s+/g,' ');
 
 function check(src) {
-  const skill=src['SKILL.md'];
+  const skill=src['SKILL.md']+'\n'+src['construction.md'];
+  assert(normalized(section(src['SKILL.md'],'Public routes')).includes(
+    'It may acquire evidence about an existing candidate but cannot mutate, publish, grant closure credit, or claim completion'));
   const core=normalized(section(skill,'Initial construction'));
   const architecture=normalized(src['architecture.md']);
   const counter=src['counterexamples.md'];
@@ -33,7 +35,6 @@ function check(src) {
   // Byte-bound safeguards from fc82de2d26052ff2b20f0fe9d4ebae289965091d.
   // Their source authority is unchanged by the construction experiment.
   for (const [h,digest] of Object.entries({
-    'Public routes':'18d84587c9a33f319cc4bf28aa7ea1ea8aa7259e994d09cd0d49a5233c96f55c',
     'Source binding':'a08472adfb58b7540f832680acac69f92a87e7ee8e4086c9621134194aa4639d',
     'Realization and common proof obligations':'8f782e151a2c48cca2da1506830376ad597b689fde6985014f30c466f87be6e3',
     'Completion':'dc56a54f2fd79d07f4d801b030cbf5b5a1ec6758be7a8c72eae0e8c2f630f58f'
@@ -88,7 +89,7 @@ function check(src) {
   const metadata=src['agents/openai.yaml'];
   assert(metadata.includes('allow_implicit_invocation: true'));
   const prompt=JSON.parse(metadata.split('  default_prompt: ')[1].trim());
-  assert(prompt.includes('SKILL.md owns the construction core'));
+  assert(prompt.includes('selected route and completion boundary in SKILL.md'));
   assert(!prompt.includes('Universalist derives and nominates'));
 
   const comparison=src['tests/construction-comparison.md'];
@@ -116,9 +117,9 @@ const mutations=[
   ['fixed cross-skill order',jsonMutation('references/review-contract.json',p=>p.construction_selection.metanoetic_before_universalist_when_triggered=true)],
   ['required nomination',jsonMutation('references/review-contract.json',p=>p.universalist_compilation.nomination_result_required=true)],
   ['false efficacy credit',jsonMutation('references/review-contract.json',p=>p.efficacy.policy_unit_tests_prove_model_efficacy=true)],
-  ['weakened proof',src=>{src['SKILL.md']=src['SKILL.md'].replace('required-valid behavior and observations preserved','optional valid behavior');}],
+  ['weakened proof',src=>{src['construction.md']=src['construction.md'].replace('required-valid behavior and observations preserved','optional valid behavior');}],
   ['lost read-only route',src=>{src['SKILL.md']=src['SKILL.md'].replace('It may acquire evidence','It may mutate evidence');}],
-  ['lost mathematical capability',src=>{src['SKILL.md']=src['SKILL.md'].replace('including `$universalist` for task-relevant semantic','excluding mathematical');}],
+  ['lost mathematical capability',src=>{src['construction.md']=src['construction.md'].replace('including `$universalist` for task-relevant semantic','excluding mathematical');}],
   ['duplicate acceptance rule',src=>{src['counterexamples.md']+='\nBefore accepting validation for local completion or reviewability\n';}],
   ['baseline instruction leakage unchecked',src=>{src['tests/construction-comparison.md']=src['tests/construction-comparison.md'].replace('`AGENTS.md`','an unspecified file');}],
   ['first candidate unfrozen',src=>{src['tests/construction-comparison.md']=src['tests/construction-comparison.md'].replace('Freeze the first completed candidate','Score the final repaired result');}]

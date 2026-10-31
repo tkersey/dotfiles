@@ -14,39 +14,19 @@ closure; an epoch freezes its exact candidate, not initial implementation.
 
 ## Authority and source horizon
 
-Review Fold classifies every current proposed law as entailed, strengthening,
-preference, new-requirement, or underdetermined. Only accepted current liabilities
-create automatic correctness work. Historical CEX records retain their original
-subjects; current meaning is re-evaluated rather than copied from the corpus.
-
-Reconcile relevant executor evidence, self-review, provider, tests, incidents, migrations,
-verifiers, and corpus sources. An omitted live finding keeps the evidence cut open.
-Unavailable sources make the affected horizon incomplete; quota exhaustion is not
-a clean review. Do not claim historical absence, first occurrence, or complete closure
-from unavailable evidence required by that claim. This is not a blanket provider
-or historical-corpus dependency for initial implementation.
-
-Every correctness-bearing actual Git delta must follow an accepted counterexample,
-an existing Goal obligation, or explicit new authority. Rejected strengthenings
-cannot enter the candidate for review appeasement. Claim correction, containment,
-risk acceptance, and deferral retain their authority and closure consequences.
-Correcting unsupported prose does not waive a required behavior.
+Use [counterexample admission](../counterexamples.md#observe-and-adjudicate) for
+law authority, live-source reconciliation, corpus applicability, and corrective
+effects. Unavailable evidence limits dependent claims; it is not a blanket provider
+or history prerequisite for initial implementation. Correcting an unsupported
+claim cannot waive accepted behavior.
 
 ## Construction adequacy
 
 Apply the [common proof obligations](../SKILL.md#realization-and-common-proof-obligations)
-and their [construction argument](counterexample-guided-normalization.md) to the
-actual exact head. Those obligations govern local corrections and redesigned
-constructions alike; closure consumes their evidence rather than restating or
-weakening them. In particular, coverage is not transition preservation, sampled
-success is not universal proof, and an independent oracle is not redundant merely
-because it checks the producer's law.
-
-Apply [required verification](../SKILL.md#proof-acceptance) to every closure route.
-Reuse current successful verifier evidence; an invalidated subject, assumption,
-domain, or claim requires the affected proof again. No route label, review streak, nomination,
-or digest substitutes for that evidence. Independent obligations retain their
-own authority even when one successor realizes them.
+and [required verification](../construction.md#proof-acceptance) to the exact head.
+Closure consumes their evidence, not a second construction procedure. Reuse valid
+proof; invalidated subjects, assumptions, domains, or claims require the affected
+proof again. Use the construction repertoire only when its argument is needed.
 
 ## Reviewability and completion
 
@@ -72,15 +52,13 @@ all completeness and historical claims match their actual evidence horizon
 no later falsifier of the Goal, family, mechanism, proof, publication, or review
 ```
 
-Apply [Review-credit admission](review-contract.md#review-credit-admission) to
-both accounting and user/PR narration. The first credited changeset standard counts as one;
-the next four run serially. A held required obligation cannot become complete merely
-because all receipts say `clean`; preserve its limitation and actual disposition.
-Material findings or head changes reset all credit. Executor or standard-policy
-changes require a newly bound campaign; never mix native and subagent streaks.
-Clean reviews are adversarial
-attempts, not a universal soundness proof. Retain the authorized bounded or
-non-complete outcome when required evidence remains unavailable.
+[Review and closure](../review-closeout.md#review-and-closure) owns convergence,
+resets, and scope obligations; [Review-credit admission](review-contract.md#review-credit-admission)
+owns both accounting and user/PR narration. A held required obligation remains
+incomplete even when receipts say `clean`. Keep material limitations and the
+authorized bounded or non-complete outcome when required evidence is unavailable.
+Executor or standard-policy changes require a newly bound campaign; never mix
+native and subagent streaks.
 
 An exact same-claim witness revokes family exclusion immediately. A sanctioned
 path absent from the source-derived coverage basis revokes that claim. Reopen the causal

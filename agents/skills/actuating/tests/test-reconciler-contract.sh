@@ -193,7 +193,7 @@ assert(text('SKILL.md').includes('It dispatches no\nreview'));
 assert(text('references/review-contract.md').includes('codex-default-review/v1'));
 assert(text('agents/openai.yaml').includes('allow_implicit_invocation: true'));
 // Source-binding regressions; source consistency is not model-efficacy evidence.
-const sourceBinding = text('SKILL.md').split('## Source binding\n')[1]?.split('\n## ')[0].replace(/\s+/g, ' ');
+const sourceBinding = text('construction.md').split('## Source binding\n')[1]?.split('\n## ')[0].replace(/\s+/g, ' ');
 assert(sourceBinding, 'missing direct source binding');
 assert(!text('SKILL.md').includes('$goal-contract'), 'Actuating still delegates source binding');
 for (const rule of [
@@ -215,8 +215,8 @@ assert(ownerFacts.required_artifacts.includes('accepted Goal bound directly to c
 assert(ownerFacts.success_signals.includes('source revisions reclassify applicable evidence without erasing unresolved provenance'));
 // End source-binding regressions.
 // Verifier-integrity regressions; source consistency is not model-efficacy evidence.
-const proofAcceptance = text('SKILL.md').split('## Proof acceptance\n')[1]?.split('\n## ')[0].replace(/\s+/g, ' ');
-assert(proofAcceptance, 'missing root proof acceptance');
+const proofAcceptance = text('construction.md').split('## Proof acceptance\n')[1]?.split('\n## ')[0].replace(/\s+/g, ' ');
+assert(proofAcceptance, 'missing canonical proof acceptance');
 for (const rule of [
   'Before accepting validation for local completion or reviewability',
   'base-to-candidate diff and actual check selection for deleted tests, weakened assertions, skipped checks, or reduced coverage',
@@ -265,7 +265,7 @@ assert(rootStep.includes('One activation is not a cap on reasoning, evidence gat
 assert(rootStep.includes('Reuse applicable findings rather than reinjecting the passages'));
 assert(rootStep.includes('Encouragement changes neither admissibility nor the proof bar'));
 assert(rootStep.includes('Add no separate Glaze report or adjudication stage'));
-assert(text('SKILL.md').includes('No fixed order of'));
+assert(text('construction.md').includes('No fixed order of'));
 assert(rootStep.includes('Keep the accepted Goal fixed'));
 assert(rootStep.includes('Use `$universalist` within initial construction or subsequent task-relevant semantic inquiry'));
 assert(rootStep.includes('An unknown owner or typed hole is investigable, not an admission failure'));
@@ -294,7 +294,7 @@ assert(!categorical.includes('Only when ordinary comparison leaves a concrete ty
 assert(text('counterexamples.md').includes('never changed expectations merely to agree with the candidate'));
 assert(causal.includes('Prefer making an equivalent omission unavailable to other operations'));
 assert(text('references/counterexample-guided-normalization.md').includes('required-valid observation preservation'));
-assert(text('agents/openai.yaml').includes('Glaze then Metanoetic verbatim in one shared activation'));
+assert(text('agents/openai.yaml').includes('selected route and completion boundary in SKILL.md'));
 const challenger = d.clauses.find(cl => cl.clause_id === 'ACT-METANOETIC-ADMISSIBILITY-001');
 // Preserve the resource obligation in the existing decision, not a new artifact.
 assert(challenger.required_artifacts.includes('resource account, smallest witness, and falsifier'));
@@ -318,15 +318,16 @@ for (const [name, digest] of Object.entries({"glaze": "eef7f7f41fd14f255bf3f36f9
 }
 assert(text('../metanoetic/agents/openai.yaml').includes('allow_implicit_invocation: true'));
 assert(text('../metanoetic/SKILL.md').replace(/\s+/g,' ').includes('no identified incumbent, advance alternative, or finished comparison is required'));
-assert(text('SKILL.md').replace(/\s+/g,' ').includes('a named defect, owner, axis, or typed hole is not a prerequisite'));
+assert(text('construction.md').replace(/\s+/g,' ').includes('a named defect, owner, axis, or typed hole is not a prerequisite'));
 assert(rootStep.includes('Task resource limits, read-only routes, and review-epoch freezes still apply'));
-assert(text('SKILL.md').replace(/\s+/g, ' ').includes('does not demand a finished causal account before authorized'));
+assert(text('construction.md').replace(/\s+/g, ' ').includes('does not demand a finished causal account before authorized'));
 assert(challenger.success_signals.includes('inquiry needs no identified incumbent, advance challenger, or finished comparison'));
 assert(challenger.success_signals.includes('selection obligations are developed during inquiry, not demanded as entry artifacts'));
 assert(challenger.failure_signals.includes('evaluation expectations changed merely to agree with the candidate'));
 // End pairing source-contract regressions.
 console.log('actuating: contract, routing, proof ownership, challenger pairing, retired surfaces, and reference links passed');
 JS
+node "$skill_root/tests/test-instruction-routing.mjs"
 node "$skill_root/tests/test-construction-core.mjs"
 node "$skill_root/tests/test-review-credit.mjs"
 sh "$skill_root/tests/test-construction-cycle-scenarios.sh"
