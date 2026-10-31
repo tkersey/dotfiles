@@ -1,14 +1,15 @@
 ---
 name: cas
-description: "Operate the CAS Codex control-plane CLI: app-server, automations, account/goal facts, reviews, session inquiry, smoke/conformance checks, and instance fanout; use native Codex queueing for existing-thread follow-ups. Callers retain semantic authority."
+description: "Operate local Codex through CAS: reviews, app-server sessions, account facts, goals, automations, smoke/conformance checks, and instance fanout. Use native Codex for queued follow-ups. Historical inquiry requires caller-owned validated inputs."
 ---
 
 # CAS
 
 ## Mission
 
-Use CAS as the single local Codex control-plane product. Its primary runtime
-boundary is the Codex app-server protocol. Automation is a direct adapter over
+Use CAS as the single local Codex control-plane product, not as a general coding
+workflow or a hosted-reminder interface. Its primary runtime boundary is the Codex
+app-server protocol. Automation is a direct adapter over
 the existing local Codex database and files because app-server has no
 automation CRUD or scheduler API.
 
@@ -19,48 +20,39 @@ CAS owns route execution and facts it directly observes. It does not decide
 Goal semantics, review credit, finding truth, repairs, mutation, publication,
 closure, what an automation ought to do, or whether its result is correct.
 
+Implicit selection does not authorize effects. Select the operation by the
+caller's intended effect, not by the apparent meaning of its command name.
+
 Require installed CAS `0.6.5` or newer. There is no standalone automation
 product, compatibility skill, or legacy command route.
 
 ## Native surface
 
-```text
-cas capabilities
-cas app-server <preflight|schema|session|daemon>
-cas account status
-cas automation <doctor|list|show|create|update|enable|disable|run-now|delete|run-due|scheduler>
-cas goal <resolve|get|set|clear|status|wait>
-cas smoke_check
-cas instance_runner
-cas review <run|start|wait>
-cas session_inquiry <preflight|run|start|status|wait|interrupt|receipt|cleanup>
-cas conformance
-```
-
-Underscore/hyphen spelling conveniences already shown by `cas --help` may be
-used. They do not create another product identity.
+Use `cas --help` and the selected subcommand's help for the installed command
+surface. Underscore/hyphen conveniences shown by help are spelling alternatives,
+not another product or a fallback route.
 
 ## Selected guidance
 
-Load the selected route before issuing its commands. Native queueing follows
-the guidance below without a separate CAS preflight. Before a CAS app-server-backed
-route, read [runtime-compatibility.md](runtime-compatibility.md). Establish the
-required profile for the exact runtime and transport, or reuse unchanged proof.
-`cas review run|start` performs its required live gate internally; do not add a
-redundant standalone preflight unless diagnosing or qualifying the runtime.
-Version strings alone are not compatibility proof.
+Load only the selected route before its governed operation. For managed
+app-server execution, establish the applicable [runtime compatibility](runtime-compatibility.md)
+or reuse unchanged proof. Review runs its live gate internally; do not add a
+redundant standalone preflight. Raw delegation has caller-owned client duties.
 
-| Route | Selected guidance |
+| Intent / effect | Route and selected guidance |
 |---|---|
-| App-server, smoke, instance fanout, conformance | [app-server.md](app-server.md) plus the applicable compatibility profile |
-| Tuple-bound review | [reviews.md](reviews.md) plus `review`/`managed-ws` compatibility |
-| Session inquiry | [session-inquiry.md](session-inquiry.md) plus `session-inquiry`/`managed-ws` compatibility |
-| Automation | Automation below; use its store/scheduler doctor, not an unrelated app-server preflight. |
-| Account and native goals | Account and goals below |
-| Queue a follow-up to an existing thread | Native queueing below; invoke `codex queue` directly. |
+| Start or recover an exact-target review | [reviews.md](reviews.md); caller retains rubric, credit, and finding decisions. |
+| App-server schemas/preflight, smoke checks, instance fanout, conformance, or raw session/daemon | [app-server.md](app-server.md); distinguish managed execution from raw delegation. |
+| Historical session inquiry | [session-inquiry.md](session-inquiry.md), only with caller-owned input definitions and successful validation; ordinary prepared-seed fanout uses the app-server route. |
+| Local Codex automation | Automation below, then [automation.md](references/automation.md); use the store/scheduler doctor, not an unrelated app-server preflight. |
+| Inspect account or native goal facts; change or resume a goal | Account and goals below; distinguish observation, mutation, and resumption. |
+| Queue an authorized existing-thread follow-up | [queueing.md](queueing.md); invoke `codex queue` directly, without a CAS preflight. |
 
-Read a deeper reference only where the selected route requires it. Do not preload
-review, inquiry, and automation manuals together.
+Do not preload unrelated manuals. Recover from established effects: a pending
+review is not a new attempt, an accepted queued message is not failed enqueueing,
+and a committed automation database change is not rolled back by file-sync failure.
+Report partial results without claiming execution, correctness, or completion
+that the route did not establish.
 
 <a id="runtime-compatibility-gate"></a>
 Runtime compatibility: [runtime-compatibility.md](runtime-compatibility.md).
@@ -75,31 +67,11 @@ Session inquiry: [session-inquiry.md](session-inquiry.md).
 
 ## Native queueing
 
-Use the latest released Codex CLI for an authorized follow-up to an existing
-thread. Codex `0.166.0` provides:
-
-```bash
-codex queue --thread <UUID-or-exact-name> --message "Continue with the tests" --resume
-```
-
-Omit `--resume` when only enqueueing is requested. With `--resume`, Codex queues
-the message first, then attempts to resume the thread only if it is not loaded.
-It uses the local daemon or the server selected with `--remote`; an embedded
-server cannot perform the resume step. It does not open an interactive session.
-Preserve an explicitly selected endpoint and its authentication options.
-
-Report enqueueing and resumption separately: failed resumption emits a warning
-but leaves the message queued and the command successful. Do not enqueue it
-again merely because resumption failed. Neither success nor the absence of a
-warning proves that the message executed or the requested work completed.
-
-This route does not replace review or session-inquiry lifecycle requirements,
-grant review credit, or authorize new work. Keep their existing routes when
-those workflows are requested. See the [released implementation](https://github.com/openai/codex/blob/rust-v0.166.0/codex-rs/tui/src/session_queue_commands.rs).
+Use [queueing.md](queueing.md) for enqueueing, optional resumption, and partial-result recovery.
 
 ## Automation
 
-Use `cas automation` for every automation operation. When store or scheduler
+Use `cas automation` for local Codex automation operations. When store or scheduler
 compatibility is uncertain, and before troubleshooting or mutation that relies
 on it, run:
 
@@ -109,25 +81,36 @@ cas automation doctor --json
 
 Do not perform row or file mutations when `safeToMutate` is false. The only
 narrow remediation exception is the doctor-directed same-label scheduler
-adoption documented below. Use `--db` only when deliberately selecting a
-non-default database; automation files still belong to the existing Codex
+adoption in [automation.md](references/automation.md#safety-gate). Use `--db` only
+when deliberately selecting a non-default database; automation files still belong to the existing Codex
 automation root. See [automation.md](references/automation.md) and
 [automation-db.md](references/automation-db.md).
 
 ## Account and goals
 
-`cas account status` reports account facts and preserves plan values as data.
-`cas goal` resolves, observes, mutates, or waits for native CAS goal state only
-when the caller authorizes that route. Neither command creates semantic Goal
-Contract authority.
+| Operation | Effect |
+|---|---|
+| `cas account status` | Read account facts; preserve plan values as data. |
+| `cas goal resolve` / `cas goal get` | Resolve a target / read its native goal. Use `get` to inspect goal status. |
+| `cas goal set` | Write a goal; may create a thread when no existing target is selected. |
+| `cas goal status --status ...` / `cas goal clear` | Change status / clear the goal; neither is observation. |
+| `cas goal wait` | Resume the selected thread, then poll; requires resumption authority. |
+
+For observation without resumption, use `goal get`, not `goal wait` or
+`goal status`. Resolve the intended target; do not substitute another thread
+because it is latest. Inspect the installed command's help for options and use
+`--dry-run` when a goal operation needs a target/effect preview. A preview does
+not authorize execution. Neither account facts nor native goal state creates
+semantic Goal Contract authority or proves task completion.
 
 ## Hard rules
 
 - Treat the installed Codex executable and its generated stable and
   experimental schemas as the runtime source.
 - Version strings and schema digests alone are not compatibility proof.
-- Unknown server requests get an immediate unsupported response and never
-  deadlock a request loop.
+- Managed CAS clients reject unknown server requests immediately. A raw
+  session's client must provide terminating request handling; delegation alone
+  does not install managed-client policies or receipts.
 - Never synthesize credentials, attestations, elicitation consent, plugin
   trust, or publication authority.
 - Never log or persist secret server-request response bodies.

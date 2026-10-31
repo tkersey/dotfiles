@@ -7,6 +7,15 @@ Use `cas app-server session` for a raw stateful app-server stream and
 to the selected Codex executable, preserve its raw bytes and exit status, and
 accept `--codex-path`; they do not impose a version gate.
 
+Raw delegation does not install the managed CAS client's request policies,
+time/output bounds, redaction, or review receipts. The connected client owns
+initialization, correlation, terminating request handling, bounds, and secret
+handling. Unknown server requests must receive an immediate unsupported response,
+not hang the loop. Establish the required runtime/endpoint compatibility for the
+operations that client will perform; raw bytes or native exit status alone do
+not establish a CAS review verdict. Daemon lifecycle changes require authority
+for that effect, not just permission to inspect a session.
+
 Use a stateful session when a workflow needs multiple requests on the same
 connection. `cas instance_runner` executes one method per isolated instance;
 repeated invocations are not a persistent subscription or shared session.
@@ -31,7 +40,9 @@ history with `thread/turns/list` and `thread/items/list`, following cursors.
 Direct forks from one source thread at a fixed completed `lastTurnId` form a
 separate completed-cutoff topology, with the source as each child's parent.
 Neither route uses `thread/rollback` or mutates the source with `thread/revert`
-to simulate a fork.
+to simulate a fork. Observed lineage establishes that topology, not independent
+assumptions or historical workspace equivalence. Ordinary prepared-seed fanout
+is not the historical session-inquiry route and does not require its capsule/plan.
 
 Explicit transport or remote Code Mode host selection is fail-closed. The
 outbound Code Mode host is distinct from the inbound app-server endpoint and
