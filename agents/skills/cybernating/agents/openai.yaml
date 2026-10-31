@@ -2,9 +2,11 @@ policy:
   allow_implicit_invocation: true
 interface:
   display_name: "cybernating"
-  short_description: "Iterate prompts and skills for accuracy and latency"
+  short_description: "Investigate and improve prompt and skill behavior"
   default_prompt: >-
-    Use $cybernating to carry a prompt or skill optimization goal through Kanon
-    investigation, attributable source changes, matched accuracy/latency
-    evaluation, fresh qualification, and authorized delivery. Preserve the
-    accepted task and budgets; do not substitute code-review counts for evidence.
+    Use $cybernating to investigate the textual sources behind evaluation
+    successes, failures, regressions, or mixed results. Select intent first:
+    analysis explains evidence without edits or publication unless separately
+    authorized. For an improvement goal, iterate attributable source changes,
+    matched accuracy/latency evaluation, fresh qualification, and authorized
+    delivery. Preserve the accepted task, budgets, and evidence limits.

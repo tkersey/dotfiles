@@ -1,6 +1,0 @@
-interface:
-  display_name: "Kanon"
-  short_description: "Trace evaluation outcomes to textual sources"
-  default_prompt: "Use $kanon to trace evaluation successes, failures, regressions, or mixed results to the exact textual sources governing an agent, prompt, or skill. Verify which passages reached the model, localize their contribution with controlled edits and add-back or interaction tests when useful, and confirm justified source changes on the native task. Preserve helpful guidance, distinguish attribution from qualification, and return a source-grounded finding and any authorized patch."
-policy:
-  allow_implicit_invocation: true

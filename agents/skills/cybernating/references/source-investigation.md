@@ -1,12 +1,9 @@
----
-name: kanon
-description: >-
-  Investigate the textual sources behind evaluation successes, failures,
-  regressions, or mixed results in agents, prompts, and skills. Use when
-  interpreting these results or revising their textual sources.
----
+# Textual-source investigation
 
-# Kanon
+Use for standalone analysis or within an authorized optimization campaign.
+[The skill's intent and authority rules](../SKILL.md#select-intent-before-the-workflow)
+govern both. This is the shared investigation method, not a second skill,
+controller, handoff protocol, or automatic permission to experiment.
 
 Optimize for justified decisions. A higher evaluation score can support a
 decision, but it is not, by itself, an explanation. Investigate which textual
@@ -84,15 +81,11 @@ and result-dependent next action. Keep this in the existing experiment record;
 do not build a new evaluation platform. Prefer inspection for delivery questions
 and the owning runner for behavioral uncertainty.
 
-Hold relevant external conditions fixed: case, starting history/state, model
-settings, tools, runtime, and grader. Do not freeze downstream actions or history
-that the intervention is meant to change. Verify candidate delivery on each
-compared condition. Preserve exact source snapshots or diffs and all completed
-attempts, errors, exclusions, and interruptions; do not overwrite failed variants
-or pool changed configurations. Repeat frozen conditions and interleave controls
-when variation or drift matters. Use the task's sampling policy, never retry until
-pass. Keep denominators and per-criterion outcomes explicit, and distinguish
-final-output quality from recovered execution defects and missing observations.
+For behavioral comparisons and confirmation, read
+[evaluation discipline](evaluation.md). It owns matched conditions, attempt
+accounting, sampling, grader handling, and fresh confirmation. Apply only the
+measurement relevant to the question; a causal investigation need not acquire a
+latency objective or an adoption campaign.
 
 Explore a coherent multi-edit reconstruction when useful, but attribute its
 result to the tested bundle until component-level contrasts support more. A
@@ -107,6 +100,10 @@ redesign for the requested textual attribution.
 
 ## Verify the source change and conclude
 
+Source changes and qualification below apply only when authorized. Otherwise
+return the supported diagnosis or proposed change without performing it. An
+analysis experiment is not source-adoption permission.
+
 Prefer the smallest supported clarification, deconfliction, relocation, deletion,
 or restructuring over accumulating rules. Make an authorized candidate in the
 owning textual source, not only in a captured request, and verify its rendered
@@ -115,11 +112,6 @@ criteria; a label-only probe, correct explanation, or correct first action canno
 qualify completed execution. Test successful controls and opposing obligations
 that the edit could damage. A diagnostic deletion is not adoptable merely because
 the selected failure disappears.
-
-Use fresh confirmation appropriate to the claim. New attempts on tuning cases
-assess repeatability there, not generalization; use untouched cases when claiming
-transfer beyond them. Once confirmation feedback guides another edit, it becomes
-development evidence for the successor.
 
 Keep attribution, candidate qualification, and adoption authority separate. A
 candidate can qualify with its mechanism unresolved; that does not finish a
