@@ -21,4 +21,3 @@ warning proves that the message executed or the requested work completed.
 This route does not replace review or session-inquiry lifecycle requirements,
 grant review credit, or authorize new work. Keep their existing routes when
 those workflows are requested. See the [released implementation](https://github.com/openai/codex/blob/rust-v0.166.0/codex-rs/tui/src/session_queue_commands.rs).
-
