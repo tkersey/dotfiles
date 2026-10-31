@@ -102,7 +102,7 @@ class ArchiveRepairTests(unittest.TestCase):
         bindings = {path.name: path.read_bytes() for path in (self.store / '.ledger/.bindings').glob('*.jsonl')}
         with self.assertRaises(custody.MigrationError) as caught:
             self.repair()
-        self.assertEqual(caught.exception.preparation['code'], 'StoreBindingRevisionMismatch')
+        self.assertEqual(caught.exception.preparation['error_code'], 'StoreBindingRevisionMismatch')
         self.assertFalse(caught.exception.preparation['storage_mutated'])
         self.assertFalse(self.slot.exists())
         self.assertEqual(self.archived_slot.read_bytes(), b'bad\n')
@@ -118,7 +118,7 @@ class ArchiveRepairTests(unittest.TestCase):
         bindings = {path.name: path.read_bytes() for path in (self.store / '.ledger/.bindings').glob('*.jsonl')}
         with self.assertRaises(custody.MigrationError) as caught:
             self.repair()
-        self.assertEqual(caught.exception.preparation['code'], 'PreparationBindingConflict')
+        self.assertEqual(caught.exception.preparation['error_code'], 'PreparationBindingConflict')
         self.assertFalse(caught.exception.preparation['storage_mutated'])
         self.assertFalse(self.slot.exists())
         self.assertEqual(self.archived_slot.read_bytes(), self.original)
@@ -170,7 +170,7 @@ class ArchiveRepairTests(unittest.TestCase):
         self.slot.unlink()
         with self.assertRaises(custody.MigrationError) as caught:
             self.repair()
-        self.assertEqual(caught.exception.preparation['code'], 'StoreSlotWithoutBinding')
+        self.assertEqual(caught.exception.preparation['error_code'], 'StoreSlotWithoutBinding')
         self.assertFalse(caught.exception.preparation['storage_mutated'])
         self.assertFalse(self.slot.exists())
         self.assertEqual(local.read_bytes(), self.original + b'new local history\n')
@@ -196,7 +196,7 @@ class ArchiveRepairTests(unittest.TestCase):
         self.slot.unlink()
         with self.assertRaises(custody.MigrationError) as caught:
             self.repair()
-        self.assertEqual(caught.exception.preparation['code'], 'PreparationBindingConflict')
+        self.assertEqual(caught.exception.preparation['error_code'], 'PreparationBindingConflict')
         self.assertFalse(caught.exception.preparation['storage_mutated'])
         self.assertFalse(self.slot.exists())
         self.assertEqual(local.read_bytes(), local_before)

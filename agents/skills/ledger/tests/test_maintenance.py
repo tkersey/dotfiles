@@ -303,7 +303,7 @@ class NativeMaintenanceTests(unittest.TestCase):
         inspected = maintenance.run(binary=os.environ['LEDGER_BIN'], config_path=self.config_path, send=sent.append)
         self.assertEqual(inspected['stores'][0]['outcome'], 'healthy')
         self.assertFalse((self.home / 'maintenance').exists())
-        self.assertEqual(inspected['stores'][0]['bytes_read'], 0)
+        self.assertEqual(inspected['stores'][0]['bytes_read'], 2 * (store / self.ctx.MARKER).stat().st_size)
         self.assertIsNone(inspected['stores'][0]['measurements']['physical_bytes_freed'])
         applied = maintenance.run(binary=os.environ['LEDGER_BIN'], config_path=self.config_path, apply=True, send=sent.append)
         self.assertEqual(applied['stores'][0]['outcome'], 'healthy')
