@@ -18,7 +18,7 @@ not permit switching transport.
 structural profile being inspected, without a preceding live preflight; its
 result cannot establish live behavioral compatibility.
 
-For other app-server-backed execution routes whose required compatibility has
+For other CAS-managed app-server execution routes whose required compatibility has
 not already been established, or for explicit diagnosis/qualification, run:
 
 ```bash
@@ -35,9 +35,23 @@ Use these profiles:
 | Route | Profile |
 |---|---|
 | smoke check, generic instance execution | `core` |
+| account status, native goals | `core` for shared connection/request-policy behavior; operation limits below |
 | `cas review run|start` | Built-in `review` gate over `managed-ws` |
 | `cas session_inquiry preflight|run|start` | `session-inquiry` with `managed-ws` preflight and execution |
 | release conformance and the complete feature surface | `full` |
+
+Account/goal routes have no separate named preflight profile. `core` does not
+exercise every account or goal method: derive method availability and request
+shapes from the selected runtime's generated schemas, and interpret the actual
+operation response as evidence only for that operation. Keep target, executable,
+transport, and endpoint identity consistent; a probe of another connection is
+not proof of this one. Qualification does not authorize goal mutation or resume.
+
+Raw session/daemon delegation preserves the native surface rather than creating
+a managed qualification receipt. Its invoking client owns the applicable
+protocol qualification and lifecycle duties in [app-server.md](app-server.md).
+Schema inspection itself still needs no live preflight. Local automation and
+native queueing use their own route guidance, not these app-server probes.
 
 For a standalone receipt, require `status == "compatible"`, the intended
 resolved Codex path, contract ID `codex-app-server-capabilities-v2`, no missing

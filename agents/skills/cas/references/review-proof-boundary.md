@@ -1,20 +1,9 @@
 # CAS Review Proof Boundary
 
-Before `cas review run` or `cas review start`, require the installed CAS
-review capability:
-
-```bash
-cas capabilities --json
-```
-
-`run` and `start` perform the exact-runtime `review`/`managed-ws` live gate
-internally. Do not duplicate it with a standalone preflight except for explicit
-diagnosis or qualification. A failed gate blocks the route before a
-`reviewThreadId` exists; no review attempt or clean verdict exists.
-Require the gate's compatible result and
-`cas_structured_review_v1: true`; workflow-bound starts additionally require
-`cas_workflow_bound_owner_lived_review_v1: true` and owner-lived
-`start --wait`.
+[reviews.md](../reviews.md) is the operating contract for capability admission,
+the built-in live gate, rubric-preserving invocation, receipt interpretation,
+and same-handle recovery. This reference explains their evidence boundary;
+it adds no second preflight or review procedure.
 
 ## Evidence law
 
@@ -41,27 +30,9 @@ classification, architecture, mutation, publication, and closure.
 
 ## Commands
 
-Use `run` for a standalone one-off review. Use one owner-lived
-`start --wait` process for an Actuating request. Use `wait` only for a known
-already-started attempt.
-
-```bash
-cas review run --cwd <repo> --base <base> \
-  --custom-instructions @<instructions> \
-  --timeout-ms 2700000 --json
-
-cas review start --wait --cwd <repo> --base <base> \
-  --custom-instructions @<instructions> \
-  --workflow-binding-json @<binding.json> \
-  --timeout-ms 2700000 --json
-```
-
-A live or pending exact handle is recovered with `wait`, not replaced. A
-distinct same-target attempt after terminal evidence requires
-`--fresh-attempt <source-bound-reason>`.
-
-For post-publication review, use the exact bound base/head selector. A clean
-checkout is not a reason to use `--uncommitted`.
+Use the [invocation and runtime guidance](../reviews.md#invocation-and-runtime).
+The caller selects native/default or exact custom instructions; an omitted
+rubric is intentional, not a missing argument to fill.
 
 The workflow binding remains opaque:
 
@@ -87,22 +58,14 @@ or retry. Native standard and exact auxiliary instruction bytes remain unchanged
 
 ## Receipt interpretation
 
-Actuating consumes the exact owner-issued CAS receipt directly. Require:
+Apply [receipt interpretation](../reviews.md#receipt-interpretation) to the
+actual owner-issued output, not a reconstructed summary.
 
-- receipt and verdict target tuples agree;
-- expected base, head, and target fingerprint;
-- exact workflow-binding echo;
-- structured semantic status;
-- strong principal and no reduced protection;
-- backend class `cas-start-wait`;
-- exact current runtime compatibility facts.
-
-Do not pass the receipt through Ledger or copy it into an Actuating event log.
-Structural parsing is not review credit; Actuating evaluates the exact fields
-under its static Review Contract.
-
-Missing structured output, provider failure, account exhaustion, fallback,
-transport loss, stale tuple, or mismatched binding earns no semantic credit.
+The [normalized-clean example](../assets/start-wait-normalized-clean.example.json)
+is a **partial illustrative projection**, not a complete admissible receipt.
+It uses synthetic identities and omits required current-runtime compatibility
+facts. Its `clean: true` does not establish review credit. Do not copy its
+values into real evidence or treat schema/JSON validity as admission.
 
 ## Resumption
 

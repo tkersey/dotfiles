@@ -1,36 +1,77 @@
 # Review
 
+## Invocation and runtime
+
 Use `run` for a standalone one-off review. Use one owner-lived
 `start --wait` process for workflow-bound or Actuating review. Use `wait` only
 to recover or inspect an already-started admissible attempt.
 
-Both `run` and `start` execute the required exact-binary `review`/`managed-ws`
-live preflight before starting. Do not run a duplicate standalone probe unless
-diagnosing or qualifying the runtime. Select one review invocation, not both:
+Inspect `cas capabilities --json` for the installed build, or reuse its unchanged
+result. Require `cas_structured_review_v1: true`; workflow-bound starts also
+require `cas_workflow_bound_owner_lived_review_v1: true`.
+Both `run` and `start` execute the exact-binary `review`/`managed-ws` live gate
+internally. Require its compatible result; do not run a duplicate standalone
+probe unless diagnosing or qualifying the runtime. A failed gate creates no
+review attempt and never permits a transport fallback.
+
+Preserve the caller's rubric, including intentional absence. Native/default
+standard review uses no `--custom-instructions` argument; do not add an empty
+argument, wrapper, or substitute prompt. Select one invocation, not both:
 
 ```bash
-# Standalone review.
+# Standalone native/default review.
 cas review run --cwd <repo> --base <base> \
-  --custom-instructions @<instructions> \
   --timeout-ms 2700000 --json
 
-# Workflow-bound alternative, with one owner-lived notification channel.
+# Workflow-bound native/default alternative.
 cas review start --wait --cwd <repo> --base <base> \
-  --custom-instructions @<instructions> \
   --workflow-binding-json @<binding.json> \
   --timeout-ms 2700000 --json
 ```
 
+Only a caller-selected custom rubric, such as an auxiliary or focused review,
+adds `--custom-instructions @<instructions>` to the chosen invocation. Preserve
+those exact bytes. A custom review does not acquire native-standard credit
+merely because CAS executed it successfully.
+
+## Evidence and recovery
+
 A process is not a review. An attempt exists only after `reviewThreadId`; a
 semantic verdict exists only when the structured verdict binds the exact
-target tuple. CAS reports the backend. The caller decides credit and finding
-disposition. A failed compatibility gate blocks the route before an attempt
-exists; it is never a clean review. See
-[review-proof-boundary.md](references/review-proof-boundary.md).
+target tuple. CAS reports the backend; the caller decides credit and finding
+disposition. For post-publication review, retain the exact bound base/head
+selector; a clean checkout is not a reason to use `--uncommitted`.
 
-When the caller admits a new same-target attempt after terminal evidence, pass
-`--fresh-attempt <source-bound-reason>`. CAS records the reason; it does not
-decide whether the new attempt is permitted.
+Recover a live or pending exact handle with `wait`, not a replacement attempt.
+When the caller admits a distinct same-target attempt after terminal evidence,
+pass `--fresh-attempt <source-bound-reason>`. CAS records the reason; it does not
+decide whether the new attempt is permitted. Missing output or an unsuccessful
+wait alone does not establish that another attempt is safe.
+
+## Receipt interpretation
+
+For workflow-bound/Actuating review, consume the exact owner-issued CAS receipt
+directly. Require:
+
+- receipt and verdict target tuples agree;
+- expected base, head, and target fingerprint;
+- exact workflow-binding echo;
+- structured semantic status;
+- strong principal and no reduced protection;
+- backend class `cas-start-wait`;
+- exact current runtime compatibility facts.
+
+Do not pass the receipt through Ledger or copy it into an Actuating event log.
+Structural parsing is not review credit; Actuating evaluates the exact fields
+under its static Review Contract. Missing structured output, provider failure,
+account exhaustion, fallback, transport loss, stale tuple, or mismatched binding
+earns no semantic credit. Standalone `run` is not a workflow-bound
+`cas-start-wait` receipt.
+
+A binding echo or digest identifies supplied context; it does not deliver that
+context or prove the reviewer saw it. Preserve material access limitations.
+See [review-proof-boundary.md](references/review-proof-boundary.md) for ownership,
+premise visibility, illustrative receipt limits, and interrupted-campaign recovery.
 
 ## Caller-selected configuration
 
@@ -39,7 +80,6 @@ one `--thread-start-params-json JSON|@file` object on `run` or `start`:
 
 ```bash
 cas review start --wait --cwd <repo> --base <base> \
-  --custom-instructions @<instructions> \
   --thread-start-params-json @<runtime-options.json> \
   --workflow-binding-json @<binding.json> \
   --timeout-ms 2700000 --json
@@ -54,9 +94,9 @@ and combinations; keep `config` open and use the installed runtime's semantics.
 Omit settings the caller has not selected. A file is loaded once before preflight;
 `wait` observes the already-configured attempt and rejects new launch options.
 
-Use `--cwd` and `--custom-instructions` for the CAS-owned repository and exact
-rubric; JSON keys `cwd` and `developerInstructions` are rejected. Keep the review
-thread durable: `ephemeral: true` is rejected. CAS also owns `review/start`'s
+Use `--cwd` for the CAS-owned repository and, only for a caller-supplied rubric,
+`--custom-instructions`; JSON keys `cwd` and `developerInstructions` are rejected.
+Keep the review thread durable: `ephemeral: true` is rejected. CAS also owns `review/start`'s
 thread, target, and inline delivery. Other schema-advertised options, including
 paginated history, remain caller-selectable.
 
@@ -76,6 +116,15 @@ Use `threadStartParamsDigest` and the bound target fingerprint to identify the
 selected configuration. Different settings get distinct reuse identities; key
 order and whitespace do not. CAS records the digest and redacts configured
 thread-start event bodies; do not treat it as a replayable configuration or
-effective-permissions receipt. The controlled preflight establishes protocol
-compatibility; the actual thread start admits caller configuration, and successful
-review execution remains the evidence for filesystem access.
+effective-permissions receipt or effective-repository attestation. The controlled
+preflight establishes protocol compatibility; the actual thread start admits
+caller configuration, and successful review execution remains the evidence for
+filesystem access.
+
+Reported `cwd` does not attest the repository used by every reviewer command.
+Caller configuration such as `GIT_DIR` or `GIT_WORK_TREE` can redirect Git even
+when the reported directory matches. Do not introduce redirection incidentally.
+When selected configuration can redirect repository resolution, establish its
+consistency with the intended subject from relevant execution evidence before
+accepting subject-dependent claims; otherwise retain that limitation and withhold
+unsupported credit. Do not silently rewrite settings or widen permissions.

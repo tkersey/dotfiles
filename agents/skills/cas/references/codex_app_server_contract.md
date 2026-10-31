@@ -92,9 +92,11 @@ selected Codex executable's bytes and exit status so additive released methods
 are not projected away by CAS. Interactive daemon defaults do not authorize
 CAS to attach to, restart, or stop an unrelated daemon.
 
-All processes, readiness waits, frames, messages, retry loops, and captured
-output are bounded. App-server overload `-32001` alone uses bounded exponential
-backoff with jitter.
+CAS-managed clients bound processes, readiness waits, frames, messages, retry
+loops, and captured output. App-server overload `-32001` alone uses bounded
+exponential backoff with jitter. Raw session/daemon delegation preserves native
+lifecycle behavior; invocation alone does not install those client bounds.
+The connected client's duties are in [app-server.md](../app-server.md).
 
 ## Initialization
 
@@ -115,6 +117,10 @@ Advertise OpenAI form elicitation only when an exact response policy exists.
 Unknown initialize response fields remain raw.
 
 ## Server-request policies
+
+The following policies belong to CAS-managed clients, not a raw delegated
+session's connected client. That client must supply its own terminating handlers
+and secret handling; raw delegation does not grant consent or managed receipts.
 
 CAS recognizes these baseline requests:
 

@@ -6,7 +6,11 @@ does not bundle an input-capsule or inquiry-plan owner. Before `run` or `start`,
 require concrete caller-owned definitions compatible with the native input
 contract and their successful validation results. Missing definitions leave this
 execution route unavailable; do not reconstruct a retired workflow or invent
-validation. Independently answerable session observations can still use Seq.
+validation. Resolve these inputs before qualifying an execution request;
+explicit compatibility diagnosis may still run preflight without inquiry inputs.
+Independently answerable session observations can still use Seq. Ordinary
+prepared-seed fanout follows [app-server.md](app-server.md), not this historical
+inquiry contract.
 
 Use the `session-inquiry` preflight profile before execution. A paginated source
 is admissible when the exact runtime probe passes. Bind the exact completed
