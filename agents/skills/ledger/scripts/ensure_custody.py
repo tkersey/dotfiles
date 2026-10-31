@@ -577,7 +577,7 @@ def prepare_native(binary: str, owner: dict, context: dict, sources: list[str], 
 
 
 def restore_archived_slot(context: dict, definition: Path, *, binary: str = 'ledger',
-                          skill_root: Path | None = None) -> dict:
+                          skill_root: Path | None = None, confirm_no_writers: bool = False) -> dict:
     ctx = load_module(Path(__file__).with_name('ledger_context.py'))
     owner = selected_owner(definition, ctx, skill_root)
     preparation_runtime(binary)
@@ -595,7 +595,7 @@ def restore_archived_slot(context: dict, definition: Path, *, binary: str = 'led
     repo = Path(workspace) if workspace else None
     require_preparable(owner)
     sources, trees = preparation_sources(repo, context, owner, ctx, discover_archives=not covered)
-    prepared = prepare_native(binary, owner, context, sources)
+    prepared = prepare_native(binary, owner, context, sources, confirm_no_writers=confirm_no_writers)
     if repo is not None and preparation_trees(repo, ctx) != trees:
         raise MigrationError('Preparation committed; workspace coverage changed before association', preparation=prepared, context=context)
     try:
@@ -1090,8 +1090,8 @@ def main() -> int:
             raise MigrationError('Select one of --ensure-owner, --read-only, --repair-archive with --definition; not --migrate')
         if args.confirm_no_writers and not args.apply:
             raise MigrationError('--confirm-no-writers requires --apply')
-        if (args.apply or args.confirm_no_writers) and not (args.migrate or args.ensure_owner):
-            raise MigrationError('Migration effects require explicit --migrate or --ensure-owner')
+        if (args.apply or args.confirm_no_writers) and not (args.migrate or args.ensure_owner or args.repair_archive):
+            raise MigrationError('Migration effects require explicit --migrate, --ensure-owner or --repair-archive')
         if args.framing_controls and not args.migrate:
             raise MigrationError('Framing controls require explicit --migrate')
         if args.migrate:
@@ -1105,14 +1105,8 @@ def main() -> int:
         else:
             result = ensure(args.repo, store_id=args.store_id)
             if args.repair_archive:
-                result = restore_archived_slot(result, args.definition, binary=args.ledger_bin)
-        if not args.migrate or args.apply:
-            maintenance = load_module(Path(__file__).with_name('maintain_custody.py'))
-            context = result.get('context', result)
-            if not args.read_only and (args.ensure_owner or args.repair_archive or args.apply or result.get('storage_mutated')):
-                result['maintenance'] = maintenance.routine(context, binary=args.ledger_bin)
-            else:
-                result['maintenance'] = maintenance.observation()
+                result = restore_archived_slot(result, args.definition, binary=args.ledger_bin,
+                                               confirm_no_writers=args.confirm_no_writers)
     except (MigrationError, OSError, ValueError, RuntimeError, subprocess.SubprocessError) as exc:
         print(json.dumps({'schema': SCHEMA if args.migrate else 'ledger-workspace-context-error/v1', 'status': 'blocked', 'error': str(exc),
                           'storage_mutated': (True if exc.context and exc.context.get('storage_mutated') is True else exc.preparation.get('storage_mutated')) if isinstance(exc, MigrationError) and exc.preparation is not None else (None if args.apply or args.repair_archive or args.ensure_owner else False), 'authority_granted': False,

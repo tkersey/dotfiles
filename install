@@ -8,7 +8,6 @@ LINKS_CONF="$DOTFILES_ROOT/links.conf"
 # Default flags
 DO_SYMLINK=false
 DO_HOMEBREW=false
-DO_LEDGER_MAINTENANCE=false
 DO_ALL=true
 
 # Process command line arguments
@@ -22,16 +21,11 @@ while [ $# -gt 0 ]; do
       DO_HOMEBREW=true
       DO_ALL=false
       ;;
-    --ledger-maintenance)
-      DO_LEDGER_MAINTENANCE=true
-      DO_ALL=false
-      ;;
     --help)
       echo "Usage: $0 [options]"
       echo "Options:"
       echo "  --symlink        Create symlinks from links.conf"
       echo "  --homebrew       Run homebrew installation/update"
-      echo "  --ledger-maintenance Install and activate hourly Ledger maintenance"
       echo "  --help           Show this help message"
       echo ""
       echo "If no options are specified, all tasks will be run."
@@ -222,10 +216,6 @@ then
   else
     fail "error installing dependencies"
   fi
-fi
-
-if [ "$DO_LEDGER_MAINTENANCE" = true ]; then
-  uv run --no-project "$DOTFILES_ROOT/agents/skills/ledger/scripts/install_maintenance.py" --apply
 fi
 
 echo ''

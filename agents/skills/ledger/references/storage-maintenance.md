@@ -29,22 +29,11 @@ coordination resources are outside cleanup. Logical reclaimed bytes are not a
 claim about physical disk blocks. Native preparation and maintenance report their
 own outcome separately from any subsequent owner operation.
 
-After installing the qualified Homebrew runtime, `./install --ledger-maintenance`
-installs the user LaunchAgent `com.tkersey.ledger.maintenance`. Its default hourly
-sweep considers at most 128 cataloged stores, with per-store limits of 256 MiB
-working bytes, 512 files and 2 GiB read bytes; pressure defaults to less than 5 GiB
-free. `maintenance.json` owns these values. The installed LaunchAgent selects its
-configuration and cadence; cadence changes require reinstalling the agent.
-The wrapper retains one bounded last-run record and reports health through CLI
-results. Cleanup runs quietly. Inspect and explicit no-maintenance execution
-persist no health updates.
-
-Verify actual scheduled execution on the target host; successful installation
-alone does not prove it. Normal invocation reports stale or missing last-run
-evidence. A manual sweep cannot certify scheduled execution, and recorded
-execution does not establish that launchd remains enabled. Inspect with
-`scripts/install_maintenance.py` without `--apply`;
-use `scripts/maintain_custody.py` without `--apply` for a nonmutating sweep.
+Use the native write result for validation, publication, and storage errors
+already observed during that operation. No scheduled sweep or additional status
+check is required after a write. Use explicit `ledger maintain` when a separate
+bounded inspection is needed; its result describes that inspection's limits and
+coverage, not a complete storage inventory.
 
 ## Exact transaction recovery
 

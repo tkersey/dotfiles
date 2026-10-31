@@ -52,31 +52,11 @@ shared defaults. Keep the checkout at a revision containing
 
 ### Ledger maintenance
 
-After installing the qualified Homebrew Ledger 1.6.0 release, install the hourly
-user LaunchAgent with `./install --ledger-maintenance`. This explicit option
-activates `com.tkersey.ledger.maintenance`; ordinary dotfile linking does not.
-The installer selects `tkersey/tap/ledger`, uses its stable executable path, and
-pins the validated Python interpreter used during installation. It verifies
-that launchd loaded the job.
+Native Ledger writes report validation, publication, and storage errors in their
+normal results. Preparation uses native transaction finalization, leaving no
+second payload archive. No scheduler, background status worker, or desktop
+notification is installed.
 
-The configuration is [maintenance.json](agents/skills/ledger/maintenance.json).
-Each sweep selects at most 128 cataloged stores and runs for at most five minutes.
-Native work per store is limited to 512 files, 256 MiB of preparation working
-storage and 2 GiB of reads; a native call is limited to 30 seconds. An incomplete
-sweep reports incomplete coverage. It does not claim that later sweeps inspect
-the remaining stores.
-
-Cleanup runs quietly. CLI results report failures, incomplete inspection, and
-free space below the configured 5 GiB threshold. Only the latest bounded run
-status is retained under `LEDGER_HOME/maintenance`, with a wrapper coordination
-lock. No report history or payload archive is created.
-
-`maintain_custody.py` inspects by default. Pass `--apply` for native housekeeping
-and run-status updates. Routine `ensure_custody.py --ensure-owner` also
-runs bounded housekeeping and reports a missing or stale scheduled-run receipt.
-Normal access reads the installed LaunchAgent's configuration and cadence;
-changing the cadence requires reinstalling the agent. A manual sweep does not
-certify scheduled execution. Recorded execution does not prove the job remains
-loaded or enabled.
-`--read-only` and its `--no-maintenance` alias do neither. A healthy access does
-not establish that idle-time scheduling is working.
+For a separate bounded storage inspection, use `ledger maintain` with an explicit
+managed store. It reports incomplete inspection and unresolved native work without
+changing history. See [storage maintenance](agents/skills/ledger/references/storage-maintenance.md).

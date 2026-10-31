@@ -5,6 +5,7 @@ from pathlib import Path
 import select
 import shutil
 import subprocess
+import sys
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -89,6 +90,31 @@ class ArchiveRepairTests(unittest.TestCase):
     def test_healthy_store_never_scans_archives(self):
         (self.archive / 'manifest.json').write_text('invalid')
         self.assertNotIn('custody_repair', self.repair())
+
+    def test_direct_repair_of_empty_workspace_requires_and_accepts_quiescence(self):
+        workspace = self.root / 'workspace'
+        workspace.mkdir()
+        self.ctx.register_root(self.store, self.context['store_id'], workspace)
+        binding = {path.name: path.read_bytes() for path in (self.store / '.ledger/.bindings').glob('*.jsonl')}
+        self.slot.unlink()
+        command = [sys.executable, str(SKILLS / 'ledger/scripts/ensure_custody.py'),
+                   '--repo', str(workspace), '--repair-archive', '--definition', str(self.definition),
+                   '--ledger-bin', self.binary]
+        refused = subprocess.run(command, capture_output=True, timeout=15)
+        self.assertEqual(refused.returncode, 3, refused.stdout + refused.stderr)
+        self.assertEqual(json.loads(refused.stderr)['preparation']['error_code'], 'PreparationRequiresQuiescence')
+        self.assertFalse(self.slot.exists())
+        missing_apply = subprocess.run(command + ['--confirm-no-writers'], capture_output=True, timeout=15)
+        self.assertEqual(missing_apply.returncode, 3, missing_apply.stdout + missing_apply.stderr)
+        self.assertIn('--confirm-no-writers requires --apply', json.loads(missing_apply.stderr)['error'])
+        self.assertFalse(self.slot.exists())
+        restored = subprocess.run(command + ['--apply', '--confirm-no-writers'], capture_output=True, timeout=15)
+        self.assertEqual(restored.returncode, 0, restored.stdout + restored.stderr)
+        self.assertEqual(json.loads(restored.stdout)['store_id'], self.context['store_id'])
+        self.assertEqual(self.slot.read_bytes(), self.original)
+        self.assertEqual(self.archived_slot.read_bytes(), self.original)
+        self.assertEqual(binding, {path.name: path.read_bytes() for path in (self.store / '.ledger/.bindings').glob('*.jsonl')})
+        self.assertFalse((workspace / '.ledger').exists())
 
     def test_present_corruption_is_not_replaced(self):
         self.slot.write_bytes(b'bad\n')

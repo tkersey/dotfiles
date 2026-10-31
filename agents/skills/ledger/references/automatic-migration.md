@@ -67,9 +67,9 @@ Ordinary ensure still only resolves or adopts a registration. Ledger
 permission errors do not authorize unrelated permission changes. Native
 publication, the subsequent owner operation, catalog association and maintenance
 have separate outcomes; later failure never authorizes another publication.
-Mutating custody work runs bounded housekeeping; explicit `--read-only` or
-`--no-maintenance` routes do not update health state. See
-[scheduled housekeeping](storage-maintenance.md#preparation-housekeeping).
+Native publication finalizes its preparation work. Write results report the
+operation's observed status; no additional check is triggered. See
+[explicit storage inspection](storage-maintenance.md#preparation-housekeeping).
 
 ## Skill workflow
 
@@ -181,7 +181,10 @@ become invented records. Global memory admission remains a separate owner action
 Automatic owner preparation includes exact archive restoration. A caller selecting
 that same repair directly uses `ensure_custody.py --repair-archive
 --definition <installed-owner-definition>` with the normal workspace or store ID.
-Bootstrap Ledger 1.6.0 or newer within major version 1 first. An intact owner store
+Bootstrap Ledger 1.6.0 or newer within major version 1 first. When a supplied live
+workspace lacks qualified writer coordination, actually quiesce its writers and
+add `--apply --confirm-no-writers`; never infer quiescence from an absent process.
+An intact owner store
 returns normally without scanning archives. Ordinary ensure and read-only context
 lookup never restore records.
 
