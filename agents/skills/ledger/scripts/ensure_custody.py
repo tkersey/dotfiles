@@ -32,10 +32,18 @@ SCHEMA = 'ledger-custody-migration/v2'
 ARCHIVES = {'.bindings', '.definitions', '.revisions'}
 MAX_FILES = 100000
 MAX_BYTES = 2 * 1024**3
+PREPARE_MAX_FILES = 512
+PREPARE_MAX_BYTES = 256 * 1024**2
+PREPARE_MAX_READ_BYTES = 2 * 1024**3
+MAX_SOURCES = 128
+BUSY_WAIT_SECONDS = 30.0
 
 
 class MigrationError(RuntimeError):
-    pass
+    def __init__(self, message: str, *, preparation: dict | None = None, context: dict | None = None):
+        super().__init__(message)
+        self.preparation = preparation
+        self.context = context
 
 
 def canonical(value: object) -> str:
@@ -80,7 +88,7 @@ def relative(value: str) -> Path:
     return path
 
 
-def owners(skill_root: Path, ctx) -> list[dict]:
+def owners(skill_root: Path, ctx, *, allow_segmented: bool = False) -> list[dict]:
     """Only installed sibling skills opt in. Repository files never supply code."""
     found = []
     claimed = set()
@@ -101,15 +109,17 @@ def owners(skill_root: Path, ctx) -> list[dict]:
         if not slots:
             raise MigrationError(f'Owner has no migration slots: {manifest}')
         paths = []
+        layouts = []
         for slot in slots.values():
             path = relative(slot.get('path'))
             if (slot.get('kind') != 'event-log' or slot.get('codec') != 'jsonl'
-                    or slot.get('layout', 'monolithic') != 'monolithic' or '{' in str(path)):
+                    or slot.get('layout', 'monolithic') not in (('monolithic', 'segmented') if allow_segmented else ('monolithic',)) or '{' in str(path)):
                 raise MigrationError(f'Unsupported owner slot layout: {manifest}')
             if str(path) in claimed:
                 raise MigrationError(f'Multiple migration owners for slot: {path}')
             claimed.add(str(path))
             paths.append(str(path))
+            layouts.append(slot.get('layout', 'monolithic'))
         retired = owner['retired_sources']
         if not isinstance(retired, list) or len(retired) > 16:
             raise MigrationError('Invalid retired source list')
@@ -124,7 +134,8 @@ def owners(skill_root: Path, ctx) -> list[dict]:
             importer = importer.resolve(strict=True)
         found.append({'name': value['owner'], 'definition': str(definition), 'slots': paths,
                       'retired_sources': retired, 'importer': str(importer) if importer else None,
-                      'manifest_sha256': hashlib.sha256(raw).hexdigest()})
+                      'manifest_sha256': hashlib.sha256(raw).hexdigest(),
+                      **({'layouts': layouts} if allow_segmented else {})})
     if not found or len(found) > 128:
         raise MigrationError('No supported installed migration owners, or owner bound exceeded')
     return found
@@ -218,6 +229,7 @@ def native(binary: str, owner: dict, selector: list[str], command: str, *args: s
             raise MigrationError('Missing definition subcommand')
         subcommand, args = [args[0]], args[1:]
     waiting = False
+    deadline = time.monotonic() + BUSY_WAIT_SECONDS
     while True:
         proc = subprocess.run([binary, command, *subcommand, '--definition', owner['definition'], *selector, *args, '--format', 'json'], capture_output=True)
         try:
@@ -225,18 +237,21 @@ def native(binary: str, owner: dict, selector: list[str], command: str, *args: s
         except (ValueError, UnicodeError) as exc:
             raise MigrationError(f'Invalid native {command} result for {owner["name"]}') from exc
         busy_codes = ('LockBusy', 'EventStoreBusy')
-        busy = isinstance(result, dict) and (result.get('code') in busy_codes or
+        busy = isinstance(result, dict) and (result.get('outcome') == 'busy' or result.get('code') in busy_codes or
                any(slot.get('error_code') in busy_codes for slot in result.get('slots', [])))
-        if not (wait_busy and command == 'doctor' and busy):
+        if not (wait_busy and command in ('doctor', 'prepare') and busy):
             break
+        if time.monotonic() >= deadline:
+            raise MigrationError(f'Ledger writer remained busy: {owner["name"]}', preparation=result if command == 'prepare' else None)
         if not waiting:
             print(f'Waiting for active Ledger writer: {owner["name"]}', file=sys.stderr, flush=True)
             waiting = True
         time.sleep(0.1)
     if not isinstance(result, dict) or result.get('authority_granted', result.get('semantic_authority_granted')) is not False:
         raise MigrationError('Native result omitted its authority boundary')
-    if proc.returncode and not (allow_unhealthy and result.get('schema') == 'ledger-doctor-result/v1'):
-        raise MigrationError(f'Native {command} failed: {canonical(result)}')
+    if proc.returncode and not ((allow_unhealthy and result.get('schema') == 'ledger-doctor-result/v1')
+                                or (command == 'prepare' and result.get('schema') == 'ledger-preparation-result/v1')):
+        raise MigrationError(f'Native {command} failed: {canonical(result)}', preparation=result if command == 'prepare' else None)
     return result
 
 
@@ -312,7 +327,7 @@ def ensure(repo: Path | None = None, *, store_id: str | None = None) -> dict:
 
 
 def selected_owner(definition: Path, ctx, skill_root: Path | None = None) -> dict:
-    selected = [owner for owner in owners(skill_root or Path(__file__).resolve().parents[2], ctx)
+    selected = [owner for owner in owners(skill_root or Path(__file__).resolve().parents[2], ctx, allow_segmented=True)
                 if Path(owner['definition']) == definition.resolve(strict=True)]
     if len(selected) != 1 or len(selected[0]['slots']) != 1:
         raise MigrationError('Owner selection requires one installed owner with one static event slot')
@@ -322,9 +337,16 @@ def selected_owner(definition: Path, ctx, skill_root: Path | None = None) -> dic
 def archive_entries(custody: Path, slot: str, ctx):
     archive_root = custody / 'legacy-archive'
     ctx.no_symlinks(archive_root)
-    manifests = sorted(archive_root.glob('*/manifest.json'))
-    if len(manifests) > 128:
-        raise MigrationError('Archive repair manifest bound exceeded')
+    manifests = []
+    if archive_root.exists():
+        for generation in archive_root.iterdir():
+            if len(manifests) >= MAX_SOURCES:
+                raise MigrationError('Archive repair manifest bound exceeded')
+            ctx.no_symlinks(generation)
+            if not generation.is_dir() or not (generation / 'manifest.json').is_file():
+                raise MigrationError('Incomplete archive discovery')
+            manifests.append(generation / 'manifest.json')
+    manifests.sort()
     total = 0
     for manifest in manifests:
         value = ctx.read_document(manifest, max_bytes=32 * 1024**2)
@@ -340,7 +362,10 @@ def archive_entries(custody: Path, slot: str, ctx):
             if (not isinstance(tree, dict) or not isinstance(tree.get('entries'), dict)
                     or len(tree['entries']) > MAX_FILES):
                 raise MigrationError('Invalid archive source inventory')
+            binding = '.ledger/.bindings/' + hashlib.sha256(slot.encode()).hexdigest() + '.jsonl'
             entry = tree['entries'].get('.ledger/' + slot)
+            if entry is None and binding in tree['entries']:
+                entry = {'kind': 'missing'}
             if entry is not None:
                 if not isinstance(entry, dict):
                     raise MigrationError('Invalid archived slot entry')
@@ -355,57 +380,72 @@ def verify_local_prefix(context: dict, owner: dict, ctx) -> None:
         active = Path(context['store_root']) / '.ledger' / slot
         ctx.no_symlinks(local)
         ctx.no_symlinks(active)
+        if local.exists() and owner.get('layouts', ['monolithic']) != ['monolithic'] and local != active:
+            raise MigrationError('Segmented local-history coverage requires its existing native migration route')
         if local.exists() and (not active.exists() or not prefix(local, active)):
             raise MigrationError('Local history is not covered by managed custody; select explicit migration or reconciliation')
 
 
 def owner_context(repo: Path | None, definition: Path, *, store_id: str | None = None,
-                  maintain: bool = False, read_only: bool = False,
+                  maintain: bool = False, read_only: bool = False, confirm_no_writers: bool = False,
                   binary: str = 'ledger', skill_root: Path | None = None) -> dict:
+    if confirm_no_writers and not maintain:
+        raise MigrationError('Writer quiescence requires owner preparation')
     if maintain and read_only:
         raise MigrationError('Read-only owner selection cannot repair or migrate')
     ctx = load_module(Path(__file__).with_name('ledger_context.py'))
     owner = selected_owner(definition, ctx, skill_root)
+    if maintain:
+        preparation_runtime(binary)
+    cataloged = True
     try:
         context = ctx.resolve(repo, store_id=store_id)
     except ctx.UnregisteredContext:
+        cataloged = False
         if store_id is not None:
             raise
         root, common, _ = ctx.workspace_associations(repo)
-        if common is not None and os.path.lexists(common / ctx.REGISTRATION):
-            context = ctx.checked_registration(root, common) if read_only else ctx.import_registration(common / ctx.REGISTRATION, root)
-        else:
-            context = None
-
-    def has_local_history():
-        if context is None or not context.get('workspace_root'):
-            return False
-        root = Path(context['workspace_root'])
-        trees = ctx.worktrees(root) if context.get('git_common_dir') else [root]
-        binding = '.bindings/' + hashlib.sha256(owner['slots'][0].encode()).hexdigest() + '.jsonl'
-        return any(os.path.lexists(tree / '.ledger' / name) for tree in trees
-                   for name in (owner['slots'][0], binding))
-
+        context = ctx.checked_registration(root, common) if common is not None and os.path.lexists(common / ctx.REGISTRATION) else None
     if context is not None:
+        if repo is not None:
+            root, common, _ = ctx.workspace_associations(repo)
+            check_pending_context(root, common, ctx.storage_home(), context, ctx)
         result = native(binary, owner, context['native_args'], 'doctor', allow_unhealthy=True, wait_busy=maintain)
+        if maintain and type(result.get('preparation_pending')) is not bool:
+            raise MigrationError('Native doctor omitted preparation state')
         if result.get('healthy') is True and result.get('pending_transactions') == 0:
             if any(slot.get('status') != 'missing' for slot in result['slots']):
-                verify_local_prefix(context, owner, ctx)
-                return context
-            local_exists = has_local_history()
-            archived = any(archive_entries(Path(context['store_root']), owner['slots'][0], ctx))
-            if not local_exists and not archived:
-                return context
+                try:
+                    verify_local_prefix(context, owner, ctx)
+                except MigrationError:
+                    if not maintain:
+                        raise
+                    return migrate_owner(repo, definition, store_id=store_id, binary=binary, skill_root=skill_root, confirm_no_writers=confirm_no_writers, discover_archives=False)
+                if result.get('preparation_pending') is True:
+                    if not maintain:
+                        raise MigrationError('Owner preparation is pending; read-only selection leaves custody unchanged')
+                    return migrate_owner(repo, definition, store_id=store_id, binary=binary, skill_root=skill_root, confirm_no_writers=confirm_no_writers, discover_archives=False)
+                return context if cataloged or read_only else ctx.register_root(Path(context['store_root']), context['store_id'], repo)
+            trees = preparation_trees(repo, ctx) if repo is not None else []
+            if result.get('preparation_pending') is not True and not any(selected_history(tree, owner) for tree in trees) and not any(archive_entries(Path(context['store_root']), owner['slots'][0], ctx)):
+                return context if cataloged or read_only else ctx.register_root(Path(context['store_root']), context['store_id'], repo)
         elif not maintain:
             raise MigrationError(f'Selected managed custody is unhealthy: {canonical(result)}')
-        elif any(slot.get('error_code') == 'StoreBindingWithoutSlot' for slot in result.get('slots', [])):
-            if not has_local_history() and any(archive_entries(Path(context['store_root']), owner['slots'][0], ctx)):
-                return restore_archived_slot(context, definition, binary=binary, skill_root=skill_root)
-        else:
-            raise MigrationError(f'Selected managed custody needs native recovery: {canonical(result)}')
     if read_only or not maintain:
         raise MigrationError('Owner history needs --ensure-owner preparation; read-only selection leaves custody unchanged')
-    return migrate_owner(repo, definition, store_id=store_id, binary=binary, skill_root=skill_root)
+    if context is None and repo is not None:
+        require_preparable(owner)
+        root, common = migration_source(repo, ctx)
+        trees = preparation_trees(repo, ctx)
+        pending = pending_controls(root, common, ctx.storage_home()) / 'registration.json'
+        ctx.no_symlinks(pending)
+        if not os.path.lexists(pending) and all(
+                not os.path.lexists(tree / '.ledger')
+                and not os.path.lexists(tree / '.learnings.jsonl')
+                and not any(os.path.lexists(tree / name) for name in owner['retired_sources'])
+                for tree in trees):
+            return ctx.resolve(repo, initialize=True)
+    return migrate_owner(repo, definition, store_id=store_id, binary=binary, skill_root=skill_root, confirm_no_writers=confirm_no_writers)
 
 
 @contextmanager
@@ -423,7 +463,15 @@ def native_lock(path: Path, ctx, *, wait: bool = True):
             if not wait:
                 raise
             print(f'Waiting for active Ledger writer: {path}', file=sys.stderr, flush=True)
-            fcntl.flock(fd, fcntl.LOCK_EX)
+            deadline = time.monotonic() + BUSY_WAIT_SECONDS
+            while True:
+                try:
+                    fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                    break
+                except BlockingIOError:
+                    if time.monotonic() >= deadline:
+                        raise MigrationError(f'Ledger writer remained busy: {path}')
+                    time.sleep(0.1)
         yield
     finally:
         os.close(fd)
@@ -447,262 +495,249 @@ def publish_absent(source: Path, target: Path) -> None:
         raise OSError(code, os.strerror(code), str(target))
 
 
+def require_preparable(owner: dict) -> None:
+    if owner.get('layouts', ['monolithic']) != ['monolithic']:
+        result = {'schema': 'ledger-preparation-result/v1', 'outcome': 'unsupported',
+                  'storage_mutated': False, 'authority_granted': False}
+        raise MigrationError('Owner preparation supports static monolithic event histories only', preparation=result)
+
+
+def preparation_trees(repo: Path, ctx) -> list[Path]:
+    root, common = migration_source(repo, ctx)
+    trees = sorted(ctx.worktrees(root), key=str) if common is not None else [root]
+    if not trees or len(trees) > MAX_SOURCES:
+        raise MigrationError('Incomplete or oversized workspace discovery')
+    for tree in trees:
+        ctx.no_symlinks(tree)
+        ctx.no_symlinks(tree / '.ledger')
+    return trees
+
+
+def selected_history(tree: Path, owner: dict) -> bool:
+    slot = owner['slots'][0]
+    binding = '.bindings/' + hashlib.sha256(slot.encode()).hexdigest() + '.jsonl'
+    return any(os.path.lexists(tree / '.ledger' / name) for name in (slot, binding))
+
+
+def preparation_sources(repo: Path | None, context: dict | None, owner: dict, ctx, *,
+                        discover_archives: bool = True) -> tuple[list[str], list[Path]]:
+    trees = preparation_trees(repo, ctx) if repo is not None else []
+    args = []
+    target = Path(context['store_root']) if context is not None else None
+    for tree in trees:
+        if any(os.path.lexists(tree / name) for name in owner['retired_sources']):
+            raise MigrationError('Retired-format evidence requires the owner historical importer')
+        if tree == target:
+            continue
+        marker = tree / ctx.MARKER
+        if os.path.lexists(marker):
+            value = ctx.read_json(marker, {'schema', 'store_id'})
+            if value['schema'] != ctx.MARKER_SCHEMA:
+                raise MigrationError('Invalid source root identity')
+            ctx.checked_root(tree, value['store_id'])
+            args.extend(('--source-store', value['store_id'] + '=' + str(tree)))
+        else:
+            args.extend(('--source-root', str(tree)))
+    if target is not None and discover_archives:
+        archives = set()
+        for archived, _ in archive_entries(target, owner['slots'][0], ctx):
+            original = archived.parents[len(Path(owner['slots'][0]).parts)]
+            ctx.no_symlinks(original)
+            archives.add(original)
+            if len(archives) + len(trees) > MAX_SOURCES:
+                raise MigrationError('Preparation source bound exceeded')
+        for original in sorted(archives):
+            args.extend(('--source-archive', str(original)))
+    return args, trees
+
+
+def prepare_native(binary: str, owner: dict, context: dict, sources: list[str], *,
+                   confirm_no_writers: bool = False) -> dict:
+    args = [*sources, '--apply', '--max-bytes', str(PREPARE_MAX_BYTES),
+            '--max-files', str(PREPARE_MAX_FILES), '--max-read-bytes', str(PREPARE_MAX_READ_BYTES)]
+    if confirm_no_writers:
+        args.append('--confirm-no-legacy-writers')
+    try:
+        result = native(binary, owner, context['native_args'], 'prepare', *args, wait_busy=True)
+    except MigrationError as exc:
+        exc.context = context
+        if exc.preparation is None:
+            exc.preparation = {'outcome': 'unknown', 'storage_mutated': None, 'authority_granted': False}
+        raise
+    except (OSError, subprocess.SubprocessError) as exc:
+        raise MigrationError('Native preparation outcome is unknown: ' + type(exc).__name__,
+                             preparation={'outcome': 'unknown', 'storage_mutated': None, 'authority_granted': False},
+                             context=context) from exc
+    if result.get('schema') != 'ledger-preparation-result/v1' or result.get('outcome') not in ('covered', 'prepared', 'empty'):
+        raise MigrationError(f'Native preparation requires attention: {canonical(result)}', preparation=result, context=context)
+    if type(result.get('storage_mutated')) is not bool:
+        raise MigrationError('Native preparation omitted its mutation outcome')
+    return result
+
+
 def restore_archived_slot(context: dict, definition: Path, *, binary: str = 'ledger',
                           skill_root: Path | None = None) -> dict:
     ctx = load_module(Path(__file__).with_name('ledger_context.py'))
     owner = selected_owner(definition, ctx, skill_root)
-    custody = Path(context['store_root'])
-    slot = owner['slots'][0]
-    target = custody / '.ledger' / slot
-
-    def diagnose():
-        result = native(binary, owner, context['native_args'], 'doctor', allow_unhealthy=True, wait_busy=True)
-        if (result.get('schema') != 'ledger-doctor-result/v1' or result.get('pending_transactions') != 0
-                or result.get('storage_mutated') is not False):
-            raise MigrationError('Archive repair refuses unresolved transactions or coverage')
-        if result.get('healthy') is True:
-            return result
-        failed = result.get('slots', [])
-        if (len(failed) != 1 or failed[0].get('logical_ref') != slot
-                or failed[0].get('error_code') != 'StoreBindingWithoutSlot'):
-            raise MigrationError(f'Archive repair cannot resolve this failure: {canonical(result)}')
-        ctx.no_symlinks(target)
-        if os.path.lexists(target):
-            raise MigrationError('Archive repair never replaces an existing slot')
-        return result
-
-    if diagnose().get('healthy') is True:
+    preparation_runtime(binary)
+    result = native(binary, owner, context['native_args'], 'doctor', allow_unhealthy=True, wait_busy=True)
+    if result.get('pending_transactions') != 0:
+        raise MigrationError('Archive repair refuses unresolved transactions or coverage')
+    if type(result.get('preparation_pending')) is not bool:
+        raise MigrationError('Native doctor omitted preparation state')
+    covered = result.get('healthy') is True and any(slot.get('status') != 'missing' for slot in result.get('slots', []))
+    if result.get('healthy') is True:
         verify_local_prefix(context, owner, ctx)
-        if not target.exists() and any(archive_entries(custody, slot, ctx)):
-            raise MigrationError('Archived owner history needs explicit migration; refusing an empty replacement')
-        return context
-    version = subprocess.run([binary, 'version'], capture_output=True, text=True, check=True).stdout.strip()
-    if not re.fullmatch(r'\d+\.\d+\.\d+', version) or not (1, 3, 0) <= tuple(map(int, version.split('.'))) < (2, 0, 0):
-        raise MigrationError('Archive repair requires Ledger >=1.3.0 and <2.0.0')
-    with ExitStack() as locks:
-        transactions = custody / '.ledger/.transactions'
-        locks.enter_context(native_lock(transactions / '.recovery.advisory', ctx))
-        if diagnose().get('healthy') is True:
+        if covered and result['preparation_pending'] is False:
             return context
-        binding = custody / '.ledger/.bindings' / (hashlib.sha256(slot.encode()).hexdigest() + '.jsonl')
-        for path in sorted((binding, target)):
-            locks.enter_context(native_lock(Path(str(path) + '.cas.lock.advisory'), ctx))
-            if os.path.lexists(Path(str(path) + '.cas.lock')):
-                raise MigrationError('Legacy lease requires native recovery before archive repair')
-        locks.enter_context(native_lock(transactions / '.journal.advisory', ctx))
-        candidates = {}
-        total = 0
-        for source, entry in archive_entries(custody, slot, ctx):
-            ctx.no_symlinks(source)
-            total += source.stat().st_size
-            if total > MAX_BYTES or len(candidates) >= 128:
-                raise MigrationError('Archive repair candidate bound exceeded')
-            if (entry.get('kind') != 'file' or source.stat().st_size != entry.get('size')
-                    or digest_file(source) != entry.get('sha256')):
-                raise MigrationError('Archived slot no longer matches its inventory')
-            candidates.setdefault(entry['sha256'], source)
-        if not candidates:
-            raise MigrationError('No archived bytes exist for the missing slot')
-        with tempfile.TemporaryDirectory(prefix='.slot-repair-', dir=custody) as temporary:
-            stage = Path(temporary)
-            sources = [custody / ctx.MARKER]
-            for name in sorted(ARCHIVES):
-                directory = custody / '.ledger' / name
-                ctx.no_symlinks(directory)
-                for root, dirs, files in os.walk(directory, followlinks=False):
-                    for child in dirs + files:
-                        ctx.no_symlinks(Path(root) / child)
-                    sources.extend(Path(root) / name for name in files if not name.endswith('.advisory'))
-                    if len(sources) > MAX_FILES:
-                        raise MigrationError('Archive repair custody file bound exceeded')
-            for source in sources:
-                ctx.no_symlinks(source)
-                total += source.stat().st_size
-                if total > MAX_BYTES:
-                    raise MigrationError('Archive repair byte bound exceeded')
-                destination = stage / source.relative_to(custody)
-                destination.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
-                before = digest_file(source)
-                shutil.copyfile(source, destination, follow_symlinks=False)
-                destination.chmod(0o600)
-                if digest_file(destination) != before or digest_file(source) != before:
-                    raise MigrationError('Custody changed while staging archive repair')
-            staged_slot = stage / '.ledger' / slot
-            staged_slot.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
-            for digest, source in candidates.items():
-                shutil.copyfile(source, staged_slot, follow_symlinks=False)
-                staged_slot.chmod(0o600)
-                if digest_file(staged_slot) != digest:
-                    raise MigrationError('Archive changed while staging repair')
-                result = native(binary, owner, ['--store-root', str(stage), '--store-id', context['store_id']],
-                                'doctor', allow_unhealthy=True)
-                if result.get('healthy') is not True or result.get('pending_transactions') != 0:
-                    continue
-                workspace = context.get('workspace_root')
-                if workspace:
-                    local = Path(workspace) / '.ledger' / slot
-                    ctx.no_symlinks(local)
-                    if local.exists() and digest_file(local) != digest:
-                        raise MigrationError('Local history differs from the bound archive; reconcile explicitly')
-                sync_tree(stage, ctx)
-                ctx.no_symlinks(target)
-                publish_absent(staged_slot, target)
-                ctx.sync_directory(target.parent)
-                break
-            else:
-                raise MigrationError('No archive satisfies the existing native binding; refusing rebind')
-    result = healthy(binary, owner, context['native_args'], wait_busy=True)
-    return {**context, 'storage_mutated': True,
-            'custody_repair': {'slot': slot, 'archive': str(source), 'sha256': digest, 'doctor': result}}
+    workspace = context.get('workspace_root')
+    repo = Path(workspace) if workspace else None
+    require_preparable(owner)
+    sources, trees = preparation_sources(repo, context, owner, ctx, discover_archives=not covered)
+    prepared = prepare_native(binary, owner, context, sources)
+    if repo is not None and preparation_trees(repo, ctx) != trees:
+        raise MigrationError('Preparation committed; workspace coverage changed before association', preparation=prepared, context=context)
+    try:
+        checked = healthy(binary, owner, context['native_args'], wait_busy=True)
+        if checked.get('preparation_pending') is not False:
+            raise MigrationError('Preparation remains unresolved')
+    except (RuntimeError, OSError, ValueError) as exc:
+        raise MigrationError(f'Preparation committed; owner verification failed: {exc}', preparation=prepared, context=context) from exc
+    return {**context, 'storage_mutated': prepared['storage_mutated'],
+            'preparation': prepared, 'custody_repair': {'slot': owner['slots'][0], 'doctor': checked}}
+
+
+def preparation_runtime(binary: str) -> None:
+    version = subprocess.run([binary, 'version'], capture_output=True, text=True, check=True).stdout.strip()
+    if not re.fullmatch(r'\d+\.\d+\.\d+', version) or not (1, 6, 0) <= tuple(map(int, version.split('.'))) < (2, 0, 0):
+        raise MigrationError('Owner preparation requires Ledger >=1.6.0 and <2.0.0')
+
+
+def pending_controls(root: Path, common: Path | None, home: Path) -> Path:
+    identity = canonical({'git_common_dir': str(common)} if common is not None else {'workspace_root': str(root)})
+    return home / 'preparations' / hashlib.sha256(identity.encode()).hexdigest()
+
+
+def check_pending_context(root: Path, common: Path | None, home: Path, context: dict, ctx) -> None:
+    locator = pending_controls(root, common, home) / 'registration.json'
+    ctx.no_symlinks(locator)
+    if os.path.lexists(locator):
+        pending = pending_target(root, common, locator, home, ctx)
+        if (pending['store_id'], pending['store_root']) != (context['store_id'], context['store_root']):
+            raise MigrationError('Pending custody conflicts with the selected catalog identity; reconcile explicitly')
+
+
+def reject_unregistered_custody(root: Path, common: Path | None, home: Path, ctx) -> None:
+    known = set(ctx.read_catalog(home)['stores'].values())
+    controls = home / 'preparations'
+    ctx.no_symlinks(controls)
+    if controls.exists():
+        for index, directory in enumerate(controls.iterdir()):
+            if index >= MAX_SOURCES:
+                raise MigrationError('Pending custody discovery bound exceeded')
+            locator = directory / 'registration.json'
+            ctx.no_symlinks(locator)
+            if not os.path.lexists(locator):
+                continue
+            value = ctx.read_document(locator)
+            if (not isinstance(value, dict) or set(value) != {'schema', 'store_id', 'store_root', 'workspace_root', 'git_common_dir'}
+                    or value.get('schema') != ctx.REGISTRATION_SCHEMA
+                    or not all(isinstance(value[key], str) for key in ('store_id', 'store_root', 'workspace_root'))
+                    or (value['git_common_dir'] is not None and not isinstance(value['git_common_dir'], str))):
+                raise MigrationError('Invalid pending custody identity')
+            ctx.valid_store_id(value['store_id'])
+            if value['store_root'] != str(home / 'repos' / value['store_id']):
+                raise MigrationError('Invalid pending custody target')
+            if value['workspace_root'] == str(root) and value['git_common_dir'] != (str(common) if common else None):
+                raise MigrationError('Pending workspace Git identity changed; reconcile explicitly')
+            known.add(value['store_root'])
+    repos = home / 'repos'
+    ctx.no_symlinks(repos)
+    if repos.exists():
+        for index, custody in enumerate(repos.iterdir()):
+            if index >= MAX_SOURCES:
+                raise MigrationError('Custody identity discovery bound exceeded')
+            ctx.no_symlinks(custody)
+            if str(custody) not in known:
+                raise MigrationError('Unregistered custody exists; resolve its identity before creating a replacement')
+
+
+def pending_target(root: Path, common: Path | None, locator: Path, home: Path, ctx) -> dict:
+    if os.path.lexists(locator):
+        value = ctx.read_document(locator)
+        if (not isinstance(value, dict) or set(value) != {'schema', 'store_id', 'store_root', 'workspace_root', 'git_common_dir'}
+                or not all(isinstance(value[key], str) for key in ('schema', 'store_id', 'store_root', 'workspace_root'))
+                or value['schema'] != ctx.REGISTRATION_SCHEMA
+                or value['git_common_dir'] != (str(common) if common is not None else None)
+                or (common is None and value['workspace_root'] != str(root))):
+            raise MigrationError('Conflicting pending custody identity; reconcile explicitly')
+        return ctx.checked_root(Path(value['store_root']), value['store_id'], root, common)
+    reject_unregistered_custody(root, common, home, ctx)
+    repos = home / 'repos'
+    ctx.no_symlinks(repos)
+    repos.mkdir(parents=True, exist_ok=True, mode=0o700)
+    selected_id = uuid.uuid4().hex
+    custody = repos / selected_id
+    value = {'schema': ctx.REGISTRATION_SCHEMA, 'store_id': selected_id, 'store_root': str(custody),
+             'workspace_root': str(root), 'git_common_dir': str(common) if common is not None else None}
+    ctx.write_json(locator, value)
+    custody.mkdir(mode=0o700)
+    (custody / '.ledger').mkdir(mode=0o700)
+    ctx.write_json(custody / ctx.MARKER, {'schema': ctx.MARKER_SCHEMA, 'store_id': selected_id})
+    ctx.sync_directory(custody / '.ledger')
+    ctx.sync_directory(custody)
+    ctx.sync_directory(repos)
+    return ctx.checked_root(custody, selected_id, root, common, mutated=True)
 
 
 def migrate_owner(repo: Path | None, definition: Path, *, store_id: str | None = None,
-                  binary: str = 'ledger', skill_root: Path | None = None) -> dict:
+                  binary: str = 'ledger', skill_root: Path | None = None,
+                  confirm_no_writers: bool = False, discover_archives: bool = True) -> dict:
     ctx = load_module(Path(__file__).with_name('ledger_context.py'))
     owner = selected_owner(definition, ctx, skill_root)
-    if owner['retired_sources']:
-        raise MigrationError('Retired-format imports require the owner historical importer')
-    version = subprocess.run([binary, 'version'], capture_output=True, text=True, check=True).stdout.strip()
-    if not re.fullmatch(r'\d+\.\d+\.\d+', version) or not (1, 3, 0) <= tuple(map(int, version.split('.'))) < (2, 0, 0):
-        raise MigrationError('Automatic owner migration requires Ledger >=1.3.0 and <2.0.0')
-    root, common, _ = ctx.workspace_associations(repo)
-    if root is not None and not root.is_dir():
-        raise MigrationError('Migration requires an existing selected workspace')
-    slot = owner['slots'][0]
-    binding_ref = '.ledger/.bindings/' + hashlib.sha256(slot.encode()).hexdigest() + '.jsonl'
+    require_preparable(owner)
+    if repo is not None:
+        root, common = migration_source(repo, ctx)
+    else:
+        root, common = None, None
     home = ctx.storage_home()
+    try:
+        context = ctx.resolve(repo, store_id=store_id)
+    except ctx.UnregisteredContext:
+        if store_id is not None or root is None:
+            raise
+        context = ctx.checked_registration(root, common) if common is not None and os.path.lexists(common / ctx.REGISTRATION) else None
+    if context is not None and root is not None:
+        check_pending_context(root, common, home, context, ctx)
+    preparation_runtime(binary)
+    if context is None:
+        preparation_sources(repo, None, owner, ctx)
     with ExitStack() as held:
-        if common is not None:
-            held.enter_context(ctx.registration_lock(common))
-        held.enter_context(ctx.catalog_lock(home))
+        if context is None:
+            controls = pending_controls(root, common, home)
+            ctx.no_symlinks(controls)
+            controls.mkdir(parents=True, exist_ok=True, mode=0o700)
+            held.enter_context(native_lock((common if common is not None else controls) / 'ledger-store.lock', ctx))
+            try:
+                context = ctx.resolve(repo, store_id=store_id)
+            except ctx.UnregisteredContext:
+                context = pending_target(root, common, controls / 'registration.json', home, ctx)
+        sources, trees = preparation_sources(repo, context, owner, ctx, discover_archives=discover_archives)
+        prepared = prepare_native(binary, owner, context, sources, confirm_no_writers=confirm_no_writers)
+        if repo is not None and preparation_trees(repo, ctx) != trees:
+            raise MigrationError('Preparation committed; workspace coverage changed before association', preparation=prepared, context=context)
         try:
-            context = ctx.resolve(repo, store_id=store_id)
-        except ctx.UnregisteredContext:
-            if store_id is not None:
-                raise
-            context = ctx.checked_registration(root, common) if common is not None and os.path.lexists(common / ctx.REGISTRATION) else None
-        trees = sorted(ctx.worktrees(root), key=str) if common is not None else ([root] if root is not None else [])
-        for tree in trees:
-            ctx.no_symlinks(tree / '.ledger')
-        sources = [tree for tree in trees if os.path.lexists(tree / '.ledger' / slot) or os.path.lexists(tree / binding_ref)]
-        if context is None:
-            if root is None:
-                raise MigrationError('New owner custody requires a selected workspace')
-            repos = home / 'repos'
-            ctx.no_symlinks(repos)
-            catalog = ctx.read_catalog(home)
-            if repos.exists() and any(p.is_dir() and str(p) not in catalog['stores'].values() for p in repos.iterdir()):
-                raise MigrationError('Unregistered custody exists; resolve its identity before creating a replacement')
-            repos.mkdir(parents=True, exist_ok=True, mode=0o700)
-            selected_id = uuid.uuid4().hex
-            custody = Path(held.enter_context(tempfile.TemporaryDirectory(prefix='.migrating-', dir=repos)))
-            (custody / '.ledger').mkdir(mode=0o700)
-            ctx.write_json(custody / ctx.MARKER, {'schema': ctx.MARKER_SCHEMA, 'store_id': selected_id})
-        else:
-            custody = Path(context['store_root'])
-            selected_id = context['store_id']
-        mutable = sorted(set([*sources, custody]), key=str)
-        for tree in mutable:
-            held.enter_context(native_lock(tree / '.ledger/.transactions/.recovery.advisory', ctx))
-            for path in sorted((tree / binding_ref, tree / '.ledger' / slot)):
-                held.enter_context(native_lock(Path(str(path) + '.cas.lock.advisory'), ctx))
-                if os.path.lexists(Path(str(path) + '.cas.lock')):
-                    raise MigrationError('An abandoned legacy lease requires native recovery')
-            held.enter_context(native_lock(tree / '.ledger/.transactions/.journal.advisory', ctx))
-        if context is not None:
-            sources.append(custody)
-            for archived, entry in archive_entries(custody, slot, ctx):
-                ctx.no_symlinks(archived)
-                if entry.get('kind') != 'file' or digest_file(archived) != entry.get('sha256'):
-                    raise MigrationError('Archived migration source differs from its manifest')
-                sources.append(archived.parents[len(Path(slot).parts)])
-        sources = sorted(set(sources), key=str)
-        snapshot = inventory(sources, [], slots=[slot])
-        fingerprint = hashlib.sha256(canonical(snapshot).encode()).hexdigest()
-        archive = custody / 'legacy-archive' / fingerprint
-        ctx.no_symlinks(archive)
-        archive.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
-        if not archive.exists():
-            with tempfile.TemporaryDirectory(prefix='.owner-archive-', dir=archive.parent) as temporary:
-                staged_archive = Path(temporary) / 'snapshot'
-                staged_archive.mkdir(mode=0o700)
-                copy_inventory(snapshot, staged_archive)
-                ctx.write_json(staged_archive / 'manifest.json', {'schema': 'ledger-legacy-archive/v1', 'sources': snapshot})
-                sync_tree(staged_archive, ctx)
-                publish_absent(staged_archive, archive)
-                ctx.sync_directory(archive.parent)
-        else:
-            saved = ctx.read_document(archive / 'manifest.json', max_bytes=32 * 1024**2)
-            if saved.get('sources') != snapshot:
-                raise MigrationError('Existing migration archive has different sources')
-        copies = [archive / ('worktree-' + str(index)) for index in range(len(sources))]
-        for index, tree in enumerate(copies):
-            for name, entry in snapshot[str(index)]['entries'].items():
-                if entry['kind'] == 'file' and digest_file(tree / name) != entry['sha256']:
-                    raise MigrationError('Migration archive failed byte verification')
-            if ((tree / '.ledger' / slot).exists()
-                    or (sources[index] != custody and (tree / binding_ref).exists())):
-                healthy(binary, owner, ['--repo', str(tree)])
-        source = select_source(copies, [slot], ctx)
-        with tempfile.TemporaryDirectory(prefix='.owner-import-', dir=custody) as temporary:
-            proposal = Path(temporary)
-            ctx.write_json(proposal / ctx.MARKER, {'schema': ctx.MARKER_SCHEMA, 'store_id': selected_id})
-            (proposal / '.ledger').mkdir(mode=0o700)
-            origins = []
-            if context is not None:
-                origins.append(copies[sources.index(custody)])
-            if source is not None and source not in origins:
-                origins.append(source)
-            for origin in origins:
-                index = copies.index(origin)
-                for name, entry in snapshot[str(index)]['entries'].items():
-                    if name not in ('.ledger/' + slot, binding_ref) and not name.startswith(('.ledger/.definitions/', '.ledger/.revisions/')):
-                        continue
-                    if entry['kind'] != 'file' or name.endswith('.advisory'):
-                        continue
-                    destination = proposal / name
-                    if destination.exists():
-                        if name in ('.ledger/' + slot, binding_ref):
-                            continue
-                        if digest_file(destination) != entry['sha256']:
-                            raise MigrationError('Conflicting immutable native custody archive')
-                        continue
-                    destination.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
-                    shutil.copyfile(origin / name, destination)
-                    destination.chmod(0o600)
-            if source is not None:
-                proposed_slot = proposal / '.ledger' / slot
-                if proposed_slot.exists() and not prefix(source / '.ledger' / slot, proposed_slot):
-                    raise MigrationError('Managed and local histories need owner reconciliation')
-            staged_selector = ['--store-root', str(proposal), '--store-id', selected_id]
-            healthy(binary, owner, staged_selector)
-            sync_tree(proposal, ctx)
-            if common is not None and sorted(ctx.worktrees(root), key=str) != trees:
-                raise MigrationError('Worktree coverage changed during migration; retry')
-            files = sorted(path for path in (proposal / '.ledger').rglob('*') if path.is_file())
-            event = proposal / '.ledger' / slot
-            files = [path for path in files if path != event] + ([event] if event.exists() else [])
-            for path in files:
-                destination = custody / path.relative_to(proposal)
-                ctx.no_symlinks(destination)
-                if destination.exists():
-                    if digest_file(path) != digest_file(destination):
-                        raise MigrationError('Existing managed bytes changed; refusing replacement')
-                    continue
-                destination.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
-                publish_absent(path, destination)
-                ctx.sync_directory(destination.parent)
-        if context is None:
-            final = custody.parent / selected_id
-            publish_absent(custody, final)
-            ctx.sync_directory(final.parent)
-            custody = final
-        result = ctx._register_root_locked(custody, selected_id, root, home)
-        result['storage_mutated'] = True
-        result['owner_migration'] = {'owner': owner['name'], 'archive': str(custody / 'legacy-archive' / fingerprint),
-                                     'source_count': len(sources)}
-    healthy(binary, owner, result['native_args'], wait_busy=True)
-    return result
+            checked = healthy(binary, owner, context['native_args'], wait_busy=True)
+            if checked.get('preparation_pending') is not False:
+                raise MigrationError('Preparation remains unresolved')
+        except (RuntimeError, OSError, ValueError) as exc:
+            raise MigrationError(f'Preparation committed; owner verification failed: {exc}', preparation=prepared, context=context) from exc
+        try:
+            result = ctx.register_root(Path(context['store_root']), context['store_id'], root)
+        except (RuntimeError, OSError, ValueError) as exc:
+            raise MigrationError(f'Preparation committed; catalog association failed for {context["store_id"]}: {exc}', preparation=prepared, context=context) from exc
+        return {**result, 'storage_mutated': result['storage_mutated'] or prepared['storage_mutated'],
+                'preparation': prepared}
 
 
 def migration_source(repo: Path, ctx) -> tuple[Path, Path | None]:
@@ -979,7 +1014,7 @@ def main() -> int:
     parser.add_argument('--repair-archive', action='store_true')
     parser.add_argument('--ensure-owner', action='store_true',
                         help='Automatically prepare opted-in owner custody before projection or capture')
-    parser.add_argument('--read-only', action='store_true',
+    parser.add_argument('--read-only', '--no-maintenance', action='store_true',
                         help='Select owner custody without initialization, migration, or repair')
     parser.add_argument('--definition', type=Path)
     args = parser.parse_args()
@@ -990,8 +1025,10 @@ def main() -> int:
             raise MigrationError('Select one of --ensure-owner, --read-only, --repair-archive with --definition; not --migrate')
         if args.confirm_no_writers and not args.apply:
             raise MigrationError('--confirm-no-writers requires --apply')
-        if (args.apply or args.confirm_no_writers or args.framing_controls) and not args.migrate:
-            raise MigrationError('Migration effects require explicit --migrate')
+        if (args.apply or args.confirm_no_writers) and not (args.migrate or args.ensure_owner):
+            raise MigrationError('Migration effects require explicit --migrate or --ensure-owner')
+        if args.framing_controls and not args.migrate:
+            raise MigrationError('Framing controls require explicit --migrate')
         if args.migrate:
             if args.repo is None:
                 raise MigrationError('--migrate requires the selected legacy --repo')
@@ -999,14 +1036,22 @@ def main() -> int:
                              binary=args.ledger_bin, framing_controls=controls)
         elif args.ensure_owner or args.read_only:
             result = owner_context(args.repo, args.definition, store_id=args.store_id, maintain=args.ensure_owner,
-                                   read_only=args.read_only, binary=args.ledger_bin)
+                                   read_only=args.read_only, binary=args.ledger_bin, confirm_no_writers=args.confirm_no_writers)
         else:
             result = ensure(args.repo, store_id=args.store_id)
             if args.repair_archive:
                 result = restore_archived_slot(result, args.definition, binary=args.ledger_bin)
+        if not args.migrate or args.apply:
+            maintenance = load_module(Path(__file__).with_name('maintain_custody.py'))
+            context = result.get('context', result)
+            if not args.read_only and (args.ensure_owner or args.repair_archive or args.apply or result.get('storage_mutated')):
+                result['maintenance'] = maintenance.routine(context, binary=args.ledger_bin)
+            else:
+                result['maintenance'] = maintenance.observation()
     except (MigrationError, OSError, ValueError, RuntimeError, subprocess.SubprocessError) as exc:
         print(json.dumps({'schema': SCHEMA if args.migrate else 'ledger-workspace-context-error/v1', 'status': 'blocked', 'error': str(exc),
-                          'storage_mutated': None if args.apply or args.repair_archive or args.ensure_owner else False, 'authority_granted': False}), file=sys.stderr)
+                          'storage_mutated': (True if exc.context and exc.context.get('storage_mutated') is True else exc.preparation.get('storage_mutated')) if isinstance(exc, MigrationError) and exc.preparation is not None else (None if args.apply or args.repair_archive or args.ensure_owner else False), 'authority_granted': False,
+                          **({'preparation': exc.preparation, 'context': exc.context} if isinstance(exc, MigrationError) and exc.preparation is not None else {})}), file=sys.stderr)
         return 3
     print(canonical(result))
     return 0

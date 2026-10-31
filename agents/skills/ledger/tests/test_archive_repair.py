@@ -3,6 +3,7 @@ import json
 import os
 from pathlib import Path
 import select
+import shutil
 import subprocess
 import tempfile
 import unittest
@@ -98,9 +99,14 @@ class ArchiveRepairTests(unittest.TestCase):
     def test_tampered_archive_is_refused(self):
         self.slot.unlink()
         self.archived_slot.write_bytes(b'bad\n')
-        with self.assertRaisesRegex(custody.MigrationError, 'inventory'):
+        bindings = {path.name: path.read_bytes() for path in (self.store / '.ledger/.bindings').glob('*.jsonl')}
+        with self.assertRaises(custody.MigrationError) as caught:
             self.repair()
+        self.assertEqual(caught.exception.preparation['code'], 'StoreBindingRevisionMismatch')
+        self.assertFalse(caught.exception.preparation['storage_mutated'])
         self.assertFalse(self.slot.exists())
+        self.assertEqual(self.archived_slot.read_bytes(), b'bad\n')
+        self.assertEqual(bindings, {path.name: path.read_bytes() for path in (self.store / '.ledger/.bindings').glob('*.jsonl')})
 
     def test_stale_archive_cannot_roll_back_newer_binding(self):
         packet = json.loads(self.packet.read_text())
@@ -109,9 +115,14 @@ class ArchiveRepairTests(unittest.TestCase):
         changed.write_text(json.dumps(packet))
         self.capture(changed)
         self.slot.unlink()
-        with self.assertRaisesRegex(custody.MigrationError, 'existing native binding'):
+        bindings = {path.name: path.read_bytes() for path in (self.store / '.ledger/.bindings').glob('*.jsonl')}
+        with self.assertRaises(custody.MigrationError) as caught:
             self.repair()
+        self.assertEqual(caught.exception.preparation['code'], 'PreparationBindingConflict')
+        self.assertFalse(caught.exception.preparation['storage_mutated'])
         self.assertFalse(self.slot.exists())
+        self.assertEqual(self.archived_slot.read_bytes(), self.original)
+        self.assertEqual(bindings, {path.name: path.read_bytes() for path in (self.store / '.ledger/.bindings').glob('*.jsonl')})
 
     def test_busy_native_lock_waits_then_repairs(self):
         self.slot.unlink()
@@ -151,15 +162,45 @@ class ArchiveRepairTests(unittest.TestCase):
                 self.repair()
         self.assertFalse(self.slot.exists())
 
-    def test_local_divergence_requires_reconciliation(self):
+    def test_unbound_local_history_cannot_trigger_archive_restoration(self):
         local = self.root / 'workspace/.ledger/review-fold/counterexamples/events.jsonl'
         local.parent.mkdir(parents=True)
         local.write_bytes(self.original + b'new local history\n')
         self.context['workspace_root'] = str(self.root / 'workspace')
         self.slot.unlink()
-        with self.assertRaisesRegex(custody.MigrationError, 'Local history differs'):
+        with self.assertRaises(custody.MigrationError) as caught:
             self.repair()
+        self.assertEqual(caught.exception.preparation['code'], 'StoreSlotWithoutBinding')
+        self.assertFalse(caught.exception.preparation['storage_mutated'])
         self.assertFalse(self.slot.exists())
+        self.assertEqual(local.read_bytes(), self.original + b'new local history\n')
+
+    def test_local_divergence_requires_reconciliation(self):
+        workspace = self.root / 'workspace'
+        local = workspace / '.ledger/review-fold/counterexamples/events.jsonl'
+        local.parent.mkdir(parents=True)
+        local.write_bytes(self.original)
+        for name in custody.ARCHIVES:
+            source = self.store / '.ledger' / name
+            if source.exists():
+                shutil.copytree(source, workspace / '.ledger' / name)
+        packet = json.loads(self.packet.read_text())
+        packet['record']['observed_fact'] += ' Independent local extension.'
+        captured = subprocess.run([self.binary, 'transact', '--definition', str(self.definition),
+            '--repo', str(workspace), '--operation', 'capture', '--input', 'submission=-', '--format', 'json'],
+            input=json.dumps(packet).encode(), capture_output=True, timeout=15)
+        self.assertEqual(captured.returncode, 0, captured.stdout + captured.stderr)
+        local_before = local.read_bytes()
+        bindings = {path.name: path.read_bytes() for path in (self.store / '.ledger/.bindings').glob('*.jsonl')}
+        self.context['workspace_root'] = str(workspace)
+        self.slot.unlink()
+        with self.assertRaises(custody.MigrationError) as caught:
+            self.repair()
+        self.assertEqual(caught.exception.preparation['code'], 'PreparationBindingConflict')
+        self.assertFalse(caught.exception.preparation['storage_mutated'])
+        self.assertFalse(self.slot.exists())
+        self.assertEqual(local.read_bytes(), local_before)
+        self.assertEqual(bindings, {path.name: path.read_bytes() for path in (self.store / '.ledger/.bindings').glob('*.jsonl')})
 
     def test_archive_symlink_is_refused(self):
         self.slot.unlink()

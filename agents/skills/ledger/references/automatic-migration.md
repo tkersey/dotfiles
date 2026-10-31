@@ -29,17 +29,21 @@ uv run "$ledger_skill_root/scripts/ensure_custody.py" --repo "<workspace-root>" 
 
 Reuse the returned `native_args` for the original operation. The helper keeps an
 existing store's identity, adopts valid registrations, and initializes a private
-managed root only when no registered custody exists. It inventories available
-Git worktrees during migration, preserves source bytes and a bounded archive,
-and selects a single history covering every selected source by complete-record
-prefix. Existing managed bindings remain unchanged; missing bound slots must
+managed root only when evidence establishes a genuinely new owner. It discovers
+finite source contexts from the catalog, workspace and existing archive manifests,
+then invokes native `prepare`. Preparation copies only the selected history and
+required native metadata into one bounded workspace; it creates no archive.
+It selects a single covering history by complete-record prefix. Existing managed
+bindings remain unchanged; missing bound slots must
 validate against them. A healthy existing managed history needs no archive scan.
 Retired-format conversion remains the historical importer procedure below.
 
-Active writers are waited out using native recovery, event/binding, and journal
-locks. After obtaining the locks, the helper snapshots and validates protected
-history before publication. It never infers abandoned ownership from lock age or
-reclaims a legacy lease. Unknown damage, pending recovery, unavailable worktree
+Participating current writers use native recovery, event/binding and journal
+locks. The native engine validates protected history before publication. Empty
+source roots without the required coordination need actual writer quiescence;
+only then use `--ensure-owner --apply --confirm-no-writers`. The helper never
+infers quiescence from a missing process, infers abandoned ownership from lock
+age, or reclaims a legacy lease. Unknown damage, pending recovery, unavailable worktree
 coverage, divergent histories, or a local extension beyond an existing managed
 log remain explicit reconciliation failures. Sources are preserved. Failure never
 switches capture back to a repo-local store. Updated callers use managed selectors;
@@ -52,8 +56,13 @@ This mode creates no catalog, custody, or records and reports when preparation i
 unavailable under that constraint. Automatic preparation grants no new semantic
 capture, source mutation, provisioning, publication, or permission changes.
 Ordinary ensure still only resolves or adopts a registration. Ledger
-1.3.0 through 1.x supports the native protocol used here; no new 1.5.3 minimum is
-imposed. General permission errors do not authorize unrelated permission changes.
+1.6.0 or newer within major version 1 is required by this adapter. General
+permission errors do not authorize unrelated permission changes. Native
+publication, the subsequent owner operation, catalog association and maintenance
+have separate outcomes; later failure never authorizes another publication.
+Mutating custody work runs bounded housekeeping; explicit `--read-only` or
+`--no-maintenance` routes do not update health state. See
+[scheduled housekeeping](storage-maintenance.md#preparation-housekeeping).
 
 ## Skill workflow
 
@@ -165,7 +174,7 @@ become invented records. Global memory admission remains a separate owner action
 Automatic owner preparation includes exact archive restoration. A caller selecting
 that same repair directly uses `ensure_custody.py --repair-archive
 --definition <installed-owner-definition>` with the normal workspace or store ID.
-Bootstrap Ledger 1.3.0 or newer within major version 1 first. An intact owner store
+Bootstrap Ledger 1.6.0 or newer within major version 1 first. An intact owner store
 returns normally without scanning archives. Ordinary ensure and read-only context
 lookup never restore records.
 

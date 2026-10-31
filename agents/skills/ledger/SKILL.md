@@ -8,7 +8,7 @@ description: "Operate Ledger for owner-defined artifact validation, materializat
 ## Mission
 
 Provide the shared bootstrap, storage-context policy, and operating doctrine for
-Ledger 1.3.0 or newer within major version 1: a bounded, deterministic
+Ledger 1.6.0 or newer within major version 1: a bounded, deterministic
 artifact-protocol runtime driven by passive definitions owned by their domains.
 
 ```text
@@ -54,9 +54,9 @@ ledger_skill_root="$(realpath "${CODEX_HOME:-$HOME/.codex}/skills/ledger")"
 ```
 
 After `ledger-bootstrap-ready/v1`, invoke the native CLI directly. The handler
-defaults to Ledger 1.3.0 or newer within major version 1 and
+defaults to Ledger 1.6.0 or newer within major version 1 and
 `ledger-artifact-abi/v1`. An owner requiring a newer runtime must pass its minimum,
-for example `ensure-ledger --min-version 1.5.0`. Preserve that option when adding
+for example `ensure-ledger --min-version 1.7.0`. Preserve that option when adding
 `--install`; an earlier baseline readiness result does not satisfy the owner.
 The handler can install or upgrade `tkersey/tap/ledger` only when
 user-level provisioning is authorized. Otherwise stop with its remediation.
@@ -97,6 +97,8 @@ ledger materialize
 ledger transact
 ledger project
 ledger doctor
+ledger prepare
+ledger maintain
 ledger recovery inspect
 ledger recovery reclaim
 ledger capabilities

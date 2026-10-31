@@ -49,3 +49,32 @@ successfully, then verify the affected settings resolve as intended.
 The system config links into this checkout, so repository updates affect the
 shared defaults. Keep the checkout at a revision containing
 `codex/config.toml`.
+
+### Ledger maintenance
+
+After installing the qualified Homebrew Ledger 1.6.0 release, install the hourly
+user LaunchAgent with `./install --ledger-maintenance`. This explicit option
+activates `com.tkersey.ledger.maintenance`; ordinary dotfile linking does not.
+The installer uses the Homebrew formula's stable executable path and verifies
+that launchd loaded the job. Notification delivery still needs a live host check.
+
+The configuration is [maintenance.json](agents/skills/ledger/maintenance.json).
+Each sweep selects at most 128 cataloged stores and runs for at most five minutes.
+Native work per store is limited to 512 files, 256 MiB of preparation working
+storage and 2 GiB of reads; a native call is limited to 30 seconds. An incomplete
+sweep reports incomplete coverage. It does not claim that later sweeps inspect
+the remaining stores.
+
+Notifications use macOS `osascript` with a 5 GiB available-space threshold.
+New actionable conditions and resolutions are reported; unchanged alerts are
+suppressed for 24 hours. Successful routine cleanup is quiet. Only the latest
+bounded condition for each store and the latest scheduled run are retained under
+`LEDGER_HOME/maintenance`, with a wrapper coordination lock. No report history or
+payload archive is created. Latest notification state records command submission;
+it cannot certify delivery by macOS.
+
+`maintain_custody.py` inspects by default. Pass `--apply` for native housekeeping
+and notification state updates. Routine `ensure_custody.py --ensure-owner` also
+runs bounded housekeeping and reports a missing or stale scheduled-run receipt.
+`--read-only` and its `--no-maintenance` alias do neither. A healthy access does
+not establish that idle-time scheduling or notifications are working.

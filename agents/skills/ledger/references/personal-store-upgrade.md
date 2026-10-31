@@ -23,13 +23,13 @@ installation alone neither imports old history nor migrates notes.
 ## Release and writer cutover
 
 Release and install the native changes before activating the new definitions and
-adapters: Ledger **1.5.0 or later within major version 1**, with
+adapters: Ledger **1.6.0 or later within major version 1**, with
 `ledger-artifact-abi/v1`, and memory-note **0.3.0**. Merely merging the native PR
 does not update installed executables or a Homebrew formula. In the updated
 Ledger skill, verify the selected executable with:
 
 ```bash
-"$ledger_skill_root/scripts/ensure-ledger" --min-version 1.5.0
+"$ledger_skill_root/scripts/ensure-ledger" --min-version 1.6.0
 memory-note version
 ```
 

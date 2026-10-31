@@ -21,7 +21,7 @@ CAT = shutil.which("cat")
 FORMULA = "tkersey/tap/ledger"
 
 
-def ledger_stub(version="1.3.0", abi="ledger-artifact-abi/v1", version_exit=0,
+def ledger_stub(version="1.6.0", abi="ledger-artifact-abi/v1", version_exit=0,
                 capabilities_exit=0):
     return f"""#!/usr/bin/env bash
 printf '%s\\n' "$*" >> "$MOCK_LEDGER_LOG"
@@ -91,7 +91,7 @@ class BootstrapTests(unittest.TestCase):
     def calls(self, path):
         return path.read_text().splitlines() if path.exists() else []
 
-    def assert_ready(self, result, action="none", version="1.3.0"):
+    def assert_ready(self, result, action="none", version="1.6.0"):
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(json.loads(result.stdout), {
             "schema": "ledger-bootstrap-ready/v1", "status": "ready",
@@ -109,48 +109,48 @@ class BootstrapTests(unittest.TestCase):
         self.assertTrue(error["remediation"])
 
     def test_supported_versions_do_not_provision(self):
-        for version in ("1.3.0", "1.3.1", "1.4.0", "1.4.1", "1.10.0"):
+        for version in ("1.6.0", "1.6.1", "1.7.0", "1.7.1", "1.10.0"):
             with self.subTest(version=version):
                 self.write_executable("ledger", ledger_stub(version=version))
                 self.assert_ready(self.run_bootstrap(), version=version)
         self.assertEqual(self.calls(self.brew_log), [])
 
     def test_owner_minimum_blocks_old_binary_without_install_authority(self):
-        self.write_executable("ledger", ledger_stub(version="1.4.0"))
+        self.write_executable("ledger", ledger_stub(version="1.7.0"))
         self.installed.touch()
-        self.assert_ready(self.run_bootstrap(), version="1.4.0")
-        result = self.run_bootstrap("--min-version", "1.5.0")
+        self.assert_ready(self.run_bootstrap(), version="1.7.0")
+        result = self.run_bootstrap("--min-version", "1.8.0")
         self.assert_blocked(result, "version-or-abi-mismatch")
-        self.assertIn("--min-version 1.5.0 --install", result.stderr)
+        self.assertIn("--min-version 1.8.0 --install", result.stderr)
         self.assertEqual(self.calls(self.brew_log), [])
 
     def test_owner_minimum_upgrades_existing_supported_baseline(self):
-        self.write_executable("ledger", ledger_stub(version="1.4.0"))
+        self.write_executable("ledger", ledger_stub(version="1.7.0"))
         self.installed.touch()
-        self.env["MOCK_LEDGER_AFTER"] = ledger_stub(version="1.5.0")
-        self.assert_ready(self.run_bootstrap("--min-version", "1.5.0", "--install"),
-                          action="upgraded", version="1.5.0")
+        self.env["MOCK_LEDGER_AFTER"] = ledger_stub(version="1.8.0")
+        self.assert_ready(self.run_bootstrap("--min-version", "1.8.0", "--install"),
+                          action="upgraded", version="1.8.0")
         self.assertEqual(self.calls(self.brew_log),
                          [f"list --versions {FORMULA}", f"upgrade {FORMULA}"])
 
     def test_owner_minimum_fails_when_upgrade_still_returns_older_formula(self):
-        self.write_executable("ledger", ledger_stub(version="1.4.0"))
+        self.write_executable("ledger", ledger_stub(version="1.7.0"))
         self.installed.touch()
-        self.env["MOCK_LEDGER_AFTER"] = ledger_stub(version="1.4.1")
-        result = self.run_bootstrap("--install", "--min-version", "1.5.0")
+        self.env["MOCK_LEDGER_AFTER"] = ledger_stub(version="1.7.1")
+        result = self.run_bootstrap("--install", "--min-version", "1.8.0")
         self.assert_blocked(result, "post-upgrade-version-or-abi-mismatch", code=2)
-        self.assertIn("1.5.0", result.stderr)
+        self.assertIn("1.8.0", result.stderr)
         self.assertEqual(self.calls(self.brew_log),
                          [f"list --versions {FORMULA}", f"upgrade {FORMULA}"])
 
     def test_owner_minimum_checks_patch_version_and_retains_abi_requirement(self):
-        for version, abi, ready in (("1.5.0", "ledger-artifact-abi/v1", False),
-                                    ("1.5.1", "ledger-artifact-abi/v1", True),
+        for version, abi, ready in (("1.8.0", "ledger-artifact-abi/v1", False),
+                                    ("1.8.1", "ledger-artifact-abi/v1", True),
                                     ("1.10.0", "ledger-artifact-abi/v1", True),
-                                    ("1.5.1", "ledger-artifact-abi/v2", False)):
+                                    ("1.8.1", "ledger-artifact-abi/v2", False)):
             with self.subTest(version=version, abi=abi):
                 self.write_executable("ledger", ledger_stub(version, abi))
-                result = self.run_bootstrap("--min-version", "1.5.1")
+                result = self.run_bootstrap("--min-version", "1.8.1")
                 if ready:
                     self.assert_ready(result, version=version)
                 else:
@@ -160,7 +160,7 @@ class BootstrapTests(unittest.TestCase):
     def test_invalid_owner_minimum_does_not_probe_or_provision(self):
         for args in (("--min-version",), ("--min-version", "1.2.0"),
                      ("--min-version", "2.0.0"), ("--min-version", "1.5"),
-                     ("--min-version", "1.5.0-rc.1")):
+                     ("--min-version", "1.8.0-rc.1")):
             with self.subTest(args=args):
                 self.assert_blocked(self.run_bootstrap(*args),
                                     "invalid-minimum-version", code=2)
@@ -171,12 +171,13 @@ class BootstrapTests(unittest.TestCase):
         for version, abi in (("1.0.2", "ledger-artifact-abi/v1"),
                              ("1.2.1", "ledger-artifact-abi/v1"),
                              ("1.2.99", "ledger-artifact-abi/v1"),
+                             ("1.5.99", "ledger-artifact-abi/v1"),
                              ("0.9.9", "ledger-artifact-abi/v1"),
                              ("2.0.0", "ledger-artifact-abi/v1"),
-                             ("1.3.0-rc.1", "ledger-artifact-abi/v1"),
+                             ("1.6.0-rc.1", "ledger-artifact-abi/v1"),
                              ("not-a-version", "ledger-artifact-abi/v1"),
-                             ("1.3.0", "ledger-artifact-abi/v2"),
-                             ("1.3.0", "")):
+                             ("1.6.0", "ledger-artifact-abi/v2"),
+                             ("1.6.0", "")):
             with self.subTest(version=version, abi=abi):
                 self.write_executable("ledger", ledger_stub(version, abi))
                 self.assert_blocked(self.run_bootstrap(), "version-or-abi-mismatch")

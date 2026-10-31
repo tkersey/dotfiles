@@ -8,6 +8,39 @@ Routine opted-in owner preparation follows
 standing authority requires no separate approval; this guide governs other
 selected recovery and format changes.
 
+## Preparation housekeeping
+
+Ledger 1.6 provides `prepare` for selected static monolithic history and `maintain`
+for preparation-owned working files. Both inspect by default. The adapter uses
+native preparation under existing opted-in owner authority; it never copies a
+second archive or substitutes a Python algorithm after native failure.
+
+```bash
+ledger maintain --store-root <context.store_root> --store-id <context.store_id> --format json
+```
+
+Add `--apply` only within authorized custody maintenance. Native state determines
+release; unresolved publication, ambiguous ownership and exhausted bounds retain
+the affected work. Canonical history, archives, caches, foreign files and persistent
+coordination resources are outside cleanup. Logical reclaimed bytes are not a
+claim about physical disk blocks. Native preparation and maintenance report their
+own outcome separately from any subsequent owner operation.
+
+After installing the qualified Homebrew runtime, `./install --ledger-maintenance`
+installs the user LaunchAgent `com.tkersey.ledger.maintenance`. Its default hourly
+sweep considers at most 128 cataloged stores, with per-store limits of 256 MiB
+working bytes, 512 files and 2 GiB read bytes; pressure defaults to less than 5 GiB
+free. `maintenance.json` owns these values and the `osascript` notification route.
+The wrapper retains one replaceable condition per store and one last-run record,
+suppresses unchanged notifications, and reports resolution. Routine cleanup is
+quiet. Inspect and explicit no-maintenance execution persist no health updates.
+
+Verify actual scheduled execution and notification delivery on the target host;
+successful installation alone does not prove either. Normal invocation reports
+stale or missing last-run evidence. A disabled scheduler cannot provide idle-time
+notifications. Inspect with `scripts/install_maintenance.py` without `--apply`;
+use `scripts/maintain_custody.py` without `--apply` for a nonmutating sweep.
+
 ## Exact transaction recovery
 
 Lease expiry is not authority transfer. Inspect one transaction and require the
