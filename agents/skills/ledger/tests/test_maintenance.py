@@ -169,6 +169,19 @@ class MaintenanceTests(unittest.TestCase):
         self.assertIsNone(result['stores'][0]['measurements']['required_history_bytes'])
         self.assertIsNone(result['stores'][0]['measurements']['physical_bytes_freed'])
 
+    def test_partial_cleanup_observation_survives_persisted_summary(self):
+        value = self.native(outcome='failure', reclaimed=17)
+        value['preparation'] = {
+            'phase': 'installed', 'installed': True, 'observed_by': 'reconciliation',
+            'activity': 'cleanup', 'complete': False, 'files': 2, 'bytes': 31,
+            'reclaimed_bytes': 17,
+        }
+        with patch.object(maintenance, 'invoke', return_value=value):
+            result = self.run_wrapper(apply=True)
+        self.assertEqual(result['stores'][0]['preparation'], value['preparation'])
+        latest = json.loads((self.home / 'maintenance' / (self.context['store_id'] + '.json')).read_bytes())
+        self.assertEqual(latest['observation']['preparation'], value['preparation'])
+
     def test_notification_message_is_an_argument_not_script_source(self):
         message = '\"; do shell script \"untrusted\"'
         with patch.object(maintenance.subprocess, 'run') as run:

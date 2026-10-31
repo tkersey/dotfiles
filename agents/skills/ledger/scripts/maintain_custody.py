@@ -125,7 +125,7 @@ def summary(value: dict) -> dict:
               if key in value and (value[key] is None or type(value[key]) in (str, int, bool))}
     preparation = value.get('preparation')
     if isinstance(preparation, dict):
-        result['preparation'] = {key: preparation[key] for key in ('phase', 'installed', 'files', 'bytes', 'reclaimed_bytes')
+        result['preparation'] = {key: preparation[key] for key in ('phase', 'installed', 'observed_by', 'activity', 'complete', 'files', 'bytes', 'reclaimed_bytes')
                                  if key in preparation and (preparation[key] is None or type(preparation[key]) in (str, int, bool))}
     measurements = value.get('measurements')
     if isinstance(measurements, dict):
