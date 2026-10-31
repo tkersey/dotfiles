@@ -10,6 +10,7 @@ import plistlib
 import re
 import shutil
 import subprocess
+import sys
 import tempfile
 
 LABEL = 'com.tkersey.ledger.maintenance'
@@ -23,10 +24,10 @@ def maintenance_module():
     return module
 
 
-def launch_agent(uv: str, ledger: str, config: Path, home: Path, interval: int) -> dict:
+def launch_agent(python: str, ledger: str, config: Path, home: Path, interval: int) -> dict:
     return {'Label': LABEL,
-            'ProgramArguments': [uv, 'run', '--no-project', '--offline', str(Path(__file__).with_name('maintain_custody.py').resolve()),
-                                 '--apply', '--config', str(config), '--ledger-bin', ledger],
+            'ProgramArguments': [python, str(Path(__file__).with_name('maintain_custody.py').resolve()),
+                                 '--apply', '--scheduled', '--config', str(config), '--ledger-bin', ledger],
             'EnvironmentVariables': {'LEDGER_HOME': str(home), 'PATH': '/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin'},
             'RunAtLoad': True, 'StartInterval': interval, 'ProcessType': 'Background',
             'StandardOutPath': '/dev/null', 'StandardErrorPath': '/dev/null'}
@@ -38,23 +39,23 @@ def install(*, apply: bool = False, config_path: Path | None = None) -> dict:
     config_path = config_path or maintenance.DEFAULT_CONFIG
     config = maintenance.load_config(config_path, ctx)
     home = ctx.storage_home()
-    uv = shutil.which('uv')
     brew = shutil.which('brew')
-    if uv is None or brew is None:
-        raise RuntimeError('Install the supported uv and Homebrew Ledger tools first')
-    prefix = subprocess.run([brew, '--prefix', 'ledger'], capture_output=True, text=True, check=True, timeout=30).stdout.strip()
+    if brew is None:
+        raise RuntimeError('Install the supported Homebrew Ledger tools first')
+    python = str(Path(sys.executable).resolve(strict=True))
+    subprocess.run([python, '-I', '-c', 'import argparse, fcntl, importlib.util, json, pathlib, plistlib, subprocess'],
+                   stdin=subprocess.DEVNULL, capture_output=True, check=True, timeout=30)
+    prefix = subprocess.run([brew, '--prefix', 'tkersey/tap/ledger'], capture_output=True, text=True, check=True, timeout=30).stdout.strip()
     ledger = str(Path(prefix) / 'bin/ledger')
     version = subprocess.run([ledger, 'version'], capture_output=True, text=True, check=True, timeout=30).stdout.strip()
     if not re.fullmatch(r'\d+\.\d+\.\d+', version) or not (1, 6, 0) <= tuple(map(int, version.split('.'))) < (2, 0, 0):
         raise RuntimeError('Scheduled maintenance requires the installed Homebrew Ledger >=1.6.0 and <2.0.0')
-    if not Path('/usr/bin/osascript').is_file():
-        raise RuntimeError('The configured macOS notification route is unavailable')
     target = Path.home() / 'Library/LaunchAgents' / (LABEL + '.plist')
-    specification = launch_agent(uv, ledger, config_path.resolve(strict=True), home, config['interval_seconds'])
+    specification = launch_agent(python, ledger, config_path.resolve(strict=True), home, config['interval_seconds'])
     payload = plistlib.dumps(specification)
     result = {'schema': 'ledger-maintenance-install/v1', 'label': LABEL, 'path': str(target),
               'runtime': ledger, 'version': version, 'interval_seconds': config['interval_seconds'],
-              'storage_mutated': False, 'activated': False, 'notification_delivery_verified': False,
+              'storage_mutated': False, 'activated': False,
               'authority_granted': False}
     if not apply:
         return {**result, 'launch_agent': specification}

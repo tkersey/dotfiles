@@ -444,6 +444,7 @@ def owner_context(repo: Path | None, definition: Path, *, store_id: str | None =
                 and not os.path.lexists(tree / '.learnings.jsonl')
                 and not any(os.path.lexists(tree / name) for name in owner['retired_sources'])
                 for tree in trees):
+            reject_unregistered_custody(root, common, ctx.storage_home(), ctx)
             return ctx.resolve(repo, initialize=True)
     return migrate_owner(repo, definition, store_id=store_id, binary=binary, skill_root=skill_root, confirm_no_writers=confirm_no_writers)
 

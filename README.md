@@ -55,8 +55,9 @@ shared defaults. Keep the checkout at a revision containing
 After installing the qualified Homebrew Ledger 1.6.0 release, install the hourly
 user LaunchAgent with `./install --ledger-maintenance`. This explicit option
 activates `com.tkersey.ledger.maintenance`; ordinary dotfile linking does not.
-The installer uses the Homebrew formula's stable executable path and verifies
-that launchd loaded the job. Notification delivery still needs a live host check.
+The installer selects `tkersey/tap/ledger`, uses its stable executable path, and
+pins the validated Python interpreter used during installation. It verifies
+that launchd loaded the job.
 
 The configuration is [maintenance.json](agents/skills/ledger/maintenance.json).
 Each sweep selects at most 128 cataloged stores and runs for at most five minutes.
@@ -65,16 +66,17 @@ storage and 2 GiB of reads; a native call is limited to 30 seconds. An incomplet
 sweep reports incomplete coverage. It does not claim that later sweeps inspect
 the remaining stores.
 
-Notifications use macOS `osascript` with a 5 GiB available-space threshold.
-New actionable conditions and resolutions are reported; unchanged alerts are
-suppressed for 24 hours. Successful routine cleanup is quiet. Only the latest
-bounded condition for each store and the latest scheduled run are retained under
-`LEDGER_HOME/maintenance`, with a wrapper coordination lock. No report history or
-payload archive is created. Latest notification state records command submission;
-it cannot certify delivery by macOS.
+Cleanup runs quietly. CLI results report failures, incomplete inspection, and
+free space below the configured 5 GiB threshold. Only the latest bounded run
+status is retained under `LEDGER_HOME/maintenance`, with a wrapper coordination
+lock. No report history or payload archive is created.
 
 `maintain_custody.py` inspects by default. Pass `--apply` for native housekeeping
-and notification state updates. Routine `ensure_custody.py --ensure-owner` also
+and run-status updates. Routine `ensure_custody.py --ensure-owner` also
 runs bounded housekeeping and reports a missing or stale scheduled-run receipt.
+Normal access reads the installed LaunchAgent's configuration and cadence;
+changing the cadence requires reinstalling the agent. A manual sweep does not
+certify scheduled execution. Recorded execution does not prove the job remains
+loaded or enabled.
 `--read-only` and its `--no-maintenance` alias do neither. A healthy access does
-not establish that idle-time scheduling or notifications are working.
+not establish that idle-time scheduling is working.

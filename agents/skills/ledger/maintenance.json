@@ -5,6 +5,5 @@
   "max_bytes": 268435456,
   "max_files": 512,
   "max_read_bytes": 2147483648,
-  "min_free_bytes": 5368709120,
-  "notification_route": "osascript"
+  "min_free_bytes": 5368709120
 }

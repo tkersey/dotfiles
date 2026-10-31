@@ -62,6 +62,32 @@ class PreparationAdapterTests(unittest.TestCase):
         self.assertFalse((self.home / 'catalog.json').exists())
         self.assertEqual(evidence.read_bytes(), b'not disposable')
 
+    def test_empty_owner_rejects_orphan_even_with_an_existing_catalog(self):
+        self.ctx.resolve(initialize=True)
+        orphan = self.home / 'repos' / ('b' * 32)
+        (orphan / '.ledger').mkdir(parents=True)
+        self.ctx.write_json(orphan / self.ctx.MARKER,
+                            {'schema': self.ctx.MARKER_SCHEMA, 'store_id': 'b' * 32})
+        evidence = orphan / '.ledger/original-history'
+        evidence.write_bytes(b'original history remains')
+        before = {str(path.relative_to(self.home)): path.read_bytes()
+                  for path in self.home.rglob('*') if path.is_file()}
+        roots = set((self.home / 'repos').iterdir())
+        with patch.object(custody, 'prepare_native') as prepare:
+            with self.assertRaisesRegex(custody.MigrationError, 'Unregistered custody exists'):
+                custody.owner_context(self.repo, self.definition, maintain=True)
+        prepare.assert_not_called()
+        self.assertEqual(set((self.home / 'repos').iterdir()), roots)
+        self.assertEqual(before, {str(path.relative_to(self.home)): path.read_bytes()
+                                 for path in self.home.rglob('*') if path.is_file()})
+
+    def test_empty_new_owner_with_only_cataloged_roots_initializes_normally(self):
+        prior = self.ctx.resolve(initialize=True)
+        with patch.object(custody, 'prepare_native', side_effect=AssertionError('unnecessary transfer')):
+            context = custody.owner_context(self.repo, self.definition, maintain=True)
+        self.assertNotEqual(prior['store_id'], context['store_id'])
+        self.assertEqual(self.ctx.resolve(self.repo)['store_id'], context['store_id'])
+
     def test_one_hundred_failed_preparations_keep_one_target_without_copying_unrelated_payload(self):
         unrelated = self.repo / '.ledger/cas/oversized'
         unrelated.parent.mkdir(parents=True)

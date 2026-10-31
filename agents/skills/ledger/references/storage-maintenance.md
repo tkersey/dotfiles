@@ -33,15 +33,17 @@ After installing the qualified Homebrew runtime, `./install --ledger-maintenance
 installs the user LaunchAgent `com.tkersey.ledger.maintenance`. Its default hourly
 sweep considers at most 128 cataloged stores, with per-store limits of 256 MiB
 working bytes, 512 files and 2 GiB read bytes; pressure defaults to less than 5 GiB
-free. `maintenance.json` owns these values and the `osascript` notification route.
-The wrapper retains one replaceable condition per store and one last-run record,
-suppresses unchanged notifications, and reports resolution. Routine cleanup is
-quiet. Inspect and explicit no-maintenance execution persist no health updates.
+free. `maintenance.json` owns these values. The installed LaunchAgent selects its
+configuration and cadence; cadence changes require reinstalling the agent.
+The wrapper retains one bounded last-run record and reports health through CLI
+results. Cleanup runs quietly. Inspect and explicit no-maintenance execution
+persist no health updates.
 
-Verify actual scheduled execution and notification delivery on the target host;
-successful installation alone does not prove either. Normal invocation reports
-stale or missing last-run evidence. A disabled scheduler cannot provide idle-time
-notifications. Inspect with `scripts/install_maintenance.py` without `--apply`;
+Verify actual scheduled execution on the target host; successful installation
+alone does not prove it. Normal invocation reports stale or missing last-run
+evidence. A manual sweep cannot certify scheduled execution, and recorded
+execution does not establish that launchd remains enabled. Inspect with
+`scripts/install_maintenance.py` without `--apply`;
 use `scripts/maintain_custody.py` without `--apply` for a nonmutating sweep.
 
 ## Exact transaction recovery
