@@ -362,6 +362,83 @@ class OwnerUpgradeTests(unittest.TestCase):
         self.assertEqual((Path(context['store_root']) / self.slot).read_bytes(), original)
         self.assertEqual((self.repo / self.slot).read_bytes(), original)
 
+    def assert_real_native_host_retry(self, boundary):
+        self.capture(['--repo', str(self.repo)])
+        original = (self.repo / self.slot).read_bytes()
+        events = [json.loads(line) for line in original.splitlines()]
+        records = [event['record'] for event in events]
+        for key, value in json.loads(self.packet.read_text())['record'].items():
+            self.assertEqual(records[0][key], value)
+        self.assertEqual(records[0]['id'], events[0]['counterexample_id'])
+        home = self.root / 'home'
+        replace = os.replace
+        healthy = custody.healthy
+        failures = []
+
+        def fail_catalog(source, target):
+            if Path(target) == home / 'catalog.json':
+                failures.append(boundary)
+                raise OSError('catalog publication fixture failure')
+            return replace(source, target)
+
+        def fail_verification(*arguments, **kwargs):
+            result = healthy(*arguments, **kwargs)
+            self.assertTrue(result['healthy'])
+            failures.append(boundary)
+            raise OSError('post-native verification fixture failure')
+
+        def snapshot(root):
+            return {str(path.relative_to(root)): None if path.is_dir() else path.read_bytes()
+                    for path in root.rglob('*')}
+
+        injection = (patch.object(os, 'replace', side_effect=fail_catalog) if boundary == 'catalog'
+                     else patch.object(custody, 'healthy', side_effect=fail_verification))
+        message = 'catalog association failed' if boundary == 'catalog' else 'owner verification failed'
+        identities = set()
+        first_snapshot = None
+        with injection:
+            for attempt in range(100):
+                with self.assertRaisesRegex(custody.MigrationError, message) as caught:
+                    self.ensure()
+                context = caught.exception.context
+                store = Path(context['store_root'])
+                identities.add((context['store_id'], context['store_root']))
+                self.assertEqual(caught.exception.preparation['outcome'], 'prepared' if attempt == 0 else 'covered')
+                self.assertEqual((store / self.slot).read_bytes(), original)
+                self.assertEqual((self.repo / self.slot).read_bytes(), original)
+                self.assertFalse((home / 'catalog.json').exists())
+                self.assertEqual(list((home / 'repos').iterdir()), [store])
+                self.assertEqual(len(list((home / 'preparations').glob('*/registration.json'))), 1)
+                self.assertEqual(len(list((store / '.ledger/.transactions').glob('*/transaction.json'))), 1)
+                self.assertFalse(list((store / '.ledger/.preparation').glob('payload-*')))
+                self.assertFalse(list(home.rglob('legacy-archive')))
+                current = snapshot(home)
+                if first_snapshot is None:
+                    first_snapshot = current
+                self.assertEqual(current, first_snapshot)
+        self.assertEqual(len(failures), 100)
+        self.assertEqual(len(identities), 1)
+        committed = snapshot(store)
+        resumed = self.ensure()
+        self.assertEqual((resumed['store_id'], resumed['store_root']), next(iter(identities)))
+        self.assertEqual(resumed['preparation']['outcome'], 'covered')
+        self.assertEqual(snapshot(store), committed)
+        self.assertEqual(self.ctx.resolve(self.repo)['store_id'], resumed['store_id'])
+        projected = subprocess.run([self.binary, 'project', '--definition', str(self.definition),
+            *resumed['native_args'], '--projection', 'basis',
+            '--param', 'repository=' + records[0]['repository_id'], '--payload-only', '--format', 'json'],
+            capture_output=True, timeout=15)
+        self.assertEqual(projected.returncode, 0, projected.stdout + projected.stderr)
+        self.assertEqual(json.loads(projected.stdout), records)
+        self.assertEqual((store / self.slot).read_bytes(), original)
+        self.assertEqual((self.repo / self.slot).read_bytes(), original)
+
+    def test_one_hundred_catalog_failures_preserve_one_native_commit(self):
+        self.assert_real_native_host_retry('catalog')
+
+    def test_one_hundred_verification_failures_preserve_one_native_commit(self):
+        self.assert_real_native_host_retry('verification')
+
     def test_empty_registered_owner_imports_local_history_without_an_archive(self):
         registered = self.ctx.resolve(self.repo, initialize=True)
         self.capture(['--repo', str(self.repo)])
