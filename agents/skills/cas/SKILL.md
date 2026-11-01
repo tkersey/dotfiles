@@ -12,6 +12,12 @@ name; no `cas` executable, wrapper, compatibility alias, or automatic fallback i
 part of this workflow. Use the caller's selected Codex executable and preserve
 its model, configuration, permissions, target, and endpoint.
 
+New reviews inherit the invoking turn's effective model and reasoning effort
+unless the caller explicitly overrides either setting for that review. Resolve
+and pin them through [review dispatch](reviews.md#inherit-the-invoking-turns-settings);
+a fresh Codex process loading disk defaults is not inheritance. Existing-thread
+recovery retains the original request's settings.
+
 The runtime owns execution and its original output. The caller owns requirements,
 review credit, finding truth, repairs, publication, and closure. Implicit selection
 does not authorize effects or start a coding/review campaign on its own.

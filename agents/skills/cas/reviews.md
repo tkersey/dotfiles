@@ -1,5 +1,45 @@
 # Native reviews
 
+## Inherit the invoking turn's settings
+
+Before a new review, resolve the invoking turn's effective model and reasoning
+effort. An explicit caller override for this review wins for that field; inherit
+the other field. A global `model`, `review_model`, or reasoning default is not an
+explicit override for this request.
+
+Use the host's exact invoking thread/turn identity and effective settings when
+available. In a shell, `CODEX_THREAD_ID` identifies the invoking thread, not its
+model or effort. Resolve only that thread through read-only native `thread/read`
+or its uniquely matching native session artifact, verifying session identity and
+the invoking turn. The native `turn_context` records `model` and `effort`; match
+the current invocation, not the newest session, another turn, or saved settings
+that a per-turn override superseded. Do not resume a thread merely to inspect it.
+Read only the needed metadata, not unrelated conversations or private reasoning.
+
+An absent effort is unresolved unless native effective settings or the selected
+model's applicable default establish it. Do not guess `medium`, infer settings
+from a model name in prose, or silently fall back to disk configuration. If a
+required value cannot be established, report the missing value before dispatch;
+an explicit caller selection can supply it. Preserve the selected provider and
+endpoint; unavailable model/effort combinations do not authorize substitution.
+
+Set `selected_model` and `selected_effort` to those resolved values. Encode the
+configuration strings rather than interpreting their contents as shell code:
+
+```bash
+review_model_override=$(uv run --no-project python -c \
+  'import json,sys; print("review_model=" + json.dumps(sys.argv[1]))' "$selected_model")
+reasoning_override=$(uv run --no-project python -c \
+  'import json,sys; print("model_reasoning_effort=" + json.dumps(sys.argv[1]))' "$selected_effort")
+```
+
+Pass `--model` and both overrides on every new review invocation below. Pinning
+`review_model` prevents a configured review-specific model from overriding the
+inherited model. Retain the source thread/turn and resolved settings with the
+existing request binding; check native effective execution metadata against them
+when admitting the result. Requested flags alone do not prove inheritance.
+These settings do not customize the native standard rubric or guarantee coverage.
+
 ## Launch the selected review
 
 Use the dedicated `codex exec review` command, not an ordinary coding prompt that
@@ -20,14 +60,15 @@ admission; a clean checkout is not a reason to select `--uncommitted`.
 ```bash
 # Native/default standard. Variables name the caller's frozen subject and new files.
 codex exec --cd "$repo" --json --output-last-message "$report" \
+  --model "$selected_model" -c "$review_model_override" -c "$reasoning_override" \
   review --base "$base_sha" >"$events" 2>"$diagnostics"
 ```
 
 Native/default standard adds no custom instructions argument, empty override,
 wrapper prompt, copied rubric, or skill-authored instruction file. Preserve
 caller-selected model/configuration/permissions; do not add bypass flags or widen
-access after a failed check. A named model does not override a configured
-`review_model`; preserve or explicitly set that native setting only as authorized.
+access after a failed check. Apply the resolved settings above without editing
+shared configuration or changing an already-bound review campaign implicitly.
 
 For a caller-selected auxiliary or file focus, preserve its exact instruction
 bytes through a per-invocation `developer_instructions` override. Do not supply the
@@ -40,6 +81,7 @@ override=$(uv run --no-project python -c \
   'import json,pathlib,sys; sys.stdout.write("developer_instructions=" + json.dumps(pathlib.Path(sys.argv[1]).read_bytes().decode("utf-8"), ensure_ascii=False))' \
   "$instructions")
 codex exec --cd "$repo" --json --output-last-message "$report" \
+  --model "$selected_model" -c "$review_model_override" -c "$reasoning_override" \
   -c "$override" review --base "$base_sha" >"$events" 2>"$diagnostics"
 ```
 

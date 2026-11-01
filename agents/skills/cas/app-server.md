@@ -35,6 +35,14 @@ permissions, workspace roots, environment, and config. Inspect returned selectio
 before dispatch. Native review forces its approval policy and prefers `review_model`;
 supplied options are not an effective-permissions or effective-repository attestation.
 
+For a fresh review thread, resolve model and effort from the invoking turn under
+[review inheritance](reviews.md#inherit-the-invoking-turns-settings). Pass the resolved
+model and native configuration overrides for `review_model` and
+`model_reasoning_effort` through the installed `thread/start` schema. Verify the
+returned effective model/effort before `review/start`; do not rely on a new server
+process inheriting the caller's live settings. Existing-thread recovery preserves
+the original request's configuration rather than adopting a later caller's settings.
+
 ## Explicit WebSockets and endpoints
 
 For an explicitly required control listener, native Codex also exposes:

@@ -16,6 +16,10 @@ of agent context. Do not reward missing required reviews or omitted observations
 |---|---|
 | Inspect a goal without resuming | Use native `thread/goal/get`, not resume or a fabricated `codex goal` command. Explicit status-change authority permits `thread/goal/set`. |
 | Native changeset standard versus auxiliary | Preserve deliberate absence of custom instructions for standard; deliver exact auxiliary bytes through per-invocation native configuration without mutating shared config. |
+| Invoking turn uses a different model/effort from disk defaults | Resolve exact invoking-turn settings; pin `--model`, `review_model`, and `model_reasoning_effort` for the fresh review and verify effective execution metadata. Preserve provider, endpoint, and the native standard rubric. |
+| Caller explicitly overrides only review effort | Honor that effort and inherit the invoking model; a stale global `review_model` must not win. |
+| Invoking identity is ambiguous or effort is absent | Do not select the latest session or guess a default. Resolve exact native effective settings or report the missing value before dispatch. An explicit caller selection may supply it. |
+| Review recovery is invoked from a differently configured turn | Keep the original review request's model/effort and attribution; do not silently rebind the ongoing campaign. |
 | Native execution is available; CAS is absent | Use Codex directly, without installing CAS, running its preflight, or adding a fallback wrapper. |
 | Exec JSONL contains `turn.completed` but only rendered text is available | Recover the exact owner's structured artifact; do not infer a clean verdict from exit status/prose or use `--output-schema` to pretend native review output changed. |
 | Original structured output has findings and `patch is correct` | Preserve the findings; empty findings with `patch is incorrect` remains unresolved, not clean. |
