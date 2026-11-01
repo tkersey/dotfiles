@@ -28,7 +28,7 @@ const coreHashes = {
   'Proof acceptance': '9ce927daa4b505028355f061ca6d457269a9e6c4f2252047351ecec2f455031c',
   'Comments in code': '9dfab826dd63fbdd4ac448cbf0d7c690edef00145282604d9f0737c39edc39bf',
   'Realization and common proof obligations': '8f782e151a2c48cca2da1506830376ad597b689fde6985014f30c466f87be6e3',
-  'Construction Working Set': '1b0b7d96a2434a3fceea83fc34be41db3623450e146913428ec4b355d34fc286',
+  'Construction Working Set': 'de9ee5fa5fb2cb205c5c970dfbcd2c98b76467166ac09b5f71510da986178e14',
   'Completion': 'dc56a54f2fd79d07f4d801b030cbf5b5a1ec6758be7a8c72eae0e8c2f630f58f'
 };
 // Native-executor migration changes bindings, not the preserved credit/construction sections.

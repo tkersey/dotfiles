@@ -227,16 +227,24 @@ compaction. Review-credit resets do not erase unsuccessful approaches or the
 evidence needed to reconsider them. Recover missing history from its owners;
 unknown history is not a fresh start.
 
-Make the next construction assignment the source-required relationship to establish,
-with its source, required-valid behavior, and deciding evidence or unresolved
-question. Carry that task into selection, delegation, and resumption, including
-compaction; recover it from the bound source when missing. Finding identities,
-locations, and proposed edits are evidence and revisable means, not the assignment's
-scope or completion condition. Derive narrower implementation subtasks from the
-selected construction; their completion does not discharge the parent's broader
-obligation. Reuse adequate domain and native-guarantee arguments, including those
-supporting a direct correction. Keep the assignment in the existing work, without
-a separate packet, stage, or required presentation.
+Make the construction assignment the source-required relationship, not the reported
+edit. For an admitted counterexample, identify the implicated success: the fact,
+authority, or effect being granted, not merely a successful return. Identify the
+condition the accepted source requires whenever it is granted, the required-valid
+behavior, and the deciding evidence or unresolved question. Construct the successor
+so every relevant way of granting that success satisfies the condition within its
+source-required domain and evidence lifetime, including newly introduced shortcuts
+and permitted continuations that can invalidate its basis. Follow the implicated
+operations, not unrelated commands. Preserve the requirement, not an obsolete
+mechanism; reuse adequate native constructions and direct corrections. Retire
+displaced weaker success decisions without erasing distinct authorities.
+
+Carry this assignment, its source, and deciding evidence through selection,
+delegation, and resumption, including compaction; recover it from the bound source
+when missing. Finding identities, locations, and suggested edits are evidence and
+revisable means, not the assignment's scope or completion condition. Narrower
+subtasks do not discharge the enclosing obligation. Keep this in the existing work,
+without a separate packet, stage, or required presentation.
 
 ## Completion
 

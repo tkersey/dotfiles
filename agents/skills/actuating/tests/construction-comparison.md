@@ -314,3 +314,73 @@ more premise-related prose alone does not support adoption. Consider separate
 link ablations only after a useful combined signal; do not add more directives
 in response to an inconclusive comparison. Source-contract tests establish neither
 model efficacy nor the paper's causal contribution.
+
+## Success-premise preservation
+
+Status: **authored, not model-replayed**. This separate assignment comparison
+preserves the cleanup and the historical comparisons above. It adds no runtime
+stage, report, review lane, production gate, or permission for paid model runs.
+
+| Arm | Frozen guidance | Result |
+|---|---|---|
+| Control: cleaned-up workflow | Dotfiles `910a9a5193fb57bf31989ee2df1a96c442560322`, including its existing construction assignment, source obligations, and conditional methods. | Not run. |
+| Candidate: success-premise assignment | The same guidance with only the Construction Working Set assignment replacement; bind the exact candidate commit and delivered sources before replay. | Not run. |
+
+Do not substitute a pre-cleanup or patch-only control. Keep evaluator material out
+of both implementation contexts. Both arms receive the same contemporaneous
+source, admitted findings, known premises, native APIs, and permitted alternatives.
+Hold the implementing model, effective reasoning effort, tools, authority, budget,
+and acceptance endpoint equal. Different reviewer settings are a separate detection
+comparison on the same frozen defective head; they cannot isolate this assignment's
+contribution. Unknown historical reviewer settings remain unknown, not evidence
+that either the model or skill caused the failure.
+
+Freeze the first successor, no-change decision, or unfinished attempt before later
+review feedback or withheld concrete cases. Preserve all attempts, including
+refusals, timeouts, and incomplete verification; no intervening repairs before
+scoring. Repeat after a matched delegation or compaction checkpoint separately,
+retaining the same source facts in both arms. Better narration is not an outcome.
+
+The question is whether the accepted condition constrains every relevant way the
+successor can grant the implicated fact, authority, or effect while preserving
+required-valid behavior. A shared predicate centralizes meaning; it does not by
+itself constrain other success decisions, qualify absence, or preserve evidence
+through continuations. A named proof value is no stronger than its construction,
+domain, and lifetime. Measure removed independent decisions, not added types,
+merged modules, or net lines. Distinct source-backed authorities remain distinct.
+
+| Contrast | Deciding behavior and required-valid control |
+|---|---|
+| Repaired ordinary route versus a successor shortcut | A new early return cannot grant the same success on weaker grounds. Pair with an existing closed operation where a direct correction suffices. |
+| Nonempty versus apparently empty discovery | Qualify absence when the source requires coordination. Preserve guarded read-only access and actual quiescence as permitted alternatives; do not mandate one lock or freshness forever. |
+| Healthy preparation versus authorized migration | Preserve legitimate stale or unbound migration while rejecting incompatible admission history. Do not force different valid domains through one stricter constructor. |
+| Valid observation versus invalidating continuation | Retain the required identity, scope, and evidence lifetime through sanctioned continuations. Ordinary context lookup must not acquire owner-preparation obligations. |
+| Effect granted before a later error | Observe publication or ownership transfer even when the operation later reports failure. Native commit recognition must not certify a failed final directory sync. |
+| Retained mechanism versus removed failure opportunity | Reuse a suitable native owner or remove a duplicated lifecycle. Map fault cases to the successor's required observations; an obsolete fault hook is not a required operation. |
+| Correct helper versus remaining weaker success decision | Retire displaced payload-only coverage, phase-based publication inference, or duplicate cleanup ownership when applicable. Preserve independent oracles and distinct authorities. |
+| Genuine defect versus adequate incumbent, false allegation, or wrong oracle | Allow a direct fix, justified no-change, or independently supported oracle correction. Reject-all, always-redesign, and always-add-checks policies fail calibration. |
+
+The disclosed Ledger coordination diagnostic starts from skills-zig
+[`bb4e7c7`](https://github.com/tkersey/skills-zig/commit/bb4e7c77527a1a3fc6faf37e0d436d93d691c910)
+and its contemporaneous coordination contract. Supply the already accepted
+empty-source condition to both arms; withhold concrete later fixtures, not the
+known requirement. Recover the accepted disposition before claiming historical
+replay fidelity; unavailable evidence is a limitation. The later
+[`0a7c9f8`](https://github.com/tkersey/skills-zig/commit/0a7c9f8e57e6ccc8b5659483bdf192170c758422)
+shortcut and its correction are evaluator-only evidence, never the implementation
+assignment. These disclosed cases are calibration material, not untouched holdouts.
+
+Independently establish expectations from the source, not the historical patch.
+Score required behavior, valid-domain preservation, first-successor generalization,
+and removal of independently grantable weaker decisions before total time or tokens.
+Blocking every success fails required progress; removing a mechanism may eliminate
+its old failure opportunity without reproducing its old internals. Neither local
+repair nor redesign is mandatory. An unsupported stronger condition is not a win.
+
+Predeclare repetitions, stopping rules, and meaningful quality/cost thresholds.
+Keep per-trial outcomes and all attempts in the denominators. Narrower claims or
+honest incomplete status do not complete the whole accepted task. Retain or revise
+the instruction based on untouched cases, not these disclosed examples alone.
+Added vocabulary without better successors, lost valid behavior, or unnecessary
+machinery counts against the change. Source-contract mutations test instruction
+preservation, not model behavior; these trials earn no production review credit.
