@@ -48,7 +48,11 @@ markers are never replaced. Read-only selection does not finish initialization.
 Participating current writers use native recovery, event/binding and journal
 locks. The native engine validates protected history before publication. Empty
 source roots without the required coordination need actual writer quiescence;
-only then add `--confirm-no-legacy-writers` to `--ensure-owner`. The native host command never
+only then add `--confirm-no-legacy-writers` to `--ensure-owner`. This includes first
+owner initialization and healthy owners whose supplied worktrees contain no local
+history. The genuinely new-owner route rejects missing coordination before allocating custody.
+Ordinary context lookup and direct managed projection do not assert source-family
+coverage and retain their existing routes. The native host command never
 infers quiescence from a missing process, infers abandoned ownership from lock
 age, or reclaims a legacy lease. Unknown damage, pending recovery, unavailable worktree
 coverage, divergent histories, or a local extension beyond an existing managed

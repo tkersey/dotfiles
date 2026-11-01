@@ -47,11 +47,71 @@ class OwnerUpgradeTests(unittest.TestCase):
         return custody.owner_command(self.repo, self.definition, binary=self.binary, mode=mode)
 
     def test_fresh_install_initializes_managed_custody_and_captures(self):
-        context = self.ensure()
+        before = self.tree_bytes(self.root)
+        with self.assertRaisesRegex(custody.MigrationError, 'PreparationRequiresQuiescence'):
+            self.ensure()
+        self.assertEqual(self.tree_bytes(self.root), before)
+        self.assertFalse((self.root / 'home').exists())
+        context = self.ensure(confirm_no_writers=True)
         self.assertIn('--store-root', context['native_args'])
         self.assertFalse((self.repo / '.ledger').exists())
         self.assertTrue(self.capture(context['native_args'])['valid'])
+        self.assertEqual(self.ensure(confirm_no_writers=True)['store_id'], context['store_id'])
+
+    def test_healthy_owner_empty_workspace_requires_qualified_source_admission(self):
+        context = self.ctx.resolve(self.repo, initialize=True)
+        self.capture(context['native_args'])
+        before = self.tree_bytes(self.root)
+        for read_only in (True, False):
+            with self.subTest(read_only=read_only), self.assertRaisesRegex(
+                    custody.MigrationError, 'PreparationRequiresQuiescence'):
+                custody.owner_context(self.repo, self.definition, read_only=read_only,
+                                      maintain=not read_only, binary=self.binary)
+            self.assertEqual(self.tree_bytes(self.root), before)
+        self.assertEqual(self.ctx.resolve(self.repo)['store_id'], context['store_id'])
+        self.assertEqual(self.ctx.ensure(self.repo)['store_id'], context['store_id'])
+        self.assertEqual(self.ensure(confirm_no_writers=True)['store_id'], context['store_id'])
+        projected = subprocess.run([self.binary, 'project', '--definition', str(self.definition),
+            *context['native_args'], '--projection', 'basis',
+            '--param', 'repository=' + json.loads(self.packet.read_text())['record']['repository_id'],
+            '--payload-only', '--format', 'json'], capture_output=True, timeout=15)
+        self.assertEqual(projected.returncode, 0, projected.stdout + projected.stderr)
+        expected = [json.loads(line)['record']
+                    for line in (Path(context['store_root']) / self.slot).read_bytes().splitlines()]
+        self.assertEqual(json.loads(projected.stdout), expected)
+        self.assertEqual(self.tree_bytes(self.root), before)
+
+    def test_guarded_empty_source_preserves_read_only_owner_access(self):
+        context = self.ctx.resolve(self.repo, initialize=True)
+        self.capture(context['native_args'])
+        control = Path(context['store_root']) / '.ledger'
+        guards = list(control.rglob('*.cas.lock.advisory'))
+        self.assertGreaterEqual(len(guards), 2)
+        for guard in guards:
+            target = self.repo / '.ledger' / guard.relative_to(control)
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(guard, target)
+        before = self.tree_bytes(self.root)
+        observed = custody.owner_context(self.repo, self.definition, read_only=True, binary=self.binary)
+        self.assertEqual(observed['store_id'], context['store_id'])
         self.assertEqual(self.ensure()['store_id'], context['store_id'])
+        self.assertFalse((self.repo / self.slot).exists())
+        self.assertEqual(self.tree_bytes(self.root), before)
+
+    def test_empty_sibling_requires_quiescence_despite_covered_existing_histories(self):
+        context, _ = self.binding_family()
+        empty = self.root / 'empty-sibling'
+        subprocess.run(['git', '-C', str(self.repo), 'worktree', 'add', '--detach', str(empty)],
+                       check=True, capture_output=True)
+        before = self.tree_bytes(self.root)
+        for read_only in (True, False):
+            with self.subTest(read_only=read_only), self.assertRaisesRegex(
+                    custody.MigrationError, 'PreparationRequiresQuiescence'):
+                custody.owner_context(self.repo, self.definition, read_only=read_only,
+                                      maintain=not read_only, binary=self.binary)
+            self.assertEqual(self.tree_bytes(self.root), before)
+        self.assertEqual(self.ensure(confirm_no_writers=True)['store_id'], context['store_id'])
+        self.assertEqual(self.tree_bytes(self.root), before)
 
     def test_oversized_unrelated_payload_is_neither_copied_nor_archived(self):
         self.capture(['--repo', str(self.repo)])
@@ -150,7 +210,7 @@ class OwnerUpgradeTests(unittest.TestCase):
             'schema': 'ledger-owner-migration/v1', 'definition': 'definitions/ledger/events.json',
             'retired_sources': [], 'importer': None}))
         self.slot = Path('.ledger/example/events.jsonl')
-        context = self.ensure()
+        context = self.ensure(confirm_no_writers=True)
         for selector, request in [(context['native_args'], 'first'), (['--repo', str(self.repo)], local_request)]:
             appended = subprocess.run([self.binary, 'transact', '--definition', str(self.definition),
                 *selector, '--operation', 'append', '--input', 'event=-', '--param', 'request=' + request,
@@ -372,8 +432,13 @@ class OwnerUpgradeTests(unittest.TestCase):
     def test_missing_registered_owner_without_retired_history_remains_usable(self):
         registered = self.ctx.resolve(self.repo, initialize=True)
         self.definition = SKILLS / 'learnings/definitions/ledger/learnings-protocol.json'
-        self.assertEqual(self.ensure()['store_id'], registered['store_id'])
-        observed = custody.owner_context(self.repo, self.definition, read_only=True, binary=self.binary)
+        before = self.tree_bytes(self.root)
+        with self.assertRaisesRegex(custody.MigrationError, 'PreparationRequiresQuiescence'):
+            self.ensure()
+        self.assertEqual(self.tree_bytes(self.root), before)
+        self.assertEqual(self.ensure(confirm_no_writers=True)['store_id'], registered['store_id'])
+        observed = custody.owner_context(None, self.definition, store_id=registered['store_id'],
+                                        read_only=True, binary=self.binary)
         self.assertEqual(observed['store_id'], registered['store_id'])
 
     def test_missing_bound_slot_imports_local_copy_without_an_archive(self):
