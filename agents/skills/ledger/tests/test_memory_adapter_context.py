@@ -20,7 +20,7 @@ def load(name, relative):
     return module
 
 
-context = load("adapter_test_context", "ledger/scripts/ledger_context.py")
+import native_host as context
 adapter = load("adapter_test", "memory-source-notes/scripts/negative_ledger_memory_note.py")
 from memory_layout import MemoryLayout
 
@@ -37,15 +37,15 @@ class AdapterContextTests(unittest.TestCase):
         env.start()
         self.addCleanup(env.stop)
         self.selected = context.resolve(self.repo, initialize=True, confirm_no_writers=True)
-        self.args = adapter.build_parser().parse_args(["admit", "--repo", str(self.repo), "--id", "NEG-000001"])
+        self.args = adapter.build_parser().parse_args(["admit", "--catalog-root", str(context.storage_home()), "--repo", str(self.repo), "--id", "NEG-000001"])
         self.raw = b'{ "payload": {"neg_id":"NEG-000001", "status":"active", "projection_fingerprint":"exact"} }\n'
         self.calls = []
         self.real_run = adapter._run
 
     def run_mock_native(self, argv, *, cwd, input_bytes=None):
         self.calls.append((argv, cwd, input_bytes))
-        if str(adapter.CONTEXT_SCRIPT) in argv:
-            return self.real_run(argv, cwd=cwd, input_bytes=input_bytes)
+        if argv[1] == "context":
+            return self.real_run([os.environ["LEDGER_BIN"], *argv[1:]], cwd=cwd, input_bytes=input_bytes)
         if argv[1] == "project":
             raw = self.raw
         elif argv[1] == "append":
@@ -105,19 +105,19 @@ class AdapterContextTests(unittest.TestCase):
         with patch.object(adapter, "_run", side_effect=self.run_mock_native), self.assertRaises(adapter.AdapterError):
             adapter.cmd_admit(self.args)
         self.assertEqual(len(self.calls), 1)
-        self.assertIn(str(adapter.CONTEXT_SCRIPT), self.calls[0][0])
+        self.assertEqual(self.calls[0][0][1], "context")
         self.assertFalse((self.repo / ".ledger").exists())
 
     def test_unregistered_workspace_is_not_initialized_by_admission(self):
         catalog = context.storage_home() / context.CATALOG
         catalog.unlink()
         with self.assertRaises(adapter.AdapterError):
-            adapter.resolve_custody(self.repo)
+            adapter.resolve_custody(self.repo, catalog_root=str(context.storage_home()))
         self.assertFalse(catalog.exists())
 
     def test_direct_source_selection_survives_deleted_workspace(self):
         shutil.rmtree(self.repo)
-        args = adapter.build_parser().parse_args(['inspect', '--store-id', self.selected['store_id'],
+        args = adapter.build_parser().parse_args(['inspect', '--catalog-root', str(context.storage_home()), '--store-id', self.selected['store_id'],
                                                    '--repo', str(self.root), '--id', 'NEG-000001'])
         with patch.object(adapter, '_run', side_effect=self.run_mock_native), patch.object(adapter, '_resolve_binary', return_value='ledger'):
             raw, report = adapter.inspect_projection(args)
@@ -132,7 +132,7 @@ class AdapterContextTests(unittest.TestCase):
         for change in ({"storage_mutated": True}, {"native_args": ["--repo", str(self.repo)]}, {"authority_granted": True}):
             value = self.selected | {"storage_mutated": False} | change
             with patch.object(adapter, "_run", return_value=subprocess.CompletedProcess([], 0, json.dumps(value).encode(), b"")), self.assertRaises(adapter.AdapterError):
-                adapter.resolve_custody(self.repo)
+                adapter.resolve_custody(self.repo, catalog_root=str(context.storage_home()))
 
     def test_global_instructions_delegate_instead_of_naming_storage(self):
         text = (SKILLS.parent / "AGENTS.md").read_text()

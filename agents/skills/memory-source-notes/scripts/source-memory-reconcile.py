@@ -789,7 +789,8 @@ def reconcile(args: argparse.Namespace) -> dict[str, Any]:
     managed_context, managed_error = None, None
     if any(source != "synesthesia" for source in selected_sources):
         try:
-            managed_context = resolve_custody(cwd, getattr(args, "store_id", None))
+            managed_context = resolve_custody(cwd, getattr(args, "store_id", None),
+                                              catalog_root=getattr(args, "catalog_root", None), ledger=ledger)
         except (AdapterError, OSError) as exc:
             managed_error = str(exc)
 
@@ -855,7 +856,7 @@ def reconcile(args: argparse.Namespace) -> dict[str, Any]:
             notes, show_count = load_notes(memory_note, source, cwd=cwd, layout=layout, limit=args.limit)
             result["inventory_notes"] = len(notes)
             result["extension_instructions"] = instruction_status(
-                layout, SKILLS_ROOT.parent / "memories/extensions" / source / "instructions.md"
+                layout, SKILLS_ROOT.parents[1] / "codex/memories/extensions" / source / "instructions.md"
             )
             if result["extension_instructions"]["status"] != "current":
                 result["diagnostics"].append({
@@ -931,6 +932,7 @@ def print_text(report: dict[str, Any]) -> None:
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Read-only source-memory reconciliation")
     parser.add_argument("--repo", default=".")
+    parser.add_argument("--catalog-root", help="Explicit Ledger catalog location selected by $ledger for managed sources")
     parser.add_argument("--store-id", help="Registered personal store; no workspace or Git required")
     parser.add_argument("--source", action="append", choices=SOURCES)
     parser.add_argument("--codex-home")

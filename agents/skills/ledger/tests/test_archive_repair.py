@@ -12,30 +12,7 @@ from unittest.mock import patch
 
 
 SKILLS = Path(__file__).resolve().parents[2]
-spec = importlib.util.spec_from_file_location('custody', SKILLS / 'ledger/scripts/ensure_custody.py')
-custody = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(custody)
-
-
-class PublicationTests(unittest.TestCase):
-    def test_publication_is_atomic_without_extra_links(self):
-        with tempfile.TemporaryDirectory() as temporary:
-            source, target = Path(temporary) / 'source', Path(temporary) / 'target'
-            source.write_bytes(b'archive')
-            custody.publish_absent(source, target)
-            self.assertEqual(target.read_bytes(), b'archive')
-            self.assertEqual(target.stat().st_nlink, 1)
-            self.assertFalse(source.exists())
-
-    def test_existing_target_is_never_replaced(self):
-        with tempfile.TemporaryDirectory() as temporary:
-            source, target = Path(temporary) / 'source', Path(temporary) / 'target'
-            source.write_bytes(b'archive')
-            target.write_bytes(b'current')
-            with self.assertRaises(FileExistsError):
-                custody.publish_absent(source, target)
-            self.assertEqual(target.read_bytes(), b'current')
-            self.assertEqual(source.read_bytes(), b'archive')
+import native_host as custody
 
 
 @unittest.skipUnless(os.environ.get('LEDGER_BIN'), 'LEDGER_BIN required for native repair proof')
@@ -47,7 +24,7 @@ class ArchiveRepairTests(unittest.TestCase):
         env = patch.dict(os.environ, {'LEDGER_HOME': str(self.root / 'home')})
         env.start()
         self.addCleanup(env.stop)
-        self.ctx = custody.load_module(SKILLS / 'ledger/scripts/ledger_context.py')
+        self.ctx = custody
         self.context = self.ctx.resolve(initialize=True)
         self.store = Path(self.context['store_root'])
         self.definition = SKILLS / 'review-fold/definitions/ledger/counterexample-corpus.json'
@@ -80,16 +57,16 @@ class ArchiveRepairTests(unittest.TestCase):
         bindings = {p.name: p.read_bytes() for p in (self.store / '.ledger/.bindings').glob('*.jsonl')}
         self.slot.unlink()
         result = self.repair()
-        self.assertTrue(result['custody_repair']['doctor']['healthy'])
+        self.assertEqual(result['preparation']['outcome'], 'prepared')
         self.assertEqual(self.slot.read_bytes(), self.original)
         self.assertEqual(self.archived_slot.read_bytes(), self.original)
         self.assertEqual(bindings, {p.name: p.read_bytes() for p in (self.store / '.ledger/.bindings').glob('*.jsonl')})
         self.assertTrue(self.capture()['valid'])
-        self.assertNotIn('custody_repair', self.repair())
+        self.assertNotIn('preparation', self.repair())
 
     def test_healthy_store_never_scans_archives(self):
         (self.archive / 'manifest.json').write_text('invalid')
-        self.assertNotIn('custody_repair', self.repair())
+        self.assertNotIn('preparation', self.repair())
 
     def test_direct_repair_of_empty_workspace_requires_and_accepts_quiescence(self):
         workspace = self.root / 'workspace'
@@ -97,18 +74,12 @@ class ArchiveRepairTests(unittest.TestCase):
         self.ctx.register_root(self.store, self.context['store_id'], workspace)
         binding = {path.name: path.read_bytes() for path in (self.store / '.ledger/.bindings').glob('*.jsonl')}
         self.slot.unlink()
-        command = [sys.executable, str(SKILLS / 'ledger/scripts/ensure_custody.py'),
-                   '--repo', str(workspace), '--repair-archive', '--definition', str(self.definition),
-                   '--ledger-bin', self.binary]
+        command = custody.owner_command(workspace, self.definition, binary=self.binary, mode='--repair-archive')
         refused = subprocess.run(command, capture_output=True, timeout=15)
         self.assertEqual(refused.returncode, 3, refused.stdout + refused.stderr)
-        self.assertEqual(json.loads(refused.stderr)['preparation']['error_code'], 'PreparationRequiresQuiescence')
+        self.assertEqual(json.loads(refused.stdout)['preparation']['error_code'], 'PreparationRequiresQuiescence')
         self.assertFalse(self.slot.exists())
-        missing_apply = subprocess.run(command + ['--confirm-no-writers'], capture_output=True, timeout=15)
-        self.assertEqual(missing_apply.returncode, 3, missing_apply.stdout + missing_apply.stderr)
-        self.assertIn('--confirm-no-writers requires --apply', json.loads(missing_apply.stderr)['error'])
-        self.assertFalse(self.slot.exists())
-        restored = subprocess.run(command + ['--apply', '--confirm-no-writers'], capture_output=True, timeout=15)
+        restored = subprocess.run(command + ['--confirm-no-legacy-writers'], capture_output=True, timeout=15)
         self.assertEqual(restored.returncode, 0, restored.stdout + restored.stderr)
         self.assertEqual(json.loads(restored.stdout)['store_id'], self.context['store_id'])
         self.assertEqual(self.slot.read_bytes(), self.original)
@@ -154,9 +125,8 @@ class ArchiveRepairTests(unittest.TestCase):
         self.slot.unlink()
         with custody.native_lock(Path(str(self.slot) + '.cas.lock.advisory'), self.ctx):
             import sys
-            process = subprocess.Popen([sys.executable, str(SKILLS / 'ledger/scripts/ensure_custody.py'),
-                '--store-id', self.context['store_id'], '--repair-archive', '--definition', str(self.definition),
-                '--ledger-bin', self.binary], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            process = subprocess.Popen(custody.owner_command(None, self.definition, store_id=self.context['store_id'],
+                binary=self.binary, mode='--repair-archive'), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             self.addCleanup(lambda: process.kill() if process.poll() is None else None)
             self.addCleanup(lambda: process.communicate(timeout=15))
             self.assertTrue(select.select([process.stderr], [], [], 10)[0])
@@ -175,17 +145,13 @@ class ArchiveRepairTests(unittest.TestCase):
 
     def test_pending_transactions_prevent_repair(self):
         self.slot.unlink()
-        real = custody.native
-
-        def pending(*args, **kwargs):
-            result = real(*args, **kwargs)
-            if args[3] == 'doctor':
-                result['pending_transactions'] = 1
-            return result
-
-        with patch.object(custody, 'native', side_effect=pending):
-            with self.assertRaisesRegex(custody.MigrationError, 'unresolved transactions'):
-                self.repair()
+        pending = self.store / '.ledger/.transactions/interrupted'
+        pending.mkdir()
+        (pending / 'transaction.json').write_text('{')
+        before = {str(p.relative_to(self.store)): p.read_bytes() for p in self.store.rglob('*') if p.is_file()}
+        with self.assertRaises(custody.MigrationError):
+            self.repair()
+        self.assertEqual(before, {str(p.relative_to(self.store)): p.read_bytes() for p in self.store.rglob('*') if p.is_file()})
         self.assertFalse(self.slot.exists())
 
     def test_unbound_local_history_cannot_trigger_archive_restoration(self):
@@ -241,7 +207,7 @@ class ArchiveRepairTests(unittest.TestCase):
     def test_malformed_archive_manifest_is_refused(self):
         self.slot.unlink()
         (self.archive / 'manifest.json').write_text('[]')
-        with self.assertRaisesRegex(custody.MigrationError, 'Invalid archive manifest'):
+        with self.assertRaisesRegex(custody.MigrationError, 'InvalidArchiveManifest'):
             self.repair()
         self.assertFalse(self.slot.exists())
 

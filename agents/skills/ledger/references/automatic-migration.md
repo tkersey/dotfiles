@@ -1,11 +1,10 @@
 # Owner upgrade and historical migration
 
-Use `scripts/ensure_custody.py --migrate` only for selected legacy inspection,
-historical import, or interrupted migration. Without an owner or migration mode, the helper
-resolves the personal catalog and automatically adopts an existing valid Git
-registration when needed; existing custody needs no migration receipt or complete
-worktree inventory. Both helpers belong to `$ledger`; the context
-helper owns storage home, stable root identity, and catalog associations.
+Use `ledger context --migrate` only for selected legacy inspection,
+historical import, or interrupted migration. Default context lookup is read-only;
+`--ensure` may adopt an existing valid Git registration. Existing custody needs no
+migration receipt or complete worktree inventory. The skill body selects
+`ledger_home`; every command below passes it explicitly to the native host layer.
 For a coordinated upgrade of existing installations, start with
 [the upgrade guide](personal-store-upgrade.md); already-managed roots normally
 need catalog adoption rather than historical migration.
@@ -23,11 +22,12 @@ protocol opt-in, not a per-run question for the user.
 Resolve the owner through:
 
 ```bash
-uv run "$ledger_skill_root/scripts/ensure_custody.py" --repo "<workspace-root>" \
-  --ensure-owner --definition "<installed-owner-definition>"
+ledger context --catalog-root "$ledger_home" --workspace "<workspace-root>" \
+  --ensure-owner --definition "<installed-owner-definition>" \
+  --owner-manifest "<installed-owner>/migration.json"
 ```
 
-Reuse the returned `native_args` for the original operation. The helper keeps an
+Reuse the returned `native_args` for the original operation. The native host command keeps an
 existing store's identity, adopts valid registrations, and initializes a private
 managed root only when evidence establishes a genuinely new owner. It discovers
 finite source contexts from the catalog, workspace and existing archive manifests,
@@ -48,7 +48,7 @@ markers are never replaced. Read-only selection does not finish initialization.
 Participating current writers use native recovery, event/binding and journal
 locks. The native engine validates protected history before publication. Empty
 source roots without the required coordination need actual writer quiescence;
-only then use `--ensure-owner --apply --confirm-no-writers`. The helper never
+only then add `--confirm-no-legacy-writers` to `--ensure-owner`. The native host command never
 infers quiescence from a missing process, infers abandoned ownership from lock
 age, or reclaims a legacy lease. Unknown damage, pending recovery, unavailable worktree
 coverage, divergent histories, or a local extension beyond an existing managed
@@ -76,18 +76,20 @@ operation's observed status; no additional check is triggered. See
 After bootstrap, inspect the verified workspace:
 
 ```bash
-uv run "$ledger_skill_root/scripts/ensure_custody.py" --migrate --repo "<workspace-root>"
+ledger context --catalog-root "$ledger_home" --migrate --workspace "<workspace-root>" \
+  --owner-manifest "<installed-owner>/migration.json"
 ```
 
 Do not turn a recognized legacy-source error into a user-maintained repair
-checklist. The helper discovers installed owner declarations, inventories every
+checklist. Select the installed owner declarations and pass each as a repeated
+`--owner-manifest`; native Ledger never searches a skill installation. It inventories every
 available worktree, and selects equal or complete-record-prefix histories. With
 authorized migration and actual writer quiescence, perform the procedure as one
 operation rather than requesting approval for each routine substep:
 
 ```bash
-uv run "$ledger_skill_root/scripts/ensure_custody.py" --migrate --repo "<workspace-root>" \
-  --apply --confirm-no-writers
+ledger context --catalog-root "$ledger_home" --migrate --workspace "<workspace-root>" \
+  --owner-manifest "<installed-owner>/migration.json" --apply --confirm-no-writers
 ```
 
 Explicit migration requests authorize the supported lossless procedure, not a
@@ -99,7 +101,7 @@ because no process was noticed; old
 writers before applying. Unavailable worktrees are not automatically pruned.
 
 When Git metadata was removed but an unmanaged source directory survives, select
-that existing directory with the same `--repo` option. Migration then inventories
+that existing directory with the same `--workspace` option. Migration then inventories
 that one explicit source, without claiming coverage of other lost copies. Broken
 or surviving Git metadata cannot trigger this fallback. The source receives no
 lock file or new Git metadata; the migration lock lives in the personal home.
@@ -140,9 +142,15 @@ malformed binding is not treated as missing, and unknown failure codes never
 trigger rebind. Native operations must validate the entire history. Event bytes
 are checked unchanged across binding maintenance.
 
-Retired imports preflight IDs and packets, retain native receipts, then verify
-full-record parity and native health. Source/worktree inventories are rechecked
-before publication; staged and final native doctors must pass. The personal
+When native migration returns `owner-import-required`, invoke the selected
+trusted owner constructor with the returned sources, context, and definition.
+Ledger never executes the importer. The owner preflights IDs and packets, retains
+native receipts, and verifies full-record parity and native health. Save its
+scoped result and resume the same native command with `--owner-import-receipt
+<absolute-result-file>` for each requested owner. The receipt must bind the exact
+archived source hashes, target identity, definition closure, and parity result;
+a generic health result alone does not establish imported-record equivalence. Source/worktree inventories are rechecked
+before publication; native validation must pass. The personal
 catalog is published last. No source is deleted, no timestamp winner is selected, and no
 histories are concatenated. Divergent or additional managed-versus-local history
 requires owner reconciliation, not an empty store or checkout fallback.
@@ -165,10 +173,10 @@ Earlier receipts can be requalified by this maintenance without blocking access.
 
 Archives and sources are preserved on failures. An interrupted registered-store
 import resumes by native full-record reconciliation, not by trusting a saved
-record count. Interrupted fresh publication can leave an unregistered staging or
-final directory: it remains inspection evidence and is never automatically chosen
-as an authoritative root. Repeating the safe procedure may stage a new directory;
-orphan cleanup is a separate authorized action.
+record count. Fresh migration uses the existing pending registration and root
+marker to retain one target identity across interruption. A retry verifies that
+identity and resumes its native work. Unrecognized staging or orphan directories
+remain explicit blockers; they never justify an empty replacement history.
 
 A successful result accounts for supported histories and explicitly marks
 unselected artifacts as archived-only. Unknown framing stays blocked until the
@@ -179,11 +187,12 @@ become invented records. Global memory admission remains a separate owner action
 ## Exact archive repair
 
 Automatic owner preparation includes exact archive restoration. A caller selecting
-that same repair directly uses `ensure_custody.py --repair-archive
---definition <installed-owner-definition>` with the normal workspace or store ID.
+that same repair directly uses `ledger context --catalog-root "$ledger_home" --repair-archive
+--definition <installed-owner-definition> --owner-manifest <installed-owner>/migration.json`
+with the normal workspace or store ID.
 Bootstrap Ledger 1.6.0 or newer within major version 1 first. When a supplied live
 workspace lacks qualified writer coordination, actually quiesce its writers and
-add `--apply --confirm-no-writers`; never infer quiescence from an absent process.
+add `--confirm-no-legacy-writers`; never infer quiescence from an absent process.
 An intact owner store
 returns normally without scanning archives. Ordinary ensure and read-only context
 lookup never restore records.
@@ -195,8 +204,9 @@ requires native doctor to validate the archived slot against that unchanged
 custody. A selected workspace's local copy, when present, must match. Native
 recovery, binding/event, and journal advisory locks exclude competing publication;
 lock contention waits for the active writer, never declaring it dead. Publication
-creates the absent slot atomically and never replaces an existing path. The final
-native doctor and archive identity are returned in `context.custody_repair`.
+creates the absent slot atomically and never replaces an existing path. The
+returned `preparation` field retains the native publication and finalization
+result, including failures that occur after commit. No extra post-write check runs.
 
 No binding is rebuilt, source record rewritten, retired directory made writable,
 or journal removed. Stale/tampered archives, divergent local bytes, existing

@@ -67,7 +67,9 @@ Do not trigger merely because a task produced history. The owning skill must fir
 ## CLI discovery
 
 Load `$ledger` for canonical context and operation selection. Resolve a managed
-source once using its selected store ID or registered workspace. Read-only
+source once using its selected store ID or registered workspace. Pass the
+absolute location selected by `$ledger` as `--catalog-root` to the managed-source
+adapters; these adapters have no storage-location default. Read-only
 transport and diagnostics do not initialize stores, scan worktrees, or run
 custody maintenance. Synesthesia retains its explicitly selected unmanaged root.
 
@@ -209,6 +211,7 @@ use:
 uv run \
   "$memory_source_notes_root/scripts/negative_ledger_memory_note.py" \
   admit \
+  --catalog-root "$ledger_home" \
   --store-id "<context.store_id>" \
   --id NEG-... \
   --kind ledger-projection
@@ -229,6 +232,7 @@ Negative Ledger decides recurrence and utility. Inspect without writing via:
 uv run \
   "$memory_source_notes_root/scripts/negative_ledger_memory_note.py" \
   inspect \
+  --catalog-root "$ledger_home" \
   --store-id "<context.store_id>" \
   --id NEG-...
 ```
@@ -388,6 +392,7 @@ Phase 2 provenance without writing or deciding eligibility.
 memory_source_notes_root="$(realpath "$HOME/.agents/skills/memory-source-notes")"
 uv run python \
   "$memory_source_notes_root/scripts/source-memory-reconcile.py" \
+  --catalog-root "$ledger_home" \
   --store-id "<context.store_id>" \
   --source learnings --source negative-ledger \
   --format text

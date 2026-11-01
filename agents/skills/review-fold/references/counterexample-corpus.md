@@ -72,15 +72,16 @@ and witness provenance when projecting or retrying an earlier submission; moving
 custody does not rename a semantic scope. New independent scopes may use the
 context's stable `repository_id`.
 
-Ensure the owner automatically before the first corpus projection or capture,
+Use the `ledger_home` selected by the Ledger skill body. Ensure the owner automatically before the first corpus projection or capture,
 including analysis with false or omitted `corpus_write_authorized`:
 
 ```bash
 counterexample_definition="$(realpath \
   "${CODEX_HOME:-$HOME/.codex}/skills/review-fold/definitions/ledger/counterexample-corpus.json")"
 
-uv run "$ledger_skill_root/scripts/ensure_custody.py" --repo "<workspace-root>" \
-  --ensure-owner --definition "$counterexample_definition"
+ledger context --catalog-root "$ledger_home" --workspace "<workspace-root>" \
+  --ensure-owner --definition "$counterexample_definition" \
+  --owner-manifest "$(dirname "$(dirname "$(dirname "$counterexample_definition")")")/migration.json"
 ```
 
 This initializes new managed custody, migrates compatible current-format local

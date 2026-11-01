@@ -87,6 +87,5 @@ for (const retired of ['session-inquiry.md','references/automation.md','referenc
   assert(!existsSync(resolve(skills,'cas',retired)), 'retired route retained: ' + retired);
 const historical = JSON.parse(read('review-fold/definitions/ledger/counterexample-corpus.json'));
 assert(JSON.stringify(historical).includes('"cas"'), 'historical provenance must remain readable');
-// This .cas.lock is compare-and-swap custody, not the retired executable.
-assert(read('ledger/scripts/ensure_custody.py').includes('.cas.lock'));
+assert(read('ledger/references/automatic-migration.md').includes('advisory lock resources'));
 console.log(`native Codex: routing/evidence boundaries, ${mutations.length} mutation controls, ${inspected} active guidance files, historical provenance and custody distinction passed`);

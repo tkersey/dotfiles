@@ -338,8 +338,7 @@ class NativeNegativePredecessorTests(unittest.TestCase):
                 return result.stdout
 
             def new_store():
-                return json.loads(run([sys.executable, str(MODULE.SKILLS_ROOT / "ledger/scripts/ledger_context.py"),
-                                       "--initialize"]))
+                return json.loads(run([ledger, "context", "--catalog-root", str(home / "ledger"), "--initialize"]))
 
             def admit(raw, kind="ledger-projection"):
                 pin = ["--codex-home", str(home), "--memory-version", "v2"]

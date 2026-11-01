@@ -5,9 +5,10 @@ entrypoint owns bootstrap, authority, and definition-relative result semantics.
 
 ## Storage-context ownership
 
-This skill, [storage-context.md](storage-context.md), and
-[ledger_context.py](../scripts/ledger_context.py) own personal storage location,
-catalog identity, and explicit migration policy. Consumers select semantic
+The [skill body](../SKILL.md#storage-context-ownership) owns personal storage
+location policy. Pass its selected `ledger_home` explicitly. Native `ledger context`
+implements catalog identity and associations; [storage-context.md](storage-context.md)
+describes selection and authorized migration. Consumers select semantic
 definitions and operations; they do not derive another physical storage path.
 
 Learnings, Negative Ledger, and Review Fold use personal managed custody. Existing independent
@@ -19,7 +20,7 @@ protocols are not silently moved. Pure validation/materialization needs no store
 Resolve a known stable identity without Git:
 
 ```bash
-uv run "$ledger_skill_root/scripts/ledger_context.py" --store-id "<store-id>"
+ledger context --catalog-root "$ledger_home" --store-id "<store-id>"
 ```
 
 For an opted-in owner, use automatic owner preparation below before its first
@@ -27,7 +28,7 @@ projection or capture. For context resolution without an owner, ensure the
 selected workspace association:
 
 ```bash
-uv run "$ledger_skill_root/scripts/ensure_custody.py" --repo "<workspace-path>"
+ledger context --catalog-root "$ledger_home" --workspace "<workspace-path>" --ensure
 ```
 
 Retain `repository_id`, `store_id`, `store_root`, and `native_args` from the
@@ -49,7 +50,7 @@ it automatically imports its existing valid Git registration using the locked
 catalog adoption operation. Only catalog metadata changes; identity, native
 custody, and the original registration stay intact. Missing registrations,
 invalid roots, and conflicts still fail; ensure never initializes empty history.
-Reuse successful context within the session. `ledger_context.py` remains strictly
+Reuse successful context within the session. Default `ledger context` lookup remains strictly
 read-only and is the route when the user explicitly prohibits file/custody
 maintenance or the environment enforces non-writable access.
 Neither lookup nor registration adoption enumerates sibling worktrees, inspects
@@ -80,14 +81,14 @@ its records, and its native custody; it requires no legacy worktree coverage.
 Catalog associations never infer a merge from names, remotes, or branches.
 
 New custody outside automatic owner preparation requires a selected
-`ledger_context.py --initialize` operation, optionally with a
+`ledger context --initialize` operation, optionally with a
 workspace association. It creates a fresh private identity; it cannot recreate
 an absent selected store or replace an existing alias. A known selected legacy
 registration/history requires explicit adoption or import instead. New isolated
 custody needs no claim that unrelated historical writers have stopped.
 
 For selected legacy inspection/import or interrupted import recovery, follow
-[automatic-migration.md](automatic-migration.md). `ensure_custody.py --migrate`
+[automatic-migration.md](automatic-migration.md). `ledger context --migrate`
 selects this maintenance. `--apply --confirm-no-writers` adds its authorized
 effect with actual quiescence of the affected writers. Unavailable historical
 worktrees can block that import's completeness; they do not block normal access.

@@ -36,7 +36,7 @@ def main() -> int:
     parser.add_argument("--codex-home")
     parser.add_argument("--memory-version", choices=("v1", "v2"))
     parser.add_argument("--memory-note-bin")
-    parser.add_argument("--source-root", type=Path, default=Path(__file__).resolve().parents[3] / "memories/extensions")
+    parser.add_argument("--source-root", type=Path, default=Path(__file__).resolve().parents[4] / "codex/memories/extensions")
     parser.add_argument("--format", choices=("json", "text"), default="json")
     args = parser.parse_args()
     reports = {}

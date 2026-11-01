@@ -231,11 +231,9 @@ class NativeManagedReconciliationTests(unittest.TestCase):
                                  (result.stdout + result.stderr).decode(errors="replace"))
                 return result.stdout
 
-            context_script = R.SKILLS_ROOT / "ledger/scripts/ledger_context.py"
-            context = json.loads(run([sys.executable, str(context_script), "--repo", str(workspace),
-                                      "--initialize", "--confirm-no-writers"]))
-            other = json.loads(run([sys.executable, str(context_script), "--repo", str(other_workspace),
-                                    "--initialize", "--confirm-no-writers"]))
+            context_command = [ledger, "context", "--catalog-root", str(home / "ledger")]
+            context = json.loads(run([*context_command, "--workspace", str(workspace), "--initialize"]))
+            other = json.loads(run([*context_command, "--workspace", str(other_workspace), "--initialize"]))
             self.assertNotEqual(context["store_id"], other["store_id"])
             selector = context["native_args"]
             learning = {"status": "codify_now", "learning": "Pin the selected memory root for source transport.",
@@ -277,9 +275,10 @@ class NativeManagedReconciliationTests(unittest.TestCase):
                                        "--json", "-", *pin], raw=raw))
             run([sys.executable, str(SCRIPTS / "negative_ledger_memory_note.py"), "admit",
                  "--repo", str(other_workspace), "--store-id", context["store_id"], "--id", negative_id,
-                 "--ledger-bin", ledger, "--memory-note-bin", writer, *pin])
+                 "--ledger-bin", ledger, "--catalog-root", str(home / "ledger"), "--memory-note-bin", writer, *pin])
             run([sys.executable, str(SCRIPTS / "memory_source_layout.py"), "sync-instructions",
-                 "--extension", "learnings", "--extension", "negative-ledger", *pin])
+                 "--extension", "learnings", "--extension", "negative-ledger",
+                 "--source-root", str(R.SKILLS_ROOT.parents[1] / "codex/memories/extensions"), *pin])
 
             # This is a controlled compiler-output fixture, not a live compiler claim.
             summary = home / "memories_v2/memory_summary.md"
@@ -291,7 +290,7 @@ class NativeManagedReconciliationTests(unittest.TestCase):
                       for path in custody.rglob("*") if path.is_file()}
             argv = [sys.executable, str(SCRIPTS / "source-memory-reconcile.py"),
                     "--repo", str(other_workspace), "--store-id", context["store_id"],
-                    "--source", "learnings", "--source", "negative-ledger", *pin]
+                    "--source", "learnings", "--source", "negative-ledger", "--catalog-root", str(home / "ledger"), *pin]
             report = json.loads(run(argv))
             self.assertEqual(report["verdict"], "ok", report)
             for source in ("learnings", "negative-ledger"):

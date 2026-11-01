@@ -12,496 +12,7 @@ from unittest.mock import patch
 
 
 SKILLS = Path(__file__).resolve().parents[2]
-SCRIPT = SKILLS / 'ledger/scripts/ensure_custody.py'
-spec = importlib.util.spec_from_file_location('custody', SCRIPT)
-custody = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(custody)
-
-
-class PreparationAdapterTests(unittest.TestCase):
-    def setUp(self):
-        self.temp = tempfile.TemporaryDirectory()
-        self.addCleanup(self.temp.cleanup)
-        self.root = Path(self.temp.name).resolve()
-        self.repo = self.root / 'repo'
-        self.repo.mkdir()
-        self.home = self.root / 'home'
-        environment = patch.dict(os.environ, {'LEDGER_HOME': str(self.home)})
-        environment.start()
-        self.addCleanup(environment.stop)
-        self.ctx = custody.load_module(SKILLS / 'ledger/scripts/ledger_context.py')
-        self.definition = SKILLS / 'review-fold/definitions/ledger/counterexample-corpus.json'
-        loader = patch.object(custody, 'load_module', return_value=self.ctx)
-        loader.start()
-        self.addCleanup(loader.stop)
-        runtime = patch.object(custody, 'preparation_runtime')
-        runtime.start()
-        self.addCleanup(runtime.stop)
-
-    def prepare(self, **kwargs):
-        return custody.migrate_owner(self.repo, self.definition, **kwargs)
-
-    def receipt(self, outcome='prepared'):
-        return {'schema': 'ledger-preparation-result/v1', 'outcome': outcome,
-                'storage_mutated': outcome == 'prepared', 'authority_granted': False}
-
-    def test_genuine_new_owner_uses_existing_initialization_without_transfer(self):
-        with patch.object(custody, 'prepare_native', side_effect=AssertionError('unnecessary transfer')):
-            context = custody.owner_context(self.repo, self.definition, maintain=True)
-        self.assertEqual(self.ctx.resolve(self.repo)['store_id'], context['store_id'])
-        self.assertFalse((self.home / 'preparations').exists())
-        self.assertFalse((self.repo / '.ledger').exists())
-
-    def test_unrelated_local_evidence_cannot_take_fresh_initialization_path(self):
-        evidence = self.repo / '.ledger/cas/evidence'
-        evidence.parent.mkdir(parents=True)
-        evidence.write_bytes(b'not disposable')
-        with patch.object(custody, 'prepare_native', side_effect=custody.MigrationError('needs native preparation')):
-            with self.assertRaisesRegex(custody.MigrationError, 'needs native preparation'):
-                custody.owner_context(self.repo, self.definition, maintain=True)
-        self.assertFalse((self.home / 'catalog.json').exists())
-        self.assertEqual(evidence.read_bytes(), b'not disposable')
-
-    def test_empty_owner_rejects_orphan_even_with_an_existing_catalog(self):
-        self.ctx.resolve(initialize=True)
-        orphan = self.home / 'repos' / ('b' * 32)
-        (orphan / '.ledger').mkdir(parents=True)
-        self.ctx.write_json(orphan / self.ctx.MARKER,
-                            {'schema': self.ctx.MARKER_SCHEMA, 'store_id': 'b' * 32})
-        evidence = orphan / '.ledger/original-history'
-        evidence.write_bytes(b'original history remains')
-        before = {str(path.relative_to(self.home)): path.read_bytes()
-                  for path in self.home.rglob('*') if path.is_file()}
-        roots = set((self.home / 'repos').iterdir())
-        with patch.object(custody, 'prepare_native') as prepare:
-            with self.assertRaisesRegex(custody.MigrationError, 'Unregistered custody exists'):
-                custody.owner_context(self.repo, self.definition, maintain=True)
-        prepare.assert_not_called()
-        self.assertEqual(set((self.home / 'repos').iterdir()), roots)
-        self.assertEqual(before, {str(path.relative_to(self.home)): path.read_bytes()
-                                 for path in self.home.rglob('*') if path.is_file()})
-
-    def test_empty_new_owner_with_only_cataloged_roots_initializes_normally(self):
-        prior = self.ctx.resolve(initialize=True)
-        with patch.object(custody, 'prepare_native', side_effect=AssertionError('unnecessary transfer')):
-            context = custody.owner_context(self.repo, self.definition, maintain=True)
-        self.assertNotEqual(prior['store_id'], context['store_id'])
-        self.assertEqual(self.ctx.resolve(self.repo)['store_id'], context['store_id'])
-
-    def test_one_hundred_failed_preparations_keep_one_target_without_copying_unrelated_payload(self):
-        unrelated = self.repo / '.ledger/cas/oversized'
-        unrelated.parent.mkdir(parents=True)
-        with unrelated.open('wb') as handle:
-            handle.truncate(custody.MAX_BYTES + 1)
-        selected = self.repo / '.ledger/review-fold/counterexamples/events.jsonl'
-        selected.parent.mkdir(parents=True)
-        selected.write_bytes(b'original selected evidence\n')
-        targets = []
-
-        def failed(binary, owner, context, sources, **kwargs):
-            targets.append((context['store_id'], context['store_root']))
-            self.assertIn(str(self.repo), sources)
-            self.assertFalse((self.home / 'catalog.json').exists())
-            with self.ctx.catalog_lock(self.home):
-                pass
-            raise custody.MigrationError('native fixture failure')
-
-        with patch.object(custody, 'prepare_native', side_effect=failed), \
-             patch.object(custody, 'inventory', side_effect=AssertionError('broad inventory')), \
-             patch.object(custody, 'copy_inventory', side_effect=AssertionError('broad copying')):
-            for _ in range(100):
-                with self.assertRaisesRegex(custody.MigrationError, 'native fixture failure'):
-                    self.prepare()
-        self.assertEqual(len(set(targets)), 1)
-        self.assertEqual(len(list((self.home / 'repos').iterdir())), 1)
-        self.assertEqual(len(list((self.home / 'preparations').glob('*/registration.json'))), 1)
-        self.assertFalse(list(self.home.rglob('legacy-archive')))
-        self.assertEqual(selected.read_bytes(), b'original selected evidence\n')
-        self.assertEqual(unrelated.stat().st_size, custody.MAX_BYTES + 1)
-
-    def test_catalog_failure_retries_native_with_same_committed_identity(self):
-        targets = []
-
-        def prepared(binary, owner, context, sources, **kwargs):
-            targets.append((context['store_id'], context['store_root']))
-            return self.receipt('prepared' if len(targets) == 1 else 'covered')
-
-        with patch.object(custody, 'prepare_native', side_effect=prepared), \
-             patch.object(custody, 'healthy', return_value={'healthy': True, 'preparation_pending': False}):
-            with patch.object(self.ctx, 'register_root', side_effect=OSError('catalog unavailable')):
-                with self.assertRaisesRegex(custody.MigrationError, 'Preparation committed') as caught:
-                    self.prepare()
-            self.assertEqual(caught.exception.preparation['outcome'], 'prepared')
-            self.assertTrue(Path(caught.exception.context['store_root']).is_dir())
-            result = self.prepare()
-        self.assertEqual(len(set(targets)), 1)
-        self.assertEqual(result['store_id'], targets[0][0])
-        self.assertEqual(result['preparation']['outcome'], 'covered')
-        self.assertEqual(self.ctx.resolve(self.repo)['store_id'], result['store_id'])
-
-    def interrupt_pending_target(self, boundary):
-        mkdir = Path.mkdir
-        write_json = self.ctx.write_json
-
-        def interrupted_mkdir(path, *args, **kwargs):
-            result = mkdir(path, *args, **kwargs)
-            selected_root = path.parent == self.home / 'repos' and len(path.name) == 32
-            selected_control = path.name == '.ledger' and path.parent.parent == self.home / 'repos'
-            if (boundary == 'root' and selected_root) or (boundary == 'control' and selected_control):
-                raise OSError('interrupted target initialization')
-            return result
-
-        def interrupted_write(path, value):
-            write_json(path, value)
-            if boundary == 'locator' and path.name == 'registration.json':
-                raise OSError('interrupted target initialization')
-
-        with patch.object(Path, 'mkdir', new=interrupted_mkdir), \
-             patch.object(self.ctx, 'write_json', side_effect=interrupted_write), \
-             patch.object(custody, 'prepare_native') as native:
-            with self.assertRaisesRegex(OSError, 'interrupted target initialization'):
-                self.prepare()
-        native.assert_not_called()
-        locator, = (self.home / 'preparations').glob('*/registration.json')
-        return locator, json.loads(locator.read_bytes())
-
-    def assert_pending_target_resumes(self, boundary):
-        locator, identity = self.interrupt_pending_target(boundary)
-        original = locator.read_bytes()
-        before = self.home_snapshot()
-        with patch.object(custody, 'prepare_native', side_effect=AssertionError('read-only preparation')), \
-             patch.object(custody, 'native', side_effect=AssertionError('read-only native invocation')):
-            with self.assertRaisesRegex(custody.MigrationError, 'read-only selection'):
-                custody.owner_context(self.repo, self.definition, read_only=True)
-            with self.assertRaisesRegex(custody.MigrationError, 'read-only selection'):
-                custody.owner_context(self.repo, self.definition)
-            with self.assertRaisesRegex(custody.MigrationError, 'initialization requires owner preparation'):
-                custody.check_pending_context(self.repo, None, self.home, identity, self.ctx)
-            with self.assertRaisesRegex(custody.MigrationError, 'initialization requires owner preparation'):
-                custody.pending_target(self.repo, None, locator, self.home, self.ctx)
-        self.assertEqual(self.home_snapshot(), before)
-        with patch.object(custody, 'prepare_native', return_value=self.receipt()), \
-             patch.object(custody, 'healthy', return_value={'healthy': True, 'preparation_pending': False}):
-            resumed = self.prepare()
-        self.assertEqual(resumed['store_id'], identity['store_id'])
-        self.assertEqual(resumed['store_root'], identity['store_root'])
-        self.assertEqual(locator.read_bytes(), original)
-        self.assertEqual(list((self.home / 'repos').iterdir()), [Path(identity['store_root'])])
-        self.assertEqual(self.ctx.resolve(self.repo)['store_id'], identity['store_id'])
-
-    def test_pending_target_resumes_after_control_directory_creation(self):
-        self.assert_pending_target_resumes('control')
-
-    def test_pending_target_resumes_after_locator_publication(self):
-        self.assert_pending_target_resumes('locator')
-
-    def test_pending_target_resumes_after_root_directory_creation(self):
-        self.assert_pending_target_resumes('root')
-
-    def home_snapshot(self):
-        return {str(path.relative_to(self.home)): (
-            path.lstat().st_mode, path.lstat().st_ino, path.lstat().st_mtime_ns,
-            os.readlink(path) if path.is_symlink() else path.read_bytes() if path.is_file() else None,
-        ) for path in (self.home, *self.home.rglob('*'))}
-
-    def assert_pending_target_blocked(self):
-        before = self.home_snapshot()
-        with patch.object(custody, 'prepare_native') as native:
-            with self.assertRaises((RuntimeError, OSError, ValueError)):
-                self.prepare()
-        native.assert_not_called()
-        self.assertEqual(self.home_snapshot(), before)
-
-    def test_pending_target_preserves_foreign_contents_without_marker(self):
-        _, identity = self.interrupt_pending_target('control')
-        root = Path(identity['store_root'])
-        for path in (root / 'foreign', root / '.ledger/foreign'):
-            with self.subTest(path=path):
-                path.write_bytes(b'foreign evidence')
-                self.assert_pending_target_blocked()
-                path.unlink()
-
-    def test_pending_target_rejects_invalid_reserved_paths_and_identity(self):
-        locator, identity = self.interrupt_pending_target('locator')
-        for change in ({'store_root': str(self.root / 'foreign')}, {'store_root': 'relative'},
-                       {'store_root': identity['store_root'] + '/../other'}, {'store_id': '../other'},
-                       {'workspace_root': str(self.root / 'other')}, {'git_common_dir': str(self.root / '.git')}):
-            with self.subTest(change=change):
-                self.ctx.write_json(locator, {**identity, **change})
-                self.assert_pending_target_blocked()
-        self.assertFalse((self.root / 'foreign').exists())
-
-    def test_pending_target_preserves_conflicting_and_malformed_markers(self):
-        _, identity = self.interrupt_pending_target('control')
-        marker = Path(identity['store_root']) / self.ctx.MARKER
-        for content in (b'not-json', json.dumps({'schema': self.ctx.MARKER_SCHEMA, 'store_id': 'a' * 32}).encode()):
-            with self.subTest(content=content):
-                marker.write_bytes(content)
-                self.assert_pending_target_blocked()
-
-    def test_pending_target_never_recreates_control_after_marker_publication(self):
-        _, identity = self.interrupt_pending_target('control')
-        root = Path(identity['store_root'])
-        self.ctx.write_json(root / self.ctx.MARKER, {'schema': self.ctx.MARKER_SCHEMA, 'store_id': identity['store_id']})
-        (root / '.ledger').rmdir()
-        self.assert_pending_target_blocked()
-
-    def test_pending_target_rejects_symlinked_control_marker_and_root(self):
-        _, identity = self.interrupt_pending_target('control')
-        root = Path(identity['store_root'])
-        control = root / '.ledger'
-        foreign = self.root / 'foreign'
-        foreign.mkdir()
-        marker_source = foreign / self.ctx.MARKER
-        self.ctx.write_json(marker_source, {'schema': self.ctx.MARKER_SCHEMA, 'store_id': identity['store_id']})
-        control.rmdir()
-        control.symlink_to(foreign, target_is_directory=True)
-        self.assert_pending_target_blocked()
-        control.unlink()
-        control.mkdir()
-        (root / self.ctx.MARKER).symlink_to(marker_source)
-        self.assert_pending_target_blocked()
-        (root / self.ctx.MARKER).unlink()
-        control.rmdir()
-        root.rmdir()
-        root.symlink_to(foreign, target_is_directory=True)
-        self.assert_pending_target_blocked()
-        self.assertEqual(list(foreign.iterdir()), [marker_source])
-
-    def test_pending_target_rejects_non_directory_root_and_control(self):
-        _, identity = self.interrupt_pending_target('control')
-        root = Path(identity['store_root'])
-        control = root / '.ledger'
-        control.rmdir()
-        control.write_bytes(b'foreign control')
-        self.assert_pending_target_blocked()
-        control.unlink()
-        root.rmdir()
-        root.write_bytes(b'foreign root')
-        self.assert_pending_target_blocked()
-
-    def test_pending_target_reuses_matching_established_root_without_writing(self):
-        with patch.object(custody, 'prepare_native', side_effect=custody.MigrationError('fixture failure')):
-            with self.assertRaisesRegex(custody.MigrationError, 'fixture failure'):
-                self.prepare()
-        locator, = (self.home / 'preparations').glob('*/registration.json')
-        identity = json.loads(locator.read_bytes())
-        (Path(identity['store_root']) / '.ledger/retained').write_bytes(b'established contents')
-        before = self.home_snapshot()
-        selected = custody.pending_target(self.repo, None, locator, self.home, self.ctx)
-        custody.check_pending_context(self.repo, None, self.home, selected, self.ctx)
-        self.assertEqual(selected['store_id'], identity['store_id'])
-        self.assertEqual(self.home_snapshot(), before)
-        with patch.object(custody, 'prepare_native', side_effect=custody.MigrationError('fixture failure')):
-            with self.assertRaisesRegex(custody.MigrationError, 'fixture failure'):
-                self.prepare()
-        self.assertEqual(self.home_snapshot(), before)
-
-    def test_pending_target_never_overwrites_marker_appearing_before_publication(self):
-        locator, identity = self.interrupt_pending_target('control')
-        original = locator.read_bytes()
-        publish_absent = custody.publish_absent
-        conflicting = {'schema': self.ctx.MARKER_SCHEMA, 'store_id': 'b' * 32}
-
-        def competing_marker(source, target):
-            self.ctx.write_json(target, conflicting)
-            publish_absent(source, target)
-
-        with patch.object(custody, 'publish_absent', side_effect=competing_marker), \
-             patch.object(custody, 'prepare_native') as native:
-            with self.assertRaises(FileExistsError):
-                self.prepare()
-        native.assert_not_called()
-        self.assertEqual(locator.read_bytes(), original)
-        self.assertEqual(self.ctx.read_document(Path(identity['store_root']) / self.ctx.MARKER), conflicting)
-        self.assertFalse(list(locator.parent.glob('.root-marker-*')))
-        self.assertEqual(self.ctx.read_document(locator.parent / '.root-marker.json'),
-                         {'schema': self.ctx.MARKER_SCHEMA, 'store_id': identity['store_id']})
-        self.assert_pending_target_blocked()
-
-    def test_pending_target_reuses_matching_marker_candidate(self):
-        locator, identity = self.interrupt_pending_target('control')
-        original = locator.read_bytes()
-        candidate = locator.parent / '.root-marker.json'
-        expected = {'schema': self.ctx.MARKER_SCHEMA, 'store_id': identity['store_id']}
-        self.ctx.write_json(candidate, expected)
-        candidate_inode = candidate.stat().st_ino
-        with patch.object(custody, 'prepare_native', return_value=self.receipt()), \
-             patch.object(custody, 'healthy', return_value={'healthy': True, 'preparation_pending': False}):
-            resumed = self.prepare()
-        self.assertEqual(resumed['store_id'], identity['store_id'])
-        self.assertEqual(locator.read_bytes(), original)
-        marker = Path(identity['store_root']) / self.ctx.MARKER
-        self.assertEqual(self.ctx.read_document(marker), expected)
-        self.assertEqual(marker.stat().st_ino, candidate_inode)
-        self.assertFalse(candidate.exists())
-
-    def test_pending_target_retains_conflicting_and_partial_marker_candidates(self):
-        locator, _ = self.interrupt_pending_target('control')
-        candidate = locator.parent / '.root-marker.json'
-        conflicting = {'schema': self.ctx.MARKER_SCHEMA, 'store_id': 'b' * 32}
-        for content in (b'', b'{"schema":', json.dumps(conflicting).encode()):
-            with self.subTest(content=content):
-                candidate.write_bytes(content)
-                self.assert_pending_target_blocked()
-                self.assert_pending_target_blocked()
-                self.assertEqual(list(locator.parent.glob('.root-marker*')), [candidate])
-
-    def test_pending_target_cleans_only_its_created_candidate_after_write_failure(self):
-        locator, identity = self.interrupt_pending_target('control')
-        original = locator.read_bytes()
-        fsync = os.fsync
-        failed = False
-
-        def fail_once(fd):
-            nonlocal failed
-            if not failed:
-                failed = True
-                raise OSError('candidate sync failed')
-            fsync(fd)
-
-        with patch.object(custody.os, 'fsync', side_effect=fail_once), \
-             patch.object(custody, 'prepare_native') as native:
-            with self.assertRaisesRegex(OSError, 'candidate sync failed'):
-                self.prepare()
-        native.assert_not_called()
-        self.assertFalse((locator.parent / '.root-marker.json').exists())
-        self.assertEqual(locator.read_bytes(), original)
-        with patch.object(custody, 'prepare_native', return_value=self.receipt()), \
-             patch.object(custody, 'healthy', return_value={'healthy': True, 'preparation_pending': False}):
-            resumed = self.prepare()
-        self.assertEqual(resumed['store_id'], identity['store_id'])
-
-    def test_current_learnings_does_not_require_retired_import(self):
-        self.definition = SKILLS / 'learnings/definitions/ledger/learnings-protocol.json'
-        with patch.object(custody, 'prepare_native', return_value=self.receipt()), \
-             patch.object(custody, 'healthy', return_value={'healthy': True, 'preparation_pending': False}):
-            result = self.prepare()
-        self.assertEqual(result['preparation']['outcome'], 'prepared')
-
-    def test_actual_retired_evidence_blocks_before_initialization(self):
-        self.definition = SKILLS / 'learnings/definitions/ledger/learnings-protocol.json'
-        (self.repo / '.learnings.jsonl').write_bytes(b'retired evidence\n')
-        with patch.object(custody, 'prepare_native') as native:
-            with self.assertRaisesRegex(custody.MigrationError, 'Retired-format evidence'):
-                self.prepare()
-        native.assert_not_called()
-        self.assertFalse(self.home.exists())
-
-    def test_broken_git_is_not_plain_workspace_initialization(self):
-        (self.repo / '.git').write_text('gitdir: /missing/fixture-git\n')
-        with self.assertRaisesRegex(custody.MigrationError, 'Git family coverage'):
-            self.prepare()
-        self.assertFalse(self.home.exists())
-
-    def test_unregistered_root_is_not_replaced_by_new_owner_identity(self):
-        orphan = self.home / 'repos' / ('b' * 32)
-        (orphan / '.ledger').mkdir(parents=True)
-        self.ctx.write_json(orphan / self.ctx.MARKER,
-                            {'schema': self.ctx.MARKER_SCHEMA, 'store_id': 'b' * 32})
-        with patch.object(custody, 'prepare_native') as prepare:
-            with self.assertRaisesRegex(custody.MigrationError, 'Unregistered custody exists'):
-                self.prepare()
-        prepare.assert_not_called()
-        self.assertEqual(list((self.home / 'repos').iterdir()), [orphan])
-
-    def test_unknown_native_outcome_preserves_result_and_target(self):
-        owner = custody.selected_owner(self.definition, self.ctx)
-        context = {'native_args': ['--store-root', '/fixture', '--store-id', 'a' * 32]}
-        expected = self.receipt('unknown')
-        with patch.object(custody, 'native', return_value=expected):
-            with self.assertRaises(custody.MigrationError) as caught:
-                custody.prepare_native('ledger', owner, context, ['--source-root', str(self.repo)])
-        self.assertEqual(caught.exception.preparation, expected)
-        self.assertEqual(caught.exception.context, context)
-
-    def test_quiescence_is_only_forwarded_when_explicit(self):
-        owner = custody.selected_owner(self.definition, self.ctx)
-        context = {'native_args': []}
-        with patch.object(custody, 'native', return_value=self.receipt()) as native:
-            custody.prepare_native('ledger', owner, context, [])
-            self.assertNotIn('--confirm-no-legacy-writers', native.call_args.args)
-            custody.prepare_native('ledger', owner, context, [], confirm_no_writers=True)
-            self.assertIn('--confirm-no-legacy-writers', native.call_args.args)
-
-    def test_native_busy_wait_is_bounded(self):
-        owner = custody.selected_owner(self.definition, self.ctx)
-        busy = subprocess.CompletedProcess([], 1, json.dumps(self.receipt('busy')).encode(), b'')
-        with patch.object(custody.subprocess, 'run', return_value=busy), \
-             patch.object(custody.time, 'monotonic', side_effect=[0, custody.BUSY_WAIT_SECONDS + 1]):
-            with self.assertRaisesRegex(custody.MigrationError, 'remained busy'):
-                custody.native('ledger', owner, [], 'prepare', wait_busy=True)
-
-    def segmented_fixture(self):
-        skills = self.root / 'skills'
-        owner = skills / 'fixture'
-        owner.mkdir(parents=True)
-        definition = owner / 'definition.json'
-        definition.write_text(json.dumps({'owner': 'fixture', 'storage': {'slots': {'events': {
-            'path': 'fixture/events.jsonl', 'kind': 'event-log', 'codec': 'jsonl', 'layout': 'segmented'}}}}))
-        (owner / 'migration.json').write_text(json.dumps({'schema': 'ledger-owner-migration/v1',
-            'definition': 'definition.json', 'retired_sources': [], 'importer': None}))
-        return skills, definition
-
-    def test_healthy_segmented_access_never_prepares_or_scans_archives(self):
-        skills, definition = self.segmented_fixture()
-        context = self.ctx.resolve(self.repo, initialize=True)
-        doctor = {'healthy': True, 'pending_transactions': 0, 'preparation_pending': False,
-                  'slots': [{'status': 'healthy'}]}
-        with patch.object(custody, 'native', return_value=doctor), \
-             patch.object(custody, 'archive_entries', side_effect=AssertionError('archive scan')), \
-             patch.object(custody, 'prepare_native', side_effect=AssertionError('preparation')):
-            selected = custody.owner_context(self.repo, definition, maintain=True, skill_root=skills)
-        self.assertEqual(selected['store_id'], context['store_id'])
-
-    def test_segmented_preparation_is_unsupported_before_initialization(self):
-        skills, definition = self.segmented_fixture()
-        with self.assertRaises(custody.MigrationError) as caught:
-            custody.migrate_owner(self.repo, definition, skill_root=skills)
-        self.assertEqual(caught.exception.preparation['outcome'], 'unsupported')
-        self.assertFalse(self.home.exists())
-
-    def test_pending_preparation_bypasses_fast_path_without_archive_discovery(self):
-        context = self.ctx.resolve(self.repo, initialize=True)
-        doctor = {'healthy': True, 'pending_transactions': 0, 'preparation_pending': True,
-                  'slots': [{'status': 'healthy'}]}
-        with patch.object(custody, 'native', return_value=doctor), \
-             patch.object(custody, 'archive_entries', side_effect=AssertionError('archive scan')), \
-             patch.object(custody, 'migrate_owner', return_value=context) as prepare:
-            custody.owner_context(self.repo, self.definition, maintain=True)
-        self.assertIs(prepare.call_args.kwargs['discover_archives'], False)
-
-    def test_catalog_identity_cannot_replace_unresolved_pending_target(self):
-        with patch.object(custody, 'prepare_native', side_effect=custody.MigrationError('fixture failure')):
-            with self.assertRaisesRegex(custody.MigrationError, 'fixture failure'):
-                self.prepare()
-        replacement = self.root / 'replacement'
-        (replacement / '.ledger').mkdir(parents=True)
-        self.ctx.write_json(replacement / self.ctx.MARKER,
-                            {'schema': self.ctx.MARKER_SCHEMA, 'store_id': 'a' * 32})
-        self.ctx.register_root(replacement, 'a' * 32, self.repo)
-        with patch.object(custody, 'prepare_native') as prepare:
-            with self.assertRaisesRegex(custody.MigrationError, 'Pending custody conflicts'):
-                self.prepare()
-        prepare.assert_not_called()
-
-    def test_pending_target_is_shared_across_linked_worktree_retries(self):
-        subprocess.run(['git', 'init', '-q', str(self.repo)], check=True)
-        subprocess.run(['git', '-C', str(self.repo), '-c', 'user.name=Fixture', '-c',
-                        'user.email=fixture@example.test', 'commit', '--allow-empty', '-qm', 'fixture'], check=True)
-        other = self.root / 'other'
-        subprocess.run(['git', '-C', str(self.repo), 'worktree', 'add', '-q', '-b', 'other', str(other)], check=True)
-        identities = []
-
-        def failed(binary, owner, context, sources, **kwargs):
-            identities.append(context['store_id'])
-            raise custody.MigrationError('fixture failure')
-
-        with patch.object(custody, 'prepare_native', side_effect=failed):
-            for repo in (self.repo, other):
-                with self.assertRaisesRegex(custody.MigrationError, 'fixture failure'):
-                    custody.migrate_owner(repo, self.definition)
-        self.assertEqual(len(set(identities)), 1)
+import native_host as custody
 
 
 @unittest.skipUnless(os.environ.get('LEDGER_BIN'), 'Native Ledger is required')
@@ -515,7 +26,7 @@ class OwnerUpgradeTests(unittest.TestCase):
         env = patch.dict(os.environ, {'LEDGER_HOME': str(self.root / 'home')})
         env.start()
         self.addCleanup(env.stop)
-        self.ctx = custody.load_module(SKILLS / 'ledger/scripts/ledger_context.py')
+        self.ctx = custody
         self.definition = SKILLS / 'review-fold/definitions/ledger/counterexample-corpus.json'
         self.packet = SKILLS / 'review-fold/tests/fixtures/counterexample-capture-valid.json'
         self.binary = os.environ['LEDGER_BIN']
@@ -532,8 +43,8 @@ class OwnerUpgradeTests(unittest.TestCase):
         return custody.owner_context(self.repo, self.definition, maintain=True, binary=self.binary, **kwargs)
 
     def command(self, *flags):
-        return [sys.executable, str(SCRIPT), '--repo', str(self.repo), '--definition', str(self.definition),
-                '--ledger-bin', self.binary, *flags]
+        mode = '--read-only' if '--read-only' in flags else '--ensure-owner'
+        return custody.owner_command(self.repo, self.definition, binary=self.binary, mode=mode)
 
     def test_fresh_install_initializes_managed_custody_and_captures(self):
         context = self.ensure()
@@ -621,83 +132,6 @@ class OwnerUpgradeTests(unittest.TestCase):
         self.assertEqual((Path(context['store_root']) / self.slot).read_bytes(), original)
         self.assertEqual((self.repo / self.slot).read_bytes(), original)
 
-    def assert_real_native_host_retry(self, boundary):
-        self.capture(['--repo', str(self.repo)])
-        original = (self.repo / self.slot).read_bytes()
-        events = [json.loads(line) for line in original.splitlines()]
-        records = [event['record'] for event in events]
-        for key, value in json.loads(self.packet.read_text())['record'].items():
-            self.assertEqual(records[0][key], value)
-        self.assertEqual(records[0]['id'], events[0]['counterexample_id'])
-        home = self.root / 'home'
-        replace = os.replace
-        healthy = custody.healthy
-        failures = []
-
-        def fail_catalog(source, target):
-            if Path(target) == home / 'catalog.json':
-                failures.append(boundary)
-                raise OSError('catalog publication fixture failure')
-            return replace(source, target)
-
-        def fail_verification(*arguments, **kwargs):
-            result = healthy(*arguments, **kwargs)
-            self.assertTrue(result['healthy'])
-            failures.append(boundary)
-            raise OSError('post-native verification fixture failure')
-
-        def snapshot(root):
-            return {str(path.relative_to(root)): None if path.is_dir() else path.read_bytes()
-                    for path in root.rglob('*')}
-
-        injection = (patch.object(os, 'replace', side_effect=fail_catalog) if boundary == 'catalog'
-                     else patch.object(custody, 'healthy', side_effect=fail_verification))
-        message = 'catalog association failed' if boundary == 'catalog' else 'owner verification failed'
-        identities = set()
-        first_snapshot = None
-        with injection:
-            for attempt in range(100):
-                with self.assertRaisesRegex(custody.MigrationError, message) as caught:
-                    self.ensure()
-                context = caught.exception.context
-                store = Path(context['store_root'])
-                identities.add((context['store_id'], context['store_root']))
-                self.assertEqual(caught.exception.preparation['outcome'], 'prepared' if attempt == 0 else 'covered')
-                self.assertEqual((store / self.slot).read_bytes(), original)
-                self.assertEqual((self.repo / self.slot).read_bytes(), original)
-                self.assertFalse((home / 'catalog.json').exists())
-                self.assertEqual(list((home / 'repos').iterdir()), [store])
-                self.assertEqual(len(list((home / 'preparations').glob('*/registration.json'))), 1)
-                self.assertEqual(len(list((store / '.ledger/.transactions').glob('*/transaction.json'))), 1)
-                self.assertFalse(list((store / '.ledger/.preparation').glob('payload-*')))
-                self.assertFalse(list(home.rglob('legacy-archive')))
-                current = snapshot(home)
-                if first_snapshot is None:
-                    first_snapshot = current
-                self.assertEqual(current, first_snapshot)
-        self.assertEqual(len(failures), 100)
-        self.assertEqual(len(identities), 1)
-        committed = snapshot(store)
-        resumed = self.ensure()
-        self.assertEqual((resumed['store_id'], resumed['store_root']), next(iter(identities)))
-        self.assertEqual(resumed['preparation']['outcome'], 'covered')
-        self.assertEqual(snapshot(store), committed)
-        self.assertEqual(self.ctx.resolve(self.repo)['store_id'], resumed['store_id'])
-        projected = subprocess.run([self.binary, 'project', '--definition', str(self.definition),
-            *resumed['native_args'], '--projection', 'basis',
-            '--param', 'repository=' + records[0]['repository_id'], '--payload-only', '--format', 'json'],
-            capture_output=True, timeout=15)
-        self.assertEqual(projected.returncode, 0, projected.stdout + projected.stderr)
-        self.assertEqual(json.loads(projected.stdout), records)
-        self.assertEqual((store / self.slot).read_bytes(), original)
-        self.assertEqual((self.repo / self.slot).read_bytes(), original)
-
-    def test_one_hundred_catalog_failures_preserve_one_native_commit(self):
-        self.assert_real_native_host_retry('catalog')
-
-    def test_one_hundred_verification_failures_preserve_one_native_commit(self):
-        self.assert_real_native_host_retry('verification')
-
     def test_empty_registered_owner_imports_local_history_without_an_archive(self):
         registered = self.ctx.resolve(self.repo, initialize=True)
         self.capture(['--repo', str(self.repo)])
@@ -723,7 +157,7 @@ class OwnerUpgradeTests(unittest.TestCase):
 
     def test_read_only_does_not_initialize_or_migrate(self):
         self.capture(['--repo', str(self.repo)])
-        with self.assertRaisesRegex(custody.MigrationError, 'read-only'):
+        with self.assertRaisesRegex(custody.MigrationError, 'OwnerPreparationRequired'):
             custody.owner_context(self.repo, self.definition, read_only=True, binary=self.binary)
         self.assertFalse((self.root / 'home').exists())
 
@@ -837,22 +271,11 @@ class OwnerUpgradeTests(unittest.TestCase):
         probe = Path(os.environ.get('LEDGER_PREPARATION_PROBE_BIN',
                                     str(Path(self.binary).with_name('ledger-preparation-probe'))))
         self.assertTrue(probe.is_file(), 'Build the native preparation probe before adapter qualification')
-        run = subprocess.run
-        exit_codes = []
-
-        def witnessed(arguments, **kwargs):
-            result = run(arguments, **kwargs)
-            if arguments[:2] == [str(probe), 'prepare']:
-                exit_codes.append(result.returncode)
-            return result
-
-        with patch.dict(os.environ, {'LEDGER_PREPARATION_FAULT': 'publication'}), \
-             patch.object(custody.subprocess, 'run', side_effect=witnessed):
-            with self.assertRaises(custody.MigrationError) as caught:
-                custody.owner_context(self.repo, self.definition, maintain=True, binary=str(probe))
-        self.assertEqual(exit_codes, [99])
-        self.assertEqual(caught.exception.context['store_id'], registered['store_id'])
-        self.assertEqual(caught.exception.preparation['outcome'], 'unknown')
+        with patch.dict(os.environ, {'LEDGER_PREPARATION_FAULT': 'publication'}):
+            interrupted = subprocess.run(custody.owner_command(self.repo, self.definition, binary=probe),
+                                         capture_output=True, timeout=20)
+        self.assertEqual(interrupted.returncode, 99, interrupted.stdout + interrupted.stderr)
+        self.assertEqual(self.ctx.resolve(self.repo)['store_id'], registered['store_id'])
         self.assertFalse((store / self.slot).exists())
         self.assertEqual((self.repo / self.slot).read_bytes(), original)
         context = self.ensure()
@@ -888,7 +311,7 @@ class OwnerUpgradeTests(unittest.TestCase):
         subprocess.run(['git', '-C', str(self.repo), 'worktree', 'add', '--detach', str(other)], check=True, capture_output=True)
         registered = self.ctx.resolve(self.repo, initialize=True)
         self.capture(['--repo', str(other)])
-        with self.assertRaisesRegex(custody.MigrationError, 'read-only'):
+        with self.assertRaisesRegex(custody.MigrationError, 'OwnerPreparationRequired'):
             custody.owner_context(self.repo, self.definition, read_only=True, binary=self.binary)
         self.assertFalse((Path(registered['store_root']) / self.slot).exists())
         with self.assertRaisesRegex(custody.MigrationError, 'PreparationRequiresQuiescence'):
@@ -904,6 +327,131 @@ class OwnerUpgradeTests(unittest.TestCase):
         with self.assertRaisesRegex(custody.MigrationError, 'StoreBindingWithoutSlot'):
             self.ensure()
         self.assertFalse((Path(registered['store_root']) / self.slot).exists())
+
+
+    def test_one_hundred_capture_interruptions_keep_one_pending_identity_and_workspace(self):
+        self.capture(['--repo', str(self.repo)])
+        original = (self.repo / self.slot).read_bytes()
+        unrelated = self.repo / '.ledger/unrelated/large'
+        unrelated.parent.mkdir(parents=True)
+        with unrelated.open('wb') as handle:
+            handle.truncate(3 * 1024**3)
+        home = self.root / 'home'
+        probe = os.environ['LEDGER_PREPARATION_PROBE_BIN']
+        identity = None
+        retained = None
+        with patch.dict(os.environ, {'LEDGER_PREPARATION_FAULT': 'capture'}):
+            for attempt in range(100):
+                failed = subprocess.run(custody.owner_command(self.repo, self.definition, binary=probe),
+                                        capture_output=True, timeout=20)
+                self.assertEqual(failed.returncode, 99, failed.stdout + failed.stderr)
+                locators = list((home / 'preparations').glob('*/registration.json'))
+                self.assertEqual(len(locators), 1)
+                current = json.loads(locators[0].read_bytes())
+                if identity is None:
+                    identity = current
+                self.assertEqual(current, identity)
+                roots = list((home / 'repos').iterdir())
+                self.assertEqual(roots, [Path(identity['store_root'])])
+                files = {str(p.relative_to(roots[0])): p.stat().st_size
+                         for p in roots[0].rglob('*') if p.is_file()}
+                transactions = list((roots[0] / '.ledger/.transactions').glob('dtx-*'))
+                self.assertEqual(len(transactions), 1)
+                staged = list(transactions[0].glob('.ledger-dtx-stage-*'))
+                self.assertEqual(len(staged), 1)
+                self.assertFalse((roots[0] / self.slot).exists())
+                record = transactions[0] / 'transaction.json'
+                transaction = json.loads(record.read_bytes())
+                self.assertEqual(transaction['state'], 'preparing')
+                self.assertEqual(transaction['owner']['session_id'], 'ledger-preparation-v1')
+                first_write = transaction['writes'][0]
+                self.assertEqual(first_write['staged_ref'], staged[0].name)
+                self.assertEqual(staged[0].read_bytes(),
+                                 (self.repo / '.ledger' / first_write['path']).read_bytes())
+                files['native-transaction-record'] = files.pop(str(record.relative_to(roots[0])))
+                files['native-selected-stage'] = files.pop(str(staged[0].relative_to(roots[0])))
+                recovery_lock = '.ledger/.transactions/.recovery.advisory'
+                if attempt == 0:
+                    self.assertNotIn(recovery_lock, files)
+                else:
+                    self.assertEqual(files.pop(recovery_lock), 0)
+                if retained is None:
+                    retained = files
+                self.assertEqual(files, retained)
+                self.assertFalse((home / 'catalog.json').exists())
+                self.assertFalse((roots[0] / 'legacy-archive').exists())
+                self.assertFalse((roots[0] / '.ledger/unrelated').exists())
+                self.assertEqual((self.repo / self.slot).read_bytes(), original)
+        resumed = self.ensure()
+        self.assertEqual(resumed['store_id'], identity['store_id'])
+        self.assertEqual((Path(resumed['store_root']) / self.slot).read_bytes(), original)
+        self.assertEqual(unrelated.stat().st_size, 3 * 1024**3)
+
+    def test_one_hundred_catalog_failures_preserve_one_native_commit(self):
+        self.capture(['--repo', str(self.repo)])
+        original = (self.repo / self.slot).read_bytes()
+        probe = Path(os.environ['LEDGER_PREPARATION_PROBE_BIN'])
+        selected = None
+        stable = None
+        for attempt in range(100):
+            with patch.dict(os.environ, {'LEDGER_PREPARATION_FAULT': 'catalog_association'}):
+                result = subprocess.run(custody.owner_command(self.repo, self.definition, binary=probe),
+                                        capture_output=True, timeout=20)
+            self.assertEqual(result.returncode, 3, result.stdout + result.stderr)
+            value = json.loads(result.stdout)
+            self.assertEqual(value['error_code'], 'AccessDenied')
+            self.assertIn(value['preparation']['outcome'], ('prepared', 'covered'))
+            self.assertEqual(value['storage_mutated'], True if attempt == 0 else None)
+            identity = (value['store_id'], value['store_root'])
+            if selected is None:
+                selected = identity
+            self.assertEqual(identity, selected)
+            store = Path(value['store_root'])
+            self.assertEqual((store / self.slot).read_bytes(), original)
+            self.assertEqual((self.repo / self.slot).read_bytes(), original)
+            self.assertFalse((self.root / 'home/catalog.json').exists())
+            self.assertFalse((store / 'legacy-archive').exists())
+            self.assertFalse(list((store / '.ledger').rglob('.ledger-dtx-stage-*')))
+            snapshot = {str(p.relative_to(store)): p.read_bytes() for p in store.rglob('*') if p.is_file()}
+            if attempt == 1:
+                stable = snapshot
+            elif attempt > 1:
+                self.assertEqual(snapshot, stable)
+        resumed = self.ensure()
+        self.assertEqual((resumed['store_id'], resumed['store_root']), selected)
+        expected = json.loads(self.packet.read_text())['record']
+        projected = subprocess.run([self.binary, 'project', '--definition', str(self.definition),
+            *resumed['native_args'], '--projection', 'basis', '--param', 'repository=' + expected['repository_id'],
+            '--payload-only', '--format', 'json'], capture_output=True, timeout=15)
+        self.assertEqual(projected.returncode, 0, projected.stdout + projected.stderr)
+        records = json.loads(projected.stdout)
+        self.assertEqual(len(records), 1)
+        for key, value in expected.items():
+            self.assertEqual(records[0][key], value)
+
+    def test_native_verification_failure_retains_commit_and_retries_without_recapture(self):
+        self.capture(['--repo', str(self.repo)])
+        original = (self.repo / self.slot).read_bytes()
+        probe = Path(os.environ['LEDGER_PREPARATION_PROBE_BIN'])
+        with patch.dict(os.environ, {'LEDGER_PREPARATION_FAULT': 'verification'}):
+            failed = subprocess.run(custody.owner_command(self.repo, self.definition, binary=probe), capture_output=True, timeout=20)
+        self.assertEqual(failed.returncode, 3, failed.stdout + failed.stderr)
+        value = json.loads(failed.stdout)
+        self.assertEqual(value['preparation']['outcome'], 'committed-with-later-failure')
+        self.assertTrue(value['storage_mutated'])
+        store = Path(value['store_root'])
+        self.assertEqual((store / self.slot).read_bytes(), original)
+        stable = None
+        for attempt in range(100):
+            resumed = self.ensure()
+            self.assertEqual(resumed['store_id'], value['store_id'])
+            self.assertEqual((store / self.slot).read_bytes(), original)
+            snapshot = {str(p.relative_to(store)): p.read_bytes() for p in store.rglob('*') if p.is_file()}
+            if attempt == 0:
+                stable = snapshot
+            else:
+                self.assertFalse(resumed['storage_mutated'])
+                self.assertEqual(snapshot, stable)
 
 
 if __name__ == '__main__':

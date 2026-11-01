@@ -33,10 +33,11 @@ not discover Git state, sessions, memory roots, or network facts, and does not
 grant mutation, publication, review, delivery, or closure authority.
 
 The caller owns definition selection, input construction, semantic
-interpretation, and workflow actions. This skill's explicit context helper
-resolves a personal catalog by stable store identity or an explicit workspace
-association; it is not
-hidden discovery inside a passive definition or the native engine.
+interpretation, and workflow actions. This skill chooses the storage location
+and supplies it explicitly. Native `ledger context` implements catalog lookup,
+workspace association, identity validation, and authorized registration in a
+host layer separate from the storage engine. Passive definitions do not discover
+workspaces or select physical storage.
 
 A successful result remains definition-relative. It does not establish that the
 owner selected the right protocol, that an exclusion applies, or that a later
@@ -90,6 +91,7 @@ silently relocated.
 ## Baseline native surface
 
 ```text
+ledger context
 ledger definition check
 ledger definition describe
 ledger validate
@@ -152,10 +154,25 @@ vocabulary, counterexample discipline, and the native extension law.
 
 ## Storage-context ownership
 
-This skill alone owns physical storage-location and migration policy. Read
+This skill alone owns physical storage-location and migration policy. Select
+`LEDGER_HOME` when nonempty; otherwise use `${CODEX_HOME:-$HOME/.codex}/ledger`.
+Require an absolute selected location with no symlink components and pass it as
+`--catalog-root`. Do not create directories or follow a configured symlink merely
+to resolve a read-only context.
+Pass the selected absolute workspace as `--workspace`, or a known `--store-id`
+when no workspace is selected. Native Ledger has no Codex-specific default and
+does not read these variables to choose custody.
+
+```bash
+ledger_home="${LEDGER_HOME:-${CODEX_HOME:-$HOME/.codex}/ledger}"
+ledger context --catalog-root "$ledger_home" --workspace "<absolute-workspace>"
+```
+
+Default context lookup is read-only. Missing or invalid context never authorizes
+initialization of replacement history. Read
 [canonical-custody.md](references/canonical-custody.md#storage-context-ownership)
-before resolving or operating on canonical custody. Do not duplicate its policy
-in consumers or `AGENTS.md`, or substitute an empty store for a failed lookup.
+before canonical use. Consumers follow this policy rather than deriving another
+physical path or implementing a second catalog resolver.
 
 ## Resolve personal custody
 
@@ -166,14 +183,14 @@ includes routine custody preparation; do not request separate migration approval
 or gate it on permission to capture new records. Analysis and review use this
 same preparation. Use the returned managed selector for the original operation.
 
-Without owner preparation, run `scripts/ensure_custody.py --repo "<workspace-path>"`
-through `uv run`, or select a known cataloged `--store-id`. Ordinary ensure automatically
-imports a valid existing Git registration into the personal catalog when the
-workspace has no association. It preserves the root, store ID, records, and native
-bindings; it never creates new history or imports legacy records. Repeated ensure
-is read-only. For an explicit user prohibition on file/custody maintenance or an
-enforced non-writable environment, use `ledger_context.py` for identity lookup or
-`--read-only --definition` for owner selection. Report unavailable history when
+Without owner preparation, use `ledger context --catalog-root "$ledger_home"
+--workspace "<absolute-workspace>" --ensure`, or select a known cataloged
+`--store-id`. Ensure may import a valid existing Git registration when the
+workspace has no catalog association. It preserves the root, store ID, records,
+and native bindings; it never creates new history or imports legacy records.
+Repeated ensure leaves storage unchanged. For an explicit prohibition on custody
+maintenance, omit `--ensure` for identity lookup, or use `--read-only --definition
+"$definition" --owner-manifest "$owner_manifest"` for owner selection. Report unavailable history when
 that constraint prevents preparation; do not invent a migration approval step.
 Missing worktrees, unresolved legacy imports, and absent migration receipts do
 not invalidate owned custody. Read [explicit adoption and migration](references/canonical-custody.md#explicit-adoption-and-migration)

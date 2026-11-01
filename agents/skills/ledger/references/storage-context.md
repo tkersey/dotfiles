@@ -1,15 +1,16 @@
 # Personal storage context
 
-This reference and `../scripts/ledger_context.py` own the Codex integration's
-location policy. The native CLI takes explicit roots and has no Codex/Git default.
+The [skill body](../SKILL.md#storage-context-ownership) owns location policy.
+Pass its selected `ledger_home` as `--catalog-root`. Native host commands implement
+catalog lookup, Git discovery, and authorized registration; the storage engine
+receives explicit roots and has no Codex-specific default.
 For a coordinated upgrade of existing installations, follow
 [the upgrade guide](personal-store-upgrade.md). Normal opted-in owner access uses
 automatic preparation below.
 
 ## Catalog and identity
 
-The personal home is `${CODEX_HOME:-$HOME/.codex}/ledger`; an absolute
-`LEDGER_HOME` selects another home. Its `catalog.json` is authoritative:
+The selected home retains the existing directory layout. Its `catalog.json` is authoritative:
 
 ```text
 <storage-home>/
@@ -61,7 +62,7 @@ prohibited, as that owner-preparation policy specifies.
 Discover registered identities after a checkout disappears:
 
 ```bash
-uv run "$ledger_skill_root/scripts/ledger_context.py" --list-stores
+ledger context --catalog-root "$ledger_home" --list-stores
 ```
 
 The read-only listing returns IDs, roots, and explicit associations. It makes no
@@ -70,18 +71,18 @@ native store-health claim and does not initialize an absent catalog.
 Prefer the known source's stable identity:
 
 ```bash
-uv run "$ledger_skill_root/scripts/ledger_context.py" --store-id "<store-id>"
+ledger context --catalog-root "$ledger_home" --store-id "<store-id>"
 ```
 
 This works without any checkout or Git metadata. A cataloged workspace is an
 optional convenience:
 
 ```bash
-uv run "$ledger_skill_root/scripts/ledger_context.py" --repo "<workspace-path>"
+ledger context --catalog-root "$ledger_home" --workspace "<workspace-path>"
 ```
 
 A live Git worktree can supply its root/common-directory associations, so linked
-worktrees share an explicitly attached family. The helper never enumerates sibling
+worktrees share an explicitly attached family. The native host command never enumerates sibling
 worktrees during normal access. Plain directories can be associated too. Worktree
 moves within a common directory retain that family association. After moving the
 common directory or using another clone, select the known ID and explicitly attach
@@ -101,36 +102,36 @@ and source-note admission. Native operations validate their own owner-defined
 custody; context success is not a semantic health or applicability claim.
 A failed projection's managed root admission exits 3, never a clear gate.
 
-`ensure_custody.py --repo ...` performs this lookup and, only for an unregistered
+`ledger context --ensure --workspace ...` performs this lookup and, only for an unregistered
 Git workspace with an existing valid registration, automatically catalogs that
 same identity. Use this registration-only mode for context resolution without an
-owner; use `ledger_context.py` for strictly non-mutating identity lookup. Missing
+owner; use `ledger context` for strictly non-mutating identity lookup. Missing
 registration fails in these low-level modes; opted-in owner preparation handles
 supported initialization or current-format migration automatically. Adoption
 preserves native bytes and rejects catalog conflicts.
 Migration receipts and complete legacy inventory are never access prerequisites.
 No selector means no implicit default store; select a stable ID or a cataloged
-workspace. Caller code uses `resolve(repo=None, store_id=...)`.
+workspace. Callers pass `--catalog-root` and the explicit workspace or store ID.
 
 ## Explicit catalog adoption
 
 Import an existing Git registration once:
 
 ```bash
-uv run "$ledger_skill_root/scripts/ledger_context.py" \
+ledger context --catalog-root "$ledger_home" \
   --import-registration "<git-common-dir>/ledger-store.json" \
-  --repo "<workspace-path>"
+  --workspace "<workspace-path>"
 ```
 
 The selected metadata must have its original registration schema and an intact
-matching root. The helper records that identity in the personal catalog and
+matching root. The native host command records that identity in the personal catalog and
 preserves the old file as historical evidence. Ordinary lookup never reads it
 as a fallback. Missing sibling worktrees do not block adoption.
 
 When Git metadata is unavailable, select the actual existing root and ID:
 
 ```bash
-uv run "$ledger_skill_root/scripts/ledger_context.py" \
+ledger context --catalog-root "$ledger_home" \
   --register-root "<absolute-existing-root>" --store-id "<existing-store-id>"
 ```
 
@@ -141,14 +142,14 @@ selected owner projection or doctor when the task needs that evidence.
 Associate a new workspace with an existing cataloged identity explicitly:
 
 ```bash
-uv run "$ledger_skill_root/scripts/ledger_context.py" \
-  --store-id "<store-id>" --repo "<workspace-path>" --attach-workspace
+ledger context --catalog-root "$ledger_home" \
+  --store-id "<store-id>" --workspace "<workspace-path>" --attach-workspace
 ```
 
 Existing conflicting aliases or another root for the same ID are errors; these
 commands are not relocation, alias replacement, or history reconciliation.
 Repeated identical adoption leaves catalog content unchanged. `--register-root`
-and `--import-registration` may also take `--repo` to publish the association
+and `--import-registration` may also take `--workspace` to publish the association
 with the adoption.
 
 ## New custody and historical import
@@ -156,10 +157,10 @@ with the adoption.
 Outside automatic owner preparation, explicitly selected new personal history uses:
 
 ```bash
-uv run "$ledger_skill_root/scripts/ledger_context.py" --initialize
+ledger context --catalog-root "$ledger_home" --initialize
 ```
 
-Add `--repo "<workspace-path>"` only when that workspace should select the new
+Add `--workspace "<workspace-path>"` only when that workspace should select the new
 identity. Retain the returned ID. Initialization with an unknown explicit
 `--store-id` is forbidden, and an established broken root cannot be recreated.
 This low-level initializer refuses known legacy registration or history in the
@@ -167,12 +168,13 @@ selected workspace. Use owner preparation for supported current-format history,
 or select the historical importer for retired formats. When attaching a verified
 Git family to new custody, initialization
 also inspects its linked worktrees before staging and immediately before catalog
-publication. Sibling history in `.ledger`, including retired
-`.ledger/learnings/learnings.jsonl`, or in `.learnings.jsonl` requires explicit migration.
+publication. Sibling history in `.ledger` requires explicit migration. Pass
+each owner-declared retired path with `--legacy-path` when using low-level
+initialization; native Ledger does not choose owner-specific retired names.
 An unavailable sibling blocks new family custody until its legacy coverage is
 resolved. This creation check never gates normal access, direct store selection,
 or adoption of an existing identity, and does not apply to a new Git-free store.
-The helper does not claim coverage of other undiscovered sources.
+The native host command does not claim coverage of other undiscovered sources.
 
 New isolated roots require no global writer shutdown. The manual cold-transport
 and historical-import procedures require actual quiescence of affected old and managed writers.
@@ -182,7 +184,7 @@ do not gate unrelated or already-owned canonical data.
 
 The low-level `--initialize --adopt-from <source-worktree> --definition <owner>`
 procedure remains explicit cold transport for selected legacy worktree histories.
-It additionally requires `--repo` and `--confirm-no-writers`, complete owner
+It additionally requires `--workspace` and `--confirm-no-writers`, complete owner
 definitions, native doctor validation, source byte parity, and compatible
 complete-record prefixes. It publishes the personal catalog, never a new Git
 registration. Prefer owner-aware `--migrate` when retired formats need import.
