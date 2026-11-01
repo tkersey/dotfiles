@@ -1,5 +1,6 @@
 from concurrent.futures import ThreadPoolExecutor
 import importlib.util
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -559,6 +560,147 @@ class LedgerContextTests(unittest.TestCase):
             *result['native_args'], '--projection', 'import-records', '--format', 'json'], capture_output=True)
         self.assertEqual(read.returncode, 0, read.stdout + read.stderr)
         self.assertEqual(json.loads(read.stdout)['data'][0]['learning'], 'Preserve the linked worktree history.')
+
+    def cold_event_definition(self, multiple=False):
+        fixture = Path(__file__).parent / 'fixtures/event-binding-definition.json'
+        if not multiple:
+            return fixture
+        value = json.loads(fixture.read_text())
+        value['storage']['slots']['second'] = dict(value['storage']['slots']['events'], path='example/second.jsonl')
+        value['operations']['append-second'] = {'op': 'atomic-transaction', 'effects': [
+            {'op': 'compare-and-append', 'slot': 'second', 'input': 'event', 'idempotency_param': 'request'}]}
+        value['projections']['second-all'] = dict(value['projections']['all'], slot='second')
+        definition = self.root / 'two-slots.json'
+        definition.write_text(json.dumps(value))
+        return definition
+
+    def cold_event_append(self, definition, tree, request, value=1, operation='append', selector=None):
+        args = selector or ['--repo', str(tree)]
+        result = subprocess.run([os.environ['LEDGER_BIN'], 'transact', '--definition', str(definition),
+            *args, '--operation', operation, '--param', f'request={request}',
+            '--input', 'event=-', '--format', 'json'], input=json.dumps({'kind': 'one', 'value': value}).encode(),
+            capture_output=True, env=dict(os.environ, LEDGER_CACHE_DIR=str(self.root / 'native-cache')))
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        return json.loads(result.stdout)
+
+    def cold_family_snapshot(self):
+        return {str(path.relative_to(self.root)): path.read_bytes()
+                for tree in (self.repo, self.other) for path in (tree / '.ledger').rglob('*') if path.is_file()}
+
+    def test_cold_adoption_rejects_equal_events_with_different_request_bindings(self):
+        definition = self.cold_event_definition()
+        self.cold_event_append(definition, self.repo, 'first')
+        self.cold_event_append(definition, self.other, 'second')
+        self.assertEqual((self.repo / '.ledger/example/events.jsonl').read_bytes(),
+                         (self.other / '.ledger/example/events.jsonl').read_bytes())
+        before = self.cold_family_snapshot()
+        with self.assertRaisesRegex(context.ContextError, 'AdoptionSourceDoesNotCoverHistory'):
+            self.cold_adopt(definition)
+        self.assertEqual(self.cold_family_snapshot(), before)
+        self.assertFalse(context.storage_home().exists())
+
+    def test_cold_adoption_checks_binding_coverage_in_every_slot(self):
+        definition = self.cold_event_definition(multiple=True)
+        for tree, request in ((self.repo, 'first'), (self.other, 'second')):
+            self.cold_event_append(definition, tree, 'shared')
+            self.cold_event_append(definition, tree, request, operation='append-second')
+        before = self.cold_family_snapshot()
+        with self.assertRaisesRegex(context.ContextError, 'AdoptionSourceDoesNotCoverHistory'):
+            self.cold_adopt(definition)
+        self.assertEqual(self.cold_family_snapshot(), before)
+        self.assertFalse(context.storage_home().exists())
+
+    def assert_cold_rejects_damaged_sibling(self, orphan):
+        definition = self.cold_event_definition()
+        self.cold_event_append(definition, self.other, 'shared')
+        shutil.copytree(self.other / '.ledger', self.repo / '.ledger')
+        if orphan:
+            (self.repo / '.ledger/example/events.jsonl').unlink()
+        else:
+            next((self.repo / '.ledger/.definitions').glob('*.json')).unlink()
+        before = self.cold_family_snapshot()
+        with self.assertRaises(context.ContextError):
+            self.cold_adopt(definition)
+        self.assertEqual(self.cold_family_snapshot(), before)
+        self.assertFalse(context.storage_home().exists())
+
+    def test_cold_adoption_rejects_sibling_orphan_binding(self):
+        self.assert_cold_rejects_damaged_sibling(orphan=True)
+
+    def test_cold_adoption_rejects_sibling_missing_historical_definition(self):
+        self.assert_cold_rejects_damaged_sibling(orphan=False)
+
+    def test_cold_adoption_preserves_multislot_prefix_and_idempotency(self):
+        definition = self.cold_event_definition(multiple=True)
+        self.cold_event_append(definition, self.other, 'shared')
+        self.cold_event_append(definition, self.other, 'second-one', operation='append-second')
+        shutil.copytree(self.other / '.ledger', self.repo / '.ledger')
+        self.cold_event_append(definition, self.other, 'second-two', value=2, operation='append-second')
+        before = self.cold_family_snapshot()
+        selected = self.cold_adopt(definition)
+        self.assertEqual(self.cold_family_snapshot(), before)
+        result = subprocess.run([os.environ['LEDGER_BIN'], 'project', '--definition', str(definition),
+            *selected['native_args'], '--projection', 'second-all', '--format', 'json'], capture_output=True)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertEqual(json.loads(result.stdout)['data'], [{'kind': 'one', 'value': 1}, {'kind': 'one', 'value': 2}])
+        target = Path(selected['store_root']) / '.ledger/example/second.jsonl'
+        target_before = target.read_bytes()
+        retried = self.cold_event_append(definition, self.other, 'second-two', value=2,
+                                       operation='append-second', selector=selected['native_args'])
+        self.assertEqual(retried['effects'][0]['result'], 'idempotent')
+        self.assertIsNone(retried['transaction_id'])
+        self.assertEqual(target.read_bytes(), target_before)
+        self.assertEqual(context.resolve(self.repo)['store_id'], selected['store_id'])
+        self.assertEqual(context.resolve(self.other)['store_id'], selected['store_id'])
+
+    def test_cold_adoption_preserves_history_beyond_preparation_dependency_count(self):
+        value = json.loads(self.cold_event_definition().read_text())
+        value['requires']['operators'].append('compare-and-replace')
+        value['parameters']['revision'] = {'type': 'digest', 'required': False}
+        value['inputs']['event']['required'] = False
+        value['inputs']['snapshot'] = {'codec': 'jsonl', 'required': False, 'max_bytes': 4096}
+        value['operations']['replace'] = {'effects': [{'op': 'compare-and-replace', 'slot': 'events',
+            'input': 'snapshot', 'expected_revision_param': 'revision'}]}
+        definition = self.root / 'many-revisions.json'
+        definition.write_text(json.dumps(value))
+        seeded = self.cold_event_append(definition, self.other, 'seed')
+        replaced = subprocess.run([os.environ['LEDGER_BIN'], 'transact', '--definition', str(definition),
+            '--repo', str(self.other), '--operation', 'replace', '--param',
+            'revision=' + seeded['effects'][0]['revision_after'], '--input', 'snapshot=-', '--format', 'json'],
+            input=b'{"kind":"one","value":2}\n', capture_output=True)
+        self.assertEqual(replaced.returncode, 0, replaced.stdout + replaced.stderr)
+        control = self.other / '.ledger'
+        event = control / 'example/events.jsonl'
+        binding = next((control / '.bindings').glob('*.jsonl'))
+        rows = [json.loads(line) for line in binding.read_text().splitlines()]
+        previous = event.read_bytes()
+        for number in range(3, 1027):
+            current = json.dumps({'kind': 'one', 'value': number}, separators=(',', ':')).encode() + b'\n'
+            before = hashlib.sha256(previous).hexdigest()
+            after = 'sha256:' + hashlib.sha256(current).hexdigest()
+            (control / '.revisions' / (before + '.bin')).write_bytes(previous)
+            rows.append(dict(rows[-1], revision_before='sha256:' + before, revision_after=after,
+                             input_digest=after, canonical_input_digest=after, extent_end=len(current)))
+            previous = current
+        event.write_bytes(previous)
+        binding.write_text(''.join(json.dumps(row, separators=(',', ':')) + '\n' for row in rows))
+        self.assertGreater(len(list((control / '.revisions').glob('*.bin'))), 1023)
+        healthy = subprocess.run([os.environ['LEDGER_BIN'], 'doctor', '--definition', str(definition),
+            '--repo', str(self.other), '--format', 'json'], capture_output=True)
+        self.assertEqual(healthy.returncode, 0, healthy.stdout + healthy.stderr)
+        self.assertTrue(json.loads(healthy.stdout)['healthy'])
+        before = self.cold_family_snapshot()
+        selected = self.cold_adopt(definition)
+        self.assertEqual(self.cold_family_snapshot(), before)
+        target = Path(selected['store_root']) / '.ledger'
+        self.assertEqual((target / 'example/events.jsonl').read_bytes(), previous)
+        self.assertEqual((target / '.bindings' / binding.name).read_bytes(), binding.read_bytes())
+        self.assertEqual({path.name: path.read_bytes() for path in (target / '.revisions').glob('*.bin')},
+                         {path.name: path.read_bytes() for path in (control / '.revisions').glob('*.bin')})
+        result = subprocess.run([os.environ['LEDGER_BIN'], 'project', '--definition', str(definition),
+            *selected['native_args'], '--projection', 'all', '--format', 'json'], capture_output=True)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertEqual(json.loads(result.stdout)['data'], [{'kind': 'one', 'value': 1026}])
 
     def test_cold_adoption_requires_legacy_lease_recovery(self):
         definition = self.cold_fixture()
