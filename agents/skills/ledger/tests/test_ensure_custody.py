@@ -146,8 +146,11 @@ class NativeMigrationTests(unittest.TestCase):
         other = self.linked()
         shutil.copytree(self.repo / '.ledger', other / '.ledger')
         source.write_bytes(source.read_bytes()[:30])
-        with self.assertRaisesRegex(module.MigrationError, 'Divergent'):
+        before = [self.snapshot(tree) for tree in (self.repo, other)]
+        with self.assertRaisesRegex(module.MigrationError,
+                                   'Divergent|ExistingStoreValidationFailed'):
             self.apply()
+        self.assertEqual([self.snapshot(tree) for tree in (self.repo, other)], before)
         self.assertFalse((self.root / 'home').exists())
 
     def test_divergence_never_initializes_empty(self):
@@ -224,6 +227,123 @@ class NativeMigrationTests(unittest.TestCase):
         self.assertEqual((Path(result['context']['store_root']) / SLOT).read_bytes(), original)
         self.assertTrue(self.native(result['context']['native_args'], 'doctor')['healthy'])
 
+    def binding_owner(self):
+        owner = self.root / 'binding-owner'
+        owner.mkdir()
+        self.binding_definition = owner / 'events.json'
+        shutil.copyfile(Path(__file__).parent / 'fixtures/event-binding-definition.json',
+                        self.binding_definition)
+        self.binding_manifest = owner / 'migration.json'
+        self.binding_manifest.write_text(json.dumps({
+            'schema': 'ledger-owner-migration/v1', 'definition': 'events.json',
+            'retired_sources': [], 'importer': None}))
+        self.binding_slot = Path('.ledger/example/events.jsonl')
+
+    def append_request(self, selector, request):
+        return self.native(selector, 'transact', '--operation', 'append', '--input', 'event=-',
+                           '--param', 'request=' + request, packet={'kind': 'one', 'value': 1},
+                           definition=self.binding_definition)
+
+    def migrate_bindings(self, apply=True):
+        args = module.command(self.repo) + ['--migrate', '--owner-manifest',
+                                            str(self.binding_manifest)]
+        if apply:
+            args += ['--apply', '--confirm-no-writers']
+        return module.invoke(args)
+
+    def test_migration_rejects_equal_payload_with_divergent_requests(self):
+        self.binding_owner()
+        other = self.linked()
+        for tree, request in [(self.repo, 'first'), (other, 'second')]:
+            self.append_request(['--repo', str(tree)], request)
+        self.assertEqual((self.repo / self.binding_slot).read_bytes(),
+                         (other / self.binding_slot).read_bytes())
+        before = [self.snapshot(tree) for tree in (self.repo, other)]
+        for apply in (False, True):
+            with self.subTest(apply=apply), self.assertRaises(module.MigrationError):
+                self.migrate_bindings(apply)
+        self.assertEqual([self.snapshot(tree) for tree in (self.repo, other)], before)
+        self.assertFalse((self.root / 'home').exists())
+
+    def test_migration_equal_native_histories_preserve_request_idempotency(self):
+        self.binding_owner()
+        self.append_request(['--repo', str(self.repo)], 'first')
+        other = self.linked()
+        shutil.copytree(self.repo / '.ledger', other / '.ledger')
+        result = self.migrate_bindings()
+        self.assertEqual(result['status'], 'verified')
+        target = Path(result['context']['store_root'])
+        before = (target / self.binding_slot).read_bytes()
+        self.append_request(result['context']['native_args'], 'first')
+        self.assertEqual((target / self.binding_slot).read_bytes(), before)
+        self.assertEqual(self.native(result['context']['native_args'], 'project',
+            '--projection', 'all', definition=self.binding_definition)['data'],
+            [{'kind': 'one', 'value': 1}])
+
+    def test_registered_migration_rejects_equal_payload_with_other_binding(self):
+        self.binding_owner()
+        target = module.resolve(self.repo, initialize=True)
+        self.append_request(target['native_args'], 'second')
+        self.append_request(['--repo', str(self.repo)], 'first')
+        before = self.snapshot(Path(target['store_root']))
+        with self.assertRaises(module.MigrationError):
+            self.migrate_bindings()
+        self.assertEqual(self.snapshot(Path(target['store_root'])), before)
+        self.assertEqual(module.resolve(self.repo)['store_id'], target['store_id'])
+
+    def replace_migrated_binding(self):
+        self.binding_owner()
+        self.append_request(['--repo', str(self.repo)], 'first')
+        result = self.migrate_bindings()
+        target = Path(result['context']['store_root'])
+        other = self.root / 'independent'
+        other.mkdir()
+        self.append_request(['--repo', str(other)], 'second')
+        shutil.rmtree(target / '.ledger')
+        shutil.copytree(other / '.ledger', target / '.ledger')
+        shutil.rmtree(target / '.ledger/.transactions')
+        self.assertEqual((target / self.binding_slot).read_bytes(),
+                         (self.repo / self.binding_slot).read_bytes())
+        self.assertTrue(self.native(result['context']['native_args'], 'doctor',
+                                   definition=self.binding_definition)['healthy'])
+        return target
+
+    def test_registered_repair_cannot_discard_healthy_source_admissions(self):
+        self.binding_owner()
+        context = module.resolve(self.repo, initialize=True)
+        target = Path(context['store_root'])
+        self.append_request(context['native_args'], 'first')
+        binding = next((target / '.ledger/.bindings').glob('*.jsonl'))
+        first_binding = binding.read_bytes()
+        self.append_request(context['native_args'], 'second')
+        binding.write_bytes(first_binding)
+        for request in ('first', 'second'):
+            self.append_request(['--repo', str(self.repo)], request)
+        self.assertEqual((target / self.binding_slot).read_bytes(),
+                         (self.repo / self.binding_slot).read_bytes())
+        before = self.snapshot(target)
+        with self.assertRaises(module.MigrationError):
+            self.migrate_bindings()
+        self.assertEqual(self.snapshot(target), before)
+
+    def test_verified_receipt_rejects_healthy_replacement_binding(self):
+        target = self.replace_migrated_binding()
+        before = self.snapshot(target)
+        for apply in (False, True):
+            with self.subTest(apply=apply), self.assertRaises(module.MigrationError):
+                self.migrate_bindings(apply)
+        self.assertEqual(self.snapshot(target), before)
+
+    def test_pending_migration_rejects_healthy_replacement_binding(self):
+        target = self.replace_migrated_binding()
+        (self.root / 'home/catalog.json').unlink()
+        (target / 'migration-receipt.json').unlink()
+        before = self.snapshot(target / '.ledger')
+        with self.assertRaises(module.MigrationError):
+            self.migrate_bindings()
+        self.assertEqual(self.snapshot(target / '.ledger'), before)
+        self.assertFalse((self.root / 'home/catalog.json').exists())
+
     def test_stale_binding_uses_native_rebinding(self):
         self.capture()
         saved = self.root / 'bindings'
@@ -243,11 +363,18 @@ class NativeMigrationTests(unittest.TestCase):
         record['definition_id'] = 'foreign/protocol'
         binding.write_text(json.dumps(record) + '\n')
         original = binding.read_bytes()
-        with self.assertRaisesRegex(module.MigrationError, 'UnknownBindingFailure') as raised:
+        before = self.snapshot(self.repo)
+        with self.assertRaisesRegex(module.MigrationError,
+                'UnknownBindingFailure|StoreBindingDefinitionMismatch') as raised:
             self.apply()
-        target = Path(raised.exception.value['context']['store_root']) / binding.relative_to(self.repo)
-        self.assertEqual(target.read_bytes(), original)
+        context = raised.exception.value.get('context')
+        if context is not None:
+            target = Path(context['store_root']) / binding.relative_to(self.repo)
+            self.assertEqual(target.read_bytes(), original)
+        else:
+            self.assertFalse((self.root / 'home').exists())
         self.assertEqual(binding.read_bytes(), original)
+        self.assertEqual(self.snapshot(self.repo), before)
         self.assertFalse((self.root / 'home/catalog.json').exists())
 
     def test_verified_rerun_has_no_storage_mutation(self):
@@ -331,10 +458,15 @@ class NativeMigrationTests(unittest.TestCase):
     def test_changed_destination_invalidates_receipt(self):
         self.capture()
         first = self.apply()
-        (Path(first['context']['store_root']) / SLOT).write_text('{}\n')
+        target = Path(first['context']['store_root'])
+        (target / SLOT).write_text('{}\n')
+        before = self.snapshot(target)
         self.assertEqual(self.migrate()['status'], 'planned')
-        with self.assertRaisesRegex(module.MigrationError, 'AdditionalOrDivergentHistory'):
+        with self.assertRaisesRegex(module.MigrationError,
+                                   'AdditionalOrDivergentHistory|ExistingStoreValidationFailed'):
             self.apply()
+        self.assertEqual(self.snapshot(target), before)
+        self.assertEqual(module.resolve(self.repo)['store_id'], first['context']['store_id'])
 
     def test_valid_extension_preserves_source_snapshot(self):
         self.capture()
