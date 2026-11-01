@@ -141,6 +141,93 @@ class OwnerUpgradeTests(unittest.TestCase):
         self.assertEqual((Path(context['store_root']) / self.slot).read_bytes(), original)
         self.assertTrue(self.capture(context['native_args'])['valid'])
 
+    def binding_fixture(self, local_request='first'):
+        owner = self.root / 'fixture-owner'
+        self.definition = owner / 'definitions/ledger/events.json'
+        self.definition.parent.mkdir(parents=True)
+        shutil.copyfile(Path(__file__).parent / 'fixtures/event-binding-definition.json', self.definition)
+        (owner / 'migration.json').write_text(json.dumps({
+            'schema': 'ledger-owner-migration/v1', 'definition': 'definitions/ledger/events.json',
+            'retired_sources': [], 'importer': None}))
+        self.slot = Path('.ledger/example/events.jsonl')
+        context = self.ensure()
+        for selector, request in [(context['native_args'], 'first'), (['--repo', str(self.repo)], local_request)]:
+            appended = subprocess.run([self.binary, 'transact', '--definition', str(self.definition),
+                *selector, '--operation', 'append', '--input', 'event=-', '--param', 'request=' + request,
+                '--format', 'json'], input=b'{"kind":"one","value":1}', capture_output=True, timeout=15)
+            self.assertEqual(appended.returncode, 0, appended.stdout + appended.stderr)
+        self.assertEqual((self.repo / self.slot).read_bytes(), (Path(context['store_root']) / self.slot).read_bytes())
+        return context
+
+    def tree_bytes(self, root):
+        return {str(path.relative_to(root)): path.read_bytes() for path in root.rglob('*') if path.is_file()}
+
+    def test_equal_payload_with_divergent_binding_is_not_covered(self):
+        context = self.binding_fixture(local_request='second')
+        before = self.tree_bytes(self.root)
+        for read_only, code in [(True, 'OwnerPreparationRequired'), (False, 'PreparationDivergentHistory')]:
+            with self.subTest(read_only=read_only), self.assertRaisesRegex(custody.MigrationError, code):
+                custody.owner_context(self.repo, self.definition, read_only=read_only,
+                                      maintain=not read_only, binary=self.binary)
+            self.assertEqual(self.tree_bytes(self.root), before)
+        self.assertEqual(self.ctx.resolve(self.repo)['store_id'], context['store_id'])
+        self.assertEqual(self.tree_bytes(self.root), before)
+
+    def test_equal_payload_and_binding_remains_covered(self):
+        context = self.binding_fixture()
+        before = self.tree_bytes(self.root)
+        observed = custody.owner_context(self.repo, self.definition, read_only=True, binary=self.binary)
+        self.assertEqual(observed['store_id'], context['store_id'])
+        self.assertEqual(self.tree_bytes(self.root), before)
+        self.assertEqual(self.ensure()['store_id'], context['store_id'])
+        self.assertEqual(self.tree_bytes(self.root), before)
+        projected = subprocess.run([self.binary, 'project', '--definition', str(self.definition),
+            *context['native_args'], '--projection', 'all', '--payload-only', '--format', 'json'],
+            capture_output=True, timeout=15)
+        self.assertEqual(projected.returncode, 0, projected.stdout + projected.stderr)
+        self.assertEqual(json.loads(projected.stdout), [{'kind': 'one', 'value': 1}])
+
+    def test_orphan_local_binding_is_not_empty_history(self):
+        self.binding_fixture()
+        (self.repo / self.slot).unlink()
+        before = self.tree_bytes(self.root)
+        for read_only in (True, False):
+            with self.subTest(read_only=read_only), self.assertRaises(custody.MigrationError):
+                custody.owner_context(self.repo, self.definition, read_only=read_only,
+                                      maintain=not read_only, binary=self.binary)
+            self.assertEqual(self.tree_bytes(self.root), before)
+
+    def test_missing_local_definition_is_not_covered(self):
+        self.binding_fixture()
+        shutil.rmtree(self.repo / '.ledger/.definitions')
+        before = self.tree_bytes(self.root)
+        for read_only in (True, False):
+            with self.subTest(read_only=read_only), self.assertRaises(custody.MigrationError):
+                custody.owner_context(self.repo, self.definition, read_only=read_only,
+                                      maintain=not read_only, binary=self.binary)
+            self.assertEqual(self.tree_bytes(self.root), before)
+
+    def test_missing_registered_owner_rejects_declared_retired_history(self):
+        registered = self.ctx.resolve(self.repo, initialize=True)
+        self.definition = SKILLS / 'learnings/definitions/ledger/learnings-protocol.json'
+        retired = self.repo / '.learnings.jsonl'
+        retired.write_text('{"retired":"owner conversion required"}\n')
+        before = self.tree_bytes(self.root)
+        for read_only in (True, False):
+            with self.subTest(read_only=read_only), self.assertRaisesRegex(
+                    custody.MigrationError, 'RetiredSourceRequiresOwnerImporter'):
+                custody.owner_context(self.repo, self.definition, read_only=read_only,
+                                      maintain=not read_only, binary=self.binary)
+            self.assertEqual(self.tree_bytes(self.root), before)
+        self.assertEqual(self.ctx.resolve(self.repo)['store_id'], registered['store_id'])
+
+    def test_missing_registered_owner_without_retired_history_remains_usable(self):
+        registered = self.ctx.resolve(self.repo, initialize=True)
+        self.definition = SKILLS / 'learnings/definitions/ledger/learnings-protocol.json'
+        self.assertEqual(self.ensure()['store_id'], registered['store_id'])
+        observed = custody.owner_context(self.repo, self.definition, read_only=True, binary=self.binary)
+        self.assertEqual(observed['store_id'], registered['store_id'])
+
     def test_missing_bound_slot_imports_local_copy_without_an_archive(self):
         registered = self.ctx.resolve(self.repo, initialize=True)
         self.capture(['--repo', str(self.repo)])

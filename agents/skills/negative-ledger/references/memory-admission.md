@@ -24,7 +24,8 @@ no future routing value.
 ## Admission Workflow
 
 After the source owner accepts admission, load `$memory-source-notes` and resolve
-its installed root independently of the target repository:
+its installed root independently of the target repository. Retain `ledger_home`
+selected by `$ledger` for the same context:
 
 ```bash
 memory_source_notes_root="$(realpath "${CODEX_HOME:-$HOME/.codex}/skills/memory-source-notes")"
@@ -33,6 +34,7 @@ memory_source_notes_root="$(realpath "${CODEX_HOME:-$HOME/.codex}/skills/memory-
 ```bash
 uv run "$memory_source_notes_root/scripts/negative_ledger_memory_note.py" \
   admit \
+  --catalog-root "$ledger_home" \
   --store-id "<context.store_id>" \
   --id NEG-000001 \
   --kind ledger-projection
@@ -43,6 +45,7 @@ For a status transition:
 ```bash
 uv run "$memory_source_notes_root/scripts/negative_ledger_memory_note.py" \
   admit \
+  --catalog-root "$ledger_home" \
   --store-id "<context.store_id>" \
   --id NEG-000001 \
   --kind ledger-status-transition
