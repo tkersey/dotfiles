@@ -1,0 +1,11 @@
+--- a/agents/skills/cas/tests/test_native_codex.py
++++ b/agents/skills/cas/tests/test_native_codex.py
+@@ -336,7 +336,7 @@
+         report["overall_explanation"] = "Controlled deletion-side finding; not model discovery."
+         report["findings"] = [{"title": "Preserve the required consumer input",
+             "body": "Fixture: the deleted base-side input is still required by the assigned consumer contract.",
+-            "confidence_score": 0.9,
++            "confidence_score": 0.9, "priority": 2,
+             "code_location": {"absolute_file_path": str(self.repo / "example.txt"),
+                               "line_range": {"start": 1, "end": 1}}}]
+         return report

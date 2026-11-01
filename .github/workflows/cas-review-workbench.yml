@@ -19,13 +19,17 @@ jobs:
         run: |
           set -euo pipefail
           cat .github/cas-review-patch.part1 .github/cas-review-patch.part2 .github/cas-review-patch.part3 | base64 --decode | gzip --decompress > "$RUNNER_TEMP/cas-review.patch"
+          cp .github/cas-review-priority.patch "$RUNNER_TEMP/cas-review-priority.patch"
           echo "c4ed8064bafbfb8f77b0a8ecdabea700b7031776d7ad251c58e7d8f400a95133  $RUNNER_TEMP/cas-review.patch" | sha256sum --check
+          echo "48bd373d177792ecae2a9a7e27efdfcdc46cfe5e6beb2afbf6e0f919adea8988  $RUNNER_TEMP/cas-review-priority.patch" | sha256sum --check
           git fetch --no-tags --depth=1 origin 070d823e085965384fd2f2c87f6e95ee37818447
           git checkout --detach 070d823e085965384fd2f2c87f6e95ee37818447
           git apply --check "$RUNNER_TEMP/cas-review.patch"
           git apply "$RUNNER_TEMP/cas-review.patch"
+          git apply --check "$RUNNER_TEMP/cas-review-priority.patch"
+          git apply "$RUNNER_TEMP/cas-review-priority.patch"
           git add -u agents/skills
-          test "$(git write-tree)" = 625903520f1a7265681c5668693ed9e7ac142dae
+          test "$(git write-tree)" = b0f12e9619b1f9ff2894e6c291d91b457e20e914
           git diff --cached --check
           git diff --cached --stat
       - name: Source and caller-contract checks
@@ -47,14 +51,14 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          test "$(git write-tree)" = 625903520f1a7265681c5668693ed9e7ac142dae
+          test "$(git write-tree)" = b0f12e9619b1f9ff2894e6c291d91b457e20e914
           test "$(git rev-parse HEAD)" = 070d823e085965384fd2f2c87f6e95ee37818447
           git diff --quiet
           git config user.name 'Tim Kersey'
           git config user.email 'tkersey@users.noreply.github.com'
           git switch -c fix/cas-review-continuity
           git commit -m 'fix(cas): preserve review continuity and recovery authority' -m 'Separate native task completion, original results, inquiry adequacy and dispatch authority. Retain original obligations across transport/context changes and recover focused inquiry without defending an earlier conclusion. Preserve native standards, review counts, full-file scope and AGENTS.md; add fixture and evaluator coverage without a production framework.'
-          test "$(git rev-parse HEAD^{tree})" = 625903520f1a7265681c5668693ed9e7ac142dae
+          test "$(git rev-parse HEAD^{tree})" = b0f12e9619b1f9ff2894e6c291d91b457e20e914
           git push origin HEAD:refs/heads/fix/cas-review-continuity
           git log -1 --format='%H %T %P' | tee "$RUNNER_TEMP/cas-published-head.log"
       - uses: actions/upload-artifact@v4
