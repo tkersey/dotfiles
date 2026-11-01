@@ -18,7 +18,7 @@ const policy = JSON.parse(text('references/review-contract.json'));
 const skill = text('SKILL.md');
 const protectedSections = {
   "Review-epoch immutability and evidence acquisition": "c56ab6cd715441dce8a7b7eb659e450254d840e548eac57de7f4a65ea5bd4e05",
-  "Review and closure": "f3f5c48880509207ad1b049403babf5cafa0fce63003f323c118837ddd063a17",
+  "Review and closure": "2905a23c52c3aa683deac10e5b43797d647cf92f622f7188412b6535dce4dd5f",
   // Apply the same proof bar to initial construction; witnesses are conditional.
   "Realization and common proof obligations": "8f782e151a2c48cca2da1506830376ad597b689fde6985014f30c466f87be6e3"
 };

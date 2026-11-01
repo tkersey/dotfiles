@@ -42,11 +42,20 @@ These settings do not customize the native standard rubric or guarantee coverage
 
 ## Launch the selected review
 
-Use the dedicated `codex exec review` command, not an ordinary coding prompt that
-imitates review. Each independent request starts a fresh native thread. Keep the
-host-owned process handle and its private stdout, stderr, and final-output files
-associated with the caller's exact request. Use a new private output directory for
-each attempt; a stale file must not stand in for this execution.
+Use native review, not an ordinary coding prompt that imitates review. Select the
+interface before dispatch: `codex exec review` suits a one-shot shell invocation;
+[direct app-server](app-server.md) suits related operations needing explicit native
+control when a supported persistent client is available. Both use native review;
+neither interface promises better reasoning or compaction. Do not synthesize a
+transport framework merely to prefer RPC, or switch routes to recover output from
+possibly live work. Explicit endpoint and transport selections still govern.
+
+Each independent request starts a fresh native thread; a persistent server need
+not share reviewer context. Keep host process/connection observations and private
+outputs associated with the caller's exact request. Use a new private output
+directory for each attempt; a stale file must not stand in for this execution.
+Preserve observed host exit or termination status alongside the existing output,
+without inventing an exit observation for a server that is still serving work.
 
 Resolve the repository and immutable base/head before launch and keep that subject
 frozen. For committed base/head review, establish that the checkout exposes that
@@ -99,8 +108,9 @@ recover output from an already-started attempt.
 on the dedicated review task. Neither process exit nor rendered prose is enough
 for workflow review credit.
 
-Bind the `thread.started` ID from this invocation to its host process/output. After
-terminal execution, locate only that exact thread's native artifact: use an
+Bind the exec `thread.started` ID, or app-server's returned review thread/root
+turn, to the actual host dispatch and output. After native terminal execution,
+locate only that exact thread's native artifact: use an
 owner-returned `thread.path` from read-only `thread/read`, or a unique matching
 rollout under the selected Codex home's sessions directory. Verify the artifact's
 `session_meta.payload.id` and repository against the observed thread and requested
@@ -111,8 +121,8 @@ workflow store or corpus report.
 
 For the qualified native rollout shape, require all of:
 
-- This host-attributed execution completed successfully; it was not merely a live
-  process, observation timeout, failed turn, or interrupted review.
+- This host-attributed native root review completed successfully; it was not merely
+  a live process, observation timeout, failed turn, or interrupted review.
 - An `event_msg` / `item_completed` record with the exact parent `thread_id` and
   root review `turn_id` contains `item.type == "EnteredReviewMode"` and the
   requested Git target. Do not use the delegated reviewer's different turn ID.
@@ -141,6 +151,20 @@ evidence proceeds to the caller's independent adjudication. Provider exhaustion,
 a fatal error, unauthorized model rerouting, stale subject, or lost attribution
 cannot earn clean credit.
 
+Keep result validity, inquiry adequacy, and dispatch authority separate. With empty
+findings, a positive native label and a material unresolved gap mean **No defect
+established; assigned inquiry incomplete**, not clean completion. Preserve the
+original object and its limitations; never change its correctness field to encode
+completion. If findings exist, retain them alongside the incomplete-inquiry status.
+Caller adjudication, not a confidence value, decides credit.
+
+For deletion-induced findings, preserve the original path/range and bind it to the
+base-side changed lines and literal base path. Verify the base source and the
+surviving consequence; a missing head file is not grounds to drop a valid finding.
+Do not fabricate a side field in native output. Publication must separately use
+the provider's base-side location contract; an unpublishable location is a delivery
+limitation, not evidence that the finding is false. Missing inquiry is not a bug.
+
 ## Observation, recovery, and configuration
 
 Continue observing the same host process when a wait expires. Read exact native
@@ -148,7 +172,30 @@ thread/turn state without resuming when outcome is uncertain. `codex exec resume
 and `codex queue --resume` can submit/resume work; neither is passive review wait.
 Do not issue another review until the prior attempt is established terminal and
 the caller permits a distinct attempt under its existing recovery budget. Retain
-original findings even when credit is unavailable.
+original findings even when credit is unavailable. Resolve the original obligation's
+attempt history before replacement; configuration or transport changes do not
+supply a new allowance. A completed result cannot authorize its own dispatch.
+
+Native task completion and host termination are separate facts. A persistent
+server need not exit for a review to complete. If a host handle is lost, exact
+native root completion and the original structured result may establish task
+completion only when dispatch, target, instructions and effective settings remain
+attributable and no failure, interruption, cancellation or conflicting result is
+unresolved. Retain **host termination unknown**; disappearance is not successful
+exit. Apply every other admission requirement above. If the caller requires a
+host-exit observation, that obligation stays held. Do not launch a replacement or
+claim cleanup merely because the handle disappeared; resolve possibly live work.
+
+Compaction alone is not terminal failure, a fresh review, or a reset of authority.
+Distinguish coordinator, root-review and delegate events before diagnosing a
+restart. Continue the established attempt; do not inject manual compaction or
+steering into a live native review as a presumed continuity repair. Native
+standards remain uncustomized. Custom focused progress belongs to the caller's
+focus instructions, not an extra CAS prompt. When diagnosing early compaction,
+compare actual model/provider, context-window and compaction settings, not just
+model/effort or requested flags. A locally reported effective window is not proof
+of provider capacity. Do not enlarge context, change thresholds or select another
+model without applicable authority; no maximum-context default is introduced.
 
 A sent interrupt is not observed cancellation. In the qualified 0.166.0 runtime,
 Ctrl-C can fail with a root/delegate turn-ID mismatch while the review continues.
@@ -175,7 +222,8 @@ response bodies.
 ## Recover incomplete review inquiry
 
 When a terminal review leaves a material observation or reasoning gap and the
-caller authorizes recovery, use the [exact-thread follow-up route](queueing.md).
+caller authorizes recovery, select the [exact-thread follow-up route](queueing.md)
+for the required control before submitting work.
 This is new work on the original obligation, not passive waiting or another
 independent review. Preserve the frozen Git subject, assigned scope/lens,
 configuration, permissions, and existing recovery budget. Native standard review
@@ -190,12 +238,20 @@ do not send unrelated logs or private reasoning, or create a coverage registry.
 If earlier coverage cannot be established, identify that uncertainty and acquire
 the necessary source within the existing scope and budget.
 
-Ask the continuation to complete the missing observation and reassess the reasoning
-that depends on it, retaining original findings and naming any remaining gap.
-Returned source ranges alone do not establish completed review reasoning. Preserve
-the original native structured output unchanged and attribute follow-up execution
-and conclusions separately to the same request. A continuation response is
-supplemental evidence, not a replacement native verdict or an additional clean.
+Preserve the original result as immutable history, not a conclusion to defend.
+Ask the continuation to complete the missing observation, reassess the dependent
+conclusion independently, and overturn it when new evidence warrants. Preserve
+original findings with separately attributed confirmations, additions or rebuttals;
+never silently erase one. Supply parent-run validation only for a named gap, with
+its exact subject, inputs and limitations. Omit broad clean/confidence summaries
+that do not help that inquiry; parent validation is not independent reviewer work.
+
+Returned source ranges alone do not establish completed review reasoning. Attribute
+follow-up execution and conclusions separately to the same request. A continuation
+response is supplemental evidence, not a replacement native verdict or an additional
+clean. A bounded continuation may finish its assigned segment while the original
+obligation remains held; retain cumulative observations and remaining work until
+the required reasoning is reassessed. Do not turn each segment into a new review.
 
 Return unresolved limitations to the caller's existing adjudication. If the
 continuation says the inquiry is still incomplete, identify the affected obligation

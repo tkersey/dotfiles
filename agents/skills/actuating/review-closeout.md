@@ -75,6 +75,20 @@ Each file auxiliary receives its exact unchanged lens plus
 the file scope. Every reviewer continues beyond the first finding; fold the full
 initial batch before choosing a successor. File reviews are initial-only.
 
+Before every replacement dispatch, consult the original scope/lens obligation's
+attempt history in the existing Working Set. Under the unchanged
+[recovery allowance](references/review-contract.md#scheduling), one verdictless
+terminal permits one fresh exact-request recovery; a second verdictless terminal
+blocks. Resolve possibly live work first. A new directory, thread, transport,
+model parameter or context size does not reset the allowance. If history cannot
+be established, withhold replacement rather than assume an unused allowance.
+A user choice about model or effort alone does not waive an exhausted limit;
+another fresh attempt requires an explicit exception to that limit. Keep useful
+evidence from a nonconforming attempt without calling the dispatch compliant or
+using later success to retroactively authorize it. Supplemental inquiry on a valid
+but inadequate result follows the separate observation/reasoning recovery rule;
+classify the actual operation, not its directory name or matching thread ID.
+
 Only a completely realized, locally proved candidate is `reviewable`. Require
 five consecutive distinct changeset standard cleans from the selected executor
 on one unchanged head under one bound review policy,
@@ -85,9 +99,13 @@ and credited for their own requested obligations before later confirmations.
 Later confirmations remain changeset-wide. File credit never advances the changeset
 standard streak or completes any other scope/lens obligation.
 An acknowledged limitation or raw verdict is not that decision.
-Use the same dispositions for counts and user/PR completion statements. A material
-finding or head change resets all credit. Reviews falsify; they do not prove
-soundness by failing to find a bug.
+Use the same dispositions for counts and user/PR completion statements. For an
+empty positive verdict with a material unresolved gap, say **No defect established;
+assigned inquiry incomplete** and hold the obligation, rather than report clean
+completion. Keep findings visible when an incomplete result contains them. Neither
+supplemental turns nor nonconforming dispatches become independent confirmations.
+A material finding or head change resets all credit. Reviews falsify; they do not
+prove soundness by failing to find a bug.
 
 Read [closure.md](references/closure.md). `implement` ends at local completion;
 publication and convergence belong to bare Actuating and `review-closeout`.

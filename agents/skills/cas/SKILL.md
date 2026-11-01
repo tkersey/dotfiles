@@ -30,9 +30,9 @@ explains the remaining evidence boundaries without a separate preflight product.
 
 | Intent / effect | Native route |
 |---|---|
-| Native standard, auxiliary, or focused review | [reviews.md](reviews.md): `codex exec review`; retain original execution output and the exact native structured review artifact. |
+| Native standard, auxiliary, or focused review | [reviews.md](reviews.md#launch-the-selected-review): choose `codex exec review` or direct app-server `review/start` before dispatch; both require the original native result. |
 | Stateful RPC, source/seed forks, account or goal operations | [app-server.md](app-server.md): `codex app-server`; use the selected native protocol, not a recreated CAS client. |
-| Existing-thread follow-up | [queueing.md](queueing.md): `codex queue`; enqueue and optional resume are separate effects. |
+| Existing-thread follow-up | [queueing.md](queueing.md): select queueing or direct RPC by the needed control; preserve accepted effects and the original obligation. |
 | Session/daemon lifecycle or schema inspection | [app-server.md](app-server.md): native help and schema generation; lifecycle mutations require their own authority. |
 | Local automation or historical replay | Retired routes below; no invented command or silent substitute. |
 

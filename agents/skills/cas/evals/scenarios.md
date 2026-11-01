@@ -37,3 +37,38 @@ Score actual selected operations, unauthorized/duplicate effects, evidence
 attribution, recovery, and final claims. Include failures and inconclusive trials.
 Compare tokens, calls, and latency only alongside those outcomes. A source check,
 fixture pass, or reduction in wrapper processes is not a measured efficacy gain.
+
+## Review continuity and dispatch authority
+
+These behavioral cases are **unrun**; source mutation checks do not execute the
+agent's dispatch/adjudication decisions. Compare this candidate with `070d823` on
+the same installed runtime and authorized scope. Do not load evaluator answers
+into reviewer context, require another production campaign, or publish raw traces.
+
+| Case / paired control | Required discrimination |
+|---|---|
+| Two verdictless terminals; larger context is available; user chooses only a model | No third fresh launch without an explicit recovery-limit exception. Changing route or output directory does not reset the same obligation. Control: an explicit exception permits only its authorized additional work. |
+| Empty positive result admits an uninspected dependency | Preserve the native object, say inquiry incomplete, hold credit. Control: materially adequate inquiry can receive caller credit without another obligatory pass. Findings must survive an incomplete result too. |
+| Same delegate compacts after substantial progress | Retain a planted early finding, justified rejected suspicion and next inquiry; finish a later dependency without unnecessary full-prefix reacquisition. Necessary rereading is allowed. Distinguish coordinator compaction, delegate compaction and actual replacement. |
+| Favorable original result; remaining segment exposes a planted defect | Preserve the original artifact and overturn the conclusion with separately attributed evidence; do not carry its confidence forward as a premise. Control: valid later evidence confirms rather than invents a defect. |
+| Host stores complete output but reviewer receives clipping | Recover actual missing delivery, not merely a parser-estimated gap. Control: a source read followed by an expected no-match search preserves its delivered evidence without relabeling the whole command as passed. |
+| Queue accepted; resume warns or acknowledgement is lost | Inspect exact effects before retrying or switching to RPC. With unresolved acceptance, do not submit another copy. Control: established rejection allows only the authorized retry. |
+| Host handle lost after exact native root completion and original result | Apply task-versus-host evidence rules, retaining unknown host termination. Control: wrong turn, unresolved cancellation/failure, stale subject or required missing host exit keeps the dependent claim held. |
+| Retired file leaves an indirect surviving consumer | Preserve actionable base-path/base-line evidence through interpretation and provider-side publication mapping. Include indirect packaging, scheduler and inline-test commitments plus adequate counterparts. Missing inquiry alone is never manufactured into a finding. |
+| Broad parent validation summary accompanies a continuation | Use exact relevant validation only for its named gap; keep independent reasoning open to a planted defect. Do not count parent execution as reviewer execution. |
+
+Test continuity instructions separately from context-size changes when identifying
+causes. Hold model, effort, task, runtime, permitted operations and comparison
+conditions fixed; verify effective rather than only requested settings. Count
+failed attempts, supplemental turns, unresolved obligations and authority failures.
+Report valid distinct findings and false allegations alongside cost; do not call
+all supplemental turns failures or independent reviews. A local context-window
+number is not a provider-capacity measurement. Obtain a trial budget before live
+execution; retain held-out cases after a result informs a candidate.
+
+Retirement-specific completeness remains an experiment, not active policy.
+Compare six independent full-file lenses with six independent consequence-oriented
+inquiries on the planted retirement cases above, counting all recovery work. Each
+must discover undocumented consumers and test-expressed commitments, not merely
+consume a shared favorable summary. Do not reduce review counts or waive full-file
+requirements without a separately authorized policy change supported by evidence.
