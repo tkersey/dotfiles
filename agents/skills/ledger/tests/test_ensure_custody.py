@@ -260,6 +260,58 @@ class NativeMigrationTests(unittest.TestCase):
             self.assertFalse(result['storage_mutated'])
         self.assertEqual(self.snapshot(Path(first['context']['store_root'])), before)
 
+    def test_verified_receipt_requires_its_preserved_archive(self):
+        self.capture()
+        first = self.apply()
+        store = Path(first['context']['store_root'])
+        archive = store / 'legacy-archive' / first['fingerprint']
+        backup = self.root / 'archive-backup'
+        shutil.copytree(archive, backup)
+        for damage in ('missing', 'manifest', 'payload'):
+            with self.subTest(damage=damage):
+                if damage == 'missing':
+                    shutil.rmtree(archive)
+                elif damage == 'manifest':
+                    (archive / 'manifest.json').write_text('{}')
+                else:
+                    next(archive.glob('worktree-*/.ledger/learnings/events.jsonl')).write_text('{}\n')
+                before = self.snapshot(store)
+                for apply in (False, True):
+                    with self.subTest(apply=apply), self.assertRaises(module.MigrationError):
+                        self.migrate(apply=apply, confirm_no_writers=apply)
+                    self.assertEqual(self.snapshot(store), before)
+                if archive.exists():
+                    shutil.rmtree(archive)
+                shutil.copytree(backup, archive)
+        self.assertEqual(self.apply()['status'], 'verified')
+
+    def test_first_pending_transaction_blocks_without_a_canonical_slot(self):
+        pending = self.repo / '.ledger/.transactions/dtx-first'
+        pending.mkdir(parents=True)
+        # Native admission counts the created transaction directory as pending
+        # even before its initial journal and canonical slot are published.
+        self.assertFalse((self.repo / SLOT).exists())
+        before = self.snapshot(self.repo)
+        for apply in (False, True):
+            with self.subTest(apply=apply), self.assertRaisesRegex(
+                    module.MigrationError, 'UnresolvedLegacyTransactionCoverage'):
+                self.migrate(apply=apply, confirm_no_writers=apply)
+            self.assertEqual(self.snapshot(self.repo), before)
+            self.assertTrue(pending.is_dir())
+            self.assertFalse((self.root / 'home').exists())
+
+    def test_declared_retired_directory_is_not_verified_as_empty_history(self):
+        retired = self.repo / '.learnings.jsonl'
+        retired.mkdir()
+        (retired / 'records.jsonl').write_text('{"retired":"must not disappear"}\n')
+        before = self.snapshot(self.repo)
+        for apply in (False, True):
+            with self.subTest(apply=apply), self.assertRaisesRegex(
+                    module.MigrationError, 'UnsupportedRetiredSource'):
+                self.migrate(apply=apply, confirm_no_writers=apply)
+            self.assertEqual(self.snapshot(self.repo), before)
+            self.assertFalse((self.root / 'home').exists())
+
     def test_registration_without_receipt_requires_reconciliation(self):
         self.capture()
         first = self.apply()

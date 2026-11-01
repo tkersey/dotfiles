@@ -5,6 +5,7 @@ import json
 import os
 from pathlib import Path
 import shutil
+import shlex
 import subprocess
 import sys
 import tempfile
@@ -293,6 +294,40 @@ class LedgerContextTests(unittest.TestCase):
         self.assertIsNone(direct['git_common_dir'])
         self.assertEqual(context.resolve(self.root)['store_id'], first['store_id'])
 
+    def test_failed_git_common_lookup_cannot_initialize_a_second_family_identity(self):
+        first = context.resolve(self.other, initialize=True)
+        before = (context.storage_home() / context.CATALOG).read_bytes()
+        roots = sorted(path.name for path in (context.storage_home() / 'repos').iterdir())
+        real_git = shutil.which('git')
+        wrapper = self.root / 'git-wrapper'
+        wrapper.mkdir()
+        executable = wrapper / 'git'
+        executable.write_text('#!/bin/sh\nfor arg do\n'
+            '  if [ "$arg" = "--git-common-dir" ]; then exit 71; fi\n'
+            'done\nexec ' + shlex.quote(real_git) + ' "$@"\n')
+        executable.chmod(0o700)
+        nested = self.repo / 'nested'
+        nested.mkdir()
+        for workspace in (self.repo, nested):
+            with self.subTest(workspace=workspace), patch.dict(os.environ, {'PATH': str(wrapper)}):
+                with self.assertRaises(context.ContextError):
+                    context.resolve(workspace, initialize=True)
+            self.assertEqual((context.storage_home() / context.CATALOG).read_bytes(), before)
+            self.assertEqual(sorted(path.name for path in (context.storage_home() / 'repos').iterdir()), roots)
+        self.assertEqual(context.resolve(self.repo)['store_id'], first['store_id'])
+
+    def test_missing_git_does_not_hide_repository_or_bare_evidence(self):
+        bare = self.root / 'bare'
+        self.git(self.root, 'init', '--bare', '-q', str(bare))
+        (bare / 'HEAD').unlink()
+        nested = self.repo / 'nested'
+        nested.mkdir()
+        for workspace in (self.repo, nested, self.other, bare):
+            with self.subTest(workspace=workspace), patch.dict(os.environ, {'PATH': '/nonexistent'}):
+                with self.assertRaises(context.ContextError):
+                    context.resolve(workspace, initialize=True)
+            self.assertFalse(self.home.exists())
+
     def test_registration_survives_common_directory_relocation(self):
         first = context.resolve(self.repo, initialize=True, confirm_no_writers=True)
         self.git(self.repo, "worktree", "remove", str(self.other))
@@ -543,6 +578,29 @@ class LedgerContextTests(unittest.TestCase):
     def cold_adopt(self, definition, confirm=True):
         return context.resolve(self.repo, initialize=True, adopt_from=self.other,
                                definitions=[definition], confirm_no_writers=confirm)
+
+    def test_cold_adoption_retains_orphan_with_an_existing_catalog_until_registered(self):
+        unrelated = context.resolve(initialize=True)
+        catalog = context.storage_home() / context.CATALOG
+        original_catalog = catalog.read_bytes()
+        definition = self.cold_fixture()
+        retained = self.cold_adopt(definition)
+        # The public root exists but its catalog publication did not survive.
+        catalog.write_bytes(original_catalog)
+        roots = sorted(path.name for path in (context.storage_home() / 'repos').iterdir())
+        before = {str(path.relative_to(context.storage_home())): path.read_bytes()
+                  for path in context.storage_home().rglob('*') if path.is_file()}
+        for attempt in range(3):
+            with self.subTest(attempt=attempt), self.assertRaisesRegex(context.ContextError, 'UnregisteredCustodyExists'):
+                self.cold_adopt(definition)
+            self.assertEqual(sorted(path.name for path in (context.storage_home() / 'repos').iterdir()), roots)
+            self.assertEqual({str(path.relative_to(context.storage_home())): path.read_bytes()
+                              for path in context.storage_home().rglob('*') if path.is_file()}, before)
+        restored = context.register_root(Path(retained['store_root']), retained['store_id'], self.repo)
+        self.assertEqual(restored['store_root'], retained['store_root'])
+        self.assertEqual(context.resolve(self.other)['store_id'], retained['store_id'])
+        self.assertEqual(context.resolve(store_id=unrelated['store_id'])['store_root'], unrelated['store_root'])
+        self.assertEqual(sorted(path.name for path in (context.storage_home() / 'repos').iterdir()), roots)
 
     def test_cold_adoption_preserves_native_history_and_excludes_advisory_sidecars(self):
         definition = self.cold_fixture()

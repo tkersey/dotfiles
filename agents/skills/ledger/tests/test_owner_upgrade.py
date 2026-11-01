@@ -162,6 +162,87 @@ class OwnerUpgradeTests(unittest.TestCase):
     def tree_bytes(self, root):
         return {str(path.relative_to(root)): path.read_bytes() for path in root.rglob('*') if path.is_file()}
 
+    def binding_family(self):
+        subprocess.run(['git', '-C', str(self.repo), 'init', '-q'], check=True)
+        subprocess.run(['git', '-C', str(self.repo), '-c', 'user.name=Fixture',
+            '-c', 'user.email=fixture@example.invalid', 'commit', '--allow-empty', '-qm', 'fixture'], check=True)
+        context = self.binding_fixture()
+        other = self.root / 'other'
+        subprocess.run(['git', '-C', str(self.repo), 'worktree', 'add', '--detach', str(other)],
+                       check=True, capture_output=True)
+        shutil.copytree(self.repo / '.ledger', other / '.ledger')
+        shutil.rmtree(other / '.ledger/.transactions')
+        return context, other
+
+    def append_binding_event(self, tree, request, value):
+        appended = subprocess.run([self.binary, 'transact', '--definition', str(self.definition),
+            '--repo', str(tree), '--operation', 'append', '--input', 'event=-',
+            '--param', 'request=' + request, '--format', 'json'],
+            input=json.dumps({'kind': 'one', 'value': value}).encode(), capture_output=True, timeout=15)
+        self.assertEqual(appended.returncode, 0, appended.stdout + appended.stderr)
+
+    def test_healthy_owner_with_longer_sibling_requires_reconciliation(self):
+        context, other = self.binding_family()
+        self.append_binding_event(other, 'second', 2)
+        before = self.tree_bytes(self.root)
+        with self.subTest(mode='read-only'):
+            with self.assertRaisesRegex(custody.MigrationError, 'OwnerPreparationRequired'):
+                custody.owner_context(self.repo, self.definition, read_only=True, binary=self.binary)
+        with self.subTest(mode='ensure-owner'):
+            with self.assertRaises(custody.MigrationError) as raised:
+                self.ensure(confirm_no_writers=True)
+            self.assertEqual(raised.exception.value['preparation']['outcome'], 'reconciliation-required')
+        self.assertEqual(self.tree_bytes(self.root), before)
+        self.assertEqual(self.ctx.resolve(self.repo)['store_id'], context['store_id'])
+        self.assertFalse((Path(context['store_root']) / 'legacy-archive').exists())
+
+    def test_healthy_owner_rejects_sibling_binding_and_payload_divergence(self):
+        context, other = self.binding_family()
+        for value in (1, 9):
+            with self.subTest(value=value):
+                shutil.rmtree(other / '.ledger')
+                self.append_binding_event(other, 'independent', value)
+                before = self.tree_bytes(self.root)
+                for read_only, code in [(True, 'OwnerPreparationRequired'), (False, 'PreparationDivergentHistory')]:
+                    with self.subTest(read_only=read_only), self.assertRaisesRegex(custody.MigrationError, code):
+                        custody.owner_context(self.repo, self.definition, read_only=read_only,
+                            maintain=not read_only, binary=self.binary, confirm_no_writers=not read_only)
+                    self.assertEqual(self.tree_bytes(self.root), before)
+        self.assertEqual(self.ctx.resolve(self.repo)['store_id'], context['store_id'])
+
+    def test_healthy_owner_requires_available_siblings_but_generic_lookup_does_not(self):
+        context, other = self.binding_family()
+        shutil.rmtree(other)
+        before = self.tree_bytes(self.root)
+        for read_only in (True, False):
+            with self.subTest(read_only=read_only), self.assertRaisesRegex(custody.MigrationError, 'UnavailableWorktree'):
+                custody.owner_context(self.repo, self.definition, read_only=read_only,
+                                      maintain=not read_only, binary=self.binary)
+            self.assertEqual(self.tree_bytes(self.root), before)
+        self.assertEqual(self.ctx.resolve(self.repo)['store_id'], context['store_id'])
+        direct = custody.owner_context(None, self.definition, store_id=context['store_id'],
+                                       read_only=True, binary=self.binary)
+        self.assertEqual(direct['store_root'], context['store_root'])
+
+    def test_covered_family_ignores_retained_retired_sources_and_archives(self):
+        context, other = self.binding_family()
+        manifest = self.definition.parents[2] / 'migration.json'
+        value = json.loads(manifest.read_text())
+        value['retired_sources'] = ['.retired-records.jsonl']
+        value['importer'] = 'importer.py'
+        (manifest.parent / 'importer.py').write_text('raise SystemExit(73)\n')
+        manifest.write_text(json.dumps(value))
+        (other / '.retired-records.jsonl').write_text('retained evidence after prior conversion\n')
+        archive = Path(context['store_root']) / 'legacy-archive/damaged'
+        archive.mkdir(parents=True)
+        (archive / 'manifest.json').write_text('not valid JSON')
+        before = self.tree_bytes(self.root)
+        for read_only in (True, False):
+            observed = custody.owner_context(self.repo, self.definition, read_only=read_only,
+                                            maintain=not read_only, binary=self.binary)
+            self.assertEqual(observed['store_id'], context['store_id'])
+            self.assertEqual(self.tree_bytes(self.root), before)
+
     def test_equal_payload_with_divergent_binding_is_not_covered(self):
         context = self.binding_fixture(local_request='second')
         before = self.tree_bytes(self.root)
