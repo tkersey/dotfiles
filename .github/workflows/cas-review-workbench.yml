@@ -20,6 +20,7 @@ jobs:
           set -euo pipefail
           cat .github/cas-review-patch.part1 .github/cas-review-patch.part2 .github/cas-review-patch.part3 | base64 --decode | gzip --decompress > "$RUNNER_TEMP/cas-review.patch"
           echo "c4ed8064bafbfb8f77b0a8ecdabea700b7031776d7ad251c58e7d8f400a95133  $RUNNER_TEMP/cas-review.patch" | sha256sum --check
+          git fetch --no-tags --depth=1 origin 070d823e085965384fd2f2c87f6e95ee37818447
           git checkout --detach 070d823e085965384fd2f2c87f6e95ee37818447
           git apply --check "$RUNNER_TEMP/cas-review.patch"
           git apply "$RUNNER_TEMP/cas-review.patch"
