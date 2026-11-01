@@ -20,10 +20,9 @@ caller-selected repository, not a guessed location.
 ## Runtime and custody
 
 Load the current `$ledger` skill and complete its `ensure` procedure once per
-unchanged executable/environment. **Ergon requires Ledger 1.2.0 or newer within
-major version 1**, including reducer v6 and fold v7. The generic bootstrap's
-older minimum is not sufficient for this definition. Check the selected closure
-before first use or after it changes; do not silently fall back on Ledger 1.1.
+unchanged executable/environment. Use its shared runtime baseline. Ergon's
+definition requires reducer v6 and fold v7; check the selected closure before
+first use or after it changes. Do not silently fall back to an older runtime.
 
 ```bash
 ergon_definition="$(realpath "${CODEX_HOME:-$HOME/.codex}/skills/ergon/definitions/ledger/task-protocol.json")"

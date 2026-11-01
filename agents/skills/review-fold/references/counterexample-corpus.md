@@ -101,8 +101,6 @@ enforces non-writable access, use `--read-only --definition` instead of
 `--ensure-owner`. It selects intact managed history without creating, migrating,
 or repairing anything. Report unavailable history under that constraint; an
 analysis route or false capture flag alone does not select this mode.
-Ledger 1.3.0 remains supported; migration does not impose a new 1.5.3
-minimum on healthy installations.
 
 ## Project before folding
 
