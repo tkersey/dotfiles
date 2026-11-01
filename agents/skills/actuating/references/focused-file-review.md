@@ -14,7 +14,10 @@ and literal paths. Establish each available side's extent. Use complete response
 for small inputs; acquire large files and diffs in bounded, numbered line or byte
 ranges sized to the tool's actual output limits. Track delivered ranges and gaps
 in your existing working context, not a new report or durable coverage record.
-A requested range is not coverage: count only content actually returned.
+A requested range is not coverage: count only content actually returned to you.
+Host-captured output can exceed model-visible delivery. Keep bounded source reads
+separate from unrelated commands; a trailing no-match search must not obscure a
+successful read or a real delivery gap.
 
 Recover truncated reads within this request. Follow an available continuation or
 read a smaller range from the last verified boundary, not the requested endpoint.
@@ -27,6 +30,19 @@ only after verifying their exact correspondence. Equality permits reuse of
 already inspected content, not skipping it, reusing another reviewer's inquiry,
 or ignoring changed causal context. Acquisition does not narrow review scope.
 
+Maintain concise, source-backed progress in existing working context: exact
+subject, verified observations and findings, resolved suspicions with decisive
+counterevidence, unresolved dependencies, delivered boundaries and the next
+necessary inquiry. Retain observations, not a verdict to defend. After a context
+boundary, recover this state and continue the remaining inquiry; do not restart
+at the beginning solely because compaction occurred. Revisit earlier source when
+an uncertain boundary, new dependency or counterevidence warrants it. If progress
+is unavailable, name the uncertainty and reacquire only the needed evidence;
+a summary or cursor is not proof that dependent reasoning was completed. Do not
+create a new progress store, publish private reasoning, modify the frozen subject,
+or require caller steering before compaction. This custom scope guidance does not
+change the uncustomized changeset standard.
+
 Complete missing acquisition and its dependent reasoning in this original request
 before returning, within existing authority and budget. Do not repeatedly retry
 unchanged blockers, bypass access controls, or extend the budget. If evidence
@@ -36,6 +52,10 @@ establish adequate reasoning.
 
 For an addition or deletion, inspect
 the available side and the affected admission, removal, or migration paths.
+For a deletion-induced finding, anchor the original path/range in the changed
+base-side source and explain the surviving consequence. Do not invent a native
+side field or a head-side location for an absent file; publication maps the side
+separately. A material acquisition gap remains a limitation, not a code finding.
 For a rename, follow both identities and path-sensitive consumers. Trace callers,
 callees, unchanged dependents, contracts, state/lifetime transitions, failure and
 recovery paths, and tests where they affect the changed behavior. Follow your
@@ -58,4 +78,8 @@ scope and `"patch is incorrect"` when supported findings remain. In the explanat
 name the focal file, assigned lens, actual causal scope, and material unfinished work or evidence
 gaps; preserve blocked/skipped checks without reporting them as passed. These
 labels concern this requested scope, not the whole changeset or completion.
+With no established defect but unfinished material inquiry, explicitly say
+**No defect established; assigned inquiry incomplete**. Do not return merely
+because a bounded read finished; complete the assigned inquiry or name its actual
+blocker within the existing authority and budget.
 Actuating owns evidence adequacy and credit; Review Fold owns finding admission.

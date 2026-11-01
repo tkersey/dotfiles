@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 // Source regressions only; test_native_codex.py qualifies the installed executable separately.
+import './test-review-continuity.mjs';
 import assert from 'node:assert/strict';
 import {readFileSync, readdirSync, existsSync} from 'node:fs';
 import {dirname, resolve, relative} from 'node:path';

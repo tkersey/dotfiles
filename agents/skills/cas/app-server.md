@@ -43,6 +43,26 @@ returned effective model/effort before `review/start`; do not rely on a new serv
 process inheriting the caller's live settings. Existing-thread recovery preserves
 the original request's configuration rather than adopting a later caller's settings.
 
+## Existing-thread follow-up
+
+Use [queueing](queueing.md) when it expresses the authorized operation. For direct
+RPC, read the exact thread/turn state first and resolve any possibly accepted queue
+or turn input. Load with `thread/resume` only when necessary and authorized; it is
+not passive observation and may start pending work. Verify what resumed before
+issuing another assignment. Preserve the original request's model, effort,
+provider, endpoint, permissions and context settings unless a specific change is
+authorized; a changed invoking turn is not that authorization.
+
+Use schema-supported configuration on the applicable resume/start operation and
+inspect returned selections. Submit `turn/start` only when the thread can accept
+the intended new turn and the assignment has not already been accepted. Observe
+its actual identity and terminal result on the same connection. An ordinary turn
+is supplemental inquiry, not a resumed native review delegate or a new native
+standard. Follow [incomplete-inquiry recovery](reviews.md#recover-incomplete-review-inquiry)
+for the evidence handoff; matching thread IDs alone do not retain the delegate's
+investigative context. An unresolved acknowledgement blocks duplicate submission,
+including across CLI and RPC routes.
+
 ## Explicit WebSockets and endpoints
 
 For an explicitly required control listener, native Codex also exposes:
