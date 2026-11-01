@@ -325,6 +325,110 @@ requires_openai_auth = false
                  if item.get("role") == "developer" for c in item.get("content", []) if "text" in c]
         self.assertIn(instructions, texts)
 
+    def delete_fixture_file(self) -> dict:
+        git(self.repo, "rm", "example.txt")
+        git(self.repo, "commit", "-qm", "delete fixture")
+        self.head = git(self.repo, "rev-parse", "HEAD")
+        self.assertEqual(git(self.repo, "show", f"{self.base}:example.txt"), "before")
+        self.assertFalse((self.repo / "example.txt").exists())
+        report = self.clean()
+        report["overall_correctness"] = "patch is incorrect"
+        report["overall_explanation"] = "Controlled deletion-side finding; not model discovery."
+        report["findings"] = [{"title": "Preserve the required consumer input",
+            "body": "Fixture: the deleted base-side input is still required by the assigned consumer contract.",
+            "confidence_score": 0.9, "priority": 2,
+            "code_location": {"absolute_file_path": str(self.repo / "example.txt"),
+                              "line_range": {"start": 1, "end": 1}}}]
+        return report
+
+    def test_deletion_side_finding_survives_native_cli_result(self) -> None:
+        report = self.delete_fixture_file()
+        self.provider.answer = json.dumps(report)
+        code, stream, records, _ = self.cli()
+        self.assertEqual(code, 0)
+        thread = next(e["thread_id"] for e in stream if e["type"] == "thread.started")
+        _, output = native_output(records, thread, self.base, str(self.repo))
+        self.assertEqual(output, report)
+
+    def test_direct_review_and_supplement_preserve_original_result(self) -> None:
+        # Canned provider responses qualify protocol/evidence preservation only.
+        # They do not establish defect discovery, compaction quality, or caller credit.
+        later_result = self.delete_fixture_file()
+        original = self.clean()
+        original["overall_explanation"] = "No defect established; assigned inquiry incomplete: consumer dependency not inspected."
+        asyncio.run(self.direct_review_continuation(original, later_result))
+
+    async def direct_review_continuation(self, original: dict, later_result: dict) -> None:
+        with (self.root / "direct-review.log").open("wb") as stderr:
+            process = await asyncio.create_subprocess_exec(
+                self.codex, "app-server", "--listen", "stdio://", cwd=self.repo,
+                env=self.env, stdin=asyncio.subprocess.PIPE,
+                stdout=asyncio.subprocess.PIPE, stderr=stderr)
+            rpc = Rpc(process)
+            try:
+                await rpc.request("initialize", {"clientInfo": {
+                    "name": "review-continuity-qualification", "version": "1"},
+                    "capabilities": {"experimentalApi": True}})
+                await rpc.send({"method": "initialized"})
+                started = await rpc.request("thread/start", {
+                    "cwd": str(self.repo), "model": "gpt-6-astra",
+                    "approvalPolicy": "never", "sandbox": "read-only",
+                    "config": {"review_model": "gpt-6-astra", "model_reasoning_effort": "high"}})
+                thread = started["thread"]["id"]
+                self.assertEqual(started["model"], "gpt-6-astra")
+                self.assertEqual(started["reasoningEffort"], "high")
+                self.provider.answer = json.dumps(original)
+                review = await rpc.request("review/start", {"threadId": thread,
+                    "target": {"type": "baseBranch", "branch": self.base}, "delivery": "inline"})
+                root_turn = review["turn"]["id"]
+                self.assertEqual(review["reviewThreadId"], thread)
+                self.assertEqual((await rpc.completed(thread, root_turn))["status"], "completed")
+                self.assertIsNone(process.returncode, "native completion does not require server exit")
+                readback = await rpc.request("thread/read", {"threadId": thread})
+                self.assertEqual(readback["thread"]["id"], thread)
+                artifact = Path(readback["thread"]["path"])
+
+                async def original_output() -> tuple[str, dict]:
+                    deadline = time.monotonic() + 10
+                    while True:
+                        try:
+                            records = [json.loads(line) for line in artifact.read_text().splitlines()]
+                            return native_output(records, thread, self.base, str(self.repo))
+                        except (OSError, json.JSONDecodeError, AssertionError, KeyError):
+                            if time.monotonic() >= deadline:
+                                raise
+                            await asyncio.sleep(0.02)
+
+                observed_turn, output = await original_output()
+                self.assertEqual(observed_turn, root_turn)
+                self.assertEqual(output, original)
+                requests = [r["body"] for r in self.provider.requests if r["body"].get("generate", True)]
+                self.assertEqual(len(requests), 1)
+                self.assertEqual(requests[0]["model"], "gpt-6-astra")
+                self.assertEqual(requests[0]["reasoning"]["effort"], "high")
+
+                self.provider.answer = json.dumps(later_result)
+                followup = await rpc.request("turn/start", {"threadId": thread,
+                    "input": [{"type": "text", "text":
+                        "Complete the missing consumer inquiry. Preserve the original output as history, not its conclusion; overturn it if the evidence warrants.",
+                        "text_elements": []}]})
+                self.assertNotEqual(followup["turn"]["id"], root_turn)
+                completed = await rpc.completed(thread, followup["turn"]["id"])
+                self.assertEqual(completed["status"], "completed")
+                messages = [item["text"] for item in completed["items"] if item.get("type") == "agentMessage"]
+                self.assertIn(later_result, [json.loads(text) for text in messages])
+                self.assertEqual(await original_output(), (root_turn, original))
+                self.assertIsNone(process.returncode)
+                self.assertEqual(sum(r["body"].get("generate", True) for r in self.provider.requests), 2)
+            finally:
+                if process.returncode is None:
+                    process.terminate()
+                try:
+                    await asyncio.wait_for(process.wait(), 10)
+                except TimeoutError:
+                    process.kill()
+                    await process.wait()
+
     def test_malformed_result_is_not_structured_verdict(self) -> None:
         self.provider.answer = "This is unstructured fallback text, not a verdict."
         code, stream, records, _ = self.cli()
