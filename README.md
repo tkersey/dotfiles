@@ -49,3 +49,14 @@ successfully, then verify the affected settings resolve as intended.
 The system config links into this checkout, so repository updates affect the
 shared defaults. Keep the checkout at a revision containing
 `codex/config.toml`.
+
+### Ledger maintenance
+
+Native Ledger writes report validation, publication, and storage errors in their
+normal results. Preparation uses native transaction finalization, leaving no
+second payload archive. No scheduler, background status worker, or desktop
+notification is installed.
+
+For a separate bounded storage inspection, use `ledger maintain` with an explicit
+managed store. It reports incomplete inspection and unresolved native work without
+changing history. See [storage maintenance](agents/skills/ledger/references/storage-maintenance.md).

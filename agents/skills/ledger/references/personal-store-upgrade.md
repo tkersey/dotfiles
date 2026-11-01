@@ -23,13 +23,13 @@ installation alone neither imports old history nor migrates notes.
 ## Release and writer cutover
 
 Release and install the native changes before activating the new definitions and
-adapters: Ledger **1.5.0 or later within major version 1**, with
+adapters: Ledger **1.6.0 or later within major version 1**, with
 `ledger-artifact-abi/v1`, and memory-note **0.3.0**. Merely merging the native PR
 does not update installed executables or a Homebrew formula. In the updated
 Ledger skill, verify the selected executable with:
 
 ```bash
-"$ledger_skill_root/scripts/ensure-ledger" --min-version 1.5.0
+"$ledger_skill_root/scripts/ensure-ledger" --min-version 1.6.0
 memory-note version
 ```
 
@@ -69,21 +69,21 @@ inspection of their provenance and completion state.
 When a registration survives, the ordinary ensure path adopts it automatically:
 
 ```bash
-uv run "$ledger_skill_root/scripts/ensure_custody.py" --repo "<workspace-path>"
+ledger context --catalog-root "$ledger_home" --workspace "<workspace-path>" --ensure
 ```
 
 This performs registration-only adoption, not cold migration. It needs no writer
 quiescence because native custody stays in place. An explicit user prohibition
 on file/custody maintenance or enforced non-writable access uses
-`ledger_context.py` and cannot perform this catalog update. Ordinary analysis
+`ledger context` and cannot perform this catalog update. Ordinary analysis
 still follows Ledger's automatic preparation policy. The explicit
-`ledger_context.py --import-registration ... --repo ...` maintenance route remains
+`ledger context --import-registration ... --workspace ...` maintenance route remains
 available for a specifically selected registration.
 
 When only the managed root survives:
 
 ```bash
-uv run "$ledger_skill_root/scripts/ledger_context.py" \
+ledger context --catalog-root "$ledger_home" \
   --register-root "<exact-existing-root>" --store-id "<existing-marker-store-id>"
 ```
 
@@ -102,8 +102,9 @@ its owner projection to verify the selected identity and history.
 Inspect the supported source first:
 
 ```bash
-uv run "$ledger_skill_root/scripts/ensure_custody.py" \
-  --migrate --repo "<legacy-workspace-or-surviving-directory>"
+ledger context --catalog-root "$ledger_home" \
+  --migrate --workspace "<legacy-workspace-or-surviving-directory>" \
+  --owner-manifest "<installed-owner>/migration.json"
 ```
 
 For a verified Git worktree, migration inventories the complete known family.
@@ -113,9 +114,9 @@ source. Broken Git metadata does not silently reduce a family to one directory.
 The plain source receives no migration lock or Git metadata; custody controls
 are in the personal home. Source selection and bytes are rechecked before
 catalog publication.
-Apply holds the personal catalog association lock from its final pre-mutation
-identity check through publication. Competing attachments wait and then must
-respect the published association. This lock does not fence legacy writers.
+Native migration preserves the pending identity and revalidates catalog
+associations before registration. A conflicting attachment is an explicit
+reconciliation failure. Catalog coordination does not fence legacy writers.
 
 After actual writer quiescence and authorized migration, repeat the command with
 `--apply --confirm-no-writers`. Supported current Ledger histories and the

@@ -4,7 +4,7 @@
     "skill": {
       "name": "review-fold",
       "kind": "mixed",
-      "source_fingerprint": "review-fold-counterexample-corpus-v1-native-observations"
+      "source_fingerprint": "review-fold-counterexample-corpus-v1-native-context-shared-runtime-baseline"
     },
     "triggers": [
       {

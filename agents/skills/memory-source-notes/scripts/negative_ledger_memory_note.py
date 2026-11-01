@@ -24,7 +24,6 @@ ALLOWED_KINDS = {
     "ledger-retraction",
 }
 SKILLS_ROOT = Path(__file__).resolve().parents[2]
-CONTEXT_SCRIPT = SKILLS_ROOT / "ledger/scripts/ledger_context.py"
 SOURCE_DEFINITION = (
     SKILLS_ROOT
     / "negative-ledger/definitions/ledger/negative-evidence-protocol.json"
@@ -88,11 +87,15 @@ def _parse_json(raw: bytes, stage: str) -> Any:
         raise AdapterError(f"{stage}: invalid JSON: {exc}") from exc
 
 
-def resolve_custody(repo: Path | None, store_id: str | None = None) -> dict[str, Any]:
+def resolve_custody(repo: Path | None, store_id: str | None = None, *, catalog_root: str | None = None,
+                    ledger: str | None = None) -> dict[str, Any]:
     """Consume the Ledger owner's read-only context; never duplicate its policy."""
-    selector = ["--store-id", store_id] if store_id else ["--repo", str(repo or Path.cwd())]
+    if not catalog_root or not Path(catalog_root).is_absolute():
+        raise AdapterError('ledger context requires the explicit absolute --catalog-root selected by $ledger')
+    binary = ledger or _resolve_binary(None, "LEDGER_BIN", "ledger")
+    selector = ["--store-id", store_id] if store_id else ["--workspace", str(repo or Path.cwd())]
     raw = _require_success(
-        _run([sys.executable, str(CONTEXT_SCRIPT), *selector], cwd=repo or Path.cwd()),
+        _run([binary, "context", "--catalog-root", catalog_root, *selector], cwd=repo or Path.cwd()),
         "ledger context",
     )
     context = _parse_json(raw, "ledger context")
@@ -190,8 +193,8 @@ def inspect_projection(args: argparse.Namespace) -> tuple[bytes, dict[str, Any]]
     repo = Path(args.repo).expanduser().resolve()
     if not repo.is_dir():
         raise AdapterError(f"repo: not a directory: {repo}")
-    context = resolve_custody(repo, getattr(args, "store_id", None))
     ledger = _resolve_binary(args.ledger_bin, "LEDGER_BIN", "ledger")
+    context = resolve_custody(repo, getattr(args, "store_id", None), catalog_root=args.catalog_root, ledger=ledger)
     doctor_argv = [
         ledger,
         "doctor",
@@ -294,6 +297,7 @@ def build_parser() -> argparse.ArgumentParser:
             "--kind", choices=sorted(ALLOWED_KINDS), default="ledger-projection"
         )
         command.add_argument("--repo", default=".", help="Evidence workspace; $ledger resolves canonical custody")
+        command.add_argument("--catalog-root", required=True, help="Explicit Ledger catalog location selected by $ledger")
         command.add_argument("--store-id", help="Select a registered personal store without a workspace")
         command.add_argument("--ledger-bin")
         if name == "admit":

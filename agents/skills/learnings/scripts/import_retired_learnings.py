@@ -145,6 +145,7 @@ def frame(raw: bytes, control: dict | None = None) -> tuple[list[dict], dict]:
 class Native:
     def __init__(self, binary: str, definition: Path, selector: list[str]):
         self.binary, self.definition, self.selector = binary, definition.resolve(strict=True), selector
+        self.last_definition = None
 
     def run(self, command: str, *args: str, packet: dict | None = None, pure: bool = False) -> dict:
         argv = [self.binary, command, '--definition', str(self.definition),
@@ -160,6 +161,8 @@ class Native:
             raise ImportErrorDetail(f'Native {command} failed: {proc.stdout.decode(errors="replace")[:8192]}')
         if result.get('authority_granted', result.get('semantic_authority_granted')) is not False:
             raise ImportErrorDetail(f'Missing native authority boundary: {command}')
+        if isinstance(result.get('definition'), dict):
+            self.last_definition = result['definition']
         return result
 
     def records(self) -> tuple[dict[str, dict], str | None]:
@@ -283,6 +286,13 @@ def main() -> int:
         if args.initialize_empty and not (args.apply and args.confirm_no_writers):
             raise ImportErrorDetail('--initialize-empty requires --apply --confirm-no-writers')
         result = import_sources(native, args.source, apply=args.apply, controls=controls, initialize_empty=args.initialize_empty)
+        if args.apply:
+            if not isinstance(native.last_definition, dict) or not all(
+                    isinstance(native.last_definition.get(key), str) for key in ('id', 'digest')):
+                raise ImportErrorDetail('Native verification omitted definition identity')
+            result.update(store_root=str(Path(args.store_root).resolve(strict=True)), store_id=args.store_id,
+                          definition_path=str(native.definition), definition=native.last_definition,
+                          full_record_parity_verified=True)
     except (ImportErrorDetail, OSError, ValueError, RecursionError) as exc:
         print(json.dumps({'schema': 'learnings-retired-import-error/v1', 'status': 'blocked', 'error': str(exc),
                           'storage_mutated': None if args.apply else False, 'authority_granted': False}), file=sys.stderr)

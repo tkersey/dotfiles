@@ -8,6 +8,33 @@ Routine opted-in owner preparation follows
 standing authority requires no separate approval; this guide governs other
 selected recovery and format changes.
 
+## Preparation housekeeping
+
+Ledger 1.6 provides `prepare` for selected static monolithic history and `maintain`
+for preparation-owned working files. Both inspect by default. The adapter uses
+native preparation under existing opted-in owner authority; it never copies a
+second archive or substitutes a Python algorithm after native failure. Native
+publication transfers its sole staged payload into canonical history, so it leaves
+no duplicate preparation payload. Maintenance preserves native audit journals
+under their existing lifetime rules and reports unresolved work.
+
+```bash
+ledger maintain --store-root <context.store_root> --store-id <context.store_id> --format json
+```
+
+Add `--apply` only within authorized custody maintenance. Native state determines
+release; unresolved publication, ambiguous ownership and exhausted bounds retain
+the affected work. Canonical history, archives, caches, foreign files and persistent
+coordination resources are outside cleanup. Logical reclaimed bytes are not a
+claim about physical disk blocks. Native preparation and maintenance report their
+own outcome separately from any subsequent owner operation.
+
+Use the native write result for validation, publication, and storage errors
+already observed during that operation. No scheduled sweep or additional status
+check is required after a write. Use explicit `ledger maintain` when a separate
+bounded inspection is needed; its result describes that inspection's limits and
+coverage, not a complete storage inventory.
+
 ## Exact transaction recovery
 
 Lease expiry is not authority transfer. Inspect one transaction and require the

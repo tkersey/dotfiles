@@ -3,7 +3,8 @@
 Resolve the intended personal store through `$ledger` first and retain
 `context.store_root` and `context.store_id` for every canonical operation below.
 Explicit `--store-id` needs no checkout; `--repo` is a cataloged workspace alias.
-The admission adapter resolves the same personal store internally.
+Retain `$ledger`'s selected `ledger_home`; the admission adapter uses that explicit
+catalog location to resolve the same personal store.
 
 ## Implicit Route Check Before Retry
 
@@ -85,7 +86,8 @@ ledger transact \
 
 memory_source_notes_root="$(realpath "${CODEX_HOME:-$HOME/.codex}/skills/memory-source-notes")"
 uv run "$memory_source_notes_root/scripts/negative_ledger_memory_note.py" \
-  admit --store-id "<context.store_id>" --id NEG-000001 --kind ledger-projection
+  admit --catalog-root "$ledger_home" \
+  --store-id "<context.store_id>" --id NEG-000001 --kind ledger-projection
 ```
 
 ## Reopen Old Evidence

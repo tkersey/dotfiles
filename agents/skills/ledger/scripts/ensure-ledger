@@ -4,8 +4,8 @@ set -euo pipefail
 
 readonly formula="tkersey/tap/ledger"
 install_allowed=false
-minimum_version="1.3.0"
-minimum_minor=3
+minimum_version="1.6.0"
+minimum_minor=6
 minimum_patch=0
 
 usage() {
@@ -17,9 +17,9 @@ usage:
 
 Ensures a ledger command resolves on PATH. With --install, installs the native
 Ledger CLI's Homebrew formula when ledger is missing or upgrades it when the
-installed CLI does not satisfy readiness. Readiness defaults to Ledger 1.3.0 or
+installed CLI does not satisfy readiness. Readiness defaults to Ledger 1.6.0 or
 newer within major version 1 and ledger-artifact-abi/v1. Owners can require a
-higher minimum with --min-version; it cannot lower the 1.3.0 baseline. The handler
+higher minimum with --min-version; it cannot lower the 1.6.0 baseline. The handler
 does not proxy native commands.
 HELP
 }
@@ -123,14 +123,14 @@ while (($#)); do
   case "$1" in
     --min-version)
       if (($# < 2)) || [[ ! "$2" =~ ^1\.([0-9]+)\.([0-9]+)$ ]]; then
-        emit_error "invalid-minimum-version" "Use --min-version 1.MINOR.PATCH at least 1.3.0."
+        emit_error "invalid-minimum-version" "Use --min-version 1.MINOR.PATCH at least 1.6.0."
         exit 2
       fi
       minimum_version="$2"
       minimum_minor="${BASH_REMATCH[1]}"
       minimum_patch="${BASH_REMATCH[2]}"
-      if ((10#$minimum_minor < 3)); then
-        emit_error "invalid-minimum-version" "The minimum cannot lower the Ledger 1.3.0 baseline."
+      if ((10#$minimum_minor < 6)); then
+        emit_error "invalid-minimum-version" "The minimum cannot lower the Ledger 1.6.0 baseline."
         exit 2
       fi
       shift 2

@@ -1,8 +1,8 @@
 # Retired Learnings import
 
 This owner constructor recovers identifiable original records into canonical
-Learnings without recapturing them. It requires Ledger 1.3.x or a compatible
-later 1.x runtime. `$ledger` owns custody selection and migration orchestration;
+Learnings without recapturing them. Use the shared runtime baseline from
+`$ledger`, which owns custody selection and migration orchestration;
 this owner owns historical record semantics. No bulk memory admission occurs.
 
 ## Contract

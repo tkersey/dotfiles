@@ -3,7 +3,7 @@
 ## Canonical Store
 
 Before the first native command, load `$ledger` and complete `$ledger ensure`.
-Require Ledger 1.3.0 or newer within major version 1 and `ledger-artifact-abi/v1`.
+Use Ledger's shared runtime baseline and `ledger-artifact-abi/v1`.
 The Ledger skill owns physical location, the personal catalog, initialization,
 and legacy import. Do not derive a store from the current checkout or duplicate
 its lookup/migration policy here.
