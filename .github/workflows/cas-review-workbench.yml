@@ -1,0 +1,61 @@
+name: CAS review continuity qualification
+on:
+  push:
+    branches: [work/cas-review-continuity-validation-20261101]
+permissions:
+  contents: read
+jobs:
+  qualify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 1c402fe030b8779aaf903cc22634478f0c6a510b
+          fetch-depth: 2
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: astral-sh/setup-uv@v6
+      - name: Verify exact one-file candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = 1c402fe030b8779aaf903cc22634478f0c6a510b
+          test "$(git rev-parse HEAD^)" = d620f146cab24cfb0565c89631d0fac084142c25
+          test "$(git rev-parse HEAD^{tree})" = a9c6266fe8e406c5744eb39ca5d58cb0a2e20103
+          test "$(git diff --name-only HEAD^ HEAD)" = agents/skills/cas/tests/test_native_codex.py
+          test "$(git rev-parse HEAD:agents/skills/cas/tests/test_native_codex.py)" = 3fa5334f758e7df4b0f4f2075c086b305b451cd5
+          test "$(git diff --numstat HEAD^ HEAD)" = $'104\t0\tagents/skills/cas/tests/test_native_codex.py'
+          git diff --check HEAD^ HEAD
+          git diff --stat HEAD^ HEAD
+      - name: Source and caller-contract checks
+        shell: bash
+        run: |
+          set -euo pipefail
+          sh agents/skills/actuating/tests/test-reconciler-contract.sh --local-only | tee "$RUNNER_TEMP/cas-source-validation.log"
+          sh agents/skills/actuating/tests/test-composition-contract.sh | tee "$RUNNER_TEMP/cas-composition-validation.log"
+          uv run --no-project python -m py_compile agents/skills/cas/tests/test_native_codex.py
+      - name: Qualify nine native fixtures on Codex 0.166.0
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm install --prefix "$RUNNER_TEMP/cas-native" --no-audit --no-fund @openai/codex@0.166.0
+          CODEX="$RUNNER_TEMP/cas-native/node_modules/.bin/codex"
+          "$CODEX" --version | tee "$RUNNER_TEMP/cas-native-version.log"
+          "$CODEX" --version | grep -F '0.166.0'
+          uv run --no-project --with aiohttp==3.13.3 agents/skills/cas/tests/test_native_codex.py --codex "$CODEX" 2>&1 | tee "$RUNNER_TEMP/cas-native-validation.log"
+          git diff --exit-code
+          test "$(git rev-parse HEAD^{tree})" = a9c6266fe8e406c5744eb39ca5d58cb0a2e20103
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pr390-test-only-validation
+          path: |
+            ${{ runner.temp }}/cas-source-validation.log
+            ${{ runner.temp }}/cas-composition-validation.log
+            ${{ runner.temp }}/cas-native-version.log
+            ${{ runner.temp }}/cas-native-validation.log
+          retention-days: 7
+          if-no-files-found: warn
