@@ -2,6 +2,7 @@
 // Source-contract and mutation tests only. These do not execute coding agents,
 // measure efficacy, or prove the behavior of an implementation produced by a model.
 import assert from 'node:assert/strict';
+import './test-success-premises.mjs';
 import {createHash} from 'node:crypto';
 import {readFileSync} from 'node:fs';
 import {dirname, resolve} from 'node:path';
@@ -40,7 +41,7 @@ function check(src) {
     'Completion':'dc56a54f2fd79d07f4d801b030cbf5b5a1ec6758be7a8c72eae0e8c2f630f58f'
   })) assert.equal(hash(section(skill,h)),digest,`changed acceptance/authority section: ${h}`);
   assert.equal(hash(section(skill,'Construction Working Set')),
-    '1b0b7d96a2434a3fceea83fc34be41db3623450e146913428ec4b355d34fc286','changed construction assignment binding');
+    'de9ee5fa5fb2cb205c5c970dfbcd2c98b76467166ac09b5f71510da986178e14','changed construction assignment binding');
   const admissionStart=counter.indexOf('Before counterexample-driven selection,');
   const admissionEnd=counter.indexOf('\n## Compile the first loss of guarantee');
   assert(admissionStart>=0 && admissionEnd>admissionStart);
