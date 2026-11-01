@@ -83,7 +83,7 @@ function check(src) {
   }
   for (const [heading, digest] of Object.entries(reviewHashes))
     assert.equal(hash(section(review, heading)), digest, heading);
-  assert.equal(blob(src['review-closeout.md']), '71a86f4a33c3cc8e24fd9a2ce0136861f6630e38');
+  assert.equal(blob(src['review-closeout.md']), '91bb9e22d9245ec3d36368117f687b152f3cf599');
   assert.equal(blob(src['references/review-contract.json']), '68d619748733cb54a466f99b91d859124ee7d2ec');
   const complete = src['references/closure.md'].split('For full `complete`, require:\n\n```text\n')[1];
   assert(complete, 'missing terminal contract');
