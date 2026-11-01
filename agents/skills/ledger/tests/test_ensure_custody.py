@@ -745,6 +745,95 @@ class NativeMigrationTests(unittest.TestCase):
             self.assertFalse((Path(competing['store_root']) / 'legacy-archive').exists())
         self.assertEqual(module.resolve(store_id=competing['store_id'])['store_root'], competing['store_root'])
 
+    def test_registration_preserves_staged_identity_and_same_id_import_resume(self):
+        unrelated = module.resolve(initialize=True)
+        self.capture()
+        self.retired()
+        with self.assertRaises(module.MigrationError) as raised:
+            self.apply()
+        staged = raised.exception.value
+        self.assertEqual(staged['status'], 'owner-import-required', staged)
+        selected = staged['context']
+        catalog = self.root / 'home/catalog.json'
+        before = catalog.read_bytes()
+        with self.assertRaisesRegex(module.MigrationError, 'PendingCustodyConflictsWithCatalog'):
+            module.register_root(unrelated['store_root'], unrelated['store_id'], self.repo)
+        self.assertEqual(catalog.read_bytes(), before)
+        registered = module.register_root(selected['store_root'], selected['store_id'], self.repo)
+        self.assertEqual(registered['store_id'], selected['store_id'])
+        receipt = self.import_owner(staged)
+        completed = self.apply(import_receipts=[receipt])
+        self.assertEqual(completed['status'], 'verified')
+        self.assertEqual(completed['context']['store_id'], selected['store_id'])
+        self.assertEqual(module.resolve(self.repo)['store_id'], selected['store_id'])
+        self.assertFalse(self.apply()['storage_mutated'])
+
+    def test_multi_slot_retired_import_checks_every_revision(self):
+        skills = self.root / 'fixture-skills'
+        owner = skills / 'two-slot'
+        owner.mkdir(parents=True)
+        definition = owner / 'definition.json'
+        plan = json.loads((Path(__file__).parent / 'fixtures/event-binding-definition.json').read_bytes())
+        plan['storage']['slots']['audits'] = dict(plan['storage']['slots']['events'], path='example/audits.jsonl')
+        plan['operations']['append-audit'] = copy.deepcopy(plan['operations']['append'])
+        plan['operations']['append-audit']['effects'][0]['slot'] = 'audits'
+        plan['projections']['audits'] = copy.deepcopy(plan['projections']['all'])
+        plan['projections']['audits']['slot'] = 'audits'
+        definition.write_text(json.dumps(plan))
+        (owner / 'importer.py').write_text('owner fixture constructor')
+        (owner / 'migration.json').write_text(json.dumps({
+            'schema': 'ledger-owner-migration/v1', 'definition': 'definition.json',
+            'retired_sources': ['.retired-two-slot.jsonl'], 'importer': 'importer.py'}))
+        expected = {'events': [{'kind': 'historical', 'value': 1}],
+                    'audits': [{'kind': 'independent-audit', 'value': 7}]}
+        source = self.repo / '.retired-two-slot.jsonl'
+        source.write_text(json.dumps(expected) + '\n')
+        with self.assertRaises(module.MigrationError) as raised:
+            self.apply(skill_root=skills)
+        staged = raised.exception.value
+        self.assertEqual(staged['status'], 'owner-import-required', staged)
+        selected = staged['context']
+        requested = staged['owner_imports'][0]
+        self.assertEqual(len(requested['sources']), 1)
+        archived = Path(requested['sources'][0]['source'])
+        self.assertEqual(archived.read_bytes(), source.read_bytes())
+        self.assertEqual(hashlib.sha256(archived.read_bytes()).hexdigest(),
+                         requested['sources'][0]['source_sha256'])
+        original = json.loads(archived.read_text())
+        for slot, operation, projection in [('events', 'append', 'all'),
+                                            ('audits', 'append-audit', 'audits')]:
+            for record in original[slot]:
+                self.native(selected['native_args'], 'transact', '--operation', operation,
+                            '--input', 'event=-', '--param', 'request=import-' + slot,
+                            packet=record, definition=definition)
+            projected = self.native(selected['native_args'], 'project', '--projection', projection,
+                                    definition=definition)['data']
+            self.assertEqual(projected, expected[slot])
+        health = self.native(selected['native_args'], 'doctor', definition=definition)
+        revisions = {slot['logical_ref']: slot['revision'] for slot in health['slots']}
+        self.assertEqual(len(set(revisions.values())), 2)
+        receipt = {'schema': 'two-slot-owner-import/v1', 'status': 'verified',
+                   'definition_path': str(definition), 'store_root': selected['store_root'],
+                   'store_id': selected['store_id'], 'authority_granted': False,
+                   'full_record_parity_verified': True,
+                   'definition': health['definition'],
+                   'sources': requested['sources'], 'revisions': revisions}
+        receipt_path = self.root / 'two-slot-receipt.json'
+        for altered in [{}, {**revisions, 'example/audits.jsonl': 'wrong'},
+                        {**revisions, 'unknown': None}, {**revisions, 'example/events.jsonl': None}]:
+            receipt_path.write_text(json.dumps(dict(receipt, revisions=altered)))
+            with self.assertRaisesRegex(module.MigrationError, 'OwnerImportRevisionMismatch'):
+                self.apply(skill_root=skills, import_receipts=[receipt_path])
+            self.assertFalse((self.root / 'home/catalog.json').exists())
+        receipt_path.write_text(json.dumps(receipt))
+        completed = self.apply(skill_root=skills, import_receipts=[receipt_path])
+        self.assertEqual(completed['status'], 'verified')
+        self.assertEqual(completed['context']['store_id'], selected['store_id'])
+        self.assertFalse(self.apply(skill_root=skills)['storage_mutated'])
+        for slot, projection in [('events', 'all'), ('audits', 'audits')]:
+            self.assertEqual(self.native(selected['native_args'], 'project', '--projection', projection,
+                                         definition=definition)['data'], expected[slot])
+
     def test_all_actual_owners_preserve_independent_full_records(self):
         self.capture()
         history = module.load_module(SKILLS / 'learnings/tests/test_native_history.py')

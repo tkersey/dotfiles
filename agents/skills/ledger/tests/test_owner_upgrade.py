@@ -224,6 +224,73 @@ class OwnerUpgradeTests(unittest.TestCase):
                                        read_only=True, binary=self.binary)
         self.assertEqual(direct['store_root'], context['store_root'])
 
+    def test_healthy_owner_rejects_pending_sibling_publication(self):
+        context, other = self.binding_family()
+        pending = other / '.ledger/.transactions/dtx-unresolved'
+        pending.mkdir(parents=True)
+        before = self.tree_bytes(self.root)
+        for read_only in (True, False):
+            with self.subTest(read_only=read_only), self.assertRaisesRegex(
+                    custody.MigrationError, 'TransactionRecoveryRequired'):
+                custody.owner_context(self.repo, self.definition, read_only=read_only,
+                                      maintain=not read_only, binary=self.binary)
+            self.assertEqual(self.tree_bytes(self.root), before)
+        self.assertEqual(self.ctx.resolve(self.repo)['store_id'], context['store_id'])
+
+    def test_missing_owner_rejects_first_pending_source_publication(self):
+        context = self.ctx.resolve(self.repo, initialize=True)
+        pending = self.repo / '.ledger/.transactions/dtx-first'
+        pending.mkdir(parents=True)
+        before = self.tree_bytes(self.root)
+        for read_only in (True, False):
+            with self.subTest(read_only=read_only), self.assertRaisesRegex(
+                    custody.MigrationError, 'TransactionRecoveryRequired'):
+                custody.owner_context(self.repo, self.definition, read_only=read_only,
+                                      maintain=not read_only, binary=self.binary)
+            self.assertEqual(self.tree_bytes(self.root), before)
+        self.assertFalse((Path(context['store_root']) / self.slot).exists())
+
+    def test_healthy_owner_requires_coordination_for_copied_sibling(self):
+        context, other = self.binding_family()
+        for path in (other / '.ledger').rglob('*.cas.lock.advisory'):
+            path.unlink()
+        before = self.tree_bytes(self.root)
+        for read_only in (True, False):
+            with self.subTest(read_only=read_only), self.assertRaisesRegex(
+                    custody.MigrationError, 'PreparationRequiresQuiescence'):
+                custody.owner_context(self.repo, self.definition, read_only=read_only,
+                                      maintain=not read_only, binary=self.binary)
+            self.assertEqual(self.tree_bytes(self.root), before)
+        self.assertEqual(self.ensure(confirm_no_writers=True)['store_id'], context['store_id'])
+        self.assertEqual(self.tree_bytes(self.root), before)
+
+    def test_managed_workspace_still_checks_longer_sibling_history(self):
+        subprocess.run(['git', '-C', str(self.repo), 'init', '-q'], check=True)
+        subprocess.run(['git', '-C', str(self.repo), '-c', 'user.name=Fixture',
+            '-c', 'user.email=fixture@example.invalid', 'commit', '--allow-empty', '-qm', 'fixture'], check=True)
+        other = self.root / 'other'
+        subprocess.run(['git', '-C', str(self.repo), 'worktree', 'add', '--detach', str(other)],
+                       check=True, capture_output=True)
+        self.capture(['--repo', str(self.repo)])
+        shutil.copytree(self.repo / '.ledger', other / '.ledger')
+        shutil.rmtree(other / '.ledger/.transactions')
+        packet = json.loads(self.packet.read_text())
+        packet['record']['observed_fact'] += ' A later sibling record.'
+        changed = self.root / 'changed.json'
+        changed.write_text(json.dumps(packet))
+        self.capture(['--repo', str(other)], changed)
+        store_id = 'a' * 32
+        (self.repo / '.ledger-root.json').write_text(json.dumps({
+            'schema': 'ledger-storage-root/v1', 'store_id': store_id}))
+        self.ctx.register_root(self.repo, store_id, self.repo)
+        before = self.tree_bytes(self.root)
+        with self.assertRaisesRegex(custody.MigrationError, 'OwnerPreparationRequired'):
+            custody.owner_context(self.repo, self.definition, read_only=True, binary=self.binary)
+        with self.assertRaises(custody.MigrationError) as raised:
+            self.ensure()
+        self.assertEqual(raised.exception.value['preparation']['outcome'], 'reconciliation-required')
+        self.assertEqual(self.tree_bytes(self.root), before)
+
     def test_covered_family_ignores_retained_retired_sources_and_archives(self):
         context, other = self.binding_family()
         manifest = self.definition.parents[2] / 'migration.json'
@@ -431,6 +498,27 @@ class OwnerUpgradeTests(unittest.TestCase):
         self.assertEqual(context['store_id'], registered['store_id'])
         self.assertEqual((store / self.slot).read_bytes(), original)
 
+    def test_missing_archived_selected_evidence_is_not_an_empty_owner(self):
+        registered = self.ctx.resolve(self.repo, initialize=True)
+        self.capture(registered['native_args'])
+        store = Path(registered['store_root'])
+        snapshot = custody.inventory([store], [], slots=[str(self.slot.relative_to('.ledger'))])
+        archive = store / 'legacy-archive/fixture'
+        custody.copy_inventory(snapshot, archive)
+        (archive / 'manifest.json').write_text(json.dumps({
+            'schema': 'ledger-legacy-archive/v1', 'sources': snapshot}))
+        for root in (store, archive / 'worktree-0'):
+            (root / self.slot).unlink()
+            shutil.rmtree(root / '.ledger/.bindings')
+        before = self.tree_bytes(self.root)
+        for read_only in (True, False):
+            with self.subTest(read_only=read_only), self.assertRaisesRegex(
+                    custody.MigrationError, 'PreparationArchiveEvidenceMissing'):
+                custody.owner_context(self.repo, self.definition, read_only=read_only,
+                                      maintain=not read_only, binary=self.binary,
+                                      confirm_no_writers=not read_only)
+            self.assertEqual(self.tree_bytes(self.root), before)
+
     def test_interrupted_registered_publication_resumes_from_preserved_sources(self):
         registered = self.ctx.resolve(self.repo, initialize=True)
         self.capture(['--repo', str(self.repo)])
@@ -479,7 +567,7 @@ class OwnerUpgradeTests(unittest.TestCase):
         subprocess.run(['git', '-C', str(self.repo), 'worktree', 'add', '--detach', str(other)], check=True, capture_output=True)
         registered = self.ctx.resolve(self.repo, initialize=True)
         self.capture(['--repo', str(other)])
-        with self.assertRaisesRegex(custody.MigrationError, 'OwnerPreparationRequired'):
+        with self.assertRaisesRegex(custody.MigrationError, 'PreparationRequiresQuiescence'):
             custody.owner_context(self.repo, self.definition, read_only=True, binary=self.binary)
         self.assertFalse((Path(registered['store_root']) / self.slot).exists())
         with self.assertRaisesRegex(custody.MigrationError, 'PreparationRequiresQuiescence'):

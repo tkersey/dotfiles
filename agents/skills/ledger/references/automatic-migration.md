@@ -149,7 +149,11 @@ native receipts, and verifies full-record parity and native health. Save its
 scoped result and resume the same native command with `--owner-import-receipt
 <absolute-result-file>` for each requested owner. The receipt must bind the exact
 archived source hashes, target identity, definition closure, and parity result;
-a generic health result alone does not establish imported-record equivalence. Source/worktree inventories are rechecked
+a one-slot owner retains its scalar `revision`. A multi-slot owner supplies
+`revisions`, an object mapping every declared slot's relative path to its current
+native revision, or null when missing, with no additional keys. Each slot is
+validated against current native custody. A generic health result alone does not
+establish imported-record equivalence. Source/worktree inventories are rechecked
 before publication; native validation must pass. The personal
 catalog is published last. No source is deleted, no timestamp winner is selected, and no
 histories are concatenated. Divergent or additional managed-versus-local history

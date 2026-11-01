@@ -68,6 +68,39 @@ class ArchiveRepairTests(unittest.TestCase):
         (self.archive / 'manifest.json').write_text('invalid')
         self.assertNotIn('preparation', self.repair())
 
+    def test_archive_repair_cannot_install_unbound_live_history(self):
+        workspace = self.root / 'workspace'
+        workspace.mkdir()
+        shutil.copytree(self.store / '.ledger', workspace / '.ledger')
+        self.ctx.register_root(self.store, self.context['store_id'], workspace)
+        self.slot.unlink()
+        shutil.rmtree(self.store / '.ledger/.bindings')
+        shutil.rmtree(self.store / 'legacy-archive')
+        before = {str(path.relative_to(self.root)): path.read_bytes()
+                  for path in self.root.rglob('*') if path.is_file()}
+        command = custody.owner_command(workspace, self.definition, binary=self.binary, mode='--repair-archive')
+        result = subprocess.run(command, capture_output=True, timeout=15)
+        self.assertNotEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertEqual(json.loads(result.stdout)['error_code'], 'ArchiveRepairRequiresBoundMissingSlot')
+        self.assertEqual(before, {str(path.relative_to(self.root)): path.read_bytes()
+                                 for path in self.root.rglob('*') if path.is_file()})
+
+    def test_archive_repair_requires_an_archive_even_with_matching_live_copy(self):
+        workspace = self.root / 'workspace'
+        workspace.mkdir()
+        shutil.copytree(self.store / '.ledger', workspace / '.ledger')
+        self.ctx.register_root(self.store, self.context['store_id'], workspace)
+        self.slot.unlink()
+        shutil.rmtree(self.store / 'legacy-archive')
+        before = {str(path.relative_to(self.root)): path.read_bytes()
+                  for path in self.root.rglob('*') if path.is_file()}
+        command = custody.owner_command(workspace, self.definition, binary=self.binary, mode='--repair-archive')
+        result = subprocess.run(command, capture_output=True, timeout=15)
+        self.assertNotEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertEqual(json.loads(result.stdout)['error_code'], 'ArchiveRepairRequiresArchiveEvidence')
+        self.assertEqual(before, {str(path.relative_to(self.root)): path.read_bytes()
+                                 for path in self.root.rglob('*') if path.is_file()})
+
     def test_direct_repair_of_empty_workspace_requires_and_accepts_quiescence(self):
         workspace = self.root / 'workspace'
         workspace.mkdir()

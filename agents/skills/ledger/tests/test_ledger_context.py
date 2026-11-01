@@ -688,6 +688,18 @@ class LedgerContextTests(unittest.TestCase):
     def test_cold_adoption_rejects_sibling_missing_historical_definition(self):
         self.assert_cold_rejects_damaged_sibling(orphan=False)
 
+    def test_cold_adoption_rejects_pending_sibling_publication(self):
+        definition = self.cold_event_definition()
+        self.cold_event_append(definition, self.other, 'shared')
+        shutil.copytree(self.other / '.ledger', self.repo / '.ledger')
+        pending = self.repo / '.ledger/.transactions/dtx-unresolved'
+        pending.mkdir()
+        before = self.cold_family_snapshot()
+        with self.assertRaisesRegex(context.ContextError, 'TransactionRecoveryRequired'):
+            self.cold_adopt(definition)
+        self.assertEqual(self.cold_family_snapshot(), before)
+        self.assertFalse(context.storage_home().exists())
+
     def test_cold_adoption_preserves_multislot_prefix_and_idempotency(self):
         definition = self.cold_event_definition(multiple=True)
         self.cold_event_append(definition, self.other, 'shared')
