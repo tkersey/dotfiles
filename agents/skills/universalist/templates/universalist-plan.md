@@ -1,8 +1,8 @@
 # Universalist Plan
 
 Use only when the Universalist decision must remain independently durable.
-When Actuating owns the current Construction, carry the nomination and
-adjudication there instead of allocating this plan.
+For supporting analysis, carry the contribution in the requesting task's
+existing evidence instead of allocating this plan.
 
 This template is a standalone storage-consumer format, not a runtime reporting
 requirement. Preserve its headings for the owner definition; reuse evidence and
@@ -21,7 +21,7 @@ current contract fingerprint; historical receipts keep their original attributio
 The existing schema, root-receipt/status anchors, and Ledger operations are unchanged.
 
 ## Track:
-## Composition context: standalone / Actuating-composed
+## Composition context: standalone
 ## Decision owner:
 ## Decision carrier:
 ## Trigger evidence:

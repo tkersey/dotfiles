@@ -40,7 +40,8 @@ forcing one of these completed outcomes or a terminal receipt. Pause only the
 affected mutation; resolve available evidence under the entrypoint's authority
 rules and continue independent authorized work.
 
-Before Actuating selects a target architecture, revise the nomination in
-place. After implementation begins, return material evidence to Actuating;
-Universalist must not reopen the target directly. Never overwrite an existing
-root receipt.
+Revise affected conclusions when their premises change. In supporting analysis,
+return the material evidence to the requesting task without independently changing
+its selected target or enlarging its authority. Under standalone task authority,
+reconsider only the affected decision and its dependents. Never overwrite an
+existing root receipt.

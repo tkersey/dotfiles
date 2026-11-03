@@ -52,13 +52,13 @@ after coordination and token costs.
 
 ## Generative common path
 
-Inside Actuating, load [actuating-composition.md](actuating-composition.md); Actuating
-owns selection, experiments, mutation, and closure. That adapter owns Actuating's
-presentation and inquiry composition; it does not waive claim-specific evidence.
-Inside Architectonic, instead
-load [architectonic-composition.md](architectonic-composition.md) for a read-only
-nomination in its existing assessment. Neither composition adopts a standalone
-plan or root receipt.
+Within an enclosing task, contribute directly to its existing inquiry and use
+its requested presentation. Supporting analysis grants no additional selection,
+experiment, mutation, or completion authority and creates no duplicate plan or
+root receipt. Applicable comparison and claim-specific evidence remain required.
+Inside Architectonic, load
+[architectonic-composition.md](architectonic-composition.md) for its existing
+read-only nomination contract.
 
 Ground the inquiry in required uses and observations, permitted future behavior,
 actual code or attributed proposed design, effects, authority, resources, and
@@ -180,7 +180,7 @@ Do not load the whole corpus or every linked method at entry.
 Resemblance can suggest a hypothesis, never prove it. An unknown owner or typed
 hole may be the object of inquiry. Missing external authority or unavailable facts
 remain debt, not permission to invent them. Consequentiality alone never requires
-storage; standalone durability never loads inside Actuating or Architectonic.
+storage; supporting analysis does not activate standalone durability.
 
 ## Route discipline
 
@@ -214,15 +214,13 @@ clause identifiers. Change semantic policy, contract, and durable plan template
 together. Existing identifiers are retained; new runs bind the current fingerprint,
 while historical receipts remain attributed to their original contracts.
 
-<a id="actuating-composition"></a>
-
 <a id="architectonic-composition"></a>
 <a id="execution-time-reclassification-uni-reclassify"></a>
 
 ## Composition and reclassification
 
-Inside Actuating, contribute directly under its adapter; `candidate`,
-`preserve-incumbent`, `unresolved`, and `obstructed` remain optional presentation.
+Contribute in the requested form; `candidate`, `preserve-incumbent`, `unresolved`,
+and `obstructed` are useful supporting results, not mandatory presentation.
 Inside Architectonic, return those results under its unchanged read-only adapter.
 Supply requirements, observations, evidence, and constraints; owner, axis, and
 typed hole can be derived rather than required on entry. The receiving workflow
@@ -247,8 +245,8 @@ In standalone work, obtain missing evidence through the smallest relevant
 inspection or already-authorized safe discriminator. Uninspected code is not
 unavailable evidence. Genuinely missing access, evidence, or authority yields debt
 and a next discriminator, not invented policy, capability, coherence, or a winner.
-Do not run unauthorized or external-effect experiments. Inside Actuating, return
-the discriminator; Actuating owns experimentation and review-epoch rules. Block
+Do not run unauthorized or external-effect experiments. Return a proposed
+discriminator when executing it is outside the current task's authority. Block
 only the affected decision and continue independent authorized work.
 
 ## Output contract

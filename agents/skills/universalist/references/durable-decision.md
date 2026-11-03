@@ -1,19 +1,18 @@
 # Independently Durable Universalist Decision
 
-This module is normative only when a consequential Universalist decision must
-remain independently addressable outside a current Actuating Construction.
+This module is normative only when a consequential standalone Universalist
+decision must remain independently addressable.
 
 ## Disclosure contract
 
-**Load when:** the consequential analysis is complete, no current Actuating
-Construction will carry the complete nomination, adjudication, proof, and
-retirement decision, and either the user requests a durable record or
-standalone, cross-session, multi-actor, migration, or supersession work must
-address the decision directly.
+**Load when:** the consequential standalone analysis is complete, no existing
+task record carries the complete decision, proof, and retirement obligations,
+and either the user requests a durable record or cross-session, multi-actor,
+migration, or supersession work must address the decision independently.
 
-**Do not load when:** Actuating owns the current Construction, the seam is
-routine or uncontested, materiality exists without an independent durability
-need, or the user asked only for analysis.
+**Do not load when:** this is a supporting contribution to an enclosing workflow,
+the seam is routine or uncontested, materiality exists without an independent
+durability need, or the user asked only for analysis.
 
 **Return:** one Ledger-addressed Universalist plan and, after standalone root
 adjudication, exactly one root `SDR-v1` receipt.

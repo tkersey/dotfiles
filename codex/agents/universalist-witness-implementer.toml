@@ -1,5 +1,5 @@
 name = "universalist-witness-implementer"
-description = "Single-writer implementer for one selected witness seam under an approved Universalist or Actuating decision, including double-category squares, locality, description composition, and Tambara framing."
+description = "Single-writer implementer for one selected witness seam under a selected construction authorized by the current task, including double-category squares, locality, description composition, and Tambara framing."
 model_reasoning_effort = "high"
 sandbox_mode = "workspace-write"
 nickname_candidates = ["Builder", "Witness", "Cut"]

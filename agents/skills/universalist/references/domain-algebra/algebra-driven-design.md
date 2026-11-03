@@ -290,8 +290,8 @@ not `UNI-OBSTRUCT`.
 A lawful structure requires its laws and interpretation. A claimed universal
 construction additionally requires the relevant diagram, admissible maps and
 competitors, factorization, and uniqueness argument. One interpreter, opacity,
-or finite tests do not establish those claims. Inside Actuating, return only the
-decision-changing derivation: Universalist nominates; Actuating selects.
+or finite tests do not establish those claims. In supporting analysis, return the
+decision-changing derivation without independently selecting a target.
 
 The tile algebra's closure does not promise infallible external operations.
 Admitted compositions need defined semantics, including required failures,

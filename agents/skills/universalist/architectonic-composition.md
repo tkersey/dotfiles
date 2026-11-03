@@ -7,8 +7,8 @@ owns scope, assignment, adjudication, recommendation, and coverage. This binding
 adds no trigger, route, proof profile, or standalone decision authority; all
 applicable entry and decision-contract obligations remain.
 
-Read this binding instead of the Actuating composition or standalone disposition
-format. Reuse the supplied source-bound context and any equivalent challenger.
+Read this binding for the selected architectural assessment instead of the
+standalone disposition format. Reuse the supplied source-bound context and any equivalent challenger.
 The assigned nomination owner supplies the question, accepted requirements and
 observations, current constraints, evidence, and incumbent when one exists.
 Owner, axis, operations, and typed hole may be provisional or derived during inquiry.
@@ -55,8 +55,8 @@ performance, or distributed correctness. Preserve claim-appropriate evidence.
 Architectonic must challenge the nomination and its interactions with other
 nominations; neither a route name nor a supporting result grants acceptance,
 review credit, selection for implementation, or mutation authority. Do not run a
-nested team, invoke Actuating, create a durable Ledger decision/plan/root receipt,
-or edit code or design. This assessment makes recommendations, not independently
+nested team, start an implementation workflow, create a durable Ledger
+decision/plan/root receipt, or edit code or design. This assessment makes recommendations, not independently
 adopted decisions: standalone durability mechanics do not activate merely because
 the recommendation is consequential or will appear in a report.
 

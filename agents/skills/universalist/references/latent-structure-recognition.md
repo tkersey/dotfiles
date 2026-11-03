@@ -63,8 +63,8 @@ Syntactic duplication alone is not enough. Reuse the common path's derivation ra
 ## Recognition packet
 
 The fields below guide applicable evidence, not mandatory headings or a separate
-report. Reuse the common-path or receiving-workflow argument; the Actuating adapter
-owns presentation when composed. The techniques are available ways to establish
+report. Reuse the common-path or receiving-workflow argument and the requested
+presentation. The techniques are available ways to establish
 that evidence, not a requirement to repeat work already discharged.
 
 ```text

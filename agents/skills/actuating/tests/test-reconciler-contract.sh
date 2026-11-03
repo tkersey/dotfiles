@@ -146,7 +146,7 @@ for (const obligation of ['admission and transition preservation','source-derive
   'migration and retirement','residual obligations']) assert(compilation.required_obligation_classes.includes(obligation));
 assert.match(c.construction_selection.causal_target, /construction or transition/);
 assert.match(c.construction_selection.discriminator_target, /valid-state transition/);
-const universalist = [text('../universalist/SKILL.md'), text('../universalist/actuating-composition.md')].join('\n');
+const universalist = [text('../universalist/SKILL.md'), text('universalist-composition.md')].join('\n');
 const reduction = text('../reduce/SKILL.md').split('## Actuating composition')[1].split('## Implementation mode')[0];
 assert(!universalist.includes('Selected counterexample theory:'));
 assert(!universalist.includes('single bounded co-refinement'));

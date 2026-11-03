@@ -74,9 +74,9 @@ supply missing external atomicity. A contradiction may require changing the mode
 states, operations, observation, or interpretation rather than patching the code to
 conform to a false model. Accepted requirements remain binding.
 
-In Actuating, return the deciding discriminator through its existing argument;
-Actuating owns experiments, mutation, and review epochs. In read-only analysis,
-propose rather than execute an experiment. A new premise does not authorize a
+Return the deciding discriminator through the existing argument. Its execution
+must already be authorized by the current task. In read-only analysis, propose
+rather than execute an experiment. A new premise does not authorize a
 production fault injection, nested workflow, or separate evidence store.
 
 ## Claim-directed correspondence

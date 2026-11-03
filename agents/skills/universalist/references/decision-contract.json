@@ -4,7 +4,7 @@
     "skill": {
       "name": "universalist",
       "kind": "mixed",
-      "source_fingerprint": "universalist-generative-derivation-v18.0-v2"
+      "source_fingerprint": "universalist-generative-derivation-v18.0-v3"
     },
     "triggers": [
       {
@@ -75,7 +75,7 @@
       },
       {
         "trigger_id": "UNI-DURABLE",
-        "description": "A consequential standalone Universalist decision must remain independently addressable outside an active Actuating or Architectonic run.",
+        "description": "A consequential standalone Universalist decision must remain independently addressable, rather than serving as a supporting contribution to an enclosing workflow.",
         "cue_literals": [
           "independently durable",
           "cross-session handoff",
@@ -85,7 +85,7 @@
         "cue_regexes": [],
         "exclusions": [
           "The receiving workflow can reconstruct and adjudicate the decision within its current run.",
-          "Actuating or Architectonic composition; neither adopts a standalone durable decision.",
+          "Supporting analysis in an enclosing workflow does not adopt a standalone durable decision.",
           "Decision materiality without an independent durability need."
         ]
       }
@@ -145,7 +145,7 @@
           "a grounded semantic task activates inquiry before a boundary defect, typed hole, or candidate is named",
           "owner, carrier, operations, axis, and typed hole may be outputs of inquiry",
           "an accepted interface does not suppress discovery of an internal algorithm or representation",
-          "Actuating owns its invocation point and receives one nomination",
+          "the requesting workflow owns its invocation point and receives the supported contribution",
           "native simplicity governs realization rather than limiting mathematical derivation",
           "an equivalent sufficient receiving-workflow derivation is reused without a second pass",
           "applicable evidence is conveyed once using the receiving workflow representation without duplicate packets",
@@ -190,14 +190,14 @@
         ],
         "success_signals": [
           "incomparable minima remain underdetermined",
-          "Universalist nominates while Actuating selects",
+          "supporting analysis contributes without independently selecting the requesting workflow's target",
           "required-valid behavior is preserved as well as invalid behavior excluded",
           "a complete sufficient interface removes evidenced caller knowledge or lifecycle work and localizes a supported change",
           "representative use and change evidence refine the existing comparison without new artifacts",
           "a sophisticated derivation may lower to an ordinary construction without a framework"
         ],
         "failure_signals": [
-          "Universalist selects or reopens Actuating target architecture",
+          "supporting analysis independently selects or reopens the requesting workflow's target architecture",
           "candidate wins by omitted obligations",
           "interacting state, effect, resource, or observation obligations are certified only in isolation",
           "relocation, fewer exports, or hidden configuration preserves the same consumer obligations but is credited as reduction",
@@ -463,14 +463,14 @@
         ],
         "success_signals": [
           "unchanged dispositions are reused silently",
-          "Actuating receives changed evidence and decides whether architecture closure still holds",
+          "the requesting decision-maker receives changed evidence and determines its consequence for the selected target",
           "Git outranks stale nomination",
           "changed hypotheses reopen affected derivations while required laws remain binding and unaffected proofs are reused"
         ],
         "failure_signals": [
           "mechanical refinement creates a new Universalist pass",
           "mutation continues under a stale nomination",
-          "Universalist independently reopens Actuating architecture"
+          "supporting analysis independently reopens the requesting workflow's architecture"
         ],
         "rationale": "Nominations are revisable proof leases over current evidence, not recurring ceremony."
       },
@@ -492,13 +492,13 @@
           "current contract fingerprint"
         ],
         "success_signals": [
-          "durability is outside Actuating composition and scoped to one changed seam"
+          "durability is standalone, independently required, and scoped to one changed seam"
         ],
         "failure_signals": [
-          "durable plan allocated inside Actuating",
+          "a supporting contribution allocates a duplicate standalone durable plan",
           "duplicate worker receipts"
         ],
-        "rationale": "Standalone durability preserves attribution without creating an Actuating control plane."
+        "rationale": "Standalone durability preserves attribution without creating a second workflow control plane."
       }
     ],
     "instrumentation": {

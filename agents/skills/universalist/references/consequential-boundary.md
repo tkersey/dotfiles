@@ -26,10 +26,10 @@ comparison, native artifact, enforcement and residual ownership, transition when
 needed, falsifier, invalidators, and claim strength. Missing evidence and adequate
 but incomparable candidates remain unresolved; do not manufacture a final route.
 
-In Actuating composition this module nominates; Actuating selects. Its adapter
-owns presentation across every loaded reference: the templates below are evidence
+For supporting analysis, return the argument without independently selecting a
+target. Use the requesting task's presentation: the templates below are evidence
 guides, not additional packets or mandatory headings. Applicable proof remains
-required, and existing receiving-workflow evidence may discharge it by reference.
+required, and existing task evidence may discharge it by reference.
 
 
 ## World, boundary, and context inventory
@@ -241,7 +241,7 @@ These are applicable evidence obligations, not a serialization format. Reuse
 existing facts and proof references. Explain nonapplicability when it affects the
 claim; do not emit boilerplate fields or invent structures to populate a template.
 The durable plan retains its exact consumer-required shape only when its independent
-storage gate fires outside Actuating.
+storage gate fires for a standalone decision.
 
 ### Construction surface
 
@@ -472,7 +472,8 @@ and obstruction evidence conflict, report the conflict explicitly.
 Use [reclassification.md](../reclassification.md) before the next affected mutation
 when new evidence changes the decision's owner, context, laws, observations,
 enforcement, residuals, route, or decomposition. Reuse unchanged decisions silently.
-Actuating alone may reopen its target; never overwrite an existing root receipt.
+Supporting analysis does not independently reopen the requesting task's target;
+never overwrite an existing root receipt.
 
 ## Route assignment
 
@@ -486,8 +487,8 @@ Assign a route after lowering:
   name itself does not assert a universal property.
 - `UNI-OBSTRUCT` — no honest representable or effective artifact remains.
 
-In Actuating composition, this is a nomination. Standalone root authority may
-select.
+In supporting analysis, this is a contribution to the requesting decision.
+Standalone root authority may select within the authorized task.
 
 
 ## Scope profiles
@@ -520,7 +521,7 @@ route, authority grant, or reason to widen the seam.
 ## Return packet
 
 Return the material decision and evidence once, in the receiving workflow's form.
-Analysis, implementation, and a bounded Actuating nomination have different
+Analysis, implementation, and a bounded supporting contribution have different
 completion criteria; honor the already-authorized task instead of treating one
 verified seam as a universal stopping rule. Do not include unloaded mechanics,
 unrelated axes, or a durable plan without independent durability need.

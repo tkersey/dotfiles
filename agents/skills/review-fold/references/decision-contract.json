@@ -4,7 +4,7 @@
     "skill": {
       "name": "review-fold",
       "kind": "mixed",
-      "source_fingerprint": "review-fold-counterexample-corpus-v1-native-context-shared-runtime-baseline"
+      "source_fingerprint": "review-fold-counterexample-corpus-v1-task-relative-handoff"
     },
     "triggers": [
       {
@@ -197,7 +197,7 @@
           "absence in incomplete history is labeled first-observed",
           "Review Fold selects architecture"
         ],
-        "rationale": "Actuating receives bounded observational evidence rather than a retained class register."
+        "rationale": "The requesting task receives bounded observational evidence rather than a retained class register."
       },
       {
         "clause_id": "RF-POST-ELIMINATION-001",
@@ -220,7 +220,7 @@
           "same-law disjoint families do not falsify the scoped claim",
           "strengthening does not retroactively falsify the Goal",
           "new requirement requests Goal reopening",
-          "Actuating retains revocation authority"
+          "the claim's authorized decision-maker retains revocation authority"
         ],
         "failure_signals": [
           "Review Fold revokes or preserves the theory itself",
@@ -229,7 +229,7 @@
           "same law alone revokes a family-scoped claim",
           "out-of-horizon evidence is treated as falsifying the claim"
         ],
-        "rationale": "Review Fold reports the falsifier relation; Actuating owns its architectural consequence."
+        "rationale": "Review Fold reports the falsifier relation; the enclosing task owns its architectural consequence."
       },
       {
         "clause_id": "RF-COUNTEREXAMPLE-CORPUS-001",
