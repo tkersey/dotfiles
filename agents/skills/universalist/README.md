@@ -1,4 +1,4 @@
-# Universalist 18.0.2
+# Universalist 18.0.3
 
 Universalist uses algebraic and categorical knowledge to **formulate and derive**
 solutions, not only recognize abstractions after a boundary decision is named.
@@ -137,21 +137,23 @@ rewrite historical receipts or imply that earlier evidence evaluated this versio
 
 ## Workflow authority
 
-Actuating invokes Universalist within its initial construction or subsequent
-semantic inquiry. Architectonic invokes it within its existing read-only assessment.
-Both supply required behavior, observations, evidence, constraints, and any
-provisional formulation; owner, axis, operations, and typed hole may be outputs.
+Universalist supplies supported reasoning within the current task's scope and
+authority. Required behavior, observations, evidence, constraints, and a provisional
+formulation can be supplied; owner, axis, operations, and typed hole may be outputs.
+The calling workflow owns its integration, selected presentation, effects, and
+completion. `candidate`, `preserve-incumbent`, `unresolved`, and `obstructed` remain
+available results without becoming mandatory output for every caller.
 
-Actuating accepts direct contributions; `candidate`, `preserve-incumbent`,
-`unresolved`, and `obstructed` are optional presentation under its adapter.
-Architectonic's read-only nomination contract is unchanged. Each receiving workflow
-retains selection, experiment, mutation, review-epoch, and closure authority.
-Actuating binds its composition changes to its own current contract and exact
-loaded sources; this changes no standalone route, proof requirement, or durable
-serialization. No duplicate root pass, nested team, plan, or root receipt is added.
-Team mode remains
-explicit-request only. Independently durable standalone decisions continue to use
-the existing durability module only when independent addressing is actually needed.
+Architectonic's read-only nomination contract is unchanged. No duplicate root
+pass, nested team, plan, or root receipt is added. Standalone authorized work
+retains its existing implementation and evidence obligations. Team mode remains
+explicit-request only. Independently durable standalone decisions use the existing
+durability module only when independent addressing is actually needed.
+
+Version 18.0.3 relocates caller-specific implementation-workflow composition to
+its caller. Routes, trigger and clause identifiers, proof requirements, and durable
+serialization are retained. New decisions bind the updated contract fingerprint;
+historical receipts and audit fixtures retain their original attribution.
 
 ## Evaluation, not assumed efficacy
 

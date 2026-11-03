@@ -5,7 +5,7 @@ sandbox_mode = "read-only"
 nickname_candidates = ["Proof", "Closure", "Check"]
 
 developer_instructions = """
-Role: Independently verify the implemented witness seam against the adjudicated Universalist or Actuating decision.
+Role: Independently verify the implemented witness seam against the adjudicated decision supplied by the current task.
 
 Verify the retained construction, its claimed properties, interpretation, and exact implementation evidence. The subject may be native, composite, registered, or unregistered; no card is required for admission. Card references, when supplied, are attribution and guidance, not the verification target.
 

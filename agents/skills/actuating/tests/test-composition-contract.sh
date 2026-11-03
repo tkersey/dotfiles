@@ -68,8 +68,9 @@ for (const path of ['SKILL.md',
   const source = text(path);
   for (const result of nominationResults) assert(source.includes(result),`${path}: missing ${result}`);
 }
-assert(text('../universalist/SKILL.md').includes('[actuating-composition.md](actuating-composition.md)'), 'composition guide not routed');
-const universalist = section(text('../universalist/actuating-composition.md'),'Actuating composition');
+assert(text('architecture.md').includes('[Universalist composition](universalist-composition.md)'), 'caller-owned composition guide not routed');
+assert(!/\bActuating\b|\$actuating|actuating-composition\.md/.test(text('../universalist/SKILL.md')), 'Universalist entry imports its implementation caller');
+const universalist = section(text('universalist-composition.md'),'Actuating composition');
 assert.match(universalist,/Missing evidence or incomparable\s+adequate candidates remain unresolved/);
 assert.equal(policy.universalist_compilation.nomination_result_required,false);
 assert.match(universalist,/not required output or a new route or mode/);
@@ -77,7 +78,7 @@ const fold = text('../review-fold/SKILL.md');
 const admission = text('../review-fold/references/admission.md');
 const corpus = text('../review-fold/references/counterexample-corpus.md');
 assert.match(fold,/corpus_write_authorized: true \| false # enclosing task; omitted means false/);
-assert.match(section(fold,'Effect authority'),/always false in\s+Actuating `analyze`/);
+assert.match(section(fold,'Effect authority'),/enclosing analysis\s+route supplies false when it does not authorize semantic capture/);
 assert.match(section(fold,'Procedure'),/When `corpus_write_authorized` is true, capture/);
 assert.match(section(corpus,'Capture after folding'),/corpus_write_authorized = true/);
 assert.match(section(corpus,'Effect authority'),/not\s+`ledger transact --operation capture`/);

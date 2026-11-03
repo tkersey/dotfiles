@@ -5,7 +5,7 @@ accepted law.
 
 ## Purpose
 
-Persist the monotone semantic evidence that Actuating exists to compile:
+Persist admitted counterexamples with their original authority and provenance:
 
 ```text
 exact owner-issued observation
@@ -30,9 +30,10 @@ Review Fold
 review-fold/counterexample-corpus
   preserves that immutable semantic admission and provenance
 
-Actuating
-  reprojects current applicability, recurrence, family, owner, cut, carrier,
-  route, and closure from the corpus plus current owner facts
+The requesting task
+  consumes the current fold and owner facts to decide any family, owner, cut,
+  carrier, route, and closure within its authority; stored rows do not supply
+  those decisions
 ```
 
 A stored row never proves that the witness remains applicable or belongs to the
@@ -43,8 +44,9 @@ current family. Persist counterexamples; recompile their meaning.
 New semantic capture requires `corpus_write_authorized: true` from the enclosing
 task. Omitted or false authority permits projection and adjudication, not
 `ledger transact --operation capture`, provisioning, or source-memory writes.
-Actuating `analyze` always supplies false. This flag does not gate Ledger's
-automatic custody preparation, including its native maintenance transactions.
+The caller supplies false when its route does not authorize semantic capture.
+This flag does not gate Ledger's automatic custody preparation, including its
+native maintenance transactions.
 Prepare custody before projection or capture without requesting separate approval.
 Corpus ownership cannot grant new semantic captures or unrelated effects.
 
@@ -220,8 +222,8 @@ counterexample_corpus:
 ```
 
 A capture failure never rewrites the owner evidence or makes the current fold
-false. It is visible semantic-memory loss. Actuating may continue from the
-current in-context evidence only when it does not claim complete historical
+false. It is visible semantic-memory loss. The requesting task may continue from
+the current in-context evidence only when it does not claim complete historical
 recurrence or elimination from the missing corpus.
 
 ## Anti-ceremony falsifier

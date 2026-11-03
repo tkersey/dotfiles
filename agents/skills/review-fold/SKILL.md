@@ -1,6 +1,6 @@
 ---
 name: review-fold
-description: "Classify and quotient current review findings, tests, incidents, and other witnessed falsifiers while preserving original provenance. Decide current applicability and whether each proposed law is entailed by the accepted Goal, a strengthening, preference, new requirement, or underdetermined. With enclosing write authority, persist only accepted entailed witnesses in the Review Fold counterexample corpus; recompute current applicability, observational classes, recurrence, and family hypotheses from current evidence; Actuating owns architecture, repair, review credit, and closure."
+description: "Classify and quotient current review findings, tests, incidents, and other witnessed falsifiers while preserving original provenance. Decide current applicability and whether each proposed law is entailed by the accepted Goal, a strengthening, preference, new requirement, or underdetermined. With enclosing write authority, persist only accepted entailed witnesses in the Review Fold counterexample corpus; recompute current applicability, observational classes, recurrence, and family hypotheses from current evidence; The enclosing task retains architecture, repair, review-credit, and completion decisions."
 ---
 
 # Review Fold
@@ -22,9 +22,11 @@ current owner evidence
 ```
 
 `$review-fold` owns evidence classification, Goal-law relation, observational
-quotienting, and semantic admission to the counterexample corpus. `$actuating`
-owns final family synthesis, post-elimination revocation, construction selection,
-mutation, review credit, and closure.
+quotienting, and semantic admission to the counterexample corpus. The enclosing
+task's authorized decision-maker retains final family synthesis, post-elimination
+revocation, construction selection, mutation, review credit, and closure. A direct
+adjudication request returns the evidence and does not start an implementation
+workflow.
 
 Codex, host runtimes, tests, verifiers, incidents, migrations, and providers remain authoritative
 for what they observed. The corpus preserves only the narrower semantic fact
@@ -77,8 +79,9 @@ first corpus projection or capture in a workflow.
 
 `corpus_write_authorized` controls new semantic captures only and must follow the
 enclosing task's actual effect scope;
-review pressure and corpus ownership cannot grant it. It is always false in
-Actuating `analyze`. Adjudication and available read-only projection remain
+review pressure and corpus ownership cannot grant it. An enclosing analysis
+route supplies false when it does not authorize semantic capture. Adjudication
+and available read-only projection remain
 permitted without capture. Ledger's automatic custody preparation runs before
 projection or capture, independently of this flag and without separate approval,
 including during analysis. Follow its explicit no-file/custody-maintenance
@@ -157,7 +160,7 @@ all decision-relevant evidence without populating inapplicable schema fields.
     recurrence. Incomplete history yields `unknown`, never `first-observed`.
 12. If an eliminated claim is supplied, classify exact relation to its law,
     family, validity horizon, and reconsideration falsifier. Do not revoke or
-    preserve the claim; Actuating owns that effect.
+    preserve the claim; the authorized decision-maker owns that effect.
 13. When `corpus_write_authorized` is true, capture each independent witness
     that passed Counterexample admission, whose current applicability is
     `still-present` or `transformed-applicable`, law authority is `entailed`, and
@@ -193,8 +196,9 @@ This semantic identity rule applies to concise and structured folds alike.
 
 Read [history-and-classes.md](references/history-and-classes.md) before grouping
 whose causal identity is uncertain, asserting recurrence or first occurrence, or
-relating evidence to an active eliminated claim. Actuating owns revocation,
-architecture, and closure; Review Fold reports the supported relation only.
+relating evidence to an active eliminated claim. Review Fold reports the
+supported relation only; the enclosing task retains revocation, architecture,
+and completion decisions.
 
 ## Guardrails
 
@@ -217,4 +221,4 @@ Return exact evidence references, corpus IDs, law-authority classifications,
 current applicability, observational classes, post-elimination relations,
 family hypotheses, sibling predictions when evidenced, recurrence status,
 decisive admission or refutation evidence, evidence gaps, and unresolved
-questions. Actuating decides what those facts require.
+questions. The requesting task decides what those facts require within its authority.

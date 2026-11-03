@@ -10,7 +10,7 @@ with a candidate. Design opportunities remain nonblocking unless an accepted
 obligation is violated or their realization is part of the accepted task.
 
 Use `$universalist` within initial construction or subsequent task-relevant
-semantic inquiry. Its [Actuating composition](../universalist/actuating-composition.md)
+semantic inquiry. Its [Universalist composition](universalist-composition.md)
 feeds the current work directly, without a required nomination label or report.
 An unknown owner or typed hole is investigable, not an admission failure;
 mechanical realization alone needs no renewed invocation. Algebraic and categorical

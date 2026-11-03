@@ -11,7 +11,7 @@ import {fileURLToPath} from 'node:url';
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const paths = ['SKILL.md', 'construction.md', 'architecture.md', 'counterexamples.md',
   'agents/openai.yaml', 'references/review-contract.json',
-  'references/decision-contract.json', '../universalist/actuating-composition.md',
+  'references/decision-contract.json', 'universalist-composition.md',
   '../universalist/SKILL.md', '../universalist/README.md',
   'tests/construction-comparison.md'];
 const sources = Object.fromEntries(paths.map(p => [p, readFileSync(resolve(root,p),'utf8')]));
@@ -29,7 +29,7 @@ function check(src) {
   const core=normalized(section(skill,'Initial construction'));
   const architecture=normalized(src['architecture.md']);
   const counter=src['counterexamples.md'];
-  const adapter=normalized(src['../universalist/actuating-composition.md']);
+  const adapter=normalized(src['universalist-composition.md']);
   const policy=JSON.parse(src['references/review-contract.json']);
   assert.equal(policy.standard_convergence.required_consecutive_clean_attempts,5);
   const contract=JSON.parse(src['references/decision-contract.json']).skill_decision_contract;
@@ -59,7 +59,9 @@ function check(src) {
   assert(adapter.includes('optional presentation, not required output'));
   assert(adapter.includes('does not relax their applicable evidence, comparison, or claim-strength requirements'));
   assert(adapter.includes('`analyze` remains read-only'));
-  assert(src['../universalist/SKILL.md'].includes('Inside Actuating, contribute directly under its adapter'));
+  assert(!/\bActuating\b|\$actuating|actuating-composition\.md/.test(src['../universalist/SKILL.md']),'Universalist entry imports its implementation caller');
+  assert(architecture.includes('[Universalist composition](universalist-composition.md)'));
+  assert(src['../universalist/SKILL.md'].includes('authorized implementation includes required'));
   assert(src['../universalist/README.md'].includes("Architectonic's read-only nomination contract is unchanged"));
   assert(counter.includes('[proof acceptance](SKILL.md#proof-acceptance)'));
   const repeated='Before accepting validation for local completion or reviewability';
@@ -114,6 +116,7 @@ check(sources);
 // They are not simulations of agent behavior or tests of the causal hypothesis.
 const jsonMutation=(path,fn)=>src=>{const value=JSON.parse(src[path]);fn(value);src[path]=JSON.stringify(value)};
 const mutations=[
+  ['caller dependency reintroduced',src=>{src['../universalist/SKILL.md']+='\nInside Actuating, load its workflow.\n';}],
   ['review weakening',jsonMutation('references/review-contract.json',p=>p.standard_convergence.required_consecutive_clean_attempts=4)],
   ['fixed cross-skill order',jsonMutation('references/review-contract.json',p=>p.construction_selection.metanoetic_before_universalist_when_triggered=true)],
   ['required nomination',jsonMutation('references/review-contract.json',p=>p.universalist_compilation.nomination_result_required=true)],

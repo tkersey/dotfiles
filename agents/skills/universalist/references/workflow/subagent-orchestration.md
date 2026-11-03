@@ -21,7 +21,7 @@ The root agent owns:
 - role selection and prompts;
 - packet freshness;
 - synthesis and route selection under standalone root authority;
-- Actuating handoff when Actuating owns selection;
+- returning the supported argument when the requesting workflow owns selection;
 - write ordering and conflict resolution;
 - the Boundary Artifact Contract candidate;
 - the root receipt when independent durability requires one;
@@ -84,8 +84,8 @@ Wait for every required packet. Reject stale packets whose artifact state no
 longer matches.
 
 The root synthesizes exactly one current-context comparison and one Boundary
-Artifact Contract candidate. In Actuating composition, return that nomination to
-Actuating without selecting or granting mutation.
+Artifact Contract candidate. In supporting analysis, return that argument to
+the requesting workflow without independently selecting or granting mutation.
 
 ### Adversarial gate
 

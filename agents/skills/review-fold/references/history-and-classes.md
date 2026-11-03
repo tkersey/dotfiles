@@ -74,5 +74,6 @@ A strengthening or preference does not falsify the current Goal's claim. A new
 requirement reopens Goal authority rather than retroactively falsifying the old
 Goal.
 
-Review Fold reports the relation. Actuating revokes and adjudicates only a
-current `entailed` `same-claim` falsifier.
+Review Fold reports the relation without revoking or preserving the claim.
+Only a current `entailed` `same-claim` falsifier supports revocation on this basis;
+the claim's authorized decision-maker adjudicates that consequence.

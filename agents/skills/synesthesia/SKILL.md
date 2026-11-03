@@ -50,13 +50,13 @@ literal syntax. Respect literal-only requests. Do not use this lens for exact
 syntax, legal/compliance interpretation, or security sign-off.
 
 The owning workflow retains selection, implementation, measurement, proof, and
-closure. Return useful insight to the relevant owner: measured performance to
-the active optimization workflow, structural architecture to `$universalist`,
-local comprehension/refactoring to the owning workflow, and accepted memory
-transport to `$memory-source-notes`. Do not create a dedicated Synesthesia
-subagent or activate sibling skills merely to complete this pass. In explicitly
-requested team mode, a read-only lane needs exact artifact state, evidence, a
-representational question, and an accountable engineering translation.
+closure. Return useful engineering insight to the requesting task or workflow,
+which decides whether further architectural, performance, or implementation work
+is needed. Accepted memory transport still belongs to `$memory-source-notes`.
+Do not create a dedicated Synesthesia subagent or activate sibling skills merely
+to complete this pass. In explicitly requested team mode, a read-only lane needs
+exact artifact state, evidence, a representational question, and an accountable
+engineering translation.
 
 ## Reasoning contract
 
