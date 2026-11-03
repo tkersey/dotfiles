@@ -13,10 +13,17 @@ valid admission -> permitted operation or observation -> violated invariant
 
 Inspect the actual ownership and operation surface: constructors, writable aliases,
 identity or declared congruence, lifetime, retries, ordering, recovery, and concurrent
-transitions. Can transient invalidity escape its owning transition? Does a check
-remain valid when the later effect or observation occurs? Account for producers,
-consumers, serialization, compatibility, and paths around the intended owner.
-Crossing an admission cut does not establish preservation afterward.
+transitions. Which source-supported claims held by other owners remain live
+across the change? Inspect a relevant alias, in-flight operation, or re-entrant
+callback: a locally valid successor must not silently invalidate a compatible
+obligation elsewhere. Does a check remain valid when its later effect or observation
+occurs? Can an entitled observer reach transient invalidity before the invariant
+is restored? Account for producers, consumers, serialization, compatibility, and
+paths around the intended owner. Crossing an admission cut does not establish
+preservation afterward. Ground surrounding obligations in the actual contract,
+not speculative owners. Authorized revocation or invalidation remains valid when
+the source-governed protocol establishes its required effects; do not demand that
+every prior claim survive every transition. Reuse adequate preservation evidence.
 
 Test adequacy of the enforcement locus throughout the required lifetime, not
 whether it is the strongest or earliest imaginable locus. A stronger type or earlier

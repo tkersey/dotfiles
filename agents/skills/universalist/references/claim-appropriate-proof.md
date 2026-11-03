@@ -212,6 +212,22 @@ merely because an artifact has been translated, or reflect equality through a
 lossy interpretation without a determination argument. Resource savings still
 need the existing workload evidence.
 
+When a translated resource can be split, duplicated, or independently consumed,
+ask whether those permitted uses have source realizations. Preserving composition
+alone does not establish that a valid target decomposition lifts to a compatible
+source decomposition. Require that correspondence for the claimed uses, not
+invertibility of every abstraction or linear ownership of every resource.
+
+For example, copying `review_complete = true` cannot turn one native invocation
+into two independent reviews or transfer its credit to another subject. A shared
+report can support several conclusions when its evidence actually supports each;
+sharing evidence does not manufacture independent events or authority. A lossy
+status may suffice for display while a credit decision still needs the original
+subject, invocation, scope, and limitations. Preserve the contract's actual rules
+for sharing, division, and consumption; do not prohibit duplicable permissions or
+divisible budgets. Reuse an adequate native argument without adding a resource
+registry, proof framework, or separate pass.
+
 ## Determination before cancellation
 
 From `h o a = h o b`, infer `a = b` only if the evidence determines those maps.
