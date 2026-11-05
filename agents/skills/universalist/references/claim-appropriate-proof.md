@@ -228,6 +228,54 @@ for sharing, division, and consumption; do not prohibit duplicable permissions o
 divisible budgets. Reuse an adequate native argument without adding a resource
 registry, proof framework, or separate pass.
 
+## Contextual cancellation
+
+Distinguish round-trip conversion, operation preservation, and replacement inside
+admissible contexts. Writing `f # g` for first `f`, then `g`, the inverse
+laws `p # q = id` and `q # p = id` do not alone justify
+`(f # p) # (q # g) = f # g` when reassociation is not established. Identify the
+laws used by that cancellation at the actual interfaces. In an established
+category, reuse the ordinary isomorphism argument; do not manufacture extra
+obligations. For boundary-sensitive composition, use the
+[scoped-law discriminator](domain-algebra/algebra-driven-design.md#scope-laws-to-the-actual-composition).
+
+Place the adapter between a relevant producer and consumer when distinguishing
+claims. An encode/decode pair that preserves a returned value but forces suspended
+work has not established identity under required demand or effect observations.
+Conversely, an adapter already proved transparent under the governing composition
+needs no new framework. Check permitted contexts and operations material to the
+claim, including scope, lifetime, sharing, authority, and required traces. Use an
+adequate direct argument or simulation rather than demanding all-purpose
+contextual equivalence. A standalone round trip supplies only its stated equation.
+
+## Choice independence before erasure
+
+Before removing a representation choice from the semantic contract, establish
+that permitted operations and required future observations cannot distinguish
+admissible choices. For construction witnesses `w1,w2`, an equation such as
+`op(x,w1) ~= op(x,w2)` must use the required observation relation, preserved
+under subsequent permitted operations, not merely equality of today's result.
+Prove independence before erasure; opacity alone does not establish it. A private
+witness may remain useful for execution without becoming part of semantic identity.
+
+Distinguish independence from canonicalization. Multiple lawful constructors need
+no preferred representative when the contract depends only on their common
+meaning. Do not add a normalizer, registry, or unique factory unless an actual
+consumer requires that choice. Canonical serialization or externally stable keys
+can supply such a requirement; interchangeable internal representations alone do
+not. Costs remain part of the engineering comparison, even when semantic
+observations agree.
+
+Ask whether apparent modes are disjoint cases or overlapping capabilities. An
+object can satisfy multiple properties without needing an exclusive tag. Retain
+distinctions that govern authorization, provenance, revocation, replay, identity,
+or lifetime; an already-public tag is an observation and removing it needs the
+applicable compatibility authority. Pair an erasable construction-choice example
+with a permitted continuation that distinguishes a consequential choice. Neither
+hiding a tag nor establishing ordinary representation independence proves
+mathematical univalence. Reuse the existing correspondence argument; no additional
+proof system, workflow, or mandatory packet is required.
+
 ## Determination before cancellation
 
 From `h o a = h o b`, infer `a = b` only if the evidence determines those maps.
@@ -300,3 +348,13 @@ premise-directed investigation and the distinction between model proofs and
 implementation transfer. The trace conditions, direct certificate, and receipt
 example above are engineering applications, not a mandatory reproduction of its
 pipeline or evidence of Universalist efficacy.
+
+Beatrice Szilvasy, [*Univalent Non-Associative Categorical Structures*](https://arxiv.org/abs/2611.00068),
+motivates scoped associativity, context-respecting isomorphisms, and establishing
+choice-independent envelope composition before erasing the choice. The envelope's
+univalence theorem assumes univalent base categories and a fully equalizing
+adjunction, not an arbitrary adjunction. The scoped-law, state/suspension,
+cancellation, and representation-choice guidance here is an engineering
+application, not a proof that an ordinary API is univalent or evidence of improved
+agent efficacy. No duploid implementation or formalization is required by these
+examples.
