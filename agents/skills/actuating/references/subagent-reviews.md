@@ -3,7 +3,7 @@
 Use only for explicit `with subagents` or equivalent intent. This is the
 `subagents` executor in [review-contract.json](review-contract.json); the shared
 [review contract](review-contract.md) owns inventory, scheduling, credit, freezes,
-recovery limits, and convergence. Do not invoke Codex's native review command or app-server review route in this mode.
+recovery, and convergence. Do not invoke Codex's native review command or app-server review route in this mode.
 
 ## Contents
 
@@ -44,9 +44,9 @@ recover missing observations and dependent reasoning under the shared credit rul
 
 Use the shared scope/lens order in a bounded queue. Clamp requested concurrency to
 available worker capacity after accounting for the coordinator and other live
-agents. Replenish slots until the entire initial inventory completes. A capacity
-of one does not reduce obligations. Serial mode still adjudicates each request
-before the next; all initial requests remain required after invalidation.
+agents. Replenish slots until the initial inventory completes or the invalidated
+batch is superseded under the shared policy. A capacity of one does not reduce
+final-head obligations. Serial mode still adjudicates each request before the next.
 
 ## Deliver the exact assignment
 
@@ -132,10 +132,12 @@ adjudication even when their original results earn no current review credit.
 
 An observation timeout is not a terminal worker failure. Recover the actual worker
 state and await a live attempt before considering replacement. An unattributed or
-mismatched output does not establish that the requested worker terminated. After
-an established terminal without usable semantic output, permit the shared one
-fresh exact-request recovery; a second verdictless terminal blocks. Preserve prior
-finding evidence. Do not extend this allowance by renaming the request or epoch.
+mismatched output does not establish that the requested worker terminated. Apply
+[shared review recovery](review-contract.md#review-recovery) after an established
+terminal without usable semantic output; preserve prior findings and cost history.
+An invalidated batch may instead use
+[supersession](../review-closeout.md#invalidated-batch-supersession), with the same
+terminal-evidence and successor-review requirements in either execution mode.
 
 Recover evidence gaps under the existing limitation dispositions, with a concrete
 recovery hypothesis. Continue the same reviewer when its own dependent reasoning
@@ -147,8 +149,8 @@ and provenance; do not cancel live siblings to free a slot.
 Resume only from recoverable exact assignments, instructions, original outputs,
 and runtime attribution under the recorded mode. If any required result for the
 current initial wave or streak cannot be resolved and revalidated, restart the full
-initial inventory; summaries and remembered counts supply no credit. Resolve any
-possibly live old attempts first and fold material results before leaving their
-epoch. Preserve old provenance through an explicit mode change and bind a new
-campaign. Keep outputs in the host's existing records; add no Actuating review
-store or corpus transcript archive.
+initial inventory unless the invalidated batch is superseded; summaries and
+remembered counts supply no credit. Resolve any possibly live old attempts first
+and fold material results before leaving their epoch. Preserve old provenance
+through an explicit mode change and bind a new campaign. Keep outputs in the host's
+existing records; add no Actuating review store or corpus transcript archive.

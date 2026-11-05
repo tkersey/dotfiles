@@ -17,13 +17,15 @@ const sha256 = s => createHash('sha256').update(s).digest('hex');
 const policy = JSON.parse(text('references/review-contract.json'));
 const skill = text('SKILL.md');
 const protectedSections = {
-  "Review-epoch immutability and evidence acquisition": "c56ab6cd715441dce8a7b7eb659e450254d840e548eac57de7f4a65ea5bd4e05",
-  "Review and closure": "2905a23c52c3aa683deac10e5b43797d647cf92f622f7188412b6535dce4dd5f",
+  "Invalidated-batch supersession": "05369fc6e853f1c5f85011b6ac7aac81273460482c9091ed7a097a1178030cfd",
+  "Review-epoch immutability and evidence acquisition": "63023ac7b93b1d3271c9dbdcc352ca655505cf9fc4e3f3d8b63bf131995627ec",
+  "Review and closure": "d09f6fe59a04bc7ae7411ab2d652bddcb1ec96eb545612196d98918b11070dae",
   // Apply the same proof bar to initial construction; witnesses are conditional.
   "Realization and common proof obligations": "8f782e151a2c48cca2da1506830376ad597b689fde6985014f30c466f87be6e3"
 };
-// Native executor naming changes; the freeze, credit, count, and proof laws remain intact.
+// Pin authorized recovery and supersession; preserve final-head credit, count, and proof laws.
 const protectedSources = {
+  "Invalidated-batch supersession": text('review-closeout.md'),
   "Realization and common proof obligations": text('construction.md'),
   "Review-epoch immutability and evidence acquisition": text('review-closeout.md'),
   "Review and closure": text('review-closeout.md')
