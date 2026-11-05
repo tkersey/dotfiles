@@ -1,6 +1,6 @@
 {
   "schema": "actuating-review-contract/v21",
-  "contract_id": "actuating-review-contract-v28",
+  "contract_id": "actuating-review-contract-v29",
   "required_lenses": [
     {
       "name": "standard",
@@ -312,7 +312,7 @@
     "restart_requires_reviewable_successor": true
   },
   "transport_recovery": {
-    "maximum_fresh_recovery_attempts": 1,
+    "guidance_ref": "agents/skills/actuating/references/review-contract.md#review-recovery",
     "required_recovery_is_part_of_semantic_barrier": true
   },
   "attempt_quality": {

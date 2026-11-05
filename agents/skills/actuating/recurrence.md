@@ -31,6 +31,12 @@ to assess additions and ablations, not a new review lane, runtime score, or stor
 
 ## Progress before another iteration
 
+For transient review-execution failures, use
+[review recovery](references/review-contract.md#review-recovery). A supported
+transient hypothesis can justify an unchanged request after backoff; ordinary
+recovery does not require architectural reconsideration or a new code finding.
+Reassess the approach when the accumulated evidence no longer supports it.
+
 After a required verifier terminates unsuccessfully or inconclusively, and after
 an invalidated review epoch closes, compare the recent attempts with the last
 supported progress before another correction, broad retry, or successor review

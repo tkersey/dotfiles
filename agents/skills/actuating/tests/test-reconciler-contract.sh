@@ -26,7 +26,7 @@ const c = json('references/review-contract.json');
 const d = json('references/decision-contract.json').skill_decision_contract;
 const names = ['standard','soundness-skeptic','footgun-finder','invariant-ace','complexity-mitigator','fresh-eyes'];
 assert.equal(c.schema, 'actuating-review-contract/v21');
-assert.equal(c.contract_id, 'actuating-review-contract-v28');
+assert.equal(c.contract_id, 'actuating-review-contract-v29');
 assert.equal(d.contract_version, 'SKDC-v1');
 assert.equal(d.skill.source_fingerprint, 'actuating-construction-core-v31');
 assert(c.candidate_acceptance.common_obligations.includes(
@@ -87,8 +87,11 @@ assert.deepEqual(c.standard_convergence, {
   later_attempts_serial:true, findings_reset_streak:true,
   selected_execution_mode_required:true,distinct_contexts_required:true
 });
-assert.equal(c.transport_recovery.maximum_fresh_recovery_attempts, 1);
-assert.equal(c.transport_recovery.required_recovery_is_part_of_semantic_barrier, true);
+assert.deepEqual(c.transport_recovery, {
+  guidance_ref:'agents/skills/actuating/references/review-contract.md#review-recovery',
+  required_recovery_is_part_of_semantic_barrier:true
+});
+assert(text('references/review-contract.md').includes('## Review recovery'));
 assert.equal(codex.guidance_ref, 'agents/skills/cas/reviews.md');
 assert.deepEqual(codex.attempt_quality, {
   host_attributed_execution_required:true,fresh_native_thread_required:true,

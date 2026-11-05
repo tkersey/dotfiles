@@ -14,7 +14,8 @@ assert.equal(new Set(fixture.scenarios.map(x => x.id)).size, fixture.scenarios.l
 
 // Test-only reference model of receipt barriers. It neither runs CAS nor grants
 // authority to an agent. Unlike the removed fixture, it has no theorem-equality
-// or direct-gate input that can exempt a candidate from proof.
+// or direct-gate input that can exempt a candidate from proof. These traces assume
+// authorized dispatches; receipt accounting does not judge recovery expenditure.
 function observe(i) {
   const slots = new Map(), seen = new Set();
   assert(Array.isArray(i.focused_files), 'missing frozen file selection');
@@ -60,12 +61,9 @@ function observe(i) {
     const history = slots.get(r.slot) ?? [];
     if (history.length) {
       assert.equal(history.at(-1).verdict, 'verdictless', 'duplicate semantic outcome');
-      assert(history.length <= policy.transport_recovery.maximum_fresh_recovery_attempts, 'recovery exhausted');
       assert.equal(r.custom_instructions, history.at(-1).custom_instructions, 'changed recovery instructions');
     }
     history.push(r); slots.set(r.slot, history);
-    if (history.length > policy.transport_recovery.maximum_fresh_recovery_attempts && !semantic(r))
-      assert.fail('recovery exhausted without a semantic verdict');
   }
   const last = [...slots.values()].map(xs => xs.at(-1));
   const invalidated = last.some(material);
@@ -141,11 +139,22 @@ for (const authority of ['strengthening','preference']) {
 const auxiliaryFinding = cleanInput.receipts.map(r => r.lens === 'footgun-finder'
   ? {...r, verdict:'findings', findings:[{authority:'preference', applicability:'current'}]} : r);
 assert.equal(evaluate(auxiliaryFinding).complete, true);
-// A verdictless final confirmation remains pending, then its one fresh semantic
-// recovery can complete the existing suffix; it supplies no extra clean itself.
-const pending = [...initial, ...[1,2,3].map(n => confirmation(n)), confirmation(4,'verdictless')];
-assert.equal(evaluate(pending).complete, false);
-assert.equal(evaluate([...pending, {...confirmation(4), id:'suffix-4-recovery'}]).complete, true);
+// Failed executions cannot impose a retry quota or supply semantic credit.
+for (const failures of [1,2,3,7]) {
+  const attempts = Array.from({length:failures}, (_,n) =>
+    ({...confirmation(4,'verdictless'), id:`retry-${n}`}));
+  const pending = [...initial, ...[1,2,3].map(n => confirmation(n)), ...attempts];
+  assert.deepEqual(evaluate(pending), {mutable:false, epoch_open:true, complete:false, may_dispatch:false});
+  assert.throws(() => evaluate([...pending, confirmation(5)]), /confirmation before review credit/);
+  const recovered = [...pending, {...confirmation(4), id:'suffix-4-recovery'}];
+  assert.equal(evaluate(recovered).complete, true);
+  assert.throws(() => evaluate([...recovered, {...confirmation(4), id:'duplicate-recovery'}]), /duplicate semantic outcome/);
+  const earlier = [...initial, ...attempts.map(r => ({...r, slot:'suffix-1'})), confirmation(1)];
+  assert.equal(evaluate(earlier).complete, false);
+  assert.equal(evaluate([...earlier, ...[2,3,4].map(n => confirmation(n))]).complete, true);
+  const findings = [...pending, {...confirmation(4,'findings','entailed'), id:'recovered-finding'}];
+  assert.deepEqual(evaluate(findings), {mutable:true, epoch_open:false, complete:false, may_dispatch:false});
+}
 // A material finding invalidates all credit and forbids more confirmations.
 const materialCut = [...initial, confirmation(1,'findings','entailed')];
 assert.deepEqual(evaluate(materialCut), {mutable:true, epoch_open:false, complete:false, may_dispatch:false});
@@ -197,7 +206,11 @@ assert.equal(evaluateFiles(fileRecovery).epoch_open, true);
 const recoveredFile = {...fileReceipts[0], id:'file-0-standard-recovery'};
 assert.equal(evaluateFiles([...fileRecovery, recoveredFile,
   ...[1,2,3,4].map(n => confirmation(n))]).complete, true);
-assert.throws(() => evaluateFiles([...fileRecovery, {...recoveredFile, verdict:'verdictless'}]), /recovery exhausted/);
+const repeatedFileFailure = [...fileRecovery, {...recoveredFile, verdict:'verdictless', credit_disposition:'hold'}];
+assert.deepEqual(evaluateFiles(repeatedFileFailure),
+  {mutable:false, epoch_open:true, complete:false, may_dispatch:false});
+assert.equal(evaluateFiles([...repeatedFileFailure, {...recoveredFile, id:'file-later-recovery'},
+  ...[1,2,3,4].map(n => confirmation(n))]).complete, true);
 assert.throws(() => evaluateFiles([...fileRecovery, {...recoveredFile, custom_instructions:'different scope prompt'}]),
   /changed recovery instructions/);
 const invalidRecovery = [...invalidInitial, ...fileRecovery.filter(r => r.scope === 'file')];

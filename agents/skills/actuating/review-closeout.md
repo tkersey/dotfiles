@@ -75,18 +75,11 @@ Each file auxiliary receives its exact unchanged lens plus
 the file scope. Every reviewer continues beyond the first finding; fold the full
 initial batch before choosing a successor. File reviews are initial-only.
 
-Before every replacement dispatch, consult the original scope/lens obligation's
-attempt history in the existing Working Set. Under the unchanged
-[recovery allowance](references/review-contract.md#scheduling), one verdictless
-terminal permits one fresh exact-request recovery; a second verdictless terminal
-blocks. Resolve possibly live work first. A new directory, thread, transport,
-model parameter or context size does not reset the allowance. If history cannot
-be established, withhold replacement rather than assume an unused allowance.
-A user choice about model or effort alone does not waive an exhausted limit;
-another fresh attempt requires an explicit exception to that limit. Keep useful
-evidence from a nonconforming attempt without calling the dispatch compliant or
-using later success to retroactively authorize it. Supplemental inquiry on a valid
-but inadequate result follows the separate observation/reasoning recovery rule;
+Apply [review recovery](references/review-contract.md#review-recovery) to the
+original scope/lens obligation before replacement. Keep useful evidence from a
+nonconforming attempt without calling its dispatch compliant or using later
+success to retroactively authorize it. Supplemental inquiry on a valid but
+inadequate result follows the separate observation/reasoning recovery rule;
 classify the actual operation, not its directory name or matching thread ID.
 
 Only a completely realized, locally proved candidate is `reviewable`. Require
