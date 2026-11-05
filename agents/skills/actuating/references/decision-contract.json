@@ -212,7 +212,8 @@
         "success_signals": [
           "candidate stays frozen through the applicable cut",
           "available waiting time supports read-only self-review without delaying required collection, recovery, or dispatch or requiring a completed pass",
-          "serial and parallel acquire all six lenses for the changeset and independently for every selected file in the initial wave, including after invalidation",
+          "serial and parallel acquire all six lenses for the changeset and independently for every selected file in the initial wave, including after invalidation unless the infrastructure-blocked batch is lawfully superseded",
+          "supersession requires observed terminal attempts and folded complete and partial evidence; queued and unfinished old-head obligations stay incomplete, while the successor receives full qualification and review with no transferred credit",
           "confirmation invalidation requires no new auxiliary wave on the invalid head",
           "all initial obligations are folded and credited before later selected-mode standard confirmations",
           "one closed invalidated review epoch counts as one attempt; individual lenses, clean confirmations, polls, and matrix fanout do not inflate attempt counts"
@@ -221,7 +222,8 @@
           "mutation inside an open epoch",
           "self-review prolongs the epoch or adds a required review lane or pass-completion gate",
           "initial implementation forced to review first",
-          "verdictless recovery omitted from the barrier"
+          "verdictless recovery omitted from a continuing batch barrier",
+          "supersession without an accepted material invalidation and infrastructure blocker, while work is live or unknown, or against an explicit full-batch requirement"
         ],
         "rationale": "The freeze belongs to review, not Actuating globally."
       },
@@ -418,7 +420,7 @@
           "five checked-in auxiliary lenses",
           "all six independent initial lenses for each of at most three selected files, alongside all six changeset lenses",
           "projected and captured CEX identities",
-          "complete applicable review cut"
+          "applicable review cut or superseded batch with retained incomplete obligations"
         ],
         "success_signals": [
           "all current and applicable historical sources inform one causal basis",
@@ -426,7 +428,7 @@
           "self-review supplies evidence without an independent reviewer result, confirmation, or clean credit",
           "unavailable provider quota is not a clean verdict",
           "six-lens inventory per scope and five distinct changeset-standard cleans under one selected execution mode are preserved",
-          "every file/lens request completes its own causal inquiry beyond the first supported finding; all initial findings inform one cumulative basis",
+          "every credited file/lens request completes its own causal inquiry beyond the first supported finding; all available initial findings inform one cumulative basis even after supersession",
           "file standard uses the selected mode with file focus and earns only its exact file/lens credit",
           "native codex remains the default; explicit subagents changes execution and standard instructions without changing scheduling, scope, adjudication, recovery, or convergence"
         ],

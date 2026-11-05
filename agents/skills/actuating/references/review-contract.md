@@ -298,14 +298,17 @@ six changeset reviews plus eighteen file reviews, all in one frozen initial wave
 `parallel-reviews` dispatches the entire initial inventory concurrently within
 available capacity and any requested concurrency bound; it never cancels siblings.
 Account for the coordinator and other live agents in subagent capacity. Keep queued requests required;
-await every initial semantic outcome and required recovery.
+await every initial semantic outcome and required recovery unless the invalidated
+batch is superseded under the closeout rule below.
 
 `serial-reviews` adjudicates each request before the next. After invalidation,
 continue every remaining initial request against the same frozen head for evidence
-only: no mutation, no clean credit, no successor assumptions.
+only, unless the batch is lawfully superseded: no mutation while open, no clean
+credit, no successor assumptions.
 
 A verdictless terminal has no semantic outcome. Its unresolved obligation remains
-part of the barrier after invalidation; apply [review recovery](#review-recovery).
+part of the barrier after invalidation unless the batch is lawfully superseded;
+otherwise apply [review recovery](#review-recovery).
 Do not interpret an observation timeout as terminal failure.
 
 [Review and closure](../review-closeout.md#review-and-closure) owns the unchanged
@@ -319,6 +322,10 @@ initial and 28 total, excluding recovery. File lenses have no confirmation strea
 request count is not a token or time bound.
 
 ## Review recovery
+
+For an infrastructure-blocked invalidated initial batch, first consider
+[invalidated-batch supersession](../review-closeout.md#invalidated-batch-supersession);
+recovery is not a prerequisite to retiring rejected-head work under that rule.
 
 Recover reasonably evidenced transient failures automatically, without a fixed
 attempt count or per-retry approval. Resolve possibly live work and recover
@@ -432,8 +439,11 @@ Never append a named-member guard as evidence of complete family elimination.
 Reuse only exact resolvable execution evidence under its original mode and contract:
 native Codex execution/artifacts or host-attributed subagent outputs and assignments.
 Historical CAS records remain evidence of their original work, not new-mode credit.
-If any result
-required for the current wave or streak cannot be resolved and revalidated,
+A superseded batch stays closed with its incomplete history; resume successor
+construction rather than restarting old-head requests. Reestablish its terminal
+attempts and evidence fold if those facts cannot be recovered; a summary alone
+cannot lift the freeze. Otherwise, if any result required for a continuing wave
+or streak cannot be resolved and revalidated,
 restart the full initial inventory; summaries and remembered counts supply no
 credit. Resolve possibly live attempts and fold their material evidence first.
 Missing historical

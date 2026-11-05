@@ -7,11 +7,12 @@ the first review request against an exact locally proved `reviewable` head. Whil
 open, freeze that subject and forbid successor mutation.
 
 A material current entailed finding invalidates the candidate and all review
-credit immediately. It does not request a patch. Complete the initial inventory
-of six changeset-wide lenses and all six lenses for every selected file against the frozen
-head: parallel siblings are non-cancelling; serial mode continues all remaining
-initial requests for evidence only. Required request-local recovery is part of
-the barrier. Fold the complete cut before closing the epoch.
+credit immediately. It does not request a patch. Unless
+[invalidated-batch supersession](#invalidated-batch-supersession) applies, complete
+the initial inventory of six changeset-wide lenses and all six lenses for every
+selected file against the frozen head: parallel siblings are non-cancelling;
+serial mode continues all remaining initial requests for evidence only. Required
+request-local recovery is part of that barrier. Fold the cut before closing.
 
 A material later standard-confirmation finding stops further confirmations.
 Fold it and already-live required owner observations; do not launch another
@@ -23,6 +24,32 @@ After closing an invalidated epoch, carry its outcome into the
 selecting a successor. Count the closed epoch once; its requests and clean
 confirmations are not separate repair rounds. Reset review credit as required
 while preserving the history of unsuccessful approaches.
+
+## Invalidated-batch supersession
+
+When an accepted current material entailed finding has invalidated an initial
+batch and infrastructure blocks its remaining inquiry, Actuating may supersede
+that batch rather than keep repair waiting on the rejected head. Weigh the value
+of remaining inquiry against recovery cost; no retry-count threshold is required.
+A finding alone, a slow live reviewer, or an inadequate verdict does not qualify.
+An explicit user requirement to finish the old inventory still governs.
+
+Once selected, stop new old-head dispatches and recoveries. Keep the subject frozen
+until every already-started attempt is observed terminal and all available complete
+and partial evidence, including late findings, has been folded. Drain healthy work;
+this exception does not authorize cancelling siblings. Any separately authorized
+cancellation requires observed termination. A lost handle, sent interrupt, or
+observation timeout does not establish that work stopped.
+
+Close as **superseded, not complete**. In the existing Working Set retain the exact
+old subject, findings, limitations, and queued or unfinished scope/lens obligations
+as incomplete; do not retry them merely to finish the retired batch. Select the
+successor from the full retained counterexample basis, not just the first finding.
+Transfer no clean credit. Requalify the exact successor, reselect focused files from
+the full bound base, and run the full initial inventory and five-clean-standard
+gate on that successor. Supersession neither authorizes mutation on a read-only
+route nor overrides cancellation or resource limits. It adds no registry, receipt, or parallel
+checkout; deferred old-head inquiry can still reveal sibling defects later.
 
 ## Self-review while reviewers are running
 
@@ -44,9 +71,9 @@ preserving exact-subject and self-review provenance in the existing handoff.
 Adjudicate them under the same [counterexample admission](../review-fold/SKILL.md#counterexample-admission)
 as other findings; a suspicion alone is not an admitted violation. An admitted
 current material finding entailed by the Goal invalidates the candidate and all
-review credit even when the executor returns clean. Complete the initial frozen wave, or
-stop new confirmations and fold already-live required evidence, under the existing
-phase rules. Adjudicate discovered material evidence before claiming convergence.
+review credit even when the executor returns clean. Apply the phase rules above,
+including the same supersession conditions for self-discovered findings. Adjudicate
+discovered material evidence before claiming convergence.
 
 Preserve the frozen subject and reviewer inputs. Defer successor changes, including
 test edits and mutation experiments, until the epoch closes. Self-review supplies
@@ -73,7 +100,8 @@ general best judgment with custom focus instructions; subagent file-standard als
 receives the pinned rubric. Neither earns changeset-standard convergence credit.
 Each file auxiliary receives its exact unchanged lens plus
 the file scope. Every reviewer continues beyond the first finding; fold the full
-initial batch before choosing a successor. File reviews are initial-only.
+initial batch before choosing a successor unless it is lawfully superseded above.
+File reviews are initial-only.
 
 Apply [review recovery](references/review-contract.md#review-recovery) to the
 original scope/lens obligation before replacement. Keep useful evidence from a

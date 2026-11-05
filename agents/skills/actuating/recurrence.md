@@ -44,7 +44,8 @@ wave. On resumption, recover this history before repeating failed work. An
 admitted code liability or proved same-family recurrence is not required to
 question the investigation or approach; preserve Review Fold's classifications.
 
-Keep a compact history in the existing Working Set: completed review epochs and
+Keep a compact history in the existing Working Set: closed review epochs (including
+superseded batches with incomplete inquiry) and
 relevant terminal verification attempts, the unresolved obligation or obstruction,
 each relevant intervention and its predicted versus observed result, the last
 supported progress, and the evidence basis of the latest shared activation.
@@ -89,7 +90,8 @@ independent authorized work rather than manufacturing a code defect or retrying
 unchanged conditions.
 
 Keep this assessment within existing selection, not a new stage or report. During
-an open review epoch, record evidence and reconsider read-only; complete the
-required barrier before successor mutation. Preserve required behavior, resource
+an open review epoch, record evidence and reconsider read-only; close it under the
+[applicable epoch rule](review-closeout.md#review-epoch-immutability-and-evidence-acquisition)
+before successor mutation. Supersession is not completed inquiry or proof of progress. Preserve required behavior, resource
 ceilings, final verification, and review inventory. Neither an attention threshold
 nor a fresh activation grants proof, review credit, or completion.

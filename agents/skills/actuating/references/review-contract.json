@@ -1,6 +1,6 @@
 {
   "schema": "actuating-review-contract/v21",
-  "contract_id": "actuating-review-contract-v29",
+  "contract_id": "actuating-review-contract-v30",
   "required_lenses": [
     {
       "name": "standard",
@@ -149,13 +149,13 @@
       "parallel-reviews": {
         "dispatch": "concurrent",
         "non_cancelling": true,
-        "all_launched_semantic_outcomes_before_cut": true
+        "all_launched_semantic_outcomes_before_cut_unless_superseded": true
       },
       "serial-reviews": {
         "dispatch": "serial",
         "adjudicate_before_next": true,
         "mutation_forbidden_until_cut": true,
-        "continue_remaining_initial_requests_after_invalidation": true,
+        "continue_remaining_initial_requests_unless_superseded": true,
         "post_invalidation_requests_are_evidence_only": true
       }
     },
@@ -197,7 +197,8 @@
     "successor_mutation_forbidden_while_open": true,
     "initial_implementation_occurs_outside_epoch": true,
     "existing_closed_evidence_may_inform_implementation": true,
-    "initial_invalidation_closes_after_required_outcomes_recovery_and_fold": true,
+    "initial_invalidation_closes_after_required_outcomes_recovery_and_fold_unless_superseded": true,
+    "supersession_ref": "agents/skills/actuating/review-closeout.md#invalidated-batch-supersession",
     "confirmation_invalidation_closes_after_finding_and_live_owner_fold": true,
     "clean_epoch_closes_after_standard_convergence": true,
     "initial_implementation_requires_review_dispatch": false,
@@ -227,8 +228,8 @@
     "live_owner_source_frontier_complete_or_explicitly_incomplete_required": true
   },
   "evidence_acquisition": {
-    "initial_falsification_wave_complete_before_successor_selection": true,
-    "parallel_waits_for_all_launched_semantic_outcomes": true,
+    "initial_falsification_cut_closed_before_successor_selection": true,
+    "parallel_waits_for_all_launched_semantic_outcomes_unless_superseded": true,
     "required_recovery_part_of_semantic_barrier": true,
     "serial_post_invalidation_clean_credit_forbidden": true,
     "confirmation_material_finding_stops_confirmation": true,
@@ -240,7 +241,7 @@
     "initial_implementation_requires_review_dispatch": false,
     "initial_implementation_requires_initial_falsification_wave": false,
     "confirmation_invalidation_requires_new_initial_wave": false,
-    "serial_continues_remaining_initial_requests_after_material_finding": true,
+    "serial_continues_remaining_initial_requests_unless_superseded": true,
     "initial_outcomes_fold_and_credit_before_confirmations": true
   },
   "construction_selection": {
