@@ -259,6 +259,14 @@ restriction / gluing
 square boundary matching and interchange
 ```
 
+When regrouping is live, distinguish [global laws from scoped rewrite conditions](domain-algebra/algebra-driven-design.md#scope-laws-to-the-actual-composition):
+unchanged order or read-only behavior need not preserve a suspension boundary.
+For adapters, distinguish [round trips from contextual cancellation](claim-appropriate-proof.md#contextual-cancellation).
+For modes or construction witnesses, establish [choice independence before erasure](claim-appropriate-proof.md#choice-independence-before-erasure),
+not an unnecessary canonical representative. Reuse the existing discriminator;
+these are focused questions, not additional passes or reasons to reject a lawful
+ordinary construction.
+
 Examples:
 
 - **stored data versus its eliminator** — does a consumer need only a fold, or also constructor inspection, original substructures, sharing, or durable identity? Multiple interpreters alone do not decide this.

@@ -98,6 +98,65 @@ global consequences. Judge removal of implementation checks separately: a
 mathematically derived property may still supply distinct implementation
 evidence.
 
+## Scope laws to the actual composition
+
+Before reassociation, fusion, or flattening, identify the actual operation,
+required observations, and evaluation boundaries. Distinguish a global law,
+a law on a closed fragment, and a sufficient condition for this rewrite. When
+a candidate law fails globally, seek the smallest relevant condition under which
+it holds; do not force the law or discard every lawful fragment. An accepted
+requirement remains binding. Reuse established function-composition or lawful
+monad laws when they cover the operation; effects alone do not invalidate them.
+
+Grouping can determine the extent of suspension even when component order is
+unchanged. A small pure model with Boolean state illustrates two connection
+operations, one passing a value and one passing a suspended producer:
+
+```text
+strict(f,g)(s) = g(f(s))
+delayed(f,g)(s) = g((t -> f(t)), s)
+f(s) = not s
+g(s) = unit
+h(producer,s) = s                         -- ignores the suspended producer
+
+delayed(strict(f,g),h)(false) = false
+strict(f,delayed(g,h))(false) = true
+```
+
+The first groups the state change inside the ignored producer; the second passes
+the changed state to the consumer first. This is not a counterexample to ordinary
+function composition. It refutes an unrestricted regrouping of these mixed
+connections. Keep a composition tree or an explicit boundary when needed rather
+than flattening into a sequence that permits arbitrary regrouping. A narrower
+native operation or a lawful fragment may suffice; no generic non-associative
+framework or runtime law registry follows.
+
+Read-only is not sufficient to move an observation across suspension. In ordinary
+state-monad notation, compare computations that each return another computation:
+
+```haskell
+snapshot, deferred :: State Bool (State Bool Bool)
+snapshot = do { x <- get; pure (pure x) }
+deferred = pure get
+```
+
+Run the outer computation at `False`, then the returned computation at `True`:
+`snapshot` returns `False`; `deferred` returns `True`. Neither writes state.
+When the state is unchanged they agree, so that control alone misses the defect.
+Use the actual demand, observation time, scope, and required trace, not a proxy
+such as no mutation or unchanged ordering. Local associativity properties in a
+mathematical model are not automatically ownership, purity, or closure-allocation
+properties in its implementation.
+
+Reuse the existing law and invalidators. A sufficient safe-rewrite criterion need
+not recognize every safe case; require completeness only when the claim needs it.
+Failure to establish a sufficient condition is unresolved evidence, not proof of
+inequality. Keep resource claims separate from semantic agreement. For adapter
+cancellation or representation erasure, use the corresponding sections of
+[claim-appropriate proof](../claim-appropriate-proof.md#contextual-cancellation).
+These examples apply Szilvasy's non-associative perspective; see its
+[source boundary](../claim-appropriate-proof.md#source-and-application-boundary).
+
 ## Let contradictions select the carrier
 
 In the book's scavenger hunt, `both(a,b)` should combine rewards commutatively.
