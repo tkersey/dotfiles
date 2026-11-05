@@ -14,7 +14,10 @@ assert.equal(new Set(fixture.scenarios.map(x => x.id)).size, fixture.scenarios.l
 
 // Test-only reference model of receipt barriers. It neither runs CAS nor grants
 // authority to an agent. Unlike the removed fixture, it has no theorem-equality
-// or direct-gate input that can exempt a candidate from proof.
+// or direct-gate input that can exempt a candidate from proof. These traces assume
+// authorized dispatches; receipt accounting does not judge recovery expenditure.
+// Supersession inputs below are synthetic owner observations, not a runtime record
+// or proof that an agent will make the same decision.
 function observe(i) {
   const slots = new Map(), seen = new Set();
   assert(Array.isArray(i.focused_files), 'missing frozen file selection');
@@ -60,15 +63,12 @@ function observe(i) {
     const history = slots.get(r.slot) ?? [];
     if (history.length) {
       assert.equal(history.at(-1).verdict, 'verdictless', 'duplicate semantic outcome');
-      assert(history.length <= policy.transport_recovery.maximum_fresh_recovery_attempts, 'recovery exhausted');
       assert.equal(r.custom_instructions, history.at(-1).custom_instructions, 'changed recovery instructions');
     }
     history.push(r); slots.set(r.slot, history);
-    if (history.length > policy.transport_recovery.maximum_fresh_recovery_attempts && !semantic(r))
-      assert.fail('recovery exhausted without a semantic verdict');
   }
   const last = [...slots.values()].map(xs => xs.at(-1));
-  const invalidated = last.some(material);
+  const invalidated = i.receipts.some(material);
   const barrier = initialComplete() && last.every(semantic);
   const folded = last.every(r => i.folded.includes(r.id));
   const sourcesFolded = i.sources.every(s => s.status !== 'unfolded');
@@ -80,9 +80,24 @@ function observe(i) {
   for (const r of i.receipts) if (r.scope === 'changeset' && r.lens === 'standard' && semantic(r))
     cleanStandards = r.verdict === 'clean' ? cleanStandards + Number(credited(r)) : 0;
   if (invalidated) cleanStandards = 0;
+  const missing = [...initialSlots.keys()].filter(slot => !semantic(slots.get(slot)?.at(-1) ?? {}));
+  const attemptsKnown = Array.isArray(i.attempts) &&
+    new Set(i.attempts.map(a => a.id)).size === i.attempts.length &&
+    i.receipts.every(r => i.attempts.some(a => a.id === r.id));
+  const quiescent = attemptsKnown && i.attempts.every(a => a.state === 'terminal');
   const converged = barrier && last.every(credited) && !invalidated && folded && sourcesFolded &&
+    (i.attempts === undefined || quiescent) &&
     cleanStandards >= policy.standard_convergence.required_consecutive_clean_attempts;
-  const cutClosed = invalidated && barrier && folded && sourcesFolded;
+  const incompleteRetained = Array.isArray(i.incomplete_slots) &&
+    new Set(i.incomplete_slots).size === i.incomplete_slots.length &&
+    i.incomplete_slots.length === missing.length && missing.every(slot => i.incomplete_slots.includes(slot));
+  const superseded = i.supersede === true && invalidated && !i.finish_invalidated_inventory &&
+    i.receipts.every(r => r.phase === 'initial') &&
+    last.some(r => !semantic(r) && r.execution_failure === 'capacity') &&
+    quiescent && incompleteRetained && sourcesFolded &&
+    i.receipts.every(r => i.folded.includes(r.id)) && i.attempts.every(a => i.folded.includes(a.id));
+  const cutClosed = invalidated && sourcesFolded &&
+    ((barrier && folded && (i.attempts === undefined || quiescent)) || superseded);
   const open = i.receipts.length > 0 && !(cutClosed || converged);
   const mutating = ['implement', 'review-closeout', 'bare'].includes(i.route);
   const proofCurrent = i.proof?.head === i.head && i.proof?.status === 'passed';
@@ -141,11 +156,22 @@ for (const authority of ['strengthening','preference']) {
 const auxiliaryFinding = cleanInput.receipts.map(r => r.lens === 'footgun-finder'
   ? {...r, verdict:'findings', findings:[{authority:'preference', applicability:'current'}]} : r);
 assert.equal(evaluate(auxiliaryFinding).complete, true);
-// A verdictless final confirmation remains pending, then its one fresh semantic
-// recovery can complete the existing suffix; it supplies no extra clean itself.
-const pending = [...initial, ...[1,2,3].map(n => confirmation(n)), confirmation(4,'verdictless')];
-assert.equal(evaluate(pending).complete, false);
-assert.equal(evaluate([...pending, {...confirmation(4), id:'suffix-4-recovery'}]).complete, true);
+// Failed executions cannot impose a retry quota or supply semantic credit.
+for (const failures of [1,2,3,7]) {
+  const attempts = Array.from({length:failures}, (_,n) =>
+    ({...confirmation(4,'verdictless'), id:`retry-${n}`}));
+  const pending = [...initial, ...[1,2,3].map(n => confirmation(n)), ...attempts];
+  assert.deepEqual(evaluate(pending), {mutable:false, epoch_open:true, complete:false, may_dispatch:false});
+  assert.throws(() => evaluate([...pending, confirmation(5)]), /confirmation before review credit/);
+  const recovered = [...pending, {...confirmation(4), id:'suffix-4-recovery'}];
+  assert.equal(evaluate(recovered).complete, true);
+  assert.throws(() => evaluate([...recovered, {...confirmation(4), id:'duplicate-recovery'}]), /duplicate semantic outcome/);
+  const earlier = [...initial, ...attempts.map(r => ({...r, slot:'suffix-1'})), confirmation(1)];
+  assert.equal(evaluate(earlier).complete, false);
+  assert.equal(evaluate([...earlier, ...[2,3,4].map(n => confirmation(n))]).complete, true);
+  const findings = [...pending, {...confirmation(4,'findings','entailed'), id:'recovered-finding'}];
+  assert.deepEqual(evaluate(findings), {mutable:true, epoch_open:false, complete:false, may_dispatch:false});
+}
 // A material finding invalidates all credit and forbids more confirmations.
 const materialCut = [...initial, confirmation(1,'findings','entailed')];
 assert.deepEqual(evaluate(materialCut), {mutable:true, epoch_open:false, complete:false, may_dispatch:false});
@@ -197,7 +223,11 @@ assert.equal(evaluateFiles(fileRecovery).epoch_open, true);
 const recoveredFile = {...fileReceipts[0], id:'file-0-standard-recovery'};
 assert.equal(evaluateFiles([...fileRecovery, recoveredFile,
   ...[1,2,3,4].map(n => confirmation(n))]).complete, true);
-assert.throws(() => evaluateFiles([...fileRecovery, {...recoveredFile, verdict:'verdictless'}]), /recovery exhausted/);
+const repeatedFileFailure = [...fileRecovery, {...recoveredFile, verdict:'verdictless', credit_disposition:'hold'}];
+assert.deepEqual(evaluateFiles(repeatedFileFailure),
+  {mutable:false, epoch_open:true, complete:false, may_dispatch:false});
+assert.equal(evaluateFiles([...repeatedFileFailure, {...recoveredFile, id:'file-later-recovery'},
+  ...[1,2,3,4].map(n => confirmation(n))]).complete, true);
 assert.throws(() => evaluateFiles([...fileRecovery, {...recoveredFile, custom_instructions:'different scope prompt'}]),
   /changed recovery instructions/);
 const invalidRecovery = [...invalidInitial, ...fileRecovery.filter(r => r.scope === 'file')];
@@ -242,6 +272,67 @@ for (const n of [1,2,3,4]) for (const credit_disposition of ['hold', undefined])
 const uncreditedInvalidated = [...invalidInitial, ...fileReceipts].map(r => ({...r, credit_disposition:'hold'}));
 assert.deepEqual(evaluateFiles(uncreditedInvalidated),
   {mutable:true, epoch_open:false, complete:false, may_dispatch:false});
+
+// Incident-shaped supersession: accepted defect, capacity failure, queued work.
+// No timing/cost effectiveness or model behavior is measured by this reference model.
+const blockedReceipts = [fixture.receipt_catalog.r01, fixture.receipt_catalog.r02,
+  {...fixture.receipt_catalog.r13, execution_failure:'capacity'},
+  {...fixture.receipt_catalog.r15, execution_failure:'capacity'}];
+const queued = ['footgun-finder','invariant-ace','complexity-mitigator','fresh-eyes',
+  ...fileReceipts.map(r => r.slot)];
+const supersession = {...cleanInput, focused_files:focusedFiles, receipts:blockedReceipts,
+  folded:blockedReceipts.map(r => r.id), supersede:true, incomplete_slots:queued,
+  attempts:blockedReceipts.map(r => ({id:r.id,state:'terminal'}))};
+const retired = {mutable:true, epoch_open:false, complete:false, may_dispatch:false};
+const held = {mutable:false, epoch_open:true, complete:false, may_dispatch:false};
+const retained = structuredClone(supersession);
+assert.deepEqual(observe(supersession), retired);
+assert.deepEqual(supersession, retained, 'closing must not erase or rewrite prior evidence');
+for (const delta of [
+  {supersede:false}, {finish_invalidated_inventory:true},
+  {attempts:undefined}, {attempts:[]}, {attempts:supersession.attempts.slice(1)},
+  {incomplete_slots:undefined}, {incomplete_slots:queued.slice(1)},
+  {incomplete_slots:[...queued,queued[0]]},
+  {sources:[{id:'partial-finding',status:'unfolded',required:true}]},
+  {sources:[{id:'provider-finding',status:'unfolded',required:true}]}
+]) assert.deepEqual(observe({...supersession,...delta}), held);
+for (const state of ['live','unknown','interrupt-sent']) {
+  const attempts = [...supersession.attempts,{id:'parallel-sibling',state}];
+  assert.deepEqual(observe({...supersession,attempts}), held, state);
+  assert.deepEqual(observe({...supersession,attempts,folded:[...supersession.folded,'parallel-sibling']}), held, state);
+}
+// A drained sibling's partial evidence must be folded even without a verdict.
+const drained = {...supersession,attempts:[...supersession.attempts,{id:'parallel-sibling',state:'terminal'}]};
+assert.deepEqual(observe(drained),held);
+assert.deepEqual(observe({...drained,folded:[...drained.folded,'parallel-sibling']}),retired);
+for (const r of blockedReceipts)
+  assert.deepEqual(observe({...supersession,folded:supersession.folded.filter(id=>id!==r.id)}),held,
+    'unfolded complete or partial attempt: '+r.id);
+for (const execution_failure of [undefined,'invalid-arguments','cancelled'])
+  assert.deepEqual(observe({...supersession,receipts:blockedReceipts.map(r=>({...r,execution_failure}))}),held);
+for (const [authority,applicability] of [['preference','current'],['strengthening','current'],['entailed','non-current']])
+  assert.deepEqual(observe({...supersession,receipts:blockedReceipts.map(r=>r.findings
+    ? {...r,findings:[{authority,applicability}]} : r)}),held);
+assert.deepEqual(observe({...supersession,receipts:blockedReceipts.map(r=>r.findings
+  ? {...r,verdict:'clean',findings:[],credit_disposition:'credit'} : r)}),held,
+  'capacity alone cannot authorize repair or erase an incomplete clean-head review');
+assert.deepEqual(observe({...supersession,route:'analyze'}),{...retired,mutable:false});
+assert.throws(()=>observe({...supersession,receipts:[...blockedReceipts,confirmation(1)]}),/confirmation before initial barrier/);
+// A later clean recovery cannot erase an accepted finding in a failed predecessor.
+const partialFinding = {...fixture.receipt_catalog.r13, findings:fixture.receipt_catalog.r01.findings};
+const partialRecovered = [...initial.filter(r=>r.lens!=='fresh-eyes'),partialFinding,fixture.receipt_catalog.r14];
+assert.deepEqual(evaluate(partialRecovered),retired);
+assert.throws(()=>evaluate([...partialRecovered,confirmation(1)]),/confirmation after material finding/);
+// Successor qualification and full review are new-head obligations, not inherited credit.
+const successor = {...cleanInput,head:'h2',proof:{head:'h2',status:'passed'},focused_files:focusedFiles,
+  receipts:focusedClean.map(r=>({...r,head:'h2'})),folded:focusedClean.map(r=>r.id)};
+assert.equal(observe(successor).complete,true);
+assert.throws(()=>observe({...successor,receipts:[...successor.receipts,initial[0]]}),/duplicate receipt|stale receipt/);
+assert.equal(observe({...successor,proof:supersession.proof}).complete,false);
+for (const omitted of fileReceipts)
+  assert.throws(()=>observe({...successor,receipts:successor.receipts.filter(r=>r.id!==omitted.id)}),
+    /confirmation before initial barrier/);
+assert.equal(observe({...successor,receipts:successor.receipts.slice(0,-1)}).complete,false);
 
 // Executable finite discriminator: a guard for the observed enum case misses
 // a sum/product sibling. An independent inhabitant enumerator also prevents the

@@ -537,7 +537,7 @@
       }
     },
     {
-      "id": "one-fresh-recovery-closes-semantic-barrier",
+      "id": "successful-recovery-closes-semantic-barrier",
       "input": {
         "receipts": [
           "r01",
@@ -566,7 +566,7 @@
       }
     },
     {
-      "id": "second-verdictless-attempt-blocks",
+      "id": "repeated-verdictless-attempts-remain-pending",
       "input": {
         "receipts": [
           "r01",
@@ -578,7 +578,12 @@
           "r15"
         ]
       },
-      "expected": "invalid-or-blocked"
+      "expected": {
+        "mutable": false,
+        "epoch_open": true,
+        "complete": false,
+        "may_dispatch": false
+      }
     },
     {
       "id": "duplicate-receipt-cannot-create-clean-credit",

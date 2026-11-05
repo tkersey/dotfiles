@@ -9,7 +9,7 @@ Actuating derives credit and construction consequences from exact owner facts.
 - [Binding and owner authority](#binding-and-owner-authority)
 - [Focused file reviews](#focused-file-reviews)
 - [Review-credit admission](#review-credit-admission)
-- [Review epoch](#review-epoch) and [scheduling](#scheduling)
+- [Review epoch](#review-epoch), [scheduling](#scheduling), and [recovery](#review-recovery)
 - [Live owner-source frontier](#live-owner-source-frontier)
 - [Counterexample history projection](#counterexample-history-projection)
 - [Candidate lifecycle and causal response](#candidate-lifecycle-and-causal-response)
@@ -201,7 +201,7 @@ Mismatched instruction or request bindings remain unusable under the selected
 executor's result paths. When bindings are authentic but the actual inquiry misses its assigned
 file or lens, hold for inadequate evidence. Complete the missing inquiry and reassess
 it under observation/reasoning recovery below; this is not a verdictless terminal
-and neither consumes nor extends the transport-recovery allowance.
+or an additional independent review. Existing resource limits still apply.
 
 ```text
 authentic current result + no unresolved findings + adequate evidence for the
@@ -239,12 +239,12 @@ another result. When the missing observation affects independent review reasonin
 validation reuse alone is insufficient without that reasoning being completed.
 
 Recover only the missing observation within existing authority, using a concrete
-recovery hypothesis; stop rather than repeat an unchanged blocker. Do not weaken
+recovery hypothesis; apply [review recovery](#review-recovery) to execution failures. Do not weaken
 tests, bypass sandbox boundaries, broaden permissions, or rerun the whole matrix
 for a favorable label. A parent-run check may discharge validation but is not an
 independent reviewer confirmation. Reassess dependent review reasoning as needed;
 credit the original obligation at most once. This is distinct from verdictless
-transport recovery and does not consume or extend its allowance.
+transport recovery; neither operation replenishes task resources.
 
 A held result neither advances nor by itself resets existing credit. Continue
 independent authorized work; a held standard pauses serial confirmations until
@@ -298,15 +298,18 @@ six changeset reviews plus eighteen file reviews, all in one frozen initial wave
 `parallel-reviews` dispatches the entire initial inventory concurrently within
 available capacity and any requested concurrency bound; it never cancels siblings.
 Account for the coordinator and other live agents in subagent capacity. Keep queued requests required;
-await every initial semantic outcome and required recovery.
+await every initial semantic outcome and required recovery unless the invalidated
+batch is superseded under the closeout rule below.
 
 `serial-reviews` adjudicates each request before the next. After invalidation,
 continue every remaining initial request against the same frozen head for evidence
-only: no mutation, no clean credit, no successor assumptions.
+only, unless the batch is lawfully superseded: no mutation while open, no clean
+credit, no successor assumptions.
 
-A verdictless terminal has no semantic outcome. Permit one fresh exact-request
-recovery; it remains part of the barrier after invalidation. A second verdictless
-terminal blocks. Do not interpret an observation timeout as terminal failure.
+A verdictless terminal has no semantic outcome. Its unresolved obligation remains
+part of the barrier after invalidation unless the batch is lawfully superseded;
+otherwise apply [review recovery](#review-recovery).
+Do not interpret an observation timeout as terminal failure.
 
 [Review and closure](../review-closeout.md#review-and-closure) owns the unchanged
 five-clean convergence and reset rules. Native Codex confirmations remain native/default;
@@ -317,6 +320,43 @@ invalidates all credit. For `N` selected files, a clean epoch requires
 `6 * (1 + N)` initial requests plus four later changeset standards: at most 24
 initial and 28 total, excluding recovery. File lenses have no confirmation streaks;
 request count is not a token or time bound.
+
+## Review recovery
+
+For an infrastructure-blocked invalidated initial batch, first consider
+[invalidated-batch supersession](../review-closeout.md#invalidated-batch-supersession);
+recovery is not a prerequisite to retiring rejected-head work under that rule.
+
+Recover reasonably evidenced transient failures automatically, without a fixed
+attempt count or per-retry approval. Resolve possibly live work and recover
+available output before replacement; a wait timeout or compaction is not failure.
+Prefer completing missing inquiry to restarting a review. Recover only the affected
+scope/lens obligation, preserving its frozen subject, instructions, findings, and
+valid sibling credit. Recovery never supplies an extra independent clean.
+
+A supported transient hypothesis permits an unchanged request after backoff; no
+code change or independent proof of service recovery is required. Honor provider
+retry delays; otherwise use increasing backoff with jitter through host waiting,
+not model polling. When requests share an outage, reduce and stagger new dispatches;
+use required work to establish recovery, not extra model health checks. Do not
+stack replacements on top of a live executor's own retries.
+
+Judge further recovery by the actual failure and cumulative task expenditure and
+elapsed time, not attempt count. Stop unchanged retries of known nontransient
+blockers or user-cancelled work. When attempts repeatedly redo substantial work at
+the same obstruction, or further expenditure is no longer justified, investigate
+narrowly or hold the affected obligation and continue independent authorized work.
+Unknown causes are not automatically transient. Honor existing task/session resource
+limits and deadlines without enlarging them; missing exact token telemetry or a
+new budget declaration is not a prerequisite to ordinary inexpensive recovery.
+Backoff reduces retry pressure; it does not itself bound total expenditure.
+
+Preserve concise failure and cost history in the existing Working Set across
+resumption, compaction, changed heads, threads, and configuration. Recover material
+missing facts rather than treating unknown history as zero spend; never duplicate
+possibly live work or assume exhausted resources were replenished. No new retry
+registry, receipt, budget system, or mandatory report is needed. A held required
+obligation remains incomplete; recovery changes neither review gates nor authority.
 
 ## Live owner-source frontier
 
@@ -399,8 +439,11 @@ Never append a named-member guard as evidence of complete family elimination.
 Reuse only exact resolvable execution evidence under its original mode and contract:
 native Codex execution/artifacts or host-attributed subagent outputs and assignments.
 Historical CAS records remain evidence of their original work, not new-mode credit.
-If any result
-required for the current wave or streak cannot be resolved and revalidated,
+A superseded batch stays closed with its incomplete history; resume successor
+construction rather than restarting old-head requests. Reestablish its terminal
+attempts and evidence fold if those facts cannot be recovered; a summary alone
+cannot lift the freeze. Otherwise, if any result required for a continuing wave
+or streak cannot be resolved and revalidated,
 restart the full initial inventory; summaries and remembered counts supply no
 credit. Resolve possibly live attempts and fold their material evidence first.
 Missing historical

@@ -31,13 +31,13 @@ const coreHashes = {
   'Construction Working Set': 'de9ee5fa5fb2cb205c5c970dfbcd2c98b76467166ac09b5f71510da986178e14',
   'Completion': 'dc56a54f2fd79d07f4d801b030cbf5b5a1ec6758be7a8c72eae0e8c2f630f58f'
 };
-// Native-executor migration changes bindings, not the preserved credit/construction sections.
+// Pin the authorized recovery/epoch revision; unchanged construction and acceptance remain protected.
 const reviewHashes = {
   "Binding and owner authority": "8ccff9adb49fdc328bc237b31dadce812f16bbb37f8f631620799a161c37fb9f",
   "Focused file reviews": "3f5bc67a099c0bdcc81917e936fd137771d60fd1708a3ab55d244a31247b980f",
-  "Review-credit admission": "e86ce67f5abed7dd8427a7191117fb2c41288ae53a9be247a410a4aeb456768e",
+  "Review-credit admission": "2ba81997c7aa9a7ebd59df70f9b43332a809ce05bf9babc2c412608e9fb19ded",
   "Candidate lifecycle and causal response": "a887cf18ee794184cb80e1319500a0af833f94cd8031182f0de3a6af28718bdd",
-  "Falsification and resumption": "fc04ccedccd9e906335c1129d7fc7ce0eb4f5fb9b0013b89cd82d4f8fb898ee6",
+  "Falsification and resumption": "053dc2d30477af4a96147cc8804c90184ad7b9f56397ae026a524ad5e0f3290d",
   "Lens ownership and evaluation": "9f0fc802cbf5d1effdbc44b47337efdc39ccbc0aff770e0270f2b102f2dc7e39"
 };
 const closureHash = "d45edd0daf0d8c7ad7d852409b3f2c6c1d61e59cdfaf7eaaae2da93761b6e73d";
@@ -83,8 +83,8 @@ function check(src) {
   }
   for (const [heading, digest] of Object.entries(reviewHashes))
     assert.equal(hash(section(review, heading)), digest, heading);
-  assert.equal(blob(src['review-closeout.md']), '91bb9e22d9245ec3d36368117f687b152f3cf599');
-  assert.equal(blob(src['references/review-contract.json']), '68d619748733cb54a466f99b91d859124ee7d2ec');
+  assert.equal(blob(src['review-closeout.md']), '4b22bbc12e3438f7d432ce78ccd54de8607af34d');
+  assert.equal(blob(src['references/review-contract.json']), '439c8ddcc2155d4a5942bed4bf082d6d516f72ff');
   const complete = src['references/closure.md'].split('For full `complete`, require:\n\n```text\n')[1];
   assert(complete, 'missing terminal contract');
   assert.equal(hash(complete.split('\n```')[0]), closureHash);
@@ -136,6 +136,9 @@ const mutations = [
   ['implicit discovery disabled', 'agents/openai.yaml', 'allow_implicit_invocation: true', 'allow_implicit_invocation: false'],
   ['review count weakened', 'references/review-contract.json', '"required_consecutive_clean_attempts": 5', '"required_consecutive_clean_attempts": 4'],
   ['freeze removed', 'review-closeout.md', 'forbid successor mutation', 'allow successor mutation'],
+  ['supersession without invalidation', 'review-closeout.md', 'When an accepted current material entailed finding', 'When any suspicion'],
+  ['supersession skips drain', 'review-closeout.md', 'every already-started attempt is observed terminal', 'every queued request is renamed'],
+  ['supersession transfers credit', 'review-closeout.md', 'Transfer no clean credit', 'Transfer old-head clean credit'],
   ['credit weakened', 'references/review-contract.md', 'including for historical receipts; do not infer adequacy', 'including for historical receipts; infer adequacy'],
   ['terminal proof weakened', 'references/closure.md', 'every required check finished successfully', 'some required checks finished successfully']
 ];
