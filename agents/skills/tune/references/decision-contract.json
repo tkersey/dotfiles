@@ -4,12 +4,12 @@
     "skill": {
       "name": "tune",
       "kind": "mixed",
-      "source_fingerprint": "unified-create-edit-evidence-tune-v13-selected-workflow-authority"
+      "source_fingerprint": "unified-create-edit-evidence-tune-v14-harness-skill-sources"
     },
     "triggers": [
       {
         "trigger_id": "TUNE-CREATE-REQUEST",
-        "description": "The user requests a new Codex skill and no existing skill is yet known to own the intent.",
+        "description": "The user requests a new agent skill and no existing skill is yet known to own the intent.",
         "cue_literals": [
           "create a skill",
           "new skill",
@@ -195,17 +195,18 @@
           "TUNE-EDIT"
         ],
         "required_artifacts": [
-          "existing-skill check",
+          "existing-skill check using available harness discovery and explicit source scope",
           "trigger and non-trigger boundary",
           "progressive-disclosure map"
         ],
         "success_signals": [
           "one lean package or an identified existing owner",
-          "aligned SKILL.md and agents/openai.yaml"
+          "aligned SKILL.md and applicable consumer metadata"
         ],
         "failure_signals": [
           "synonym skill created without search",
-          "instrumentation added without a decision need"
+          "instrumentation added without a decision need",
+          "assumed installation roots treated as the available catalog"
         ],
         "rationale": "Creation begins from an uncovered capability, not a preferred new package name."
       },
@@ -230,11 +231,13 @@
         ],
         "success_signals": [
           "one coherent authorized intervention",
-          "stable contract IDs preserved"
+          "stable contract IDs preserved",
+          "selected editable source distinguished from installed or loaded versions"
         ],
         "failure_signals": [
           "historical dossier manufactured for a known direct edit",
-          "unrelated package rewrite"
+          "unrelated package rewrite",
+          "same-name package substituted without resolving source identity"
         ],
         "rationale": "A known skill change should proceed directly without inter-skill handoff ceremony."
       },

@@ -23,6 +23,24 @@ contract IDs, custody definitions and production review counts remain protected.
 Use the existing [agent-performance](agent-performance.md) measurement discipline
 and package/cognitive probes, not a script that grades prose as behavior.
 
+## Skill sources
+
+Present the source snapshot and request to the agent; keep expected behavior
+with the evaluator. These cases exercise source selection, not live compatibility
+with an unobserved harness.
+
+| Case | Expected behavior | Failure to reject |
+|---|---|---|
+| The harness selects an unfamiliar absolute skill path; another copy has the same name. | Read the selected path and its in-package references. | Reconstructing a conventional installation path or silently substituting the other copy. |
+| Two same-name packages remain unqualified by the harness or request. | Resolve source identity before a consequential choice; ask only if available provenance cannot settle it. | Inventing precedence or choosing the first listed package. |
+| A package and its references are exposed through resource URIs. | Use the associated reader and the same package/version; use a matching executor installation or supported materialization for local commands. | Passing a URI to filesystem tools or mixing versions. |
+| The initial catalog is partial; an existing owner appears on a later discovery page. | Use relevant discovery before concluding that creation intent is uncovered. | Treating omission as absence, or requiring a full catalog sweep for a known edit. |
+| Discovery is unavailable, but the user supplies a target repository. | Continue supported source work and state the limit on runtime availability. | Blocking all work or treating repository contents as the active catalog. |
+| The user selects an authoring checkout that differs from the installed cached copy; the session still has the older instructions. | Edit the selected source and distinguish source validation from observation of the loaded version. | Editing the cache instead or claiming the session already loaded the change. |
+| Skill Creator is available outside the target repository; the new skill's destination is explicitly supplied. | Use that package's documented helper and arguments with the selected destination. | Assuming a repository-local `.system` helper or deriving the destination from the helper directory. |
+| A cross-skill link names a sibling directory that is absent from the selected installation. | Resolve the referenced skill's package/source through the harness or explicit source scope before reading its resource. | Treating a source-tree link as proof of installed topology. |
+| A target has no `agents/openai.yaml` and its intended consumers do not require it. | Complete the package edit and applicable checks without creating unrelated metadata. | Treating OpenAI metadata as a universal prerequisite. |
+
 ## Disclosure and custody
 
 | Case | Expected behavior | Failure to reject |
