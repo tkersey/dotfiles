@@ -135,8 +135,12 @@ relevant source, not a remembered architecture. Unknown evidence receives no cre
 Preserve source-backed obligations and the independent observations and conditions
 that distinguish their relevant failures. Unless source-fixed, fixture sizes,
 repetition, preparation, check placement, and build arrangements are design
-variables. Their replacement needs a proportionate preservation argument, not
-preservation of accidental implementation assertions or every inherited execution.
+variables. When replacing verification inputs or execution paths, ask whether the
+replacement could pass despite a source-relevant failure the prior witness would
+expose, even with unchanged assertions. Preserve required deciding evidence through
+the replacement or another adequate argument, and describe any reduced coverage.
+Reuse decisive native evidence; incidental fixture detail or redundant execution
+need not survive merely because it existed.
 
 Before accepting validation for local completion or reviewability, inspect the
 base-to-candidate diff and actual check selection for deleted tests, weakened
