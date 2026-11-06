@@ -35,19 +35,20 @@ success and failure signals
 required artifacts
 ```
 
-Validate it through Tune's passive Ledger definition:
+Validate it through Tune's passive Ledger definition. Resolve Ledger through the
+harness and use that package's documented executable or setup helper. Resolve
+the definitions from the selected Tune package and version, and the contract from
+the selected target source.
+
+For the local commands below, set `tune_definition_root` to those definitions and
+`target_skill_root` to the target package. If the harness provides resource URIs,
+use its matching executor installation or supported resource materialization;
+do not treat a URI as a filesystem path or substitute another same-name package.
 
 ```bash
-ledger_skill_root="$(realpath \
-  "${CODEX_HOME:-$HOME/.codex}/skills/ledger")"
-"$ledger_skill_root/scripts/ensure-ledger"
-
-tune_definition_root="$(realpath \
-  "${CODEX_HOME:-$HOME/.codex}/skills/tune/definitions")"
-
 ledger validate \
   --definition "$tune_definition_root/ledger/skill-decision-contract.json" \
-  --input contract=<skill-root>/references/decision-contract.json \
+  --input "contract=$target_skill_root/references/decision-contract.json" \
   --format json
 ```
 
@@ -86,13 +87,14 @@ Use a receipt only when:
 Do not emit receipts for ordinary prose, every checklist step, simple tool
 execution, or decisions already recoverable from bounded traces.
 
-Validate a receipt against its exact contract:
+Validate a receipt against its exact contract; set `receipt_path` to the receipt
+file:
 
 ```bash
 ledger validate \
   --definition "$tune_definition_root/ledger/skill-decision-receipt.json" \
-  --input contract=<skill-root>/references/decision-contract.json \
-  --input receipt=<receipt.json> \
+  --input "contract=$target_skill_root/references/decision-contract.json" \
+  --input "receipt=$receipt_path" \
   --format json
 ```
 

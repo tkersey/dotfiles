@@ -9,15 +9,15 @@
    `mixed` only when the classification affects design or observability.
 5. Map activation metadata, the always-required kernel, common resources, and
    each conditional resource.
-6. Scaffold when useful:
-   ```bash
-   uv run --with pyyaml -- python3 \
-     agents/skills/.system/skill-creator/scripts/init_skill.py \
-     <skill-name> --path agents/skills
-   ```
+6. Scaffold when useful with the available Skill Creator's documented helper,
+   resolved through the harness. Use the helper and arguments supported by that
+   package version. Choose the destination from the selected authoring repository
+   or the harness's established creation workflow, independently of the helper's
+   location.
 7. Author the smallest operative package.
 8. Evaluate decision instrumentation; do not add it by default.
-9. Align `agents/openai.yaml`.
+9. Align metadata for the intended consumers; create `agents/openai.yaml` only
+   when applicable.
 10. Remove redundant doctrine, examples, and generated ceremony.
 
 If an existing skill already owns the intent, prefer extending it or report

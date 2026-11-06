@@ -1,6 +1,6 @@
 ---
 name: tune
-description: "Create, edit, and tune Codex skills; diagnose and improve software and agent latency, throughput, memory, cost, reliability, and task quality from measured evidence. Not unrelated feature development or cosmetic edits."
+description: "Create, edit, and tune agent skills; diagnose and improve software and agent latency, throughput, memory, cost, reliability, and task quality from measured evidence. Not unrelated feature development or cosmetic edits."
 ---
 
 # Tune
@@ -11,7 +11,7 @@ Improve the measured effectiveness and efficiency of software, agentic systems,
 and skill packages. Preserve protected contracts, identify the limiting mechanism,
 make an attributable intervention, and verify the result. For this personal skill
 collection, `$tune` owns creation, direct editing, and evidence-backed behavioral
-tuning. The bundled Skill Creator supplies reusable scaffolding and validation
+tuning. When available, Skill Creator supplies reusable scaffolding and validation
 helpers; using those helpers does not start a second authoring workflow. Explicit
 user selection of a skill still governs.
 
@@ -114,8 +114,36 @@ Report a concrete blocker when requested publication cannot complete.
 
 ## Skill-package guidance
 
-For a skill-package target, read its `SKILL.md`, `agents/openai.yaml`, and existing
-decision contract first. Search for an existing owner before creating a package.
+### Resolve skill sources
+
+Honor an explicitly supplied target repository, package, or path. Otherwise use
+the current harness's supplied skill catalog and native discovery facilities.
+Follow its package/source identity, locator, and loading mechanism; do not infer
+availability or precedence from assumed installation directories. Names need not
+be unique. Follow selection or precedence established by the harness and resolve
+remaining ambiguity when it affects the work.
+
+Use relevant discovery pages or refresh facilities when needed; an omitted skill
+is not evidence of absence from a partial catalog. If discovery is unavailable,
+continue from an explicit source and state the limits on runtime availability.
+Do not turn discovery into an unconditional catalog sweep for a known edit.
+
+Resolve supporting skills, including Skill Creator and Ledger, and cross-skill
+references by the same rule. Read in-package resources from the selected package
+and version. Repository-relative links to other skills do not establish their
+installed locations.
+
+Before mutation, establish the selected target's editable source or supported
+management mechanism. An installed or cached copy alone does not identify the
+authoring location. Distinguish the version observed through the harness from
+the source being changed; source edits do not prove the session loaded them.
+Catalog presence does not establish loading, activation, or decision influence.
+
+### Select skill guidance
+
+For a skill-package target, read its `SKILL.md`, existing decision contract, and
+applicable consumer metadata (`agents/openai.yaml` when present or required)
+first. Search for an existing owner before creating a package.
 Load [create.md](create.md), [edit.md](edit.md), or [tuning.md](tuning.md) for the
 selected mode. Read [authoring.md](authoring.md) before selecting or realizing a
 package intervention, including proposal-only surgery. It owns progressive

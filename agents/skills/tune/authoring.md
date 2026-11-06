@@ -164,7 +164,7 @@ and router:
 - Did the description become too broad, narrow, or duplicative?
 - Does body workflow conflict with frontmatter or another skill's ownership?
 - Did evidence, authority, privacy, publication, or stopping rules weaken?
-- Did paths, names, links, contract IDs, or `agents/openai.yaml` drift?
+- Did paths, names, links, contract IDs, or applicable consumer metadata drift?
 - Would the result cause false, missed, ceremonial, or partial activation?
 - Did the change add protocol where direct capability would suffice?
 - For cognitive edits, did the native decision procedure change rather than just
