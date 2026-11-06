@@ -93,9 +93,13 @@ discharge the obligation. Apply this rule to delegated checks and review-reporte
 validation as well as parent-run checks.
 
 Before realizing a selected candidate, derive the required relationship from the
-accepted source and identify the candidate's proposed guarantee. Ask whether that
-guarantee could hold while the source-required relationship still fails. Check the
-implication across the required consumers, phases, enclosing operation, and
+accepted source and identify the candidate's proposed guarantee. [Challenge its
+sufficiency](references/counterexample-guided-normalization.md#challenge-the-sufficiency-of-a-local-guarantee)
+by keeping that guarantee true while varying a source-relevant relationship or
+permitted continuation: could the source-required relationship still fail? If so,
+carry the missing distinction into the construction while preserving required-valid
+alternatives. Reuse native evidence that already settles the implication. Check
+that implication across the required consumers, phases, enclosing operation, and
 evidence lifetime, including composition and resource growth when the source
 constrains them. Preserve distinct historical and current-authority judgments when
 reusing immutable evidence. A narrower improvement remains partial; a desirable

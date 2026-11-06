@@ -205,6 +205,31 @@ Both examples select code from the missing premise while retaining different pha
 semantics and independent checks. Their source tests are inspectable evidence, not
 native runs performed by reading this guide or untouched evidence of skill efficacy.
 
+### Challenge the sufficiency of a local guarantee
+
+Suppose publication requires consumer applicability at that event and prior
+completion of the selected producer. The proposed guarantee is an authentic
+consumer observation and a genuinely completed producer. Keep both facts true,
+but put a consumer-invalidating amendment between observation and publication,
+or put producer completion after publication. The guarantee still holds when
+checked later, while publication was inadmissible. Derive the deciding relation
+from the consumer, producer, required dependencies, and their relevant event cuts;
+identity or reconstruction alone cannot establish it.
+
+Preserve the required-valid alternative. If a request was prepared validly and its
+recorded history remains authentic and unchanged, a later amendment may block
+fresh publication without invalidating the immutable prepared request. Recovery
+uses its original preparation cut for historical meaning while applying the
+current authority required for that recovery operation. A rearm that prepares a
+new request uses a fresh cut. Rejecting all older observations would erase these
+source-required distinctions.
+
+The same question can expose an inadequate oracle: a fixture-supplied marker can
+survive even when the selected artifact is never resolved or rendered. Observe
+the actual selected artifact in the produced request, distinguishing unavailable
+selection from a valid resolved empty selection. Reuse existing native validators
+or direct corrections when they already establish the required relationship.
+
 ### Derive complete frame representability
 
 Suppose admitted results must remain retrievable under byte, token, and depth
