@@ -5,11 +5,13 @@ skill_root=$(CDPATH='' cd -- "$(dirname -- "$0")/.." && pwd)
 ledger_bin=${LEDGER_BIN:-ledger}
 jaq_bin=${JAQ_BIN:-jaq}
 definition="$skill_root/definitions/ledger/counterexample-corpus.json"
+manifest="$skill_root/migration.json"
 valid="$skill_root/tests/fixtures/counterexample-capture-valid.json"
 tmp=$(mktemp -d "${TMPDIR:-/tmp}/review-fold-counterexamples.XXXXXX")
 tmp=$(CDPATH='' cd -- "$tmp" && pwd -P)
 trap 'rm -rf "$tmp"' EXIT HUP INT TERM
 repo="$tmp/repo"
+catalog="$tmp/personal-custody"
 mkdir -p "$repo"
 
 "$ledger_bin" definition check \
@@ -22,17 +24,44 @@ mkdir -p "$repo"
     .authority_granted == false
   ' >/dev/null
 
+set +e
+"$ledger_bin" context --catalog-root "$catalog" --workspace "$repo" \
+  --read-only --definition "$definition" --owner-manifest "$manifest" \
+  >"$tmp/missing-owner.json"
+missing_status=$?
+set -e
+test "$missing_status" -eq 3
+"$jaq_bin" -e '
+  .error_code == "OwnerPreparationRequired" and .storage_mutated == false
+' "$tmp/missing-owner.json" >/dev/null
+test ! -e "$catalog"
+
+"$ledger_bin" context --catalog-root "$catalog" --workspace "$repo" \
+  --ensure-owner --definition "$definition" --owner-manifest "$manifest" \
+  --confirm-no-legacy-writers >"$tmp/context.json"
+store_root=$("$jaq_bin" -r '.store_root' "$tmp/context.json")
+store_id=$("$jaq_bin" -r '.store_id' "$tmp/context.json")
+
 "$ledger_bin" transact \
   --definition "$definition" \
   --operation capture \
-  --repo "$repo" \
+  --store-root "$store_root" --store-id "$store_id" \
   --input "submission=$valid" \
   --format json >"$tmp/capture.json"
+
+"$ledger_bin" context --catalog-root "$catalog" --workspace "$repo" \
+  --read-only --definition "$definition" --owner-manifest "$manifest" \
+  >"$tmp/read-context.json"
+"$jaq_bin" -e --arg id "$store_id" '
+  .store_id == $id and .source_coverage == "not_checked" and
+  .owner_health.healthy == true and .storage_mutated == false and
+  .authority_granted == false
+' "$tmp/read-context.json" >/dev/null
 
 "$ledger_bin" project \
   --definition "$definition" \
   --projection basis \
-  --repo "$repo" \
+  --store-root "$store_root" --store-id "$store_id" \
   --param repository=example/repository \
   --payload-only \
   --format json >"$tmp/basis.json"
@@ -51,10 +80,25 @@ counterexample_id=$(
   "$jaq_bin" -r '.[0].id' "$tmp/basis.json"
 )
 
+"$ledger_bin" transact \
+  --definition "$definition" --operation capture \
+  --store-root "$store_root" --store-id "$store_id" \
+  --input "submission=$valid" --format json >"$tmp/retry.json"
+"$jaq_bin" -e '.valid == true and .effects[0].result == "idempotent"' \
+  "$tmp/retry.json" >/dev/null
+
+rm -rf "$repo"
+"$ledger_bin" context --catalog-root "$catalog" --store-id "$store_id" \
+  --read-only --definition "$definition" --owner-manifest "$manifest" \
+  >"$tmp/later-context.json"
+"$jaq_bin" -e --arg id "$store_id" '
+  .store_id == $id and .workspace_root == null and .storage_mutated == false
+' "$tmp/later-context.json" >/dev/null
+
 "$ledger_bin" project \
   --definition "$definition" \
   --projection record \
-  --repo "$repo" \
+  --store-root "$store_root" --store-id "$store_id" \
   --param "id=$counterexample_id" \
   --payload-only \
   --format json >"$tmp/record.json"
@@ -63,11 +107,14 @@ counterexample_id=$(
   --arg id "$counterexample_id" \
   '(.id == $id) and ((.observed_fact | length) > 0)' \
   "$tmp/record.json" >/dev/null
+"$jaq_bin" -S '.[0]' "$tmp/basis.json" >"$tmp/original-record.json"
+"$jaq_bin" -S '.' "$tmp/record.json" >"$tmp/later-record.json"
+cmp "$tmp/original-record.json" "$tmp/later-record.json"
 
 "$ledger_bin" project \
   --definition "$definition" \
   --projection law-history \
-  --repo "$repo" \
+  --store-root "$store_root" --store-id "$store_id" \
   --param repository=example/repository \
   --param law=law.transition-admissibility \
   --payload-only \

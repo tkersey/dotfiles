@@ -19,6 +19,19 @@ also separate ownership from drop permission. They are not historical replays. S
 checks cover the handoff from Actuating through Review Fold to corpus capture.
 The existing Actuating composition test invokes this test as well.
 
+The native corpus check exercises the prescribed managed owner route:
+
+```sh
+LEDGER_BIN=/path/to/ledger JAQ_BIN=jaq \
+  sh agents/skills/review-fold/tests/test-counterexample-corpus.sh
+```
+
+Use Ledger 1.7.0 or newer; `JAQ_BIN=jq` also works. The isolated fixture first
+observes the missing-owner result, prepares custody, captures and projects a real
+record, retries idempotently, removes its temporary checkout, and retrieves the
+same record by stable store ID and original semantic repository scope. It does
+not exercise a model's decision to obtain that context or admit a delayed witness.
+
 The reference dispositions are evaluator expectations, not an implemented
 adjudicator. Passing probes validate the fixtures and source consistency; they
 establish neither model compliance nor improved precision. No CAS or Ledger is
@@ -58,3 +71,25 @@ report false-finding-driven changes and unnecessary follow-up machinery as well
 as missed genuine defects. A lower acceptance rate alone is not improvement.
 Report actual model-run results separately from local fixture checks. Add no
 new runtime store, quota, or campaign requirement to collect these measurements.
+
+## Owner workflow evaluation
+
+Evaluate full-fold context use separately from admission-reference reuse. In a
+fresh isolated context with a prepared corpus, ask for a full Review Fold with
+`corpus_write_authorized: false`, without suggesting a custody command. Check for
+an actual basis projection or reuse of a supplied projection whose selector,
+semantic scope, definition, and source state still apply. An unsupported statement
+that history is incomplete is not an access attempt. A paired input requesting
+only Counterexample admission must not grow into the full storage workflow.
+Exercise an actual inaccessible owner separately: the result must retain its
+failed operation or explicit access constraint, without inventing rows or capture
+permission. Keep evaluator expectations out of the run's input.
+
+For delayed capture, supply the original candidate, accepted Goal, witness,
+provenance, and failed or uncertain original append outcome, followed by a current
+candidate that excludes the witness. With enclosing capture authority, check that
+the run re-establishes the original admission, preserves the original subject and
+semantic scope, checks any known record before an uncertain retry, and retains
+`already-excluded` current applicability. A paired case without the original
+authority or decisive evidence must remain unresolved; an old report alone is not
+admission. Native idempotence does not establish these semantic judgments.

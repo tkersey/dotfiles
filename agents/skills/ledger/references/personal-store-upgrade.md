@@ -23,13 +23,13 @@ installation alone neither imports old history nor migrates notes.
 ## Release and writer cutover
 
 Release and install the native changes before activating the new definitions and
-adapters: Ledger **1.6.0 or later within major version 1**, with
+adapters: Ledger **1.7.0 or later within major version 1**, with
 `ledger-artifact-abi/v1`, and memory-note **0.3.0**. Merely merging the native PR
 does not update installed executables or a Homebrew formula. In the updated
 Ledger skill, verify the selected executable with:
 
 ```bash
-"$ledger_skill_root/scripts/ensure-ledger" --min-version 1.6.0
+"$ledger_skill_root/scripts/ensure-ledger" --min-version 1.7.0
 memory-note version
 ```
 
@@ -56,8 +56,12 @@ revision, and transaction resources. A JSONL export is not a custody backup.
 
 Use the same configured Ledger home as before: absolute `LEDGER_HOME`, otherwise
 `${CODEX_HOME:-$HOME/.codex}/ledger`. Changing that home selects another catalog.
-`--list-stores` lists only cataloged identities; an empty result is not evidence
-that pre-upgrade histories are absent.
+`--list-stores` reports cataloged identities and retained pending registrations
+separately. An empty result is not evidence that pre-upgrade histories are absent.
+Keep a pending ID/root and the original preparation error. A materialized pending
+owner may be readable with `cataloged: false`; that does not complete publication
+or authorize capture. Follow [pending context](storage-context.md#normal-selection)
+instead of deleting or reinitializing its target.
 
 Inspect retained Git registrations and known roots first. Older default roots
 remain under `<ledger-home>/repos/<store-id>/.ledger-root.json`; custom roots
@@ -76,7 +80,8 @@ This performs registration-only adoption, not cold migration. It needs no writer
 quiescence because native custody stays in place. An explicit user prohibition
 on file/custody maintenance or enforced non-writable access uses
 `ledger context` and cannot perform this catalog update. Ordinary analysis
-still follows Ledger's automatic preparation policy. The explicit
+still follows Ledger's read-first owner-access policy, including required
+preparation or exact restoration. The explicit
 `ledger context --import-registration ... --workspace ...` maintenance route remains
 available for a specifically selected registration.
 

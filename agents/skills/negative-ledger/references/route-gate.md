@@ -19,7 +19,7 @@ ledger project \
   --format json
 ```
 
-This projection folds current lifecycle state and ranks existing record text
+This projection folds lifecycle state in the selected history and ranks existing record text
 with native token relevance. It returns the complete candidate records and their
 status. It deliberately does not filter by the proposed route label or artifact:
 those filters would hide precisely the evidence needed to discover an old route.
@@ -62,14 +62,24 @@ Gate exit codes retain their exact meaning:
 - `0`: no active exact exclusion for these supplied identities; no correctness
   or exhaustive-recall claim follows.
 - `2`: an active exact artifact/identity match; confirm its applicability
-  conditions before suppressing the proposed route.
+  conditions and authoritative lifecycle state before suppressing the proposed route.
 - `3`: canonical context or store unavailable/invalid, not an empty history.
 
 `route-candidates` returns `0` for valid results, whether empty or populated. A
 nonzero result is a read failure, never an exclusion decision.
 
 An active witnessed exclusion may block only when the proposal matches its
-declared scope and current applicability. A similar viable route or a different
+declared scope, current applicability, and authoritative lifecycle state.
+An unresolved source could contain a later accepted-risk, reopening, or supersession
+transition even for the same artifact. In that case retain the selected projection
+as historical evidence and report the dependent gate as unresolved; neither exit
+`2` nor `0` resolves that missing state. Establish the relevant owner lineage or
+reconcile it before enforcing a gate. An established authoritative canonical
+lineage does not lose that authority merely because unrelated older sources are
+missing. Do not invent a transition or discard an existing exclusion to force a
+decision.
+
+A similar viable route or a different
 artifact is not banned by resemblance. Inapplicability here does not justify
 globally marking a record stale for another artifact. Reopening, narrowing, and
 supersession retain their source-owned proof obligations. Reuse already inspected
