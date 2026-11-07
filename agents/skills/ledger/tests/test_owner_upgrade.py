@@ -271,7 +271,7 @@ class OwnerUpgradeTests(unittest.TestCase):
                 self.assert_read_selects(context)
                 with self.assertRaisesRegex(custody.MigrationError, 'PreparationDivergentHistory'):
                     self.ensure(confirm_no_writers=True)
-                    self.assertEqual(self.tree_bytes(self.root), before)
+                self.assertEqual(self.tree_bytes(self.root), before)
         self.assertEqual(self.ctx.resolve(self.repo)['store_id'], context['store_id'])
 
     def test_healthy_owner_projects_known_records_without_available_siblings(self):
