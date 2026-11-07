@@ -15,8 +15,10 @@ An opted-in owner's canonical workflow includes standing authority for routine
 catalog adoption, custody initialization, compatible current-format migration,
 and exact restoration. Follow [owner access](canonical-custody.md#owner-access)
 first: healthy reads do not select preparation. Run this preparation when an
-owner read returns `OwnerPreparationRequired`, or before the first authorized
-semantic write. Do not request confirmation, an approval token, or separate
+owner read returns `OwnerPreparationRequired`, when exact archive repair returns
+`ArchiveRepairRequiresArchiveEvidence` and the same workspace can supply a
+matching live source, or before the first authorized semantic write. Do not
+request confirmation, an approval token, or separate
 migration authorization; permission to capture new semantic records does not gate
 preparation needed for a read. The installed `migration.json` is the owner's
 protocol opt-in, not a per-run question for the user.
@@ -28,6 +30,10 @@ ledger context --catalog-root "$ledger_home" --workspace "<workspace-root>" \
   --ensure-owner --definition "<installed-owner-definition>" \
   --owner-manifest "<installed-owner>/migration.json"
 ```
+
+For a bound-slot restoration after archive evidence is unavailable, also pass
+`--store-id "<verified-context.store_id>"` with that same workspace; a changed
+association must fail rather than redirect restoration to another store.
 
 Reuse the returned `native_args` for the original operation. The native host command keeps an
 existing store's identity, adopts valid registrations, and initializes a private

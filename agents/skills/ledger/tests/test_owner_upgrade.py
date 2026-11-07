@@ -459,10 +459,18 @@ class OwnerUpgradeTests(unittest.TestCase):
             custody.owner_context(self.repo, self.definition, read_only=True, binary=self.binary)
         self.assertEqual(missing.exception.value['store_id'], registered['store_id'])
         self.assertFalse(missing.exception.value['storage_mutated'])
-        context = self.ensure()
+        repair = subprocess.run(custody.owner_command(None, self.definition,
+            store_id=registered['store_id'], binary=self.binary, mode='--repair-archive'),
+            capture_output=True, timeout=15)
+        self.assertEqual(repair.returncode, 3, repair.stdout + repair.stderr)
+        self.assertEqual(json.loads(repair.stdout)['error_code'], 'ArchiveRepairRequiresArchiveEvidence')
+        self.assertFalse(json.loads(repair.stdout)['storage_mutated'])
+        context = custody.owner_context(self.repo, self.definition, store_id=registered['store_id'],
+                                        maintain=True, binary=self.binary)
         self.assertEqual(context['store_id'], registered['store_id'])
         self.assertEqual((store / self.slot).read_bytes(), (self.repo / self.slot).read_bytes())
         self.assertEqual(original_binding, {p.name: p.read_bytes() for p in (store / '.ledger/.bindings').glob('*.jsonl')})
+        self.assert_read_selects(registered)
 
     def test_read_only_does_not_initialize_or_migrate(self):
         self.capture(['--repo', str(self.repo)])

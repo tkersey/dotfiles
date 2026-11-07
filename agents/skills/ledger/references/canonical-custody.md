@@ -100,7 +100,12 @@ Handle only the returned condition:
 - `StoreBindingWithoutSlot`: retain the verified context returned with the
   error, then select [exact archive repair](automatic-migration.md#exact-archive-repair)
   by that same store ID. Adopt an existing uncataloged registration only as that
-  route specifies. Retry the owner read after successful restoration.
+  route specifies. If repair returns `ArchiveRepairRequiresArchiveEvidence` and
+  a workspace was selected, use [automatic owner upgrade](automatic-migration.md#automatic-owner-upgrade)
+  with that same workspace, verified store ID, definition, and manifest to restore
+  a matching live source under native binding and writer checks. Preserve other repair failures;
+  do not infer writer quiescence or select a different store. Retry the owner read
+  after successful restoration.
 - Other identity, integrity, binding, recovery, or unknown failures remain actual
   blockers. Do not reinterpret them as an absent owner or attempt another store.
 
