@@ -68,9 +68,9 @@ structured review output, not a synthesized CAS receipt. Use `owner: codex` in t
 existing source batch; a durable source reference may use existing kind `other`
 with explicit native provenance, never fabricated `cas` provenance. Historical
 CAS-derived evidence retains its exact original receipt and attribution. Historical
-tests, incidents, and failures retain their original subjects. Project the Review Fold
-counterexample basis before classification when available; do not treat stored
-rows as currently applicable without re-evaluation.
+tests, incidents, and failures retain their original subjects. Obtain the Review
+Fold counterexample basis under Procedure step 1 before classification; do not
+treat stored rows as currently applicable without re-evaluation.
 
 Read [counterexample-corpus.md](references/counterexample-corpus.md) before the
 first corpus projection or capture in a workflow.
@@ -80,12 +80,11 @@ first corpus projection or capture in a workflow.
 `corpus_write_authorized` controls new semantic captures only and must follow the
 enclosing task's actual effect scope;
 review pressure and corpus ownership cannot grant it. An enclosing analysis
-route supplies false when it does not authorize semantic capture. Adjudication
-and available read-only projection remain
-permitted without capture. Ledger's automatic custody preparation runs before
-projection or capture, independently of this flag and without separate approval,
-including during analysis. Follow its explicit no-file/custody-maintenance
-constraints; an analysis route alone does not prohibit preparation. Do not
+route supplies false when it does not authorize semantic capture. Obtain or reuse
+the corpus projection independently of this flag. Ledger first reads intact
+custody and automatically prepares or restores only when its typed outcome calls
+for it, without separate approval. Follow explicit no-file/custody-maintenance
+constraints; an analysis route alone does not prohibit needed preparation. Do not
 provision a tool or write a source-memory note to evade the capture boundary.
 Return accepted in-context evidence
 and empty `captured_ids` when writing is unauthorized; do not claim persistence
@@ -138,10 +137,13 @@ all decision-relevant evidence without populating inapplicable schema fields.
 
 ## Procedure
 
-1. Prepare Ledger custody automatically through the corpus reference, then project
-   the repository counterexample basis and preserve its exact IDs and source
-   references. Preparation does not depend on capture authority or require a
-   migration approval prompt. An absent slot is not proof of complete history.
+1. Obtain the repository counterexample basis through the corpus reference, or
+   reuse a supplied projection whose selector, semantic scope, definition, and
+   source state remain applicable. Preserve its exact IDs and result reference.
+   Otherwise record the actual failed operation or explicit access constraint in
+   the existing missing-source fields. An unsupported assertion of incomplete
+   history does not satisfy this step. False capture authority does not waive it;
+   admission-reference reuse alone does not invoke this workflow.
 2. Preserve every current and historical witness's original subject.
 3. Separate reported claim, established fact, suggested repair, and transport
    status; do not copy an allegation into `observed_fact` as proof of itself.
@@ -164,7 +166,9 @@ all decision-relevant evidence without populating inapplicable schema fields.
 13. When `corpus_write_authorized` is true, capture each independent witness
     that passed Counterexample admission, whose current applicability is
     `still-present` or `transformed-applicable`, law authority is `entailed`, and
-    disposition is `accepted`. Otherwise retain accepted evidence in context.
+    disposition is `accepted`. For a missed or interrupted original submission, follow
+    [delayed capture](references/counterexample-corpus.md#delayed-capture) without
+    misrepresenting its current applicability. Otherwise retain evidence in context.
 14. Return the fold and corpus IDs directly.
 
 A clean source may return an empty `classes` list and performs no capture.

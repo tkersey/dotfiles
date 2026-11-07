@@ -67,6 +67,9 @@ installation during an active repository effect. It does not proxy commands.
 Readiness is not compatibility with every definition. Use `definition check`
 when selecting a new/changed closure or diagnosing operator support, not as a
 redundant preflight for every unchanged operation.
+Owner read selection and the recovery routes below require Ledger 1.7.0 or newer;
+bootstrap them with `ensure-ledger --min-version 1.7.0`. The shared baseline still
+suffices for unchanged pure operations.
 
 ## Select the operation
 
@@ -84,9 +87,9 @@ readiness only while the executable and execution environment are unchanged.
 
 Never load storage manuals or initialize a store for a pure operation. Conversely,
 calling a canonical projection an inspection does not waive custody checks.
-Canonical recall for an opted-in owner includes automatic custody preparation
-below. Only owners select semantic scope; other worktree/session data is not
-silently relocated.
+Canonical recall first selects intact owned history; prepare or restore only when
+its exact condition requires it. Only owners select semantic scope; other
+worktree/session data is not silently relocated.
 
 ## Baseline native surface
 
@@ -176,12 +179,20 @@ physical path or implementing a second catalog resolver.
 
 ## Resolve personal custody
 
-At first canonical use for an opted-in owner, use
-[automatic owner upgrade](references/automatic-migration.md#automatic-owner-upgrade)
-with `--ensure-owner --definition` before projection or capture. Invocation
-includes routine custody preparation; do not request separate migration approval
-or gate it on permission to capture new records. Analysis and review use this
-same preparation. Use the returned managed selector for the original operation.
+For an opted-in owner's read, follow
+[owner access](references/canonical-custody.md#owner-access): start with
+`--read-only --definition --owner-manifest`, then project using the returned
+managed selector. An intact present owner needs no sibling discovery or archive
+scan. Preserve the distinction between readable selected history, historical
+coverage, and current owner authority.
+
+Before the first semantic write, use `--ensure-owner --definition
+--owner-manifest` under [automatic owner upgrade](references/automatic-migration.md#automatic-owner-upgrade).
+A successful read does not satisfy that preparation or authorize capture.
+Reads that need initialization or exact restoration follow only the typed routes
+in owner access. Routine preparation has standing authority independently of new
+semantic capture; analysis alone does not prohibit it. Explicit no-file/custody
+constraints remain binding. Do not request separate migration approval.
 
 Without owner preparation, use `ledger context --catalog-root "$ledger_home"
 --workspace "<absolute-workspace>" --ensure`, or select a known cataloged
@@ -189,17 +200,17 @@ Without owner preparation, use `ledger context --catalog-root "$ledger_home"
 workspace has no catalog association. It preserves the root, store ID, records,
 and native bindings; it never creates new history or imports legacy records.
 Repeated ensure leaves storage unchanged. For an explicit prohibition on custody
-maintenance, omit `--ensure` for identity lookup, or use `--read-only --definition
-"$definition" --owner-manifest "$owner_manifest"` for owner selection. Report unavailable history when
-that constraint prevents preparation; do not invent a migration approval step.
+maintenance, omit `--ensure` for identity lookup and do not escalate owner reads
+to preparation or repair. Report the actual condition preventing access.
 Missing worktrees, unresolved legacy imports, and absent migration receipts do
 not invalidate owned custody. Read [explicit adoption and migration](references/canonical-custody.md#explicit-adoption-and-migration)
 only when that maintenance is selected. A missing or corrupt established root
 still fails closed; it is never replaced with an empty store.
 
-Automatic preparation initializes, migrates compatible local history, or restores
-missing bound bytes, waiting for active writers. Explicit `--read-only` selection
-never creates or repairs custody; failures never select a local-store fallback.
+Automatic preparation initializes or migrates compatible local history; exact
+restoration preserves an existing binding. Both wait for participating writers.
+Read-only selection never creates or repairs custody. Failures never select a
+local-store fallback or convert unknown history into an empty owner.
 
 ## Storage custody and recovery
 

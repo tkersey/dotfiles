@@ -13,10 +13,14 @@ need catalog adoption rather than historical migration.
 
 An opted-in owner's canonical workflow includes standing authority for routine
 catalog adoption, custody initialization, compatible current-format migration,
-and exact restoration. Perform this preparation automatically before its first
-projection or capture, including analysis and review. Do not request confirmation,
-an approval token, or separate migration authorization; permission to capture new
-semantic records does not gate it. The installed `migration.json` is the owner's
+and exact restoration. Follow [owner access](canonical-custody.md#owner-access)
+first: healthy reads do not select preparation. Run this preparation when an
+owner read returns `OwnerPreparationRequired`, when exact archive repair returns
+`ArchiveRepairRequiresArchiveEvidence` and the same workspace can supply a
+matching live source, or before the first authorized semantic write. Do not
+request confirmation, an approval token, or separate
+migration authorization; permission to capture new semantic records does not gate
+preparation needed for a read. The installed `migration.json` is the owner's
 protocol opt-in, not a per-run question for the user.
 
 Resolve the owner through:
@@ -26,6 +30,10 @@ ledger context --catalog-root "$ledger_home" --workspace "<workspace-root>" \
   --ensure-owner --definition "<installed-owner-definition>" \
   --owner-manifest "<installed-owner>/migration.json"
 ```
+
+For a bound-slot restoration after archive evidence is unavailable, also pass
+`--store-id "<verified-context.store_id>"` with that same workspace; a changed
+association must fail rather than redirect restoration to another store.
 
 Reuse the returned `native_args` for the original operation. The native host command keeps an
 existing store's identity, adopts valid registrations, and initializes a private
@@ -52,7 +60,9 @@ only then add `--confirm-no-legacy-writers` to `--ensure-owner`. This includes f
 owner initialization and healthy owners whose supplied worktrees contain no local
 history. The genuinely new-owner route rejects missing coordination before allocating custody.
 Ordinary context lookup and direct managed projection do not assert source-family
-coverage and retain their existing routes. The native host command never
+coverage and retain their existing routes. A successful preparation protects its
+source observation and publication only; it does not fence a legacy writer after
+those locks are released. The native host command never
 infers quiescence from a missing process, infers abandoned ownership from lock
 age, or reclaims a legacy lease. Unknown damage, pending recovery, unavailable worktree
 coverage, divergent histories, or a local extension beyond an existing managed
@@ -60,14 +70,14 @@ log remain explicit reconciliation failures. Sources are preserved. Failure neve
 switches capture back to a repo-local store. Updated callers use managed selectors;
 old callers must also be upgraded before they can resume new local writes.
 
-Only an explicit user prohibition on file/custody maintenance or an enforced
-non-writable environment selects `--read-only` instead of `--ensure-owner`.
-An analysis route or a false/omitted corpus-capture flag alone does not select it.
-This mode creates no catalog, custody, or records and reports when preparation is
-unavailable under that constraint. Automatic preparation grants no new semantic
+Read-only owner selection is the normal first read, even when maintenance is
+allowed. An explicit user prohibition on file/custody maintenance or an enforced
+non-writable environment prevents escalating that read to preparation or repair.
+An analysis route or a false/omitted corpus-capture flag alone does not prevent
+needed preparation. Automatic preparation grants no new semantic
 capture, source mutation, provisioning, publication, or permission changes.
 Ordinary ensure still only resolves or adopts a registration. Ledger
-1.6.0 or newer within major version 1 is required by this adapter. General
+1.7.0 or newer within major version 1 is required by the owner-access adapter. General
 permission errors do not authorize unrelated permission changes. Native
 publication, the subsequent owner operation, catalog association and maintenance
 have separate outcomes; later failure never authorizes another publication.
@@ -194,16 +204,26 @@ become invented records. Global memory admission remains a separate owner action
 
 ## Exact archive repair
 
-Automatic owner preparation includes exact archive restoration. A caller selecting
-that same repair directly uses `ledger context --catalog-root "$ledger_home" --repair-archive
---definition <installed-owner-definition> --owner-manifest <installed-owner>/migration.json`
-with the normal workspace or store ID.
-Bootstrap Ledger 1.6.0 or newer within major version 1 first. When a supplied live
-workspace lacks qualified writer coordination, actually quiesce its writers and
-add `--confirm-no-legacy-writers`; never infer quiescence from an absent process.
-An intact owner store
-returns normally without scanning archives. Ordinary ensure and read-only context
-lookup never restore records.
+An owner read returning `StoreBindingWithoutSlot` may select exact archive
+restoration under standing custody authority. Use its verified existing context:
+
+```bash
+ledger context --catalog-root "$ledger_home" --store-id "<context.store_id>" \
+  --repair-archive --definition "$definition" --owner-manifest "$owner_manifest"
+```
+
+Bootstrap Ledger 1.7.0 or newer first. The store ID must select the same existing
+cataloged root and binding; this read-repair route makes no live-source coverage
+claim. If the verified identity exists only in an old Git registration, ordinary
+`--ensure` may adopt that registration without moving history before the repair.
+Retry the owner read after restoration. An explicit no-maintenance constraint
+forbids both adoption and repair.
+
+A separately selected repair may include a live workspace. When that workspace
+lacks qualified writer coordination, actually quiesce its writers before adding
+`--confirm-no-legacy-writers`; never infer quiescence from an absent process.
+An intact owner returns normally without scanning archives. Ordinary ensure and
+read-only context lookup never restore records.
 
 This route handles only native `StoreBindingWithoutSlot` for one declared static
 event slot, with no pending transactions. It verifies retained archive manifests
@@ -224,6 +244,33 @@ restores bytes already certified by the selected root's binding. Automatic owner
 upgrade selects this repair when appropriate; other missing current-format owner
 history uses its locked migration path.
 
+### Retained source under an older archive layout
+
+`UnsupportedLegacyArchiveLayout` is not an empty archive. Preserve its manifest
+and source bytes. Do not skip manifest entries, relabel archived-only records as
+admitted, or send an unfamiliar manifest through the current archive importer.
+
+For an exact current-format source tree retained in that archive, a selected
+owner read or doctor must first establish `StoreBindingWithoutSlot` against the
+existing target binding, with no unresolved transactions. Inspect the source
+under that same definition and select only the original target and witnessed
+source. Ledger 1.7.0 provides the atomic target restriction:
+
+```bash
+ledger prepare --definition "$definition" \
+  --store-root "<context.store_root>" --store-id "<context.store_id>" \
+  --source-root "<exact-retained-source-root>" --restore-bound-history --format json
+```
+
+Use existing writer coordination, or add `--confirm-no-legacy-writers` only after
+establishing actual source quiescence. After a valid inspection, repeat the same
+selection with `--apply` under standing exact-restoration authority. The flag must
+remain present: ordinary preparation can initialize an unbound owner, which this
+repair must never do. Native binding, payload, definition, revision, and replay
+checks govern restoration; an earlier doctor result alone is not the commit
+guard. Retry the owner read afterward. This restores already-bound bytes; a
+missing unbound owner still needs its owner-aware import or reconciliation route.
+
 ## Release gate
 
 Run the owner historical-import and migration test modules with `LEDGER_BIN` set,
@@ -231,8 +278,10 @@ including `test_archive_repair.py` and `test_owner_upgrade.py`, plus the Ledger 
 suite. Native tests must pass; mocked native results are not custody evidence.
 The Learnings native compatibility test covers the earlier local recovery
 protocol and its archived definitions alongside new imports and captures.
-Test that a native append preserves the witnessed source snapshot, that normal
-access ignores a missing historical worktree/receipt, and that direct native
-projection still works after all checkouts are deleted. Existing recovered roots
+Test that a native append preserves the witnessed source snapshot, that the
+prescribed owner read projects known records with an unavailable historical
+worktree, and that a fresh invocation retrieves the same record under its original
+semantic scope after all checkouts are deleted. Keep strict preparation tests for
+writes and absent owners; read success is not source coverage. Existing recovered roots
 can be cataloged by their unchanged ID/root without running migration. Never
 migrate a live recovered store merely to exercise these changes.

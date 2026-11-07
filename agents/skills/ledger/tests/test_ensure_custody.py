@@ -716,9 +716,11 @@ class NativeMigrationTests(unittest.TestCase):
         home = self.root / 'home'
         home.mkdir()
         digest = hashlib.sha256(json.dumps({'workspace_root': str(self.repo)}, separators=(',', ':')).encode()).hexdigest()
-        with module.native_lock(home / 'catalog.lock'):
+        controls = home / 'preparations' / digest
+        controls.mkdir(parents=True)
+        with module.native_lock(controls / 'ledger-store.lock'):
             process = self.migration_process()
-            self.wait_for_path(home / 'preparations' / digest / 'ledger-store.lock', process)
+            self.wait_for_path(home / 'catalog.lock', process)
             self.git('init', '-q')
         out, err = process.communicate(timeout=20)
         self.assertNotEqual(process.returncode, 0, out + err)

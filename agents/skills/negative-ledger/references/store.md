@@ -6,11 +6,11 @@ change effect authority or activate capture/admission.
 ## Canonical Store and CLI
 
 Load `$ledger` and complete its owner-specific bootstrap before the first native
-command. Use Ledger's current bootstrap baseline and `ledger-artifact-abi/v1`:
+command. Canonical owner access requires Ledger 1.7.0 and `ledger-artifact-abi/v1`:
 
 ```bash
 ledger_skill_root="$(realpath "${CODEX_HOME:-$HOME/.codex}/skills/ledger")"
-"$ledger_skill_root/scripts/ensure-ledger"
+"$ledger_skill_root/scripts/ensure-ledger" --min-version 1.7.0
 ```
 
 When installation is already authorized, add `--install` to that same command.
@@ -27,17 +27,22 @@ with `ledger definition check --definition "$negative_ledger_definition" --forma
 A healthy store doctor does not establish projection compatibility. Reuse this
 check while the definition and executable are unchanged.
 
-Before the first canonical projection or capture, follow `$ledger`'s automatic
-owner preparation for this definition. Retain its returned `store_root`,
+Follow `$ledger`'s [owner access](../../ledger/references/canonical-custody.md#owner-access)
+for this definition: read healthy present custody first; prepare or restore only
+for its exact typed condition, and run strict preparation before the first
+semantic write. Retain the returned `store_root`,
 `store_id`, and stable `repository_id`; `workspace_root` is optional provenance.
 All canonical operations use that selector, including admission. Direct
 `--store-id` selection requires no Git workspace; `--repo` can resolve a cataloged
 workspace alias.
 
-Explicit file/custody restrictions follow Ledger's read-only path; preparation
-grants no new capture, lifecycle, or admission authority. Historical recovery
-completeness does not gate access to an existing valid store. Ledger owns any
-required custody maintenance.
+Explicit file/custody restrictions prevent preparation or repair, not healthy
+reads. Preparation grants no new capture, lifecycle, or admission authority.
+Historical recovery completeness does not gate access to an existing valid
+store. Retain the context's coverage qualification: a readable lifecycle prefix
+does not by itself prove the latest authoritative status. Ledger owns custody
+maintenance; this owner determines whether the available history can govern the
+current route decision.
 
 Native surface:
 

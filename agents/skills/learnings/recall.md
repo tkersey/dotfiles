@@ -36,8 +36,10 @@ ledger project \
 ```
 
 Check evidence, application conditions, and material uncertainty against the
-current artifact. Expand only candidates that could change the decision, not
-every search hit. Reuse an already inspected unchanged record within the task;
+current artifact. An unreconciled source may contain a later correction or
+supersession; do not treat a selected-history row as the latest endorsed rule
+without the relevant source authority. Expand only candidates that could change
+the decision, not every search hit. Reuse an already inspected unchanged record within the task;
 recheck when source or relevant artifact facts change. Missing evidence is not
 permission to reconstruct a canonical record from memory or assume it applies.
 

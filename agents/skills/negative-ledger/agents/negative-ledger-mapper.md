@@ -57,11 +57,15 @@ This specialist is read-only. It never captures ledger events, changes statuses,
    ```
 
    Interpret exit `0` as no exact active match for those selectors, `2` as an
-   exact active match whose applicability still requires inspection, and `3` as
+   exact active match whose applicability and authoritative lifecycle state still
+   require inspection, and `3` as
    unavailable or invalid. A label miss does not prove absence of prior evidence.
    Always include the identity for the record's declared scope; omit only
    identities that were not established. Do not substitute a historical artifact
    identity to force a current match.
+   Follow [route gating](../references/route-gate.md) when unresolved source
+   coverage could contain a later transition; report that dependent decision
+   as unresolved rather than enforcing a potentially obsolete status.
 
 4. Candidate results already contain the complete current structural record and
    reducer status. Use a bounded current projection when more context is needed:

@@ -77,6 +77,7 @@ For each candidate episode, ask:
    gate rather than rely on a label miss or immediately capture?
 3. Did transient failures remain `no-op`?
 4. Did a qualified event produce durable, narrow evidence?
-5. Did blocking require an active, fully validated, witnessed, exact native-scope match with current-state applicability?
+5. Did blocking require an active, fully validated, witnessed, exact native-scope
+   match with current applicability and authoritative lifecycle state?
 6. Did invalid reads remain distinct from empty results, and did independent
    memory failures remain separate from canonical validity?

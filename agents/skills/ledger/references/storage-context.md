@@ -6,7 +6,7 @@ catalog lookup, Git discovery, and authorized registration; the storage engine
 receives explicit roots and has no Codex-specific default.
 For a coordinated upgrade of existing installations, follow
 [the upgrade guide](personal-store-upgrade.md). Normal opted-in owner access uses
-automatic preparation below.
+the read or write route below.
 
 ## Catalog and identity
 
@@ -52,21 +52,33 @@ implicit initialization or lookup fallback.
 
 ## Normal selection
 
-Before an opted-in owner's projection or capture, including analysis, run
-[automatic owner preparation](automatic-migration.md#automatic-owner-upgrade)
-with `--ensure-owner --definition` without separate approval. The identity lookup
-commands below do not perform that preparation and are not substitutes for it.
-Use non-mutating owner selection when file/custody maintenance is explicitly
-prohibited, as that owner-preparation policy specifies.
+Before an opted-in owner's projection or capture, follow
+[owner access](canonical-custody.md#owner-access): read an intact present owner
+with `--read-only --definition --owner-manifest`; select preparation only for its
+typed missing-owner condition or before a semantic write. Identity lookup below
+does not establish owner health, preparation, or historical coverage. Explicit
+no-maintenance constraints prevent preparation and repair, not healthy reads.
 
-Discover registered identities after a checkout disappears:
+Discover cataloged and pending identities after a checkout disappears:
 
 ```bash
 ledger context --catalog-root "$ledger_home" --list-stores
 ```
 
-The read-only listing returns IDs, roots, and explicit associations. It makes no
-native store-health claim and does not initialize an absent catalog.
+The read-only listing returns cataloged `stores` and retained `pending`
+registrations. Each pending entry has its original `registration` and a state of
+`allocated` or `materialized`. Neither state proves owner health or completed
+publication. The listing does not initialize an absent catalog or replace the
+nested actionable blocker from the failed preparation result.
+
+A verified materialized pending identity may be selected with `--read-only
+--store-id <registration.store_id> --definition ... --owner-manifest ...` without
+the old checkout. Successful owner reads report `cataloged: false` and
+`source_coverage: not_checked`; they do not publish the registration or authorize
+writes. An allocated empty target is not replacement history. Resolve the original
+preparation blocker before resuming publication, retaining the same ID and root.
+Explicit `--register-root` below can publish that verified identity; it does not
+certify missing source coverage or permit a new empty owner to bypass recovery.
 
 Prefer the known source's stable identity:
 
@@ -82,8 +94,8 @@ ledger context --catalog-root "$ledger_home" --workspace "<workspace-path>"
 ```
 
 A live Git worktree can supply its root/common-directory associations, so linked
-worktrees share an explicitly attached family. The native host command never enumerates sibling
-worktrees during normal access. Plain directories can be associated too. Worktree
+worktrees share an explicitly attached family. Identity lookup and healthy owner
+reads do not enumerate sibling worktrees. Plain directories can be associated too. Worktree
 moves within a common directory retain that family association. After moving the
 common directory or using another clone, select the known ID and explicitly attach
 the new workspace; remotes and basenames never infer that decision.

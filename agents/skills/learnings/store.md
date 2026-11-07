@@ -2,8 +2,8 @@
 
 ## Canonical Store
 
-Before the first native command, load `$ledger` and complete `$ledger ensure`.
-Use Ledger's shared runtime baseline and `ledger-artifact-abi/v1`.
+Before the first native command, load `$ledger` and complete `$ledger ensure`
+with `--min-version 1.7.0` for canonical owner access and `ledger-artifact-abi/v1`.
 The Ledger skill owns physical location, the personal catalog, initialization,
 and legacy import. Do not derive a store from the current checkout or duplicate
 its lookup/migration policy here.
@@ -14,10 +14,12 @@ Set the definition independently of the target workspace:
 learnings_definition="$(realpath "${CODEX_HOME:-$HOME/.codex}/skills/learnings/definitions/ledger/learnings-protocol.json")"
 ```
 
-Before the first canonical projection or capture, follow `$ledger`'s automatic
-owner preparation for this definition and reuse its returned context. Explicit
-file/custody restrictions follow Ledger's read-only path; preparation grants no
-new learning capture or memory admission authority.
+Follow `$ledger`'s [owner access](../ledger/references/canonical-custody.md#owner-access):
+read healthy present custody first, select preparation or restoration only for
+its exact typed condition, and run strict preparation before the first semantic
+write. Reuse the returned context and its coverage qualification. Explicit
+file/custody restrictions prevent maintenance, not healthy reads; preparation
+grants no new learning capture or memory admission authority.
 
 Select the intended store through `$ledger`: `--store-id` works without Git;
 `--repo` may resolve a cataloged workspace alias. Retain `store_root`, `store_id`,

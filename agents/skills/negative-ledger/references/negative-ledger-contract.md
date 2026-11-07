@@ -46,7 +46,10 @@ negative_evidence_record:
 
 ## Blocking Rule
 
-Only `active` records may block. They require witness evidence, valid applicability, and exact matching appropriate to `exclusion_scope`.
+Only `active` records may block. They require witness evidence, valid applicability,
+authoritative lifecycle state, and exact matching appropriate to `exclusion_scope`.
+Follow the [route gate](route-gate.md) when unresolved source coverage could hide a
+later lifecycle transition; readable historical status alone is insufficient.
 
 Cluster identity alone is not exclusion. A new helper name does not create a new route. Fuzzy overlap is suggest-only.
 

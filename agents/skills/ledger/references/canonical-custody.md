@@ -23,7 +23,7 @@ Resolve a known stable identity without Git:
 ledger context --catalog-root "$ledger_home" --store-id "<store-id>"
 ```
 
-For an opted-in owner, use automatic owner preparation below before its first
+For an opted-in owner, follow [owner access](#owner-access) before its first
 projection or capture. For context resolution without an owner, ensure the
 selected workspace association:
 
@@ -50,9 +50,8 @@ it automatically imports its existing valid Git registration using the locked
 catalog adoption operation. Only catalog metadata changes; identity, native
 custody, and the original registration stay intact. Missing registrations,
 invalid roots, and conflicts still fail; ensure never initializes empty history.
-Reuse successful context within the session. Default `ledger context` lookup remains strictly
-read-only and is the route when the user explicitly prohibits file/custody
-maintenance or the environment enforces non-writable access.
+Reuse successful context within the session. Default `ledger context` lookup
+remains strictly read-only, including when custody maintenance is prohibited.
 Neither lookup nor registration adoption enumerates sibling worktrees, inspects
 legacy logs, or demands a migration receipt. An absent
 historical source limits a recovery claim, not access to intact owned data.
@@ -71,6 +70,56 @@ does not broaden applicability. Preserve old IDs, source fields, fingerprints,
 and immutable memory snapshots. Resolve qualified sources by selected store,
 semantic owner, record identity, and version/evidence rather than a disposable
 checkout path or bare `NEG` number.
+
+## Owner access
+
+Bootstrap Ledger 1.7.0 or newer with `ensure-ledger --min-version 1.7.0` before
+owner selection. Start a canonical read with the owner's installed definition
+and migration manifest:
+
+```bash
+ledger context --catalog-root "$ledger_home" --workspace "<workspace-path>" \
+  --read-only --definition "$definition" --owner-manifest "$owner_manifest"
+```
+
+Use a known `--store-id` instead of `--workspace` when no workspace is selected;
+[retained pending identities](storage-context.md#normal-selection) have separate
+publication constraints. Success requires a present owner slot with valid
+identity, binding, integrity, and recovery state. Its `owner_health` identifies the selected slot and
+revision; `source_coverage: not_checked` makes no sibling-history claim. Retain
+that qualification with the projection: known records
+remain useful, but absent records do not prove no prior occurrence. Owners must
+also qualify current lifecycle claims when an unreconciled source could contain a
+later transition; selected-history validity alone does not decide that authority.
+
+Handle only the returned condition:
+
+- `OwnerPreparationRequired`: when maintenance is allowed, run
+  [automatic owner upgrade](automatic-migration.md#automatic-owner-upgrade) with
+  the same selection, definition, and manifest, then use its returned selector.
+- `StoreBindingWithoutSlot`: retain the verified context returned with the
+  error, then select [exact archive repair](automatic-migration.md#exact-archive-repair)
+  by that same store ID. Adopt an existing uncataloged registration only as that
+  route specifies. If repair returns `ArchiveRepairRequiresArchiveEvidence` and
+  a workspace was selected, use [automatic owner upgrade](automatic-migration.md#automatic-owner-upgrade)
+  with that same workspace, verified store ID, definition, and manifest to restore
+  a matching live source under native binding and writer checks. Preserve other repair failures;
+  do not infer writer quiescence or select a different store. Retry the owner read
+  after successful restoration.
+- Other identity, integrity, binding, recovery, or unknown failures remain actual
+  blockers. Do not reinterpret them as an absent owner or attempt another store.
+
+An explicit no-file/custody-maintenance constraint or enforced non-writable
+environment prevents both escalation routes. A false semantic-capture flag does
+not. Preserve the actual failed operation or constraint; do not manufacture an
+empty projection or merely assert that history was unavailable.
+
+Before the first authorized semantic write, use `--ensure-owner --definition
+--owner-manifest` under the owner-upgrade guidance even if a prior read succeeded.
+Reuse its result while the relevant selection and preparation premises remain
+unchanged. This protected source check is point-in-time preparation, not a fence
+against later legacy writers. A read result grants neither write readiness nor
+semantic capture authority. All operations retain the same managed identity.
 
 ## Explicit adoption and migration
 
@@ -114,15 +163,9 @@ reinterpret, or skip canonical records. Explicit cold transport is not an altern
 semantic writer. Fail closed on unknown closure, ABI, operator, binding, integrity,
 replay, projection, or recovery state.
 
-Before the first projection or capture for an owner that opts in, use
-[automatic owner upgrade](automatic-migration.md#automatic-owner-upgrade) with
-`--ensure-owner --definition` automatically, without separate approval or a
-new-record capture requirement. It initializes managed custody, transports compatible
-current-format history, or restores a missing static slot against its unchanged
-native binding. It waits for active writers under native locks. Continue with the
-returned managed selector; never fall back to a local store on failure. Analysis
-and review use this same preparation. Explicit no-maintenance owner selection uses
-`--read-only --definition` and never creates or repairs custody.
+Use [owner access](#owner-access) for canonical reads and the first semantic write.
+Only the selected preparation or exact restoration may change custody; successful
+lookup does not grant that effect or choose a different lineage.
 
 Lease expiry does not transfer authority. Recovery is bound to one transaction's
 resource, lock identity, fencing token, owner, and witnessed lease state. Read

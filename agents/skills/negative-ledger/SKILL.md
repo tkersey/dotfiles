@@ -93,7 +93,9 @@ superseded
 ```
 
 Only `active` may block: witness evidence, valid exclusion scope, current artifact
-applicability, and exact-enough route/cluster matching are all required. Fuzzy or
+applicability, authoritative lifecycle state, and exact-enough route/cluster
+matching are all required. A potentially missing relevant transition leaves the
+gate unresolved; a readable partial history is still useful evidence. Fuzzy or
 lexical overlap is suggest-only.
 
 ## Selected guidance

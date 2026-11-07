@@ -45,9 +45,9 @@ New semantic capture requires `corpus_write_authorized: true` from the enclosing
 task. Omitted or false authority permits projection and adjudication, not
 `ledger transact --operation capture`, provisioning, or source-memory writes.
 The caller supplies false when its route does not authorize semantic capture.
-This flag does not gate Ledger's automatic custody preparation, including its
-native maintenance transactions.
-Prepare custody before projection or capture without requesting separate approval.
+This flag does not gate corpus reads or Ledger's required custody preparation,
+including native maintenance transactions. Follow Ledger's read-first owner access
+without requesting separate approval for needed preparation or exact restoration.
 Corpus ownership cannot grant new semantic captures or unrelated effects.
 
 With no capture authority, retain accepted witnesses in context and return empty
@@ -66,7 +66,7 @@ logical slot in Ledger personal custody
 ```
 
 Before the first Ledger command in the enclosing workflow, load `$ledger` and
-complete `$ledger ensure` once.
+complete `$ledger ensure` with `--min-version 1.7.0` once.
 
 Resolve the personal context through Ledger's canonical-custody guidance and use
 its `native_args` for every corpus operation. Preserve existing repository IDs
@@ -74,55 +74,49 @@ and witness provenance when projecting or retrying an earlier submission; moving
 custody does not rename a semantic scope. New independent scopes may use the
 context's stable `repository_id`.
 
-Use the `ledger_home` selected by the Ledger skill body. Ensure the owner automatically before the first corpus projection or capture,
-including analysis with false or omitted `corpus_write_authorized`:
+Use the `ledger_home` selected by Ledger. Start a corpus read with its owner-read
+route, including analysis with false or omitted `corpus_write_authorized`:
 
 ```bash
-counterexample_definition="$(realpath \
-  "${CODEX_HOME:-$HOME/.codex}/skills/review-fold/definitions/ledger/counterexample-corpus.json")"
+counterexample_owner="$(realpath "${CODEX_HOME:-$HOME/.codex}/skills/review-fold")"
+counterexample_definition="$counterexample_owner/definitions/ledger/counterexample-corpus.json"
+counterexample_manifest="$counterexample_owner/migration.json"
 
 ledger context --catalog-root "$ledger_home" --workspace "<workspace-root>" \
-  --ensure-owner --definition "$counterexample_definition" \
-  --owner-manifest "$(dirname "$(dirname "$(dirname "$counterexample_definition")")")/migration.json"
+  --read-only --definition "$counterexample_definition" \
+  --owner-manifest "$counterexample_manifest"
 ```
 
-This initializes new managed custody, migrates compatible current-format local
-history, or restores missing bound bytes as needed, then returns the managed
-`native_args`. It waits for active writers and rechecks the protected source
-before publication. Retain the source bytes and original IDs; never continue
-normal corpus operations against a local store because migration or repair failed.
-
-Ledger's [owner upgrade guidance](../../ledger/references/automatic-migration.md#automatic-owner-upgrade)
-owns selection, migration, repair, locking, and refusal rules. Routine preparation
-is part of using the corpus and requires no separate migration authorization,
-confirmation, or user-maintained checklist. Unknown or conflicting
-history still cannot be invented or discarded to force success.
-
-Only when the user explicitly prohibits file/custody maintenance or the environment
-enforces non-writable access, use `--read-only --definition` instead of
-`--ensure-owner`. It selects intact managed history without creating, migrating,
-or repairing anything. Report unavailable history under that constraint; an
-analysis route or false capture flag alone does not select this mode.
+Use the known `--store-id` instead when no workspace is selected. The
+returned `native_args` select present, healthy custody without legacy-source
+discovery. Ledger's [owner access](../../ledger/references/canonical-custody.md#owner-access)
+owns the exact `OwnerPreparationRequired` and `StoreBindingWithoutSlot` routes.
+When allowed, perform only that required preparation or restoration and retain
+its result. Explicit no-maintenance constraints prevent those effects; analysis
+or a false capture flag alone does not. Other failures remain blockers, never
+permission to use a local store, invent empty history, or guess another selector.
 
 ## Project before folding
 
 Project the repository basis before current classification:
 
 ```bash
-counterexample_definition="$(realpath \
-  "${CODEX_HOME:-$HOME/.codex}/skills/review-fold/definitions/ledger/counterexample-corpus.json")"
-
 ledger project \
   --definition "$counterexample_definition" \
   --projection basis \
   --store-root "<context.store_root>" --store-id "<context.store_id>" \
-  --param "repository=<repository-id>" \
-  --payload-only \
+  --param "repository=<existing-semantic-repository-id>" \
   --format json
 ```
 
-Pass the projected rows as `relevant_prior_owner_evidence`. Re-check every row
-against the current Goal, exact head, validity horizon, and source evidence.
+Retain the native result and selected context; pass its rows as
+`relevant_prior_owner_evidence`. A supplied projection may be reused when its
+selector, semantic repository scope, definition, and source state remain
+applicable. Empty rows from the wrong scope do not establish an empty corpus.
+If projection cannot run, retain the actual failed operation or explicit access
+constraint in the existing missing-source fields. Merely declaring history
+incomplete does not substitute for this outcome. Re-check every row against the
+current Goal, exact head, validity horizon, and source evidence.
 Absence from an incomplete horizon never proves `first-observed`, disjointness,
 or family elimination.
 
@@ -144,7 +138,10 @@ supported claim; retain the original allegation through its source reference.
 Do not persist rejected or unresolved claims as counterexamples, or add current
 adjudication state to the immutable schema.
 
-With enclosing write authority, capture one record for each independent witness satisfying all of:
+For a new current witness, enclosing write authority permits one record for each
+independent witness satisfying all of the following. Completing a missed original
+submission follows [delayed capture](#delayed-capture) instead of changing its
+current applicability to satisfy this list.
 
 ```text
 corpus_write_authorized = true
@@ -154,6 +151,11 @@ disposition = accepted
 Counterexample admission established validity and current Goal relevance
 owner-issued evidence and original subject are exact
 ```
+
+Before the first semantic capture, run Ledger's strict `--ensure-owner` with the
+same selection, definition, and manifest. A successful read does not satisfy write
+preparation or prove legacy writers have stopped. Use the returned managed
+selector; retain semantic-capture failure separately from successful preparation.
 
 ```bash
 ledger transact \
@@ -172,6 +174,21 @@ counterexamples.
 
 Store exact references and bounded summaries, not full transcripts, logs,
 credentials, secrets, or speculative architecture.
+
+## Delayed capture
+
+With enclosing capture authority, complete a previously missed or interrupted submission
+only after re-establishing that its original evidence and accepted Goal supported
+admission against its original witness subject. Retain the original semantic
+repository scope, law, observed fact, and provenance; inspect a known record or
+prior result before retrying an uncertain append. The original semantic identity
+makes the retry idempotent. Native `captured_at` records the actual append time.
+
+A defect fixed since that admission may now be `already-excluded`; do not relabel
+it as currently applicable or discard its admitted historical witness for that
+reason. Current repair pressure still requires current applicability. This route
+completes an evidenced original admission, not bulk import or acceptance of an
+old report on its own authority. Missing or refuted original premises block capture.
 
 ## Durable fields
 
