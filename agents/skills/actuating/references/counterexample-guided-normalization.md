@@ -159,6 +159,27 @@ These illustrate domain selection and derivation, not required implementation pa
 | Free scratch inside the reported artifact method. | The public call owns independent temporary storage, deep-copies returned values into response storage, and releases scratch before the next batch member. | Completed and failed decoding through another method releases scratch while required results survive. |
 | Add schema specialization to registry matching. | Carry complete identity through declaration, emitted metadata, admission, and selection using a shared typed association. | Equal semantic names with distinct required schema specializations remain distinct; equivalent identities still match. |
 
+### Stage structure without freezing current judgments
+
+Suppose repeated imports share a versioned schema, but each commit must use the
+caller's current authority and the destination's current state. A reusable plan
+may specialize field layout and decoding under that schema revision. Its identity
+must bind every assumption actually captured; preparing it does not authorize
+later commits. Keep required-fresh data and authority live at the source-required
+observation point, with the corresponding atomicity or revalidation mechanism.
+An import under a different valid schema needs a matching plan or general path,
+not rejection. An immutable plan is not proof that its captured judgments remain
+valid.
+
+Distinguish equivalent realization from behavioral repair. Moving valid repeated
+work into preparation must preserve required observations. Repairing a plan that
+reuses stale authorization must deliberately change its unauthorized success while
+preserving valid commits. An incumbent is an equivalence oracle only where its
+behavior is itself required. Challenge reuse after revocation and after a schema
+change, alongside an authorized unchanged-schema import; rejecting every import
+does not establish the required behavior. These cases illustrate the argument,
+not a new test quota or a mandatory plan abstraction.
+
 ### Derive the missing premise at its owner
 
 These historical Protean changes illustrate different adequate responses, not a
