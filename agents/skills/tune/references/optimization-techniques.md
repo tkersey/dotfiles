@@ -15,6 +15,19 @@ invalidation costs. Preserve effects and demand order: laziness, fusion, and
 memoization are not automatically equivalent for effectful or partial operations.
 A profile explains the incumbent; it does not forbid a better architecture.
 
+For reusable preprocessing or specialization, compare its cost with uses before
+the captured assumptions change, not all future calls. With incremental setup
+cost `C` and positive per-use savings `delta`, equal total time occurs at
+`N = C / delta`; a win needs more uses. For illustration, a one-second build that
+saves one millisecond per lookup breaks even at 1,000 lookups. If it becomes stale
+after 100 lookups, it adds 900 milliseconds overall. Include construction,
+validation, and transfer where incurred, plus failed attempts, fallback/recovery,
+maintenance, and rebuilds in the whole-workload comparison. The simple calculation
+assumes serial additive costs; use the actual critical path when work overlaps.
+When setup lies on the request path, count it in first-result latency even if
+steady-state throughput improves. These illustrative costs are not measurements
+or a universal threshold for adopting specialization.
+
 ## I/O, network, and storage
 
 | Recognition | Transformation | Preconditions and preservation | Experiment |

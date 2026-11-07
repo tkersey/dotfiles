@@ -65,8 +65,18 @@ Choose the smallest contrast that changes the next decision:
 | Does this passage help or hurt? | Remove or replace it under matched conditions; use add-back or reversal to test whether the outcome follows it. |
 | Which region matters? | Reduce coherent blocks while preserving the executable scaffold. If both halves or neither half reproduce the behavior, test retained factors or combinations instead of assuming monotonic bisection. |
 | Wording, position, or authority? | Change one declared dimension while preserving the others; relocation is not a neutral rewrite. |
+| Does the evidence's representation obstruct its use? | Compare prose with aligned records containing the same facts, provenance, contradictions, and uncertainty needed for the decision. Preserve task and instruction authority. Adding a missing fact or supplying the conclusion tests a different claim. |
 | Is guidance missing? | Test a minimal explicit condition against the unchanged baseline; check whether existing guidance already supplies it before adding another rule. |
 | Are instructions redundant or interacting? | Test the smallest evidence-motivated combination, such as both present, each removed, and both removed. |
+
+For example, "two checks passed" can describe a fully covered two-case domain or
+a three-case domain with one unobserved case. If completeness matters, inspect
+whether the domain and coverage were supplied or are available through retrieval.
+A wording change cannot supply an absent fact; accessible but unretrieved evidence
+instead calls for inspecting that retrieval decision. Adding domain size while
+reformatting the summary tests a bundle, not presentation alone. A faithful view
+may improve use of evidence without establishing that the underlying computation
+or instructions were wrong.
 
 Investigate helpful text as rigorously as harmful text. An unchanged outcome after
 removal does not prove irrelevance, and improved behavior after deletion does not

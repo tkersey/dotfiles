@@ -4,7 +4,7 @@
     "skill": {
       "name": "universalist",
       "kind": "mixed",
-      "source_fingerprint": "universalist-generative-derivation-v18.0-v3"
+      "source_fingerprint": "universalist-generative-derivation-v18.0-v4"
     },
     "triggers": [
       {

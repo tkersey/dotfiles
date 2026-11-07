@@ -292,6 +292,29 @@ For law-adequacy countermodels, generator/observer coverage, and discovered-law
 admission, use [property-test derivation](property-test-derivation.md) only when
 that proof is live. Reuse the existing discriminator and required-valid control.
 
+### Preserve access structure when it enables a realization
+
+For a pure fixed-width filter, fixed offsets, coefficients, and their combination
+can remain visible until a target chooses a direct loop, fused traversal, or
+reusable window. An opaque callback can compute the same values while hiding
+dependencies useful to that target. A shift/scale/add vocabulary exposes neighbor
+reuse; width and coefficients may be known at construction while each run supplies
+fresh input values. Preserve boundary behavior and required numerical order;
+equal real-number formulas do not establish floating-point equivalence.
+
+A restricted vocabulary helps only if it expresses the required computations.
+Specializing one width cannot reject other required-valid widths: generate an
+adequate specialization or retain a general path. Keep an inspectable description
+when a consumer needs analysis or rewriting; a direct native implementation may
+suffice otherwise. A pure intermediate used only by the next operator may disappear
+when no required observation, identity, sharing, or resource behavior depends on it.
+Neither a graph nor materialization is compulsory.
+
+This engineering example applies the construction/execution distinction and
+explicit access structure in Singh's
+[*Computing Without Processors*](https://doi.org/10.1145/1978542.1978558),
+printed pp. 49–52. It supplies candidate representations, not a measured speedup.
+
 ## Derive a compositional summary, not a framework
 
 Consider an ordered integer trace of resource acquisitions and releases. Required

@@ -4,7 +4,7 @@
     "skill": {
       "name": "actuating",
       "kind": "mixed",
-      "source_fingerprint": "actuating-construction-core-v31"
+      "source_fingerprint": "actuating-construction-core-v32"
     },
     "triggers": [
       {
