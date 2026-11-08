@@ -3,6 +3,7 @@
 // --case supplies current workflow guidance and evidence, never the evaluator key.
 import assert from 'node:assert/strict';
 import {spawnSync} from 'node:child_process';
+import {createHash} from 'node:crypto';
 import {mkdtempSync, readFileSync, writeFileSync, rmSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
@@ -209,6 +210,246 @@ addSubagent('credit-25', {launch_observation:null, terminal_observation:null,
   {standard_count_after:0, auxiliary_count_after:0},
   'Resume cannot reconstruct review evidence from counts or prose. Recover exact results or require a fresh initial wave; retain any separately recoverable findings.');
 
+const claudeSubject = {...subject, base:'04c0a84a962c3e637c14614498aa1950a776ba6e',
+  head:'b717d5719b507b780433d579d78bece18a7c32f8'};
+const claudeTarget = `${claudeSubject.base}..HEAD`;
+const claudeModel = 'claude-opus-5-5';
+const claudeSession = n => `11111111-2222-4333-8444-${String(n).padStart(12, '0')}`;
+const claudeCleanText = 'Reviewed the full bound changeset and its callers against the accepted requirements. No findings.';
+const claudePatch = 'diff --git a/src/check.mjs b/src/check.mjs\n@@ -1 +1 @@\n-old\n+new';
+const claudeFollowupPrompt = `Read ${claudeTarget} with a standalone git diff, complete the missing source inquiry, and reassess the original review.`;
+// Exercise the actual helper on synthetic native-shaped events. This is not a live Claude run.
+function claudeObservation({sid=claudeSession(5), level='high', result=claudeCleanText,
+  diff='success', permissionDenials=[], followup=null, reference=false, observedPatch=claudePatch} = {}) {
+  const dir = mkdtempSync(join(tmpdir(), 'actuating-claude-credit-'));
+  try {
+    const events = [
+      {type:'system', subtype:'init', session_id:sid, model:claudeModel},
+      {type:'user', message:{content:[{type:'text', text:
+        `Review target: \`${claudeTarget}\`\n\n\`${level} effort → 8 inline angles → ≤10 findings\`\n\n## Phase 1`}]}}
+    ];
+    const request = (id, command=`git diff ${claudeTarget}`) => ({type:'assistant', message:{content:[{type:'tool_use',
+      id, name:'Bash', input:{command}}]}});
+    const response = (id, failed) => ({type:'user', message:{content:[{type:'tool_result',
+      tool_use_id:id, is_error:failed, content:failed ? 'Exit code 129\nerror: invalid option' :
+        observedPatch}]}});
+    events.push(request('diff-1', diff === 'unverified-chain' ? `git diff ${claudeTarget}; git diff HEAD` : undefined));
+    if (diff !== 'missing-result') events.push(response('diff-1', !['success', 'unverified-chain'].includes(diff)));
+    if (diff === 'recovered') events.push(request('diff-2'), response('diff-2', false));
+    events.push({type:'result', subtype:'success', is_error:false, session_id:sid,
+      modelUsage:{[claudeModel]:{}}, permission_denials:permissionDenials, result});
+    const input = join(dir, 'events.jsonl'), output = join(dir, 'readback.json');
+    writeFileSync(input, events.map(event => JSON.stringify(event)).join('\n') + '\n');
+    const extra = [];
+    if (reference) {
+      writeFileSync(join(dir, 'reference.patch'), claudePatch + '\n');
+      extra.push('--reference-patch', 'reference.patch');
+    }
+    if (followup) {
+      const supplemental = [
+        {type:'system', subtype:'init', session_id:sid, model:claudeModel},
+        {type:'user', message:{content:[{type:'text', text:claudeFollowupPrompt}]}},
+        request('followup-diff-1'), response('followup-diff-1', false),
+        {type:'result', subtype:'success', is_error:false, session_id:sid,
+          modelUsage:{[claudeModel]:{}}, permission_denials:followup.permissionDenials ?? [], result:followup.result}
+      ];
+      writeFileSync(join(dir, 'followup.jsonl'), supplemental.map(event => JSON.stringify(event)).join('\n') + '\n');
+      extra.push('--followup', 'followup.jsonl');
+    }
+    const run = spawnSync('uv', ['run', '--no-project', 'python', '-I',
+      fileURLToPath(new URL('../../cc/scripts/readback.py', import.meta.url)),
+      'standard', input, sid, claudeModel, claudeTarget, 'high', output, ...extra], {encoding:'utf8', cwd:dir});
+    const report = JSON.parse(readFileSync(output, 'utf8'));
+    assert.equal(run.status === 0, report.ok, run.stderr);
+    const matchedReference = reference && diff === 'unverified-chain' && observedPatch === claudePatch;
+    assert.equal(report.ok, level === 'high' && (['success', 'recovered'].includes(diff)
+      || followup !== null || matchedReference), run.stderr);
+    assert.equal(report.result, result);
+    assert.deepEqual(report.permission_denials, permissionDenials);
+    if (followup) {
+      assert.deepEqual(report.followups, [{events:'followup.jsonl', result:followup.result,
+        permission_denials:followup.permissionDenials ?? []}]);
+      assert.equal(report.diff_reads.find(read => read.followup === 1)?.ok, true);
+    }
+    if (diff === 'unverified-chain') {
+      assert.equal(report.diff_reads[0].ok, matchedReference);
+      assert.equal(report.diff_reads[0].completion_status, 'unknown');
+      assert.equal(Boolean(report.diff_reads[0].reference_matched), matchedReference);
+    }
+    if (reference) assert.equal(report.reference_patch.sha256,
+      createHash('sha256').update(claudePatch + '\n').digest('hex'));
+    return report;
+  } finally { rmSync(dir, {recursive:true, force:true}); }
+}
+const claudeRequest = {execution_mode:'claude', standard_level:'high', repository:'fixture/review',
+  base_sha:claudeSubject.base, head_sha:claudeSubject.head, scope:'changeset', focus:null, lens_name:'standard', role:'standard',
+  request_id:'standard-5', instruction_identity:'claude-code-review/v1:high'};
+const claudeReadback = claudeObservation();
+const earlierClaude = Array.from({length:4}, (_, i) => ({
+  assignment:{...claudeRequest, request_id:`standard-${i+1}`},
+  readback:claudeObservation({sid:claudeSession(i+1)}), credit_disposition:'credit',
+  credit_basis:'Exact current independent Claude Code standard; full inquiry and evidence adequate.'
+}));
+const claudeAuxiliary = {...claudeRequest, lens_name:'fresh-eyes', role:'auxiliary', request_id:'fresh-eyes-1',
+  instruction_identity:null, instruction_digest:'sha256-of-composed-fresh-eyes-request'};
+const claudeCustomReadback = {kind:'custom', session_id:claudeSession(6), model:claudeModel,
+  prompt_sha256:'sha256-of-composed-fresh-eyes-request', ok:true, problems:[],
+  structured_output:{findings:[], overall_correctness:'patch is correct',
+    overall_explanation:'Inspected the complete bound changeset with the fresh-eyes lens. No supported defect or material evidence gap remains.',
+    overall_confidence_score:0.85}};
+function addClaude(id, evidence, decision, basis) {
+  cases.push({id, input:{
+    subject:claudeSubject, execution_mode:'claude', lens:'standard', requested_assignment:claudeRequest,
+    launch_observation:{session_id:claudeSession(5), request_id:'standard-5', fresh_session:true,
+      prompt:`/review high ${claudeTarget}`, read_only_boundary:'synthetic observation of restricted tools and enforced filesystem sandbox'},
+    readback:claudeReadback,
+    prior_standard_reviews:earlierClaude, prior_credit:{standard:4, auxiliary:5},
+    requested_scope:'Changeset-wide standard with Claude Code /review at the bound high level. Full source inquiry is complete. All mandatory pre-review proof passed on this exact candidate; no exploratory check was attempted.',
+    other_required_obligations:'All five changeset auxiliaries and the frozen focused-file inventory have exact current claude-mode evidence, adjudication and credit. No unresolved material findings or limitations.',
+    ...evidence
+  }, expected:{credit_disposition:'hold', limitation_disposition:null,
+    standard_count_after:4, auxiliary_count_after:5,
+    public_review_complete:false, original_check_status:'not-run', ...decision}, basis});
+}
+const claudeAuxiliaryEvidence = {lens:'fresh-eyes', requested_assignment:claudeAuxiliary,
+  launch_observation:{session_id:claudeSession(6), request_id:'fresh-eyes-1', fresh_session:true,
+    prompt_file_sha256:'sha256-of-composed-fresh-eyes-request', read_only_boundary:'synthetic observation of restricted tools and enforced filesystem sandbox'},
+  readback:claudeCustomReadback,
+  prior_standard_reviews:earlierClaude.slice(0, 1), prior_credit:{standard:1, auxiliary:4},
+  requested_scope:'Changeset fresh-eyes auxiliary delivered as a claude-mode custom review with the exact subagent composition. Full source inquiry is required.',
+  other_required_obligations:'The initial standard and the other four changeset auxiliaries are credited; no focused files were selected.'};
+addClaude('credit-26', {},
+  {credit_disposition:'credit', standard_count_after:5, public_review_complete:true},
+  'A fifth fresh pinned-session /review at the bound level, with actual helper readback and adequate original clean prose, completes Claude Code convergence without transcription or another model call.');
+addClaude('credit-27', {readback:claudeObservation({level:'xhigh'})}, {},
+  'A requested level is not proof of depth. A recipe at another level is not the bound standard policy and cannot extend this streak.');
+const claudeFindingReadback = claudeObservation({
+  result:'src/check.mjs:3 - the guard is inverted, so invalid input is accepted and stored.'});
+addClaude('credit-28', {readback:claudeFindingReadback,
+    review_fold:'The guard finding is still being evaluated against the accepted contract. No current material entailed finding has been admitted, and no reviewer coverage limitation has been established. The supplied evidence does not include the source or requirement needed to complete that adjudication.'}, {},
+  'Passing execution readback is not a clean verdict. The original text reports a finding; adjudicate it through Review Fold before any credit.');
+addClaude('credit-29', {...claudeAuxiliaryEvidence, readback:{...claudeCustomReadback, ok:false,
+    problems:['first transcript message is not the exact prompt: delivery unverified']}},
+  {standard_count_after:1, auxiliary_count_after:4},
+  'A matching request digest and a clean object do not prove the exact lens instructions reached the session; without transcript-verified delivery the auxiliary is not credited.');
+addClaude('credit-30', {...claudeAuxiliaryEvidence, readback:{...claudeCustomReadback,
+    permission_denials:[{tool_name:'Bash', tool_input:{command:`git diff ${claudeTarget}`}}],
+    structured_output:{...claudeCustomReadback.structured_output,
+      overall_explanation:'No supported defect found. Bash was denied, so I could not run the bound git diff and did not inspect the changed hunks.'}}},
+  {limitation_disposition:'unresolved', standard_count_after:1, auxiliary_count_after:4, original_check_status:'blocked'},
+  'A denied read left the subject unseen. A clean object cannot credit an inquiry that never read the diff; recover the observation with an allowed read before credit.');
+addClaude('credit-31', {
+  prior_standard_reviews:earlierStandards.map(entry => ({...entry,
+    assignment:{...entry.assignment, execution_mode:'codex', base_sha:claudeSubject.base, head_sha:claudeSubject.head},
+    provenance:'Exact native Codex standards in the bound campaign.'})),
+  prior_credit:{execution_mode:'codex', standard:4, auxiliary:5},
+  current_campaign:'The bound campaign recorded execution_mode codex. It was resumed from a Claude Code session, whose host default is claude, and this fifth standard was dispatched as a claude-mode /review. No explicit mode change was requested.'},
+  {},
+  'The host default binds only a new campaign. A resumed codex campaign continues in codex mode on any host; a claude review neither extends nor replaces the codex streak.');
+addClaude('credit-32', {readback:claudeObservation({diff:'missing-result'}),
+    requested_scope:'The standard must inspect the bound diff. A matching tool request exists, but there is no tool result or other evidence of successful observation.'},
+  {limitation_disposition:'unresolved', original_check_status:'unknown'},
+  'Requesting the right command does not establish its execution or observation; hold this standard without resetting valid prior credit.');
+addClaude('credit-33', {readback:claudeObservation({diff:'failed'}),
+    requested_scope:'The standard must inspect the bound diff. Its only diff command failed with exit 129; the review turn nevertheless ended successfully.'},
+  {limitation_disposition:'unresolved', original_check_status:'blocked'},
+  'A successful terminal review result cannot erase a failed required diff. No successful recovery is present.');
+const optionalDenial = [{tool_name:'Bash', tool_input:{command:'npm test'}}];
+const claudeOptionalReadback = claudeObservation({permissionDenials:optionalDenial,
+  result:'No findings in the complete source inquiry. An exploratory npm test was denied; no runtime test ran.'});
+addClaude('credit-34', {readback:claudeOptionalReadback,
+    requested_scope:'The accepted task is static source review only. The full bound diff and required callers were inspected; runtime execution is explicitly outside the scope and unnecessary to the conclusion. The denied npm test was exploratory.'},
+  {credit_disposition:'credit', limitation_disposition:'not-required', standard_count_after:5,
+    public_review_complete:true, original_check_status:'blocked'},
+  'The retained optional denial does not impose a universal hold. Credit the adequate static inquiry while stating that the test did not run.');
+addClaude('credit-35', {readback:claudeOptionalReadback,
+    requested_scope:'The full bound diff was inspected. The relevance of the newly denied npm test has not been assessed.'},
+  {limitation_disposition:'unresolved', original_check_status:'blocked'},
+  'Passing readback does not adjudicate a permission denial. Hold until the owner establishes its relevance or resolves the dependent gap.');
+addClaude('credit-36', {readback:claudeObservation({diff:'recovered'}),
+    requested_scope:'The standard must inspect the bound diff. Its first diff command failed, then the same session successfully read the bound diff, completed the dependent inquiry, and reported no findings.'},
+  {credit_disposition:'credit', limitation_disposition:'recovered', standard_count_after:5,
+    public_review_complete:true, original_check_status:'blocked'},
+  'A successful same-session recovery can complete the inquiry once. Preserve the failed first check; the recovery is not another standard credit.');
+addClaude('credit-37', {readback:claudeFindingReadback,
+    review_fold:'The bound source and accepted input-validity requirement have been checked. The reported guard defect is entailed, current, material, and admitted; it remains unresolved.'},
+  {standard_count_after:0, auxiliary_count_after:0},
+  'The same preserved raw finding, once admitted as a current material violation, invalidates prior review credit under the existing reset rule.');
+addClaude('credit-38', {readback:claudeObservation({diff:'unverified-chain'}),
+    requested_scope:'The standard must complete the bound diff read. Its only read is git diff <base>..HEAD; git diff HEAD. The compound command returned patch text and aggregate success, but the target diff completion status is unavailable. There is no separately completed read or follow-up.'},
+  {limitation_disposition:'unresolved', original_check_status:'unknown'},
+  'Patch text and aggregate shell success do not establish completion of a target diff before a semicolon. Hold without erasing the four prior standards or five auxiliaries.');
+const claudeResumeObservation = {session_id:claudeSession(5), request_id:'standard-5',
+  prompt:claudeFollowupPrompt, events:'followup.jsonl', resumed:true, fresh_session:false,
+  authorization:'The caller authorized one inquiry follow-up within the existing recovery budget.',
+  model:claudeModel, effort:'high', base_sha:claudeSubject.base, head_sha:claudeSubject.head,
+  subject_observation:'The host observed the same bound HEAD, clean index and working tree before and after both executions.',
+  execution_boundary:'The resume used the same bound model, effort, tools and enforced read-only sandbox as the original standard.'};
+addClaude('credit-39', {readback:claudeObservation({diff:'unverified-chain', followup:{
+      result:'The standalone bound diff completed. I inspected the full patch and required callers, reassessed the original review, and found no supported defects or material evidence gaps.'}}),
+    resume_observation:claudeResumeObservation,
+    requested_scope:'The first compound read left target completion unverified. The separately captured authorized continuation completed the standalone read and all dependent source inquiry on the unchanged subject; its reassessment is adequate.'},
+  {credit_disposition:'credit', limitation_disposition:'recovered', standard_count_after:5,
+    public_review_complete:true, original_check_status:'unknown'},
+  'The same-session follow-up recovers the missing observation and reassessment for the original standard once. Preserve its original unknown completion status; the continuation is not another independent clean.');
+addClaude('credit-40', {readback:claudeObservation({diff:'unverified-chain', followup:{
+      result:'The standalone bound diff completed. src/check.mjs:3 - the guard is inverted, so invalid input is accepted and stored. This overturns the original clean conclusion.'}}),
+    resume_observation:claudeResumeObservation,
+    requested_scope:'The authorized continuation completed the standalone read and dependent source inquiry on the unchanged subject, recovering the original execution gap. Its supplemental finding must be adjudicated with the original clean result.',
+    review_fold:'The bound source and accepted input-validity requirement have been checked. The supplemental guard defect is entailed, current, material, admitted and unresolved.',
+    other_required_obligations:'The other initial reviews have exact current evidence and previously admitted credit. The supplemental finding is the only newly reported issue.'},
+  {limitation_disposition:'recovered', standard_count_after:0, auxiliary_count_after:0, original_check_status:'unknown'},
+  'A successful follow-up read does not preserve an overturned clean verdict. The admitted material supplemental finding invalidates all credit, while the original unverified completion remains unknown.');
+
+const claudeReferenceCapture = {source:'synthetic caller/runtime capture record', repository:'fixture/review',
+  base_sha:claudeSubject.base, head_sha:claudeSubject.head, command:['git','diff',claudeTarget,'--'],
+  process_exit:0, stdout_file:'reference.patch',
+  stdout_sha256:createHash('sha256').update(claudePatch + '\n').digest('hex'),
+  stdout:claudePatch + '\n', complete_capture:true,
+  execution_boundary:'The existing caller runtime denied writes to the physical repository, Git directory and Git common directory while capturing the reference.',
+  subject_observation:'The capture belongs to the same frozen base and head as the review; the host verified the unchanged clean subject before admission.'};
+const claudeReferenceReadback = claudeObservation({diff:'unverified-chain', reference:true});
+const claudeReferenceEvidence = {readback:claudeReferenceReadback, reference_capture:claudeReferenceCapture,
+  requested_scope:'Changeset-wide source review. The reviewer completed all dependent source reasoning and reported no findings or limitations. Its only diff call was git diff <base>..HEAD; git diff HEAD. The target completion status is unavailable from aggregate success. The captured tool output contains the complete caller-authenticated reference patch, omitting only its final transport newline. No new reviewer session or follow-up occurred.'};
+addClaude('credit-41', claudeReferenceEvidence,
+  {credit_disposition:'credit', limitation_disposition:'covered', standard_count_after:5,
+    public_review_complete:true, original_check_status:'unknown'},
+  'Faithful comparison with a complete, successful reference captured for the same frozen subject under the enforced boundary establishes original patch delivery. Credit this adequate original standard once; retain its unknown target completion and do not count reference capture as another reviewer or execution by the original reviewer.');
+addClaude('credit-42', {...claudeReferenceEvidence, reference_capture:null,
+    requested_scope:'Changeset-wide source review. Readback found a matching reference.patch file, but the caller has only its path and hash. No capture command, process outcome, subject binding, complete-output record, or enforced boundary is available. There is no independently verified target read or follow-up.'},
+  {limitation_disposition:'unresolved', original_check_status:'unknown'},
+  'A matching file and passing comparator cannot authenticate reference acquisition. Hold the fifth standard without relabeling the original completion or erasing prior valid credits.');
+addClaude('credit-43', {...claudeReferenceEvidence,
+    reference_capture:{...claudeReferenceCapture, head_sha:'f'.repeat(40),
+      subject_observation:'The reference was captured on a different head; equivalence to the bound review subject has not been established.'},
+    requested_scope:'Changeset-wide source review of the bound subject. The helper matched the supplied reference bytes, but the caller capture records a different head. No other verified patch delivery or follow-up is present.'},
+  {limitation_disposition:'unresolved', original_check_status:'unknown'},
+  'A comparison against another head cannot establish delivery of the bound changeset; a reference hash does not repair the subject mismatch.');
+addClaude('credit-44', {...claudeReferenceEvidence,
+    readback:claudeObservation({diff:'unverified-chain', reference:true, observedPatch:claudePatch + '_WRONG'}),
+    requested_scope:'Changeset-wide source review. The only observed diff-like output ends with +new_WRONG; the bound reference ends with +new on a complete line. The compound command completed successfully and the reviewer reported no findings. No other complete patch observation or follow-up exists.'},
+  {limitation_disposition:'unresolved', original_check_status:'unknown'},
+  'A correct line prefix in incorrect observed content is not delivery of the reference patch. Preserve the held comparison and original unknown completion.');
+addClaude('credit-45', {...claudeReferenceEvidence,
+    readback:claudeObservation({diff:'unverified-chain', reference:true,
+      observedPatch:claudePatch.slice(0, claudePatch.lastIndexOf('\n') + 1)}),
+    requested_scope:'Changeset-wide source review. The sole observed patch is truncated before the final added line. The caller has a complete reference capture, but no evidence that the reviewer received the missing line or reassessed it.'},
+  {limitation_disposition:'unresolved', original_check_status:'unknown'},
+  'Possession of a complete caller reference does not deliver omitted content to the reviewer. Hold the original standard; reference capture alone cannot supply missing inquiry.');
+addClaude('credit-46', {...claudeReferenceEvidence,
+    readback:claudeObservation({diff:'unverified-chain', reference:true,
+      result:'I saw the full patch, but did not finish tracing the new branch through its callers. I cannot conclude whether the changed guard preserves the required behavior.'}),
+    requested_scope:'Changeset-wide source review, including the changed guard and its callers. The complete bound patch was delivered and comparison is valid, but the original reviewer explicitly left dependent source reasoning unfinished. No supplemental reassessment occurred.'},
+  {limitation_disposition:'unresolved', original_check_status:'unknown'},
+  'Reference agreement establishes patch delivery, not completed reasoning. The missing dependent inquiry still holds credit despite successful readback.');
+addClaude('credit-47', {...claudeReferenceEvidence,
+    readback:claudeObservation({diff:'unverified-chain', reference:true,
+      permissionDenials:[{tool_name:'Bash', tool_input:{command:'git show HEAD:src/validator.mjs'}}],
+      result:'The complete patch was visible, but git show HEAD:src/validator.mjs was denied. I did not inspect the required validation contract or complete the reasoning that depends on it.'}),
+    requested_scope:'Changeset-wide source review requires inspecting the validation contract in src/validator.mjs. Reference agreement establishes full patch delivery, but the required contract read was denied and no other source supplied it. Adjudicate that denied read as the original check; the compound diff completion separately remains unknown.'},
+  {limitation_disposition:'unresolved', original_check_status:'blocked'},
+  'A matching patch cannot discharge another failed required read or its dependent reasoning. Retain the denial as blocked and the compound diff status as unknown; hold without resetting prior valid credit.');
+
 const fields = {
   credit_disposition:'credit | hold', limitation_disposition:'recovered | covered | not-required | unresolved | null',
   standard_count_after:'integer', auxiliary_count_after:'integer', public_review_complete:'boolean',
@@ -219,6 +460,7 @@ function exported(c) {
   const selected = ['review-closeout.md','references/review-contract.md',
     'references/review-contract.json','references/closure.md'];
   if (c.input.execution_mode === 'subagents') selected.push('references/subagent-reviews.md');
+  if (c.input.execution_mode === 'claude') selected.push('references/subagent-reviews.md', '../cc/SKILL.md');
   const guidance = Object.fromEntries(selected.map(path =>
     [path, readFileSync(new URL(`../${path}`, import.meta.url), 'utf8')]));
   return {task:'Act as the Actuating owner at review admission. Adjudicate this synthetic result using the supplied current workflow. Return the evaluation fields below, with the evidence basis and public updates. Do not fabricate observations or change the required scope. These fields are for offline evaluation, not a new production handoff schema.',

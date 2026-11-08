@@ -1,0 +1,41 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["findings", "overall_correctness", "overall_explanation", "overall_confidence_score"],
+  "properties": {
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["title", "body", "confidence_score", "code_location"],
+        "properties": {
+          "title": {"type": "string"},
+          "body": {"type": "string"},
+          "confidence_score": {"type": "number", "minimum": 0, "maximum": 1},
+          "priority": {"type": "integer", "minimum": 0, "maximum": 3},
+          "code_location": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["absolute_file_path", "line_range"],
+            "properties": {
+              "absolute_file_path": {"type": "string"},
+              "line_range": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["start", "end"],
+                "properties": {
+                  "start": {"type": "integer", "minimum": 1},
+                  "end": {"type": "integer", "minimum": 1}
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "overall_correctness": {"type": "string", "enum": ["patch is correct", "patch is incorrect"]},
+    "overall_explanation": {"type": "string"},
+    "overall_confidence_score": {"type": "number", "minimum": 0, "maximum": 1}
+  }
+}

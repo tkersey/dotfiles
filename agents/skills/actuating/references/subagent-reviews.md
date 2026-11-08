@@ -5,6 +5,9 @@ Use only for explicit `with subagents` or equivalent intent. This is the
 [review contract](review-contract.md) owns inventory, scheduling, credit, freezes,
 recovery, and convergence. Do not invoke Codex's native review command or app-server review route in this mode.
 
+The `claude` executor imports only the assignment composition and result-content
+rules linked by its contract. That reuse does not select the `subagents` executor.
+
 ## Contents
 
 - [Prepare independent reviewers](#prepare-independent-reviewers)

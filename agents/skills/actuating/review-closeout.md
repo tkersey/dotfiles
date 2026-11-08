@@ -84,11 +84,13 @@ corpus-write authority still govern every handoff.
 ## Review and closure
 
 The changeset-wide inventory remains standard, soundness-skeptic, footgun-finder,
-invariant-ace, complexity-mitigator, and fresh-eyes. In default native Codex mode, standard
-is Codex's native review with no custom Actuating instruction file or argument.
-Explicit subagent mode uses the pinned Codex rubric under
+invariant-ace, complexity-mitigator, and fresh-eyes. The harness selects the default
+executor under [binding](references/review-contract.md#binding-and-owner-authority):
+in `codex` mode standard is Codex's native review, and in `claude` mode it is Claude
+Code's bundled `/review` at the bound level, each with no custom Actuating instruction
+file or argument. Explicit subagent mode uses the pinned Codex rubric under
 [subagent-reviews.md](references/subagent-reviews.md). Auxiliaries retain their
-exact checked-in lenses in both modes; none substitutes for standard.
+exact checked-in lenses in every mode; none substitutes for standard.
 
 Before dispatch, inspect the diff and select up to three files with significant
 changes to non-test code under
@@ -96,8 +98,8 @@ changes to non-test code under
 Give each selected file all six lenses as independent reviews in the same initial
 wave: up to 24 requests across the changeset and three files. File focus anchors
 the inquiry while allowing relevant cross-file evidence. File standard uses
-general best judgment with custom focus instructions; subagent file-standard also
-receives the pinned rubric. Neither earns changeset-standard convergence credit.
+general best judgment with custom focus instructions; subagent and `claude`
+file-standards also receive the pinned rubric. Neither earns changeset-standard convergence credit.
 Each file auxiliary receives its exact unchanged lens plus
 the file scope. Every reviewer continues beyond the first finding; fold the full
 initial batch before choosing a successor unless it is lawfully superseded above.
