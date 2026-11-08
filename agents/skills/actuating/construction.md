@@ -110,6 +110,11 @@ causal account before authorized exploration; experiments remain subject to the
 common proof and effect rules. Acceptance requires the actual mechanism,
 migrations, and retirements, not intent.
 
+When interacting operations leave a material construction or proof uncertainty,
+use an [executable behavioral model](references/counterexample-guided-normalization.md#executable-behavioral-models)
+if it supplies deciding evidence that adequate native evidence does not already
+provide. Keep modeling optional and within existing proof selection.
+
 When transfer from a model or abstraction to the implementation remains unresolved,
 use [claim-directed correspondence](../universalist/references/claim-appropriate-proof.md#claim-directed-correspondence).
 Reuse adequate native evidence.
