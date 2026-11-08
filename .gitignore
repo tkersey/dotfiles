@@ -11,6 +11,7 @@ lazy-lock.json
 
 agents/skills/.system/
 agents/skills/deckset/references/refresh-metadata.json
+agents/skills/synced/
 
 **/node_modules
 
