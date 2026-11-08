@@ -37,10 +37,12 @@ assert.deepEqual(c.required_lenses[0], {name:'standard',role:'standard'});
 const execution = c.review_execution;
 assert.equal(execution.default_mode,'host');
 assert.deepEqual(execution.host_default_modes,{codex:'codex','claude-code':'claude'});
+// Hosts other than Codex and Claude Code keep the pre-claude default.
+assert.equal(execution.unrecognized_host_default_mode,'codex');
 assert.deepEqual(Object.keys(execution.modes).sort(),['claude','codex','subagents']);
 for (const key of ['subagents_requires_explicit_selection','scheduling_independent',
   'bound_in_review_context','mode_change_requires_new_campaign','mode_change_resets_all_review_credit',
-  'mixed_mode_credit_forbidden','silent_fallback_forbidden','unrecognized_host_requires_explicit_selection',
+  'mixed_mode_credit_forbidden','silent_fallback_forbidden',
   'recorded_mode_survives_host_change']) assert.equal(execution[key],true,key);
 const {codex,claude,subagents} = execution.modes;
 assert.deepEqual(codex.standard_review, {

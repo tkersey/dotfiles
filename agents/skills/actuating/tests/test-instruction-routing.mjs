@@ -33,7 +33,7 @@ const coreHashes = {
 };
 // Pin the authorized recovery/epoch revision; unchanged construction and acceptance remain protected.
 const reviewHashes = {
-  "Binding and owner authority": "9595dd3f9a6060b3bec5df2736508dfe25f5709ac45dd05699d7e1f7b0063057",
+  "Binding and owner authority": "f19fe97c55a2f2c77a6cff80190adcd2f50f1ad15903075379e1797187761dd2",
   "Focused file reviews": "5b1bec665bf3332c0be22d05facf1fb0a0a814d13fdb3ec1f32657de07ae2de1",
   "Review-credit admission": "2ba81997c7aa9a7ebd59df70f9b43332a809ce05bf9babc2c412608e9fb19ded",
   "Candidate lifecycle and causal response": "a887cf18ee794184cb80e1319500a0af833f94cd8031182f0de3a6af28718bdd",
@@ -84,7 +84,7 @@ function check(src) {
   for (const [heading, digest] of Object.entries(reviewHashes))
     assert.equal(hash(section(review, heading)), digest, heading);
   assert.equal(blob(src['review-closeout.md']), '2ec957558c712f2e91b53df7a7f5530768617f9b');
-  assert.equal(blob(src['references/review-contract.json']), '7cdbeb91903c86d65c7143487351e87fe7faae33');
+  assert.equal(blob(src['references/review-contract.json']), 'e4df44b5ea5a0616352f8f1002c95e31c712df47');
   const complete = src['references/closure.md'].split('For full `complete`, require:\n\n```text\n')[1];
   assert(complete, 'missing terminal contract');
   assert.equal(hash(complete.split('\n```')[0]), closureHash);

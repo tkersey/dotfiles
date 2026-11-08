@@ -23,7 +23,7 @@ Actuating derives credit and construction consequences from exact owner facts.
 Read the exact contract bytes and each custom instruction source without trimming
 or normalization. Bind `execution_mode` before dispatch. Without an explicit
 selection, the harness running this turn chooses: Codex selects `codex` and Claude
-Code selects `claude`; any other host requires an explicit selection. Nested
+Code selects `claude`; any other host keeps the previous `codex` default. Nested
 sessions can inherit a parent's markers (`CODEX_THREAD_ID`, `CLAUDECODE`), so the
 executing harness decides, not the environment alone. `subagents` only when
 explicitly requested. Scheduling and capacity are separate.

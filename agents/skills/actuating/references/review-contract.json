@@ -38,7 +38,7 @@
       "codex": "codex",
       "claude-code": "claude"
     },
-    "unrecognized_host_requires_explicit_selection": true,
+    "unrecognized_host_default_mode": "codex",
     "recorded_mode_survives_host_change": true,
     "subagents_requires_explicit_selection": true,
     "scheduling_independent": true,
