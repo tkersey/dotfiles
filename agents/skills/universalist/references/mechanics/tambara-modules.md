@@ -10,7 +10,7 @@ profunctors equipped with coherent action by an ambient monoidal category
 
 It does not concern equivariant Tambara functors or Tambara-Yamagami categories.
 
-Use this reference after Universalist has identified a real context action and a boundary capability that must survive framing.
+Consult this reference when a generalized transformation appears to survive a surrounding context. Recover the context action, endpoint variance, and framing during inquiry; a Tambara claim requires their actual coherence laws. A wrapper or environment parameter alone does not establish them.
 
 ## 1. Core data
 
@@ -762,4 +762,5 @@ one interpretation test
 one falsifier where an invalid context or effect reordering is rejected
 ```
 
-Stop after the first verified seam.
+Use the first verified seam as a checkpoint, then complete the remaining
+authorized scope. Recognition alone does not require implementing a seam.

@@ -14,7 +14,7 @@ observations:
   - claim: "<verified observation>"
     evidence_ref: "<inspected file:line, executed command, or observed trace>"
 candidate:
-  summary: "<role-specific candidate or none>"
+  summary: "<supported correspondence, role-specific construction, or unresolved hypothesis>"
   repository_native_artifact: "<artifact or none>"
   current_encoding_relation: "<material correspondence, scope, law strength, and placement; or not-material>"
   nearest_false_friend: "<candidate or not-material>"
@@ -34,7 +34,7 @@ residual_obligations:
   - "<requirement + owner + check time; or none>"
 invalidators:
   - "<proof-lease invalidator; or none>"
-resource_bound: "<effective bound or unresolved>"
+resource_bound: "<effective bound, not-material, or unresolved>"
 obstructions:
   - "<claim-scoped impossibility argument with witness and reopening condition; or none>"
 agreement_pressure: "confirms | challenges | narrows | conflicts | none"
@@ -45,8 +45,11 @@ final_call: "<one-line recommendation>"
 Rules:
 
 - observations are evidence-backed; proposals and uninspected claims are not observations;
-- `candidate` describes the actual construction, including composite or unregistered
-  constructions. Use `card_dispositions: []` when no card is used; never invent a
+- `candidate` describes the actual correspondence or construction, including
+  composite or unregistered constructions. For recognition, put its consequences
+  and limits in the existing summary and observations; artifact, dividend, transition,
+  and resource fields use their existing `none` or `not-material` forms when not
+  claimed. Use `card_dispositions: []` when no card is used; never invent a
   card to fill the packet. Catalogue membership changes neither acceptance nor proof;
 - missing evidence or authority belongs in `proof_obligations` or owned
   `residual_obligations` and the unresolved recommendation, not `obstructions`.

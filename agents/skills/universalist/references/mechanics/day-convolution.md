@@ -1,6 +1,6 @@
 # Day Convolution and Promonoidal Description Composition
 
-Use this reference only after Universalist has identified the seam, index world, base composition, indexed descriptions, witness slice, observations, law, falsifier, and effective implementation boundary.
+Consult this reference when indexed descriptions appear to combine through possible decompositions. Recover the index world, base composition, variance, descriptions, and laws during inquiry. Establish the relevant hypotheses before claiming Day or promonoidal convolution; establish an effective strategy when proposing its implementation.
 
 Day convolution is not a synonym for pairing, merging, sequencing, numerical convolution, or operadic substitution.
 

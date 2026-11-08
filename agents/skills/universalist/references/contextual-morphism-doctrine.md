@@ -331,7 +331,9 @@ one counterexample
 
 ## Selection rule
 
-Use Contextual Morphism Doctrine only when all are true:
+When selecting new contextual-morphism machinery, require the following adoption
+conditions. Recognizing an existing Tambara correspondence instead needs its
+defining actions, profunctor, framing, and laws, without a code or test delta:
 
 ```text
 there is a real ambient context world;

@@ -1,22 +1,22 @@
 # Former Kan Skill Reference
 
-This file preserves the former standalone Kan skill instructions as an internal mechanics reference. The unified `universalist` skill owns routing, certificates, and architecture decisions; these mechanics are used only after the universalist workflow identifies the relevant boundary/artifact.
+This file preserves the former standalone Kan material as an internal mechanics reference. The unified `universalist` skill owns inquiry, claim acceptance, routing, and output. Consult these mechanics to formulate or investigate a task-relevant hypothesis as well as to elaborate a selected construction. The certificate and implementation modes below apply only when that work is requested.
 
 ---
 
 ---
 name: kan
 description: >
-  Use when universalist or the user has identified a concrete world/boundary seam that needs detailed Kan mechanics: Kan extensions, Kan lifts, precomposition/postcomposition, Freyd/AFT free-builder diagnostics, Yoneda/Coyoneda boundary representations, defunctionalized boundary IRs, codensity/density, codensity presentations via dense probes and duality, Exact Context Doctrine, context compilation, task-indexed data exchange, Context Certificates, pointwise formulas, free/cofree completions, functorial data migration, compatibility facades, lifted implementations, residual obligations, Composition Certificates, Boundary Normal Form audits, or categorical law tests; and use when universalist identifies a Possibility Sheafification / exact-abstraction replacement that needs categorical repair mechanics. Do not use for generic architecture unless worlds, boundary kind, known side, unknown location, witness slice, proof signal, and—when applicable—a Composition Certificate or Sheafification Certificate are named or must be recovered.
+  Internal reference for Kan extensions and lifts, precomposition and postcomposition, Freyd/AFT diagnostics, Yoneda/Coyoneda, defunctionalization, density/codensity, categorical data migration, context compilation, and gluing. Recover the relevant mathematical data during inquiry; a prior artifact selection, certificate, or failed ordinary construction is not required.
 ---
 
 # Kan
 
 ## Mission
 
-Use this skill for the detailed categorical mechanics behind universal architecture boundaries.
+Use this reference for the detailed categorical mechanics behind a relevant question or construction.
 
-`universalist` chooses whether a seam deserves a canonical artifact. `kan` elaborates the selected artifact: Kan extension, Kan lift, Freyd/AFT diagnostic, Yoneda/Coyoneda representation, defunctionalized IR, codensity, data migration, context compilation, or law tests.
+Universalist can recognize an existing correspondence or derive a construction using Kan extensions/lifts, Freyd/AFT diagnostics, Yoneda/Coyoneda, defunctionalization, codensity, data migration, and context compilation. Establish the actual claim's hypotheses and laws; recognition need not nominate an artifact.
 
 Core rule:
 
@@ -24,13 +24,13 @@ Core rule:
 Primitives compute. Boundaries compose. Presentations compress. Contexts prepare. Witnesses certify.
 ```
 
-Do not start with category labels.
-Start with worlds, boundary kind, known side, unknown location, witness, and law.
-```
+Category labels can suggest hypotheses, but only the corresponding data and laws
+establish them. Recover worlds, maps, and the decisive equations during inquiry.
 
-## Required Handoff Contract
+## Data to recover for the claim
 
-Do not begin detailed Kan mechanics unless the prompt or prior analysis provides, or you first recover:
+Use the applicable fields below to develop the argument. Artifact and certificate
+fields apply only to an actual construction or certificate task:
 
 - signal / smell;
 - seam;
@@ -46,14 +46,16 @@ Do not begin detailed Kan mechanics unless the prompt or prior analysis provides
 - Context Certificate fields if the seam is a semantic-consumption/context-compilation boundary.
 - Verified Context Plane fields if schemas, mappings, constraints, provenance, publication, or CQL-like tooling are relevant.
 
-If these are absent, first produce a short world/boundary inventory and ask whether to proceed, unless the user requested a best-effort implementation.
+Inspect available evidence to resolve missing data within the task's existing
+authority. A missing premise remains unresolved; it does not prohibit inquiry or
+require permission to continue an already authorized analysis.
 
 
 ## Possibility Sheafification Elaboration
 
-Use this mode when `universalist` has identified an inexact architecture-level abstraction and produced, or asked for, a Sheafification Certificate. `kan` should elaborate the categorical repair; it should not invent Track G from vague code smell alone.
+Use this repair mode for an evidenced inexact abstraction or a requested Sheafification Certificate. Investigating whether local data satisfy gluing laws needs neither a prior defect nor a certificate; recommending a repair does need the evidenced failure and preservation argument.
 
-Required handoff:
+Data for a repair proposal:
 
 - current abstraction and files;
 - usage site and local contexts;
@@ -75,16 +77,16 @@ Categorical repair selector:
 | Observation sprawl | Yoneda/Ran observation vocabulary |
 | Generated/provenance drift | Coyoneda/Lan payload + path |
 
-Output a **Sheafification Kan Report** with the construction mechanics, representation choice, comparison/unit/counit/factorization law when applicable, gluing law, falsifier, and migration notes.
+For a requested **Sheafification Kan Report**, include the construction mechanics, representation choice, comparison/unit/counit/factorization law when applicable, gluing law, falsifier, and migration notes. Otherwise use the requested presentation and the actual claim's evidence.
 
 ## Composition Certificate Elaboration
 
-Use this skill in two modes:
+For a task that requests certificate elaboration, use the appropriate mode:
 
 1. **Recover mode**: no certificate exists yet, so produce a compact world/boundary inventory and identify the missing certificate fields.
 2. **Elaboration mode**: a certificate exists, so refine its categorical mechanics without changing the selected boundary artifact unless the mechanics expose an obstruction.
 
-For any Kan output, preserve this mapping:
+For certificate output, preserve this mapping:
 
 | Certificate field | Kan elaboration |
 | --- | --- |
@@ -156,7 +158,7 @@ Use this mode when a target monad/effect/behavior is too semantic, infinitary, o
 Recover:
 
 - Target behavior / monad / effect.
-- Direct algebraic presentation attempt and why it is awkward.
+- Available algebraic presentation and its tradeoffs when comparing realizations; no prior failed attempt is required.
 - Small probe world: finite cases, approximants, observations, traces, expectations, policy probes, legacy views, or finitely presentable fragments.
 - Density / coverage claim: how large objects are built or determined by probes.
 - Duality / observation bridge: dualizing object, observation world, adjunction/equivalence, or semantic bridge.
@@ -193,7 +195,7 @@ Deliver:
 
 ## Step -1 — World Model Preamble
 
-Before naming `Lan`, `Ran`, `Lft`, `Rft`, Yoneda, Coyoneda, or Freyd/AFT, record the worlds.
+Before asserting a `Lan`, `Ran`, `Lft`, `Rft`, Yoneda, Coyoneda, or Freyd/AFT claim, establish the relevant worlds, maps, comparison cells, and hypotheses. The theory can help discover these data.
 
 For each world:
 
@@ -418,13 +420,13 @@ Use when universalist has selected Track G / Possibility Sheafification.
 
 ## Guardrails
 
-- No Kan mechanics without worlds, boundary kind, known side, unknown location, witness, and law.
-- No theorem claims for ordinary code unless categories/functors/natural transformations/comparison cells are explicit.
-- No Yoneda/Coyoneda unless it changes representation, centralizes observations, defers generation, preserves provenance, or improves tests.
-- No defunctionalization unless the higher-order value crosses a meaningful boundary.
-- No Freyd/AFT unless `P : B -> C0` is concrete and there is a builder or obstruction report.
+- Establish the worlds, maps, comparison cells, and laws needed for the actual claim; do not require a selected artifact to investigate them.
+- A theorem claim needs an explicit correspondence to its mathematical data and hypotheses, even when the implementation encodes them implicitly.
+- Recognizing Yoneda/Coyoneda needs the actual representation correspondence; introducing new machinery additionally needs a representation, observation, provenance, or other material dividend.
+- Defunctionalization can concern local algorithms as well as cross-boundary behavior; justify a proposed change by preservation and benefit.
+- Freyd/AFT claims need the actual functor and theorem hypotheses. A builder or obstruction report is an application, not a prerequisite to examining whether those hypotheses hold.
 - Prefer plain engineering language when it conveys the same plan.
-- No sheafification mechanics without local sections, overlaps, gluing failure, possibility-envelope gap, law, and falsifier.
+- A sheaf claim needs the relevant local data, restrictions, covers, and gluing laws; a repair proposal additionally needs an evidenced failure. Do not invent a defect to recognize lawful gluing.
 
 ## References
 

@@ -1,6 +1,9 @@
 # Kan Boundaries for Universalist
 
-Use this only after the ordinary construction ladder is not enough.
+Consult this reference for a task-grounded Kan hypothesis or a question about
+transporting semantics through a map or realizing them behind a projection.
+An ordinary construction need not fail before the theory can help formulate the
+question. Compare native realizations when recommending a construction.
 
 ## Extension-shaped boundary
 
@@ -46,11 +49,15 @@ Use lift language when the question is: what must exist behind this fixed projec
 
 ## Universalist rule
 
-Never answer with Kan vocabulary alone. Translate it into:
+Do not let Kan vocabulary substitute for the relevant diagram, comparison cells,
+hypotheses, and universal property. Recognition can finish with an established
+correspondence, consequences, and limits. For a proposed realization, identify:
 
 - boundary artifact;
 - constructor/interpreter/projection;
 - one witness seam;
 - one proof signal.
 
-If those cannot be named, downgrade to ordinary universalist construction or plain adapter.
+When the stronger claim is unsupported, report the supported weaker correspondence
+or unresolved premise. An ordinary adapter may be adequate without possessing a
+Kan universal property; a missing new artifact does not refute an existing one.

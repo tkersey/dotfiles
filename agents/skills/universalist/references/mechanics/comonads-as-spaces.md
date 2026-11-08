@@ -1,6 +1,6 @@
 # Comonads as Spaces
 
-Use this mechanics reference after Universalist has identified a boundary or world whose correctness depends on locality, neighborhoods, situated context, restriction, or local-to-global reconstruction.
+Consult this reference when locality, neighborhoods, changes of viewpoint, situated context, restriction, or local-to-global reconstruction raise a mathematical question. Recover the candidate world and operations during inquiry, then establish the defining laws for the particular comonad, spatial, basis, or continuity claim.
 
 Research basis: Aaron David Fairbanks, Kevin Carlson, and David I. Spivak, *Comonads as Spaces*, arXiv:2607.15091v1 (2026). The mathematical claims below summarize that paper and standard comonad theory. The software mappings are Universalist architecture inferences.
 

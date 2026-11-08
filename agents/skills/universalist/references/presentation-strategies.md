@@ -75,7 +75,7 @@ Proof signals:
 - labelled-halo and local/global provenance preservation;
 - finite/effective halo and invalidation budget.
 
-Do not call a fixture set or component catalog a basis merely because it covers examples. Do not call a dependency graph a comonadic space unless the additional laws and representation change architecture.
+Do not call a fixture set or component catalog a basis merely because it covers examples. A dependency graph supports a comonadic-space claim only through the corresponding structure and laws. Adopting a new spatial representation additionally needs a material architectural benefit.
 
 ### Mixed presentation
 

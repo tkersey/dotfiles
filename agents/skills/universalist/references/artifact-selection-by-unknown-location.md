@@ -10,12 +10,12 @@ and combinations under the same evidence standards.
 | --- | --- | --- | --- |
 | Independent data | Product | record/object | construct and project consistently |
 | Exclusive state | Coproduct | ADT/sealed union | exhaustive handling, invalid shapes rejected |
-| Stable predicate | Refined type / equalizer | checked constructor/wrapper | valid accepted, invalid rejected |
+| Stable predicate | Refined type / equalizer | checked constructor/wrapper | exactly valid values admitted and preserved; equalizer additionally needs the parallel maps and unique factorization |
 | Shared projection agreement | Pullback | witness pair/join object | mismatches rejected, projections preserved, compatible alternatives factor through it |
 | Integrated output from explicit overlap | Pushout | canonical merged schema/model/module | source injections agree on overlap; compatible consumers factor through it |
 | Delete-preserve-add graph/model rewrite | Pushout complement + double pushout | rewrite rule and trace | dangling/identification failures rejected; preserved interface unchanged |
-| Supplied behavior | Exponential | strategy/function seam | parity with old branch fixtures |
-| Syntax from generators | Free construction / initial algebra | AST/IR plus interpreters | interpreter agrees with old evaluator |
+| Supplied behavior | Exponential | strategy/function seam | evaluation/currying beta/eta for an exponential claim; fixture parity checks implementation behavior |
+| Syntax from generators | Free construction / initial algebra | AST/IR plus interpreters | generator extension or unique algebra fold for the universal claim; interpreter parity checks implementation behavior |
 | Ongoing behavior over time | Behavioral coalgebra | state transition + observation | traces satisfy observations |
 | Coherent local context around points | Comonadic spatiality | situated value/context former + effective halo | center and nested-neighborhood laws; locality falsifier |
 | Local patches that should generate situated objects | Density comonad / basis | patch vocabulary + decomposition/reconstruction | canonical reconstruction or explicit non-basis obstruction |
@@ -47,18 +47,21 @@ and combinations under the same evidence standards.
 | Query/projection sprawl | Yoneda-style observation vocabulary | `Observation` + `runObservation` | representation change preserves observations |
 | Callbacks cross boundary | Defunctionalized IR | constructors + `apply` | encoded case equals old callback behavior |
 
-The following restrictions govern claiming or retaining the named structures,
-not using their theory to generate a hypothesis or deciding question.
+The following distinctions guide claims and construction choices, not permission
+to investigate a hypothesis. Recognizing structure requires its defining data and
+laws; adopting new machinery additionally requires a material engineering dividend
+and an effective realization. Preserve this distinction for restricted or
+degenerate instances as well as full architectural applications.
 
 Use pullback only when there is a real shared target/observation and an agreement equation. Use pushout only when there is a real overlap object and explicit maps into both sources. A plain pair is not automatically a pullback; a plain merge is not automatically a pushout.
 
-Use comonadic spatiality only when locality changes correctness, points/patches can be named, center and coherence laws are meaningful, and an effective halo/basis representation changes code or tests. A plain dependency graph, contextual wrapper, or fixture set is not automatically a comonadic space or basis.
+For comonadic spatiality, identify the situated objects or local views and the counit/comultiplication and coherence laws. Basis and halo claims need their own correspondence. Introducing a halo/basis representation requires an effective strategy and a code, test, or proof dividend. A plain dependency graph, contextual wrapper, or fixture set is not automatically a comonadic space or basis.
 
 Use Day convolution only when artifacts are genuinely indexed descriptions and all lawful tensor decompositions should contribute. Static/applicative description composition does not prove effect commutativity.
 
 Use Tambara mechanics only when a real context world acts on both endpoint worlds and a profunctorial capability must remain valid under several context extensions. A wrapper, reader argument, or DI container is not automatically a Tambara module.
 
-Use a double category only when horizontal and vertical arrow families have independent architectural meaning and composition, squares are typed artifacts, both pasting operations matter, and interchange/coherence changes proof or implementation. One commuting square, two unrelated categories, a PROP diagram, or DPO rewriting is not automatically a double category. Equipment additionally requires effective companions, conjoints, or restrictions.
+For a double-category claim, identify both arrow families with identities and composition, typed squares, both pasting operations, and interchange/coherence. New architecture needs a dividend from using both directions. One commuting square, two unrelated categories, a PROP diagram, or DPO rewriting is not automatically a double category; a restricted or degenerate realization still needs its explicit structure. Equipment additionally requires the claimed companions, conjoints, or restrictions and their laws; effective generation is a further implementation obligation.
 
 If the unknown location is unclear, derive it from required uses, operations,
 observations, and relevant mathematical hypotheses. Inspect a concrete witness

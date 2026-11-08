@@ -2,19 +2,17 @@
 
 These files are the former standalone `kan` skill folded into `universalist` as an internal mechanics layer.
 
-Use these references only after `universalist` has identified:
+Consult a focused reference when task evidence raises a relevant mathematical
+question. Recover the worlds, maps, operations, laws, hypotheses, and discriminator
+during inquiry; a selected artifact, completed witness, certificate, or failed
+ordinary attempt is not an admission condition.
 
-```text
-signal
-seam/worlds
-boundary kind
-known side
-unknown location
-canonical artifact
-witness slice
-law/falsifier
-certificate type
-```
+Use each concept's defining data and claim-specific laws to establish the
+correspondence. Distinguish mathematical premises from conditions for choosing or
+implementing new machinery. Report supported consequences and limits in the
+requested form. Artifact, transition, effectivity, and certificate requirements
+apply to the construction or realization actually proposed. Specialized report
+sections supply applicable evidence prompts, not a second mandatory report.
 
 Mechanics include:
 
@@ -36,7 +34,7 @@ pushout reconciliation
 possibility sheafification mechanics
 ```
 
-Use `double-categories.md` when two semantically different arrow families both compose and typed squares must paste horizontally and vertically with interchange/coherence. Use the equipment section only when strict maps induce effective companions, conjoints, or restrictions. One commuting square or DPO rewrite is not a double category.
+Consult `double-categories.md` when two arrow families and compatibility squares suggest two directions of composition. A claim needs both pastings and interchange/coherence. The equipment section investigates whether strict maps induce companions, conjoints, or restrictions; establish their laws and any claimed effective generation. One commuting square or DPO rewrite alone does not establish a double category.
 
 Use `pullback` for agreement through a shared observation, `pushout` for gluing along explicit overlap, and `double-pushout` for delete-preserve-add graph/model rewriting.
 
@@ -55,7 +53,7 @@ double-category square     compatibility between two compositional arrow directi
 Freyd composition          ordered runtime effects
 ```
 
-Do not conflate a double category with a 2-category, PROP diagram, square fixture, or double-pushout rewrite. Require two arrow families, square typing, both pastings, interchange/coherence, and effective interpretation.
+Do not infer a double category from a 2-category, PROP diagram, square fixture, or double-pushout rewrite without constructing the claimed correspondence. Require both arrow families, square typing, both pastings, and interchange/coherence, including for degenerate encodings. An effective implementation claim additionally needs its interpretation and resource account.
 
 Do not conflate behavioral coalgebras with comonad coalgebras or profunctor Tambara modules with equivariant Tambara functors.
 

@@ -1,6 +1,8 @@
 # Freyd/AFT Boundary Diagnostic
 
-Use this only for lift-shaped Track D refactors.
+Use this for lift-shaped questions about an implementation behind a projection,
+including recognition and diagnosis without a refactor. A Freyd/AFT theorem claim
+requires the actual functor and its theorem hypotheses, not merely this shape.
 
 Shape:
 

@@ -175,6 +175,6 @@ A static description shape does not prove effect commutativity. Tambara framing 
 
 ## Anti-overreach
 
-Use a plain function/interface when it already captures exact composition. An operad, Freyd model, Day convolution, Tambara module, or double category is justified only when it changes legal wiring, sequencing, indexed composition, context framing, process/change compatibility, tests, ownership, validation, interpretation, migration, invalidation, or representable states.
+Use a plain function/interface when it already captures exact composition. Introducing new operadic, Freyd, Day, Tambara, or double-category machinery needs a dividend in legal wiring, sequencing, indexed composition, framing, compatibility, proof, or implementation. Recognizing a lawful instance already present requires the defining correspondence and laws, not a design change.
 
-Do not call two categories and a few commuting diagrams a double category without typed horizontal and vertical arrows, squares, both square-pasting operations, interchange/coherence, and effective lowering. Prefer a 2-category or one explicit compatibility witness when the second arrow family is not independent.
+Two categories and a few commuting diagrams do not establish a double category without typed horizontal and vertical arrows, squares, both pastings, and interchange/coherence. The two directions may use the same underlying arrows, or a direction may be degenerate, if the claimed laws hold. Architectural independence and effective lowering matter when adopting a new realization; a 2-category or one compatibility witness may then be the simpler adequate choice.

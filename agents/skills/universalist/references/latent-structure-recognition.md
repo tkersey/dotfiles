@@ -14,20 +14,22 @@ The goal is:
 ```text
 required uses and concrete evidence <-> relevant mathematical hypotheses
   -> derived carriers, operations, observations, laws, and non-laws
-  -> one evidenced general pattern
-  -> one repository-native realization
+  -> supported correspondence, consequences, and limits
+  -> one repository-native realization when needed
   -> one observation-preserving transition when needed
 ```
 
-Recognition nominates. Existing comparison, theorem-card, route, authority, and obstruction rules still decide whether anything changes.
+Recognition can establish a supported correspondence and its consequences.
+When the task calls for a construction change, existing comparison, theorem-card,
+route, authority, and obstruction rules govern its nomination and adoption.
 
 ## Governing rule
 
 ```text
 Let theory suggest hypotheses; establish structure by laws, not labels.
 Derive the formulation as well as recognizing an existing encoding.
-Retain a generalization only for a material dividend.
-Justify the native realization and any required transition.
+Adopt new abstraction machinery only for a material dividend.
+Justify any proposed native realization and required transition.
 ```
 
 A general pattern may be useful even when no advanced construction card is selected. Products, coproducts, monoids, actions, homomorphisms, folds, state machines, adapters, and checked witnesses often remain `UNI-ORDINARY`.
@@ -89,6 +91,28 @@ Evidence debt:
 Do not erase effects, authority, provenance, ordering, failure, locality, or resources while anti-unifying the instances.
 
 ## Encoding relations
+
+Identify the subject and level of the claim: a representation family, individual
+value, transformation, interpreter, or evolving system. Map the mathematical
+parameters and structural operations to concrete evidence. The same implementation
+may realize different structures at different levels; transfer only consequences
+supported by the particular correspondence and its assumptions.
+
+For any relevant concept, recover its defining data and specific laws from the
+focused theory reference: the objects, maps, variance, operations, comparison
+cells, or universal property that this claim actually needs. State the mathematical
+setting, quantified domain, and equality or observational equivalence. Match those
+roles to the implementation, including encoded or distributed operations. A
+functor, algebra, adjunction, sheaf, or double category has different obligations;
+do not impose one generic list of laws on all of them. Trace each claimed
+consequence through the established correspondence and its hypotheses.
+
+The atlas and registry help retrieve that theory; they do not enumerate everything
+recognizable. Card signals and adoption prerequisites can be useful clues without
+being necessary mathematical conditions. For example, a lawful monad can be used
+in a computation with static shape, and one schema and its instance can form a
+category and functor without a migration to a second schema. Distinguish absent
+defining data from an unused capability or unnecessary engineering application.
 
 When a current implementation exists, describe the material aspects of its
 relation together. Correspondence, scope, law strength, and placement are not
@@ -214,11 +238,12 @@ This dispute discriminator adapts Eugenia Cheng, [*The Joy of Abstraction*](http
 sections 2.5–2.6 (printed pp. 28–30) and 3.5 (pp. 42–43). The retry example is
 an engineering application.
 
-### 4. Nominate a small candidate family
+### 4. Develop structural hypotheses
 
 Develop task-relevant hypotheses from evidence and mathematical knowledge, then
-discriminate them against ordinary native candidates, including unmet requirements
-of an inadequate baseline. Reuse sufficient supplied
+discriminate them against nearby mathematical accounts and false friends. Compare
+ordinary native candidates when a construction decision is live, including unmet
+requirements of an inadequate baseline. Reuse sufficient supplied
 derivations. A candidate need not arrive with the proof its investigation is meant
 to discover. Stop when the result is adequately supported and no material question
 remains; neither a fixed count nor speculative enumeration establishes sufficiency.
@@ -232,14 +257,16 @@ supporting evidence
 missing evidence
 nearest false friend
 discriminating law
-likely repository-native form
+repository-native form when a realization is proposed
 ```
 
 A theorem-card signal never proves the candidate. A recognized ordinary pattern does not need a theorem card.
 
 ### 5. Discriminate by law
 
-Use the smallest executable law or counterexample that separates the candidates.
+Use a source-grounded argument, inspection, law check, or counterexample that
+separates the live hypotheses. Sampled success does not prove a quantified law;
+use the evidence strength appropriate to the actual claim.
 
 Typical discriminators:
 
@@ -270,7 +297,7 @@ ordinary construction.
 Examples:
 
 - **stored data versus its eliminator** — does a consumer need only a fold, or also constructor inspection, original substructures, sharing, or durable identity? Multiple interpreters alone do not decide this.
-- **applicative versus monadic** — can later operation shape be known before earlier results?
+- **applicative versus monadic use** — can later operation shape be known before earlier results? Static use does not refute a lawful monad on the same carrier.
 - **pointwise versus Day composition** — does only the same index combine, or must every legal decomposition contribute?
 - **Reader parameter versus Tambara framing** — is there an actual context action with unit, associative framing, and endpoint naturality?
 - **commuting square versus double category** — do both arrow families independently compose, and do local squares paste in both directions?
@@ -286,7 +313,7 @@ Examples:
   for the applicable proof, not a mandatory endpoint matrix. The criterion comes
   from Cheng, *The Joy of Abstraction*, section 21.5 (printed pp. 323–325).
 
-### 6. Require a generalization dividend
+### 6. Require a dividend for new machinery
 
 Adopting new abstraction machinery requires a material dividend such as:
 
@@ -308,7 +335,7 @@ No material dividend means no additional abstraction machinery is justified;
 keep the adequate native candidate. It does not falsify an established mathematical
 correspondence or require relabeling a lawful structure as an analogy.
 
-### 7. Construct the transition witness
+### 7. Justify a transition when proposing a change
 
 When changing an existing representation or path, account for the transition even if the route label is unchanged:
 
@@ -346,7 +373,8 @@ because the general pattern can express more.
 
 ### 8. Return to ordinary Universalist adjudication
 
-Compare:
+For a requested recognition analysis, return the supported correspondence, useful
+consequences, and limits. For a construction decision, compare:
 
 ```text
 ordinary candidate

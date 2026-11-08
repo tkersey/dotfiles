@@ -3,6 +3,9 @@ purpose: Index task-relevant constructions and their mechanics, including compon
   SKILL.md and decision-contract.json own inquiry and outcomes; claim-appropriate-proof.md owns claim obligations;
   mechanics references supply mathematical hypotheses and laws. The receiving workflow owns selection and presentation.
   Cards are retrieval summaries, not an exhaustive theory catalogue or a second policy authority.
+  Card signals, selection prerequisites, emitted artifacts, routes, and claim modes describe construction records;
+  they do not delimit mathematical recognition. For recognition, recover the actual definition and claim-specific
+  hypotheses from the relevant theory references, distinguishing mathematical premises from adoption and effectivity conditions.
 plain_output_default: true
 claim_modes:
 - nomination
