@@ -4,7 +4,7 @@
     "skill": {
       "name": "actuating",
       "kind": "mixed",
-      "source_fingerprint": "actuating-construction-core-v32"
+      "source_fingerprint": "actuating-construction-core-v33"
     },
     "triggers": [
       {
@@ -174,7 +174,7 @@
           "existing evidence may inform implementation without opening review",
           "local completion needs no review convergence or publication",
           "required relationships preserve authoritative facts, derived projections, and independently retained history",
-          "required results and continuations determine native representations, algorithms, primitive operations, and lawful combinations",
+          "required results and continuations determine native representations, algorithms, primitive operations, and lawful combinations; compared views retain or recover distinctions that decide justified next actions and claims",
           "primitive meanings and their composition are established under the required observation or refinement relation",
           "a difficult or repetitive proof can revise the representation, algorithm, or decomposition instead of adding per-case obligations",
           "a source argument or requirement-derived deciding observation establishes why the mechanism guarantee implies the required law",
@@ -188,6 +188,7 @@
           "initial construction requires a speculative framework or a separate architecture packet",
           "requirement narration or a proof template substitutes for deriving and realizing the program",
           "lawful composition is credited as intended primitive meaning without establishing that meaning",
+          "agreement in a compared view is credited as preservation while an erased distinction changes a required subsequent decision",
           "a prescribed intermediate narrative or nomination is required before inquiry can begin"
         ],
         "rationale": "The accepted law guides discovery of the native program and its composition argument; counterexamples refine the derivation."

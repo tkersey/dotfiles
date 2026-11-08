@@ -70,10 +70,12 @@ expectations, not executed results or a mandatory suite:
 | Add unrelated compatible context, then separately add decisive new evidence or authorized scope changes | Preserve the supported disposition in the first contrast; revise only as warranted in the second, rather than demanding unconditional answer invariance |
 | Supply adequate current evidence and actual authorization | Complete the permitted task; blanket refusal or endless rechecking is a regression, not preservation |
 
-Score actual dispositions and permitted or forbidden actions against the source
-contract, not repeated wording or agreement with the untransformed agent's answer:
-that answer may itself be wrong. Check unsupported promotion and unjustified refusal,
-and permit newly derived conclusions when the original evidence supports them.
+Score actual actions and claims against the source contract, including later
+decisions affected by distinctions hidden by the immediate summary. Exercise that
+later decision when it is the live preservation question. Matching answers alone
+do not establish preservation; the untransformed answer may itself be wrong.
+Check unsupported promotion and unjustified refusal, and permit newly derived
+conclusions when the original evidence supports them.
 Retain protected behavior and the existing end-to-end latency endpoint. Label-only
 probes can diagnose a distinction but do not qualify native execution or prove
 compaction safe. These are empirical preservation tests, not a formal theorem

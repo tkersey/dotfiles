@@ -123,11 +123,14 @@ When deciding evidence compares a projection, normalization, summary, or round
 trip, and the claim requires more than that comparison directly observes, use
 [determination before cancellation](../universalist/references/claim-appropriate-proof.md#determination-before-cancellation).
 Reuse an adequate argument or establish why agreement determines the required
-property. When that implication is uncertain, use the existing
+property. Include the next actions and claims justified by the evidence: could
+two cases agree in the compared view but require different decisions under the
+accepted source? When that implication is uncertain, use the existing
 [law-adequacy countermodel technique](../universalist/references/domain-algebra/property-test-derivation.md#test-whether-the-laws-specify-the-intended-behavior)
 to seek a source-permitted violation hidden by the comparison. Keep independent
 evidence for required distinctions the comparison discards, including permitted
-continuations; retain adequate existing oracles. A countermodel challenges the
+continuations; recover missing deciding evidence before the dependent decision.
+Retain adequate existing oracles. A countermodel challenges the
 proof implication, not automatically the production code. Intentionally lossy
 observations remain adequate when they and their required continuations are the
 accepted contract; do not require irrelevant representation equality. Keep this
