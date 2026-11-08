@@ -1,6 +1,6 @@
 {
-  "schema": "actuating-review-contract/v22",
-  "contract_id": "actuating-review-contract-v31",
+  "schema": "actuating-review-contract/v23",
+  "contract_id": "actuating-review-contract-v32",
   "required_lenses": [
     {
       "name": "standard",
@@ -92,8 +92,9 @@
           "standard_level_bound_in_review_context": true,
           "default_standard_level": "high",
           "max_level_requires_explicit_selection": true,
-          "transcription_is_derived_evidence": true,
-          "transcription_check_required": true
+          "native_command": "/review",
+          "raw_text_adjudication_required": true,
+          "successful_target_diff_observation_required": true
         },
         "custom_review": {
           "applies_to": ["changeset-auxiliary", "file-standard", "file-auxiliary"],
@@ -112,7 +113,8 @@
           "pinned_fresh_session_required": true,
           "successful_terminal_execution_required": true,
           "selected_model_only_required": true,
-          "permission_denial_holds": true,
+          "permission_denials_require_adjudication": true,
+          "read_only_execution_required": true,
           "observed_standard_level_must_match": true,
           "custom_delivery_verified_from_transcript": true,
           "current_git_subject_required": true,

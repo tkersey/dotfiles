@@ -25,8 +25,8 @@ const json = p => JSON.parse(text(p));
 const c = json('references/review-contract.json');
 const d = json('references/decision-contract.json').skill_decision_contract;
 const names = ['standard','soundness-skeptic','footgun-finder','invariant-ace','complexity-mitigator','fresh-eyes'];
-assert.equal(c.schema, 'actuating-review-contract/v22');
-assert.equal(c.contract_id, 'actuating-review-contract-v31');
+assert.equal(c.schema, 'actuating-review-contract/v23');
+assert.equal(c.contract_id, 'actuating-review-contract-v32');
 assert.equal(d.contract_version, 'SKDC-v1');
 assert.equal(d.skill.source_fingerprint, 'actuating-construction-core-v32');
 assert(c.candidate_acceptance.common_obligations.includes(
@@ -67,8 +67,8 @@ assert.deepEqual(claude.standard_review, {
   custom_instructions:false,owner:'claude-code',source:'native-code-review',
   native_code_review_required:true,custom_instructions_forbidden:true,
   standard_level_bound_in_review_context:true,default_standard_level:'high',
-  max_level_requires_explicit_selection:true,transcription_is_derived_evidence:true,
-  transcription_check_required:true
+  max_level_requires_explicit_selection:true,native_command:'/review',
+  raw_text_adjudication_required:true,successful_target_diff_observation_required:true
 });
 assert.deepEqual(claude.custom_review, {
   applies_to:['changeset-auxiliary','file-standard','file-auxiliary'],
@@ -87,7 +87,7 @@ assert.deepEqual(reviewObject.properties.overall_correctness.enum,['patch is cor
 for (const field of [...reviewObject.required,...Object.keys(reviewObject.properties.findings.items.properties),
   'absolute_file_path','line_range']) assert(rubric.toString('utf8').includes(`"${field}"`),'rubric field '+field);
 for (const key of ['host_attributed_execution_required','pinned_fresh_session_required',
-  'successful_terminal_execution_required','selected_model_only_required','permission_denial_holds',
+  'successful_terminal_execution_required','selected_model_only_required','permission_denials_require_adjudication','read_only_execution_required',
   'observed_standard_level_must_match','custom_delivery_verified_from_transcript',
   'current_git_subject_required','raw_result_preserved','executor_fallback_forbidden'])
   assert.equal(claude.attempt_quality[key],true,key);
@@ -95,7 +95,7 @@ assert.equal(claude.attempt_quality.process_exit_sufficient,false);
 assert.equal(claude.file_standard.instruction_source,'pinned-codex-rubric-and-file-focus');
 const contractProse = text('references/review-contract.md').replace(/\s+/g,' ');
 for (const law of ['claude-code-review/v1:','standard_level: null | low | medium | high | xhigh | max',
-  'Never put lens or focus instructions inside `/code-review`',
+  'Never put lens or focus instructions inside the native `/review`',
   'the host default binds only a new campaign']) assert(contractProse.includes(law), law);
 for (const key of ['host_issued_identity_required','terminal_output_required','fresh_context_per_request_required',
   'sibling_conclusions_forbidden','exact_dispatch_and_output_required','read_only_required',

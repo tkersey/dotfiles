@@ -1,6 +1,6 @@
 ---
 name: cc
-description: "Drive native Claude Code reviews through `claude -p`: the built-in /code-review (standard) or a caller's exact review instructions with schema-enforced output (custom). Freeze the Git subject, read back the exact session, transcribe standard results to findings JSON, and follow up on that session. Not ultrareview, /security-review, --fix, or --comment."
+description: "Drive native Claude Code reviews through `claude -p`: the bundled /review (standard) or a caller's exact review instructions with schema-enforced output (custom). Freeze the Git subject, enforce read-only execution, read back the exact session and original result, and follow up on that session. Not ultrareview, /security-review, --fix, or --comment."
 ---
 
 # CC
@@ -14,22 +14,23 @@ subject, model, effort, permissions, and recovery budget.
 
 Two review kinds:
 
-- **Standard:** the built-in `/code-review`, uncustomized.
+- **Standard:** the bundled `/review`, uncustomized. This alias keeps the native
+  command when a local `code-review` skill shadows `/code-review`; see
+  [native command resolution](https://code.claude.com/docs/en/code-review-local#change-or-build-on-the-review).
 - **Custom:** the caller's exact instruction bytes (for example an Actuating lens
   or file-focus request) as the whole prompt of a fresh session, with output
   enforced by `--json-schema`. The default schema,
   [review-object.schema.json](references/review-object.schema.json), is the Codex
   review object from Actuating's pinned rubric. Never put custom instructions
-  inside `/code-review`: its recipe fixes its angles, finding caps, reading rules,
-  and output shape, and has no customization surface. A custom review never earns
-  standard credit.
+  inside `/review`: its recipe owns the review angles, reading rules, and output
+  shape. A custom review never earns standard credit.
 
 The runtime owns execution and its original output. The caller owns requirements,
 review credit, finding truth, repairs, publication, and closure. Implicit
 selection does not authorize a review campaign or any effect.
 
 Out of scope: `claude ultrareview` (uploads the branch to the cloud),
-`/security-review`, `/code-review --fix` (edits), `--comment` (publishes), and
+`/security-review`, `/review --fix` (edits), `--comment` (publishes), and
 cross-executor credit. Codex native review belongs to `$cas`.
 
 `$skill_dir` below is this skill's base directory.
@@ -37,12 +38,13 @@ cross-executor credit. Codex native review belongs to `$cas`.
 ## Resolve settings before dispatch
 
 Always pass `--model` and `--effort`, and for standard an explicit level. A fresh
-`claude` process loading disk defaults is not inheritance, and `/code-review`
+`claude` process loading disk defaults is not inheritance, and `/review`
 without a level reuses whatever level was typed last.
 
 - **Invoked from Claude Code:** inherit the invoking session. Effort is
   `CLAUDE_EFFORT`. Model is `.message.model` of the latest assistant record in
-  `~/.claude/projects/*/$CLAUDE_CODE_SESSION_ID.jsonl`; read only that record.
+  `<config>/projects/*/$CLAUDE_CODE_SESSION_ID.jsonl`, where `<config>` is
+  `CLAUDE_CONFIG_DIR` or `~/.claude` by default; read only that record.
 - **Invoked from Codex or elsewhere:** a Codex model does not transfer. Use the
   caller's explicit selection; otherwise resolve Claude Code's configured `model`
   and that model's `modelSettings.*.effortLevel` from user settings, and label
@@ -55,7 +57,8 @@ without a level reuses whatever level was typed last.
 
 ## Freeze the subject
 
-Resolve repository, base, and head before launch and keep them frozen.
+Resolve the repository and full base/head commit IDs before launch and keep them
+frozen.
 
 - **Committed range:** run in a clean checkout of the bound head (a clean
   worktree if needed, without touching unrelated work). Reviewers read the
@@ -69,42 +72,83 @@ Resolve repository, base, and head before launch and keep them frozen.
 - Launch from the repository root and recheck HEAD and working-tree/index state
   at admission.
 
-## Launch
+## Enforce read-only execution and launch
 
-Reviews are read-only. `dontAsk` denies anything not allowed, so allow the
-read-only Git commands reviewers need; a denied read leaves the subject unseen
-(observed).
+`--allowed-tools` grants approvals, not an exclusive tool inventory. `dontAsk`
+also honors loaded allow rules, and Git commands can write (`git diff --output`).
+Use restricted settings, an explicit inventory, and an enforced filesystem
+boundary together; before/after Git checks detect changes but do not prevent them.
+See the [CLI reference](https://code.claude.com/docs/en/cli-reference) and
+[sandbox configuration](https://code.claude.com/docs/en/sandboxing).
+
+Resolve `$repo`, `$git_dir` and `$git_common` to their physical absolute paths
+(repository root, `git rev-parse --absolute-git-dir`, and
+`git rev-parse --path-format=absolute --git-common-dir`). Include any additional
+source directories in `denyWrite`. Keep Claude's runtime state, including
+transcripts, and attempt files (`$settings`, `$prompt`, `$events`, `$diagnostics`,
+`$readback_json`) outside those paths. Create these per-attempt settings with a
+JSON encoder:
+
+```bash
+jq -n --arg repo "$repo" --arg git_dir "$git_dir" --arg git_common "$git_common" '
+  {disableAllHooks: true, autoMemoryEnabled: false,
+   sandbox: {enabled: true, failIfUnavailable: true,
+     autoAllowBashIfSandboxed: false, allowUnsandboxedCommands: false,
+     excludedCommands: [],
+     filesystem: {disabled: false, denyWrite: [$repo, $git_dir, $git_common]}}}
+' >"$settings"
+```
+
+`--restricted` excludes user/project settings while retaining project instructions.
+Managed policy still applies: inspect it before dispatch. Only managed settings
+can disable managed hooks; force-enabled plugins and managed MCP can also survive
+ordinary disable flags. Hold if effective policy admits unbounded side effects,
+overrides the sandbox, adds unsandboxed exclusions, or cannot be established.
+Do not bypass it. See [settings precedence](https://code.claude.com/docs/en/settings)
+and [hook controls](https://code.claude.com/docs/en/settings-reference#disableallhooks).
+Require Claude Code 2.1.285 or newer, support for the flags and settings below,
+and a functioning sandbox; unavailability is a hold, never permission to run
+unsandboxed. Offline readback tests do not qualify the installed runtime's
+filesystem enforcement or native verifier delegation.
 
 ```bash
 sid=$(uuidgen | tr '[:upper:]' '[:lower:]')
-read_tools='Read Grep Glob Bash(git diff:*) Bash(git show:*) Bash(git log:*) Bash(git ls-files:*) Bash(git ls-tree:*) Bash(git cat-file:*) Bash(git rev-parse:*) Bash(git rev-list:*) Bash(git merge-base:*) Bash(git status:*) Bash(git grep:*) Bash(git blame:*) Bash(git check-ignore:*)'
+read_tools=(Read Grep Glob
+  'Bash(git diff:*)' 'Bash(git show:*)' 'Bash(git log:*)' 'Bash(git ls-files:*)'
+  'Bash(git ls-tree:*)' 'Bash(git cat-file:*)' 'Bash(git rev-parse:*)'
+  'Bash(git rev-list:*)' 'Bash(git merge-base:*)' 'Bash(git status:*)'
+  'Bash(git grep:*)' 'Bash(git blame:*)' 'Bash(git check-ignore:*)')
 
 # Standard
-(cd "$repo" && claude -p --session-id "$sid" \
+(cd "$repo" && GIT_OPTIONAL_LOCKS=0 claude -p --session-id "$sid" \
   --model "$selected_model" --effort "$selected_effort" \
-  --permission-mode dontAsk --permission-prompts none --allowed-tools "$read_tools" \
-  --disallowed-tools "Edit Write NotebookEdit Bash(gh:*)" \
+  --restricted --settings "$settings" --tools "Read,Grep,Glob,Bash,Agent" \
+  --strict-mcp-config --mcp-config '{"mcpServers":{}}' \
+  --permission-mode dontAsk --permission-prompts none --allowed-tools "${read_tools[@]}" Agent \
+  --disallowed-tools Edit Write NotebookEdit Skill Workflow 'mcp__*' \
   --output-format stream-json --verbose \
-  "/code-review $level $base" </dev/null >"$events" 2>"$diagnostics")
+  "/review $level $base" </dev/null >"$events" 2>"$diagnostics")
 
 # Custom: $prompt holds the exact instruction bytes
-(cd "$repo" && claude -p --session-id "$sid" \
+(cd "$repo" && GIT_OPTIONAL_LOCKS=0 claude -p --session-id "$sid" \
   --model "$selected_model" --effort "$selected_effort" \
-  --permission-mode dontAsk --permission-prompts none --allowed-tools "$read_tools" \
-  --disallowed-tools "Edit Write NotebookEdit Skill Task Workflow Bash(gh:*)" \
+  --restricted --settings "$settings" --tools "Read,Grep,Glob,Bash" \
+  --strict-mcp-config --mcp-config '{"mcpServers":{}}' \
+  --permission-mode dontAsk --permission-prompts none --allowed-tools "${read_tools[@]}" \
+  --disallowed-tools Edit Write NotebookEdit Skill Agent Task Workflow 'mcp__*' \
   --json-schema "$(cat "$skill_dir/references/review-object.schema.json")" \
   --output-format stream-json --verbose \
   <"$prompt" >"$events" 2>"$diagnostics")
 ```
 
 - Use a new session ID and private `$events`/`$diagnostics` per attempt.
-- Standard adds nothing beyond `/code-review <level> [target]`; keep `Task`
-  available there because `xhigh`/`max` launch their own verifier subagents.
-  Custom reviews may not launch reviewers or invoke skills.
+- Standard adds nothing beyond `/review <level> [target]`; retain native verifier
+  delegation (`Agent`) under the same restrictions. Custom reviews may not launch
+  reviewers or invoke skills.
 - Do not pass `--no-session-persistence` (the transcript is evidence), `--bare`,
   `--safe-mode`, bypass flags, or wider tools; do not widen access after a failed
-  check. `--json-schema` has no effect on `/code-review` (observed
-  `structured_output: null`); structure standard results by transcription below.
+  check. Standard output stays the native rendered text; do not require
+  `--json-schema` or another model call to interpret it.
 
 ## Read back the exact session
 
@@ -115,46 +159,48 @@ uv run --no-project python -I "$skill_dir/scripts/readback.py" custom \
   "$events" "$sid" "$selected_model" "$prompt" "$readback_json"
 ```
 
+For an explicitly bound current-diff review, omit the CLI target and pass `-` as
+the helper's target instead of `$base`.
+
 [readback.py](scripts/readback.py) writes the evidence and every problem, and
 exits nonzero (hold) unless all of these hold:
 
 - Init and result belong to `$sid` and the selected model; the run succeeded;
-  `modelUsage` names only that model (no fallback); no permission was denied.
-- **Standard:** the expanded recipe names the frozen target, its depth header
-  names the bound level (observed: `medium` ran the `high` recipe), and a
-  reviewer `git diff` used the target.
+  `modelUsage` names only that model (no fallback).
+- **Standard:** native result text is nonempty; the expanded recipe names the
+  frozen target, its depth header names the bound level (observed: `medium` ran
+  the `high` recipe), and a
+  matching reviewer `git diff` has a correlated successful tool result.
+  A command request alone, a failed read, or a result for another tool call is
+  insufficient. The helper recognizes direct patch reads, including ordinary
+  context options and explicit path limits. A successful per-file read does not
+  establish complete changeset coverage; the caller judges that separately.
+  Summary-only or complex shell commands do not establish this gate.
+  Recipe text alone does not authenticate native command resolution;
+  retain the host's actual `/review` invocation.
 - **Custom:** exactly one transcript `<config>/projects/*/$sid.jsonl` exists and
   its first user message equals the prompt bytes; stream-json does not echo a
   piped prompt, so this is the delivery evidence. `structured_output` is present.
 
-The caller also retains the host exit status and rechecks the Git subject. Never
-select the latest session, a title match, or another review's file.
+Permission denials remain in the report for caller adjudication. An unresolved
+required read holds credit; a recovered, covered, or demonstrably unnecessary
+check follows the caller's existing limitation rules. Preserve the denied
+operation as denied. `ok` establishes only these execution checks, not a clean
+verdict or complete inquiry. The caller also retains the host exit status,
+effective boundary, and rechecks the Git subject. Never select the latest session,
+a title match, or another review's file.
 
-## Standard result: transcribe to findings JSON
+## Standard result: adjudicate the original text
 
-`result.result` is rendered text, not a structured object; it stays the native
-result. After admission, transcribe it with
-[scripts/findings.py](scripts/findings.py):
+`result.result` is the native rendered result. Preserve it unchanged and pass it
+directly to the caller's existing finding and limitation adjudication. Ordinary
+clean prose is valid evidence; no exact `(none)` sentinel, findings JSON, or second
+model call is required. The helper does not infer whether text is clean.
 
-```bash
-uv run --no-project python -I "$skill_dir/scripts/findings.py" \
-  "$events" "$sid" "$selected_model" "$findings_json"
-```
-
-The script reads only `$sid`'s successful `result` event, then makes one fresh,
-tool-less, non-persistent `claude -p --json-schema` call that copies the text
-into `findings[] {file, line, summary, failure_scenario, category?}` (the
-`/code-review` ReportFindings shape). It writes the original text, its sha256,
-the findings, and `transcription_ok`/`problems`, and exits nonzero when a
-transcribed location is absent from the text, a stated finding count disagrees,
-`(none)` yields findings, or other text yields none. Do not transcribe by
-resuming the review session: it may hold later turns, and it costs ~10x more.
-
-The JSON is a derived view for adjudication, not a new verdict. On a failed
-check, adjudicate the original text. Empty findings earn clean credit only when
-the original says nothing qualified (low level emits exactly `(none)`). Findings
-remain findings regardless of any reassuring summary. Missing, ambiguous, or
-stale evidence earns no credit.
+Account for every reported finding and limitation. A reassuring summary cannot
+erase a finding; an optional derived view cannot replace the original or become
+an admission gate. Missing, ambiguous, or stale evidence earns no credit for its
+dependent claim.
 
 ## Custom result: the structured object
 
@@ -181,7 +227,7 @@ Confidence is not evidence.
 
 ## Hard rules
 
-- Standard is native `/code-review`, uncustomized; custom is the caller's exact
+- Standard is bundled `/review`, uncustomized; custom is the caller's exact
   bytes as the whole prompt. No imitation prompt, wrapper, receipt store, or
   attempt registry.
 - Never edit, comment, post, push, or upload as part of a review.

@@ -4,79 +4,228 @@ usage:
   uv run --no-project python -I readback.py standard EVENTS SESSION_ID MODEL TARGET LEVEL OUT
   uv run --no-project python -I readback.py custom   EVENTS SESSION_ID MODEL PROMPT_FILE OUT
 
-EVENTS is the session's captured `--output-format stream-json --verbose` stdout.
-MODEL is the full selected model ID. TARGET is the base passed to /code-review,
-or "-" when none was passed. Custom delivery is checked against the session
-transcript under $CLAUDE_CONFIG_DIR (default ~/.claude)/projects/*/SESSION_ID.jsonl.
-OUT always receives the evidence and every problem found; exit 0 only when
-there are none. Git subject checks stay with the caller.
+EVENTS is captured `--output-format stream-json --verbose` stdout. MODEL is the
+full selected model ID. TARGET is the base passed to /review, or "-" when none
+was passed. Custom delivery is checked in the session transcript under
+$CLAUDE_CONFIG_DIR (default ~/.claude)/projects/*/SESSION_ID.jsonl.
+
+The standard read gate recognizes direct Bash `git diff` calls against TARGET,
+not arbitrary shell programs. A request needs a later completed tool_result
+with the same tool ID. This is evidence of a diff observation, not proof of
+complete review coverage; Git subject and coverage checks stay with the caller.
+Native result text and permission denials are preserved without interpreting a
+verdict or deciding whether an optional denied call mattered. OUT receives the
+evidence and problems; exit 0 only when the required checks pass.
 """
 
 import hashlib
 import json
 import os
 import re
+import shlex
 import sys
 from pathlib import Path
 
 LEVEL = re.compile(r"`(\w+) effort\b")
-HEX = re.compile(r"\b[0-9a-f]{7,40}\b")
+HEX = re.compile(r"[0-9a-f]{7,40}\Z")
+EXIT_CODE = re.compile(r"\A\s*Exit code(?:\s*:\s*|\s+)(\d+)(?:\s|$)", re.IGNORECASE)
 
 
 def text_of(content) -> str:
     if isinstance(content, str):
         return content
-    return "".join(part.get("text", "") for part in content or [] if part.get("type") == "text")
+    if not isinstance(content, list):
+        return ""
+    return "".join(part["text"] for part in content
+                   if isinstance(part, dict) and part.get("type") == "text"
+                   and isinstance(part.get("text"), str))
 
 
-def load_events(path: Path) -> list[dict]:
-    return [json.loads(line) for line in path.read_text().splitlines() if line.strip()]
+def parts_of(event: dict) -> list[dict]:
+    message = event.get("message")
+    content = message.get("content") if isinstance(message, dict) else None
+    return [part for part in content if isinstance(part, dict)] if isinstance(content, list) else []
+
+
+def load_events(path: Path, problems: list[str], label="events") -> list[dict]:
+    try:
+        lines = path.read_text(encoding="utf-8").splitlines()
+    except (OSError, UnicodeError) as exc:
+        problems.append(f"cannot read {label}: {exc}")
+        return []
+    events = []
+    for number, line in enumerate(lines, 1):
+        if not line.strip():
+            continue
+        try:
+            event = json.loads(line)
+        except (ValueError, RecursionError) as exc:
+            problems.append(f"{label} line {number}: invalid JSON ({exc})")
+            continue
+        if not isinstance(event, dict):
+            problems.append(f"{label} line {number}: expected an object")
+        else:
+            events.append(event)
+    return events
 
 
 def common(events: list[dict], sid: str, model: str, problems: list[str]) -> dict:
-    init = next((e for e in events if e.get("type") == "system" and e.get("subtype") == "init"), None)
-    result = next((e for e in reversed(events) if e.get("type") == "result"), None)
-    if init is None:
-        problems.append("no init event")
-    else:
+    inits = [e for e in events if e.get("type") == "system" and e.get("subtype") == "init"]
+    results = [e for e in events if e.get("type") == "result"]
+    if len(inits) != 1:
+        problems.append(f"expected one init event, found {len(inits)}")
+    if inits:
+        init = inits[0]
         if init.get("session_id") != sid:
             problems.append(f"init session {init.get('session_id')} is not {sid}")
         if init.get("model") != model:
             problems.append(f"init model {init.get('model')} is not {model}")
-    if result is None:
+    if not results:
         problems.append("no result event: not terminal")
         return {}
+    if len(results) != 1:
+        problems.append(f"expected one terminal result, found {len(results)}")
+    result = results[-1]
     if result.get("session_id") != sid:
         problems.append(f"result session {result.get('session_id')} is not {sid}")
-    if result.get("subtype") != "success" or result.get("is_error"):
+    if result.get("subtype") != "success" or result.get("is_error", False) is not False:
         problems.append(f"result is {result.get('subtype')} (is_error={result.get('is_error')})")
-    used = sorted((result.get("modelUsage") or {}).keys())
+    if any(e.get("session_id", sid) != sid for e in events):
+        problems.append("events mix sessions")
+    usage = result.get("modelUsage")
+    used = sorted(usage) if isinstance(usage, dict) else []
     if used != [model]:
         problems.append(f"models used {used}, expected only {model}")
-    denials = result.get("permission_denials") or []
-    for denial in denials:
-        problems.append("permission denied: " + json.dumps(denial.get("tool_input"))[:300])
+    if not isinstance(result.get("permission_denials", []), list):
+        problems.append("permission_denials is not an array")
     return result
 
 
+def diff_command(command: str, target: str) -> bool:
+    """Recognize a direct patch read with a base operand, without executing it.
+
+    Deliberately exclude shell operators, substitutions, and summary-only modes.
+    Path-limited reads are observations; the caller judges overall coverage.
+    Unknown command shapes need caller investigation.
+    """
+    try:
+        words = shlex.split(command)
+    except ValueError:
+        return False
+    if any(token in command for token in ("\n", "\r", ";", "|", "&", "<", ">", "`", "$", "#")):
+        return False
+    if words[:2] == ["git", "--no-pager"]:
+        words.pop(1)
+    if words[:2] != ["git", "diff"]:
+        return False
+    args = words[2:]
+    if "--" in args:
+        args = args[:args.index("--")]
+    # These flags change presentation but still produce the patch. Keep the
+    # grammar small: unknown options cannot silently substitute other output.
+    options = {"--exit-code", "--no-color", "--color=never", "--no-ext-diff", "--no-textconv",
+               "--patch", "-p", "--unified", "-U"}
+    operands = [word for word in args if word not in options
+                and not re.fullmatch(r"(?:--unified=|-U)[0-9]+", word)]
+    if len(operands) == 1:
+        operands = re.split(r"\.{2,3}", operands[0])
+        if len(operands) == 1:
+            # The caller freezes a clean working tree at HEAD before dispatch.
+            operands.append("HEAD")
+    if len(operands) != 2:
+        return False
+    base, head = operands
+    return bool(HEX.fullmatch(base) and target.startswith(base) and head == "HEAD")
+
+
+def tool_result_status(part: dict, event: dict, command: str) -> tuple[bool, str]:
+    """Use native tool_result errors, plus explicit Bash completion metadata.
+
+    Bash commonly reports failures as `is_error` with an `Exit code N` prefix.
+    An omitted is_error means success in the tool-result protocol. Exit 1 from
+    --exit-code is a successful diff observation only when patch text exists.
+    """
+    if not isinstance(part.get("content"), (str, list)):
+        return False, "malformed tool_result content"
+    failed = part.get("is_error", False)
+    if not isinstance(failed, bool):
+        return False, "malformed tool_result is_error"
+    content = text_of(part.get("content"))
+    if re.search(r"^Command running in background\b", content, re.MULTILINE):
+        return False, "Bash returned a background launch acknowledgment"
+    match = EXIT_CODE.match(content)
+    codes = [int(match.group(1))] if match else []
+    details = event.get("tool_use_result")
+    if details is not None:
+        if not isinstance(details, dict):
+            return False, "malformed Bash result metadata"
+        if details.get("interrupted") or details.get("backgroundTaskId") or details.get("background_task_id"):
+            return False, "Bash result is interrupted or still in the background"
+    # A tool_result can carry an explicit exit code itself; Claude transcript
+    # metadata sometimes supplies it alongside stdout/stderr instead.
+    for source in (part, details or {}):
+        for key in ("exit_code", "exitCode"):
+            if key in source:
+                code = source[key]
+                if not isinstance(code, int) or isinstance(code, bool):
+                    return False, "malformed Bash exit code"
+                codes.append(code)
+    if len(set(codes)) > 1:
+        return False, "conflicting Bash exit codes"
+    code = codes[0] if codes else None
+    words = shlex.split(command)
+    options = words[:words.index("--")] if "--" in words else words
+    if code == 1 and "--exit-code" in options and re.search(r"^diff --git ", content, re.MULTILINE):
+        return True, "git diff --exit-code returned a patch (exit 1)"
+    if failed or code not in (None, 0):
+        return False, f"Bash tool_result failed (is_error={failed}, exit_code={code})"
+    return True, "completed correlated Bash tool_result"
+
+
 def standard(events: list[dict], target: str, level: str, problems: list[str]) -> dict:
-    recipe = next((text_of(e["message"]["content"]) for e in events
-                   if e.get("type") == "user" and "Review target:" in text_of(e.get("message", {}).get("content"))), None)
+    terminal = next((i for i, e in enumerate(events) if e.get("type") == "result"), len(events))
+    session = events[:terminal]
+    recipe = next((text_of(e.get("message", {}).get("content")) for e in session
+                   if e.get("type") == "user" and isinstance(e.get("message"), dict)
+                   and "Review target:" in text_of(e["message"].get("content"))), None)
+    evidence = {"diff_reads": []}
     if recipe is None:
-        problems.append("no expanded /code-review recipe in the session")
-        return {}
-    observed = LEVEL.search(recipe)
-    observed_level = observed.group(1) if observed else None
-    if observed_level != level:
-        problems.append(f"recipe ran at {observed_level} effort, bound level is {level}")
-    if target != "-":
-        if f"Review target: `{target}`" not in recipe:
+        problems.append("no expanded /review recipe in the session")
+    else:
+        observed = LEVEL.search(recipe)
+        observed_level = observed.group(1) if observed else None
+        evidence.update(observed_level=observed_level, recipe_header=recipe.split("\n\n", 2)[:2])
+        if observed_level != level:
+            problems.append(f"recipe ran at {observed_level} effort, bound level is {level}")
+        if target != "-" and f"Review target: `{target}`" not in recipe:
             problems.append(f"recipe target is not {target}")
-        commands = [str(part.get("input", {}).get("command", "")) for e in events if e.get("type") == "assistant"
-                    for part in e["message"].get("content", []) if part.get("type") == "tool_use"]
-        if not any("git diff" in c and any(target.startswith(h) for h in HEX.findall(c)) for c in commands):
-            problems.append(f"no reviewer command read `git diff` against {target}")
-    return {"observed_level": observed_level, "recipe_header": recipe.split("\n\n", 2)[:2]}
+    if target != "-":
+        requests = [(i, p) for i, e in enumerate(session) if e.get("type") == "assistant"
+                    for p in parts_of(e) if p.get("type") == "tool_use"]
+        for index, request in requests:
+            inputs = request.get("input")
+            command = inputs.get("command") if isinstance(inputs, dict) else None
+            if request.get("name") != "Bash" or not isinstance(command, str) or not diff_command(command, target):
+                continue
+            tool_id = request.get("id")
+            read = {"tool_use_id": tool_id, "command": command, "ok": False}
+            evidence["diff_reads"].append(read)
+            if inputs.get("run_in_background"):
+                read["reason"] = "background request does not establish completed diff observation"
+                continue
+            if not isinstance(tool_id, str) or not tool_id or sum(p.get("id") == tool_id for _, p in requests) != 1:
+                read["reason"] = "missing or duplicate tool_use ID"
+                continue
+            matches = [(i, p, e) for i, e in enumerate(session) if e.get("type") == "user"
+                       for p in parts_of(e) if p.get("type") == "tool_result" and p.get("tool_use_id") == tool_id]
+            if len(matches) != 1 or matches[0][0] <= index:
+                read["reason"] = "no unique later correlated tool_result"
+                continue
+            _, part, event = matches[0]
+            read["ok"], read["reason"] = tool_result_status(part, event, command)
+        if not any(read["ok"] for read in evidence["diff_reads"]):
+            problems.append(f"no successful correlated `git diff` read against {target}; only direct patch reads are recognized")
+    return evidence
 
 
 def transcript_path(sid: str) -> Path | None:
@@ -87,16 +236,22 @@ def transcript_path(sid: str) -> Path | None:
 
 def custom(result: dict, sid: str, prompt: bytes, problems: list[str]) -> dict:
     evidence = {"prompt_sha256": hashlib.sha256(prompt).hexdigest()}
-    path = transcript_path(sid)
+    try:
+        path = transcript_path(sid)
+    except (OSError, ValueError) as exc:
+        path = None
+        problems.append(f"cannot locate transcript: {exc}")
     if path is None:
         problems.append(f"no unique transcript for {sid}")
     else:
         evidence["transcript"] = str(path)
-        records = [json.loads(line) for line in path.read_text().splitlines() if line.strip()]
-        if {r["sessionId"] for r in records if "sessionId" in r} != {sid}:
-            problems.append("transcript mixes sessions")
+        records = load_events(path, problems, "transcript")
+        sessions = [r["sessionId"] for r in records if "sessionId" in r]
+        if not sessions or any(session != sid for session in sessions):
+            problems.append("transcript mixes sessions or has no session identity")
         first = next((r for r in records if r.get("type") == "user" and not r.get("isMeta")), None)
-        delivered = text_of(first["message"]["content"]) if first else None
+        message = first.get("message") if first else None
+        delivered = text_of(message.get("content")) if isinstance(message, dict) else None
         if delivered is None or delivered.encode() != prompt:
             problems.append("first transcript message is not the exact prompt: delivery unverified")
     output = result.get("structured_output")
@@ -107,7 +262,7 @@ def custom(result: dict, sid: str, prompt: bytes, problems: list[str]) -> dict:
 
 
 def main() -> None:
-    kind, args = sys.argv[1], sys.argv[2:]
+    kind, args = (sys.argv[1], sys.argv[2:]) if len(sys.argv) > 1 else (None, [])
     if kind == "standard" and len(args) == 6:
         events_path, sid, model, target, level, out = args
     elif kind == "custom" and len(args) == 5:
@@ -115,15 +270,23 @@ def main() -> None:
     else:
         sys.exit(__doc__)
     problems: list[str] = []
-    events = load_events(Path(events_path))
+    events = load_events(Path(events_path), problems)
     result = common(events, sid, model, problems)
-    report = {"kind": kind, "session_id": sid, "model": model, "result": result.get("result")}
+    report = {"kind": kind, "session_id": sid, "model": model, "result": result.get("result"),
+              "permission_denials": result.get("permission_denials", [])}
     if kind == "standard":
+        if not isinstance(result.get("result"), str) or not result["result"].strip():
+            problems.append("no nonempty native result text")
         report.update(standard(events, target, level, problems))
     else:
-        report.update(custom(result, sid, Path(prompt_path).read_bytes(), problems))
+        try:
+            prompt = Path(prompt_path).read_bytes()
+        except OSError as exc:
+            prompt = b""
+            problems.append(f"cannot read prompt: {exc}")
+        report.update(custom(result, sid, prompt, problems))
     report.update(ok=not problems, problems=problems)
-    Path(out).write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n")
+    Path(out).write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     if problems:
         sys.exit("hold: " + "; ".join(problems))
 

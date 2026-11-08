@@ -31,7 +31,7 @@ explicitly requested. Scheduling and capacity are separate.
 | Executor | Standard | Execution evidence |
 |---|---|---|
 | `codex` | Codex native/default changeset review, with no custom instructions argument or skill-authored prompt | Host-attributed native execution and exact native structured result under [reviews.md](../../cas/reviews.md) |
-| `claude` | Claude Code `/code-review` at the bound `standard_level`, with no custom instructions | Pinned-session execution and readback under [cc](../../cc/SKILL.md): exact result text plus checked transcription for standard; transcript-verified prompt and schema-validated structured result for every other request |
+| `claude` | Claude Code's bundled review through `/review` at the bound `standard_level`, with no custom instructions | Pinned-session execution and readback under [cc](../../cc/SKILL.md): original result text for standard; transcript-verified prompt and schema-validated structured result for every other request |
 | `subagents` | Packaged upstream Codex rubric, with the exact assignment | Host-attributed terminal output under [subagent-reviews.md](subagent-reviews.md) |
 
 Only native changeset standards use fixed instruction identities:
@@ -66,7 +66,7 @@ review_context:
 ```
 
 `standard_level` is null outside `claude` mode. In `claude` mode it is the
-request's explicit `/code-review` level, otherwise `high`; `max` only when
+request's explicit native review level, otherwise `high`; `max` only when
 explicitly requested. It never follows the session's effort setting.
 
 Each request has `scope: changeset | file` and `focus: null | {base_path, head_path}`.
@@ -112,17 +112,26 @@ direct runtime-attribution contract.
 In `claude` mode, follow [cc](../../cc/SKILL.md) and its readback rather than
 minting a wrapper receipt. Bind the pinned session ID, launch flags, exact
 delivered prompt bytes or the standard's deliberate absence, readback report,
-original result, and before/after Git subject to this request in the existing
-Working Set. The changeset standard is `/code-review <standard_level> <base_sha>`;
-its native result is the session's rendered result text, and the checked findings
-transcription is derived evidence, never a verdict. A recipe depth header that does
-not name `standard_level`, a failed transcription check, or any permission denial
-holds the result; adjudicate the original text. Every other request (changeset
+original result, enforced read-only boundary, and before/after Git subject to this
+request in the existing Working Set. The changeset standard is
+`/review <standard_level> <base_sha>`, the bundled alias that retains native command
+resolution when a local `code-review` skill exists. A recipe header alone does not
+establish that origin. Require the bound level and a matching successful diff
+observation; a requested tool call without its successful result is insufficient.
+Adjudicate the original rendered text directly, including findings and limitations.
+No transcription or second model call is required. A derived view cannot replace
+that source or add an admission prerequisite.
+
+Retain permission denials and failed observations. Apply
+[Review-credit admission](#review-credit-admission) to their relevance: an unresolved
+required inquiry holds credit; a supported `recovered`, `covered`, or `not-required` disposition
+does not relabel the denied operation as successful or widen permissions.
+Readback admission alone never resolves that decision. Every other request (changeset
 auxiliary, file standard, file auxiliary) is a custom review: compose it exactly as
 [subagent-reviews.md](subagent-reviews.md#deliver-the-exact-assignment) specifies
 and deliver those bytes as the whole prompt of a fresh session with the cc
-review-object schema. Never put lens or focus instructions inside `/code-review`;
-its recipe has fixed angles, caps, reading rules, and output shape. Require the
+review-object schema. Never put lens or focus instructions inside the native `/review`;
+its recipe owns the review angles, reading rules, and output shape. Require the
 transcript-verified prompt and schema-validated structured object, then apply
 [Admit actual worker results](subagent-reviews.md#admit-actual-worker-results) to
 its content.
@@ -347,7 +356,7 @@ Do not interpret an observation timeout as terminal failure.
 
 [Review and closure](../review-closeout.md#review-and-closure) owns the unchanged
 five-clean convergence and reset rules. Native Codex confirmations remain native/default;
-Claude Code confirmations rerun `/code-review` at the bound `standard_level` in fresh
+Claude Code confirmations rerun `/review` at the bound `standard_level` in fresh
 sessions; subagent confirmations use the pinned rubric in fresh contexts. Rerank files from
 the full bound base for each proved successor. File-standard outcomes neither
 advance nor break the changeset standard suffix; any material finding still
@@ -489,7 +498,7 @@ successor realization; intermediate commits receive no closure credit.
 ## Lens ownership and evaluation
 
 Changeset standard uses Codex's native default in `codex` mode, Claude Code's
-`/code-review` in `claude` mode, and the pinned upstream rubric in subagent mode;
+bundled `/review` in `claude` mode, and the pinned upstream rubric in subagent mode;
 file standard uses that general investigative remit within
 its custom file scope. Each auxiliary has a distinct
 investigative starting point, defined by its exact checked-in instruction file:

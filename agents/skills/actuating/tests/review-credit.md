@@ -18,6 +18,11 @@ The existing `test-reconciler-contract.sh` runner includes this command. It exec
 a missing-generated-fixture failure, the same check after fixture recovery, and a
 zero-exit skipped-test observation. It checks evidence-only CLI export, evaluator
 key isolation, rejection of incorrect structured responses, and malformed input.
+Claude standard cases generate native-shaped event streams and invoke the actual
+`cc/scripts/readback.py`; their `ok` values and preserved original text are helper
+output, including ordinary clean prose, failed or missing diff results, recovery,
+and retained permission denials. The streams remain synthetic, as do the custom
+review and host-boundary observations.
 It does not execute Actuating or prove that an agent follows the changed guidance.
 The grader is test-only; it is not a runtime coverage classifier or credit gate.
 
@@ -61,6 +66,12 @@ matching or a confidence threshold to decide adequacy.
 | 20 / 21 / 22 | Bare or malformed output receives no clean credit; a clean label cannot erase admitted material findings in the raw result. |
 | 24 | A first portable standard does not combine with historical CAS standards into five clean confirmations. |
 | 25 | A resumed summary without exact outputs and runtime provenance cannot reconstruct review credit. |
+| 26 / 27 | Actual readback admits ordinary native clean prose without transcription; a wrong recipe level holds. |
+| 28 / 37 | The same raw finding before adjudication versus after admission as a current material violation: hold first, reset only after admission. |
+| 29 / 30 | Custom prompt delivery is unverified, or a retained denial left the required diff unseen. |
+| 31 | A resumed Codex campaign cannot acquire Claude credit from the current host's default. |
+| 32 / 33 / 36 | A diff request without a result, a failed diff despite terminal success, and successful same-session recovery. |
+| 34 / 35 | The same retained permission denial is nonblocking for an explicitly adequate static scope and unresolved when its relevance has not been assessed. |
 
 Cases 19 and 23 retain authentic attributed output but lack the required new
 independent inquiry. Its disposition is `unresolved`: continuing an already
@@ -75,3 +86,13 @@ required check and its optional-check control. Observe actual handoff, counts,
 and public narration; fixture/grader self-tests are not that live replay. Run in a
 separate authorized subject, not by sabotaging a live candidate or bypassing its
 sandbox. No new recurring reviewer, review quota, or evidence archive is required.
+
+Claude integration qualification additionally needs an installed, authenticated
+runtime: use the documented read-only settings on a disposable repository,
+confirm `/review high` resolves to the bundled recipe even with a local
+`code-review` skill, and inspect the resulting session with the helper. Exercise
+one exact custom request and the normal default-high campaign through its existing
+credit and closeout rules. Check that a write-capable Git command and an ambient
+allowed write command cannot modify the subject, while required reads and native
+verifier delegation still work. Offline traces do not establish these runtime
+properties or replace that qualification.

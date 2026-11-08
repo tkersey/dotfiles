@@ -87,7 +87,7 @@ The changeset-wide inventory remains standard, soundness-skeptic, footgun-finder
 invariant-ace, complexity-mitigator, and fresh-eyes. The harness selects the default
 executor under [binding](references/review-contract.md#binding-and-owner-authority):
 in `codex` mode standard is Codex's native review, and in `claude` mode it is Claude
-Code's `/code-review` at the bound level, each with no custom Actuating instruction
+Code's bundled `/review` at the bound level, each with no custom Actuating instruction
 file or argument. Explicit subagent mode uses the pinned Codex rubric under
 [subagent-reviews.md](references/subagent-reviews.md). Auxiliaries retain their
 exact checked-in lenses in every mode; none substitutes for standard.
