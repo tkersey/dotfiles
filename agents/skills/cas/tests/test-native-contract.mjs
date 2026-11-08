@@ -16,8 +16,9 @@ const sources = Object.fromEntries([
 const normalized = text => text.replace(/\s+/g, ' ');
 function check(source) {
   const policy = JSON.parse(source['actuating/references/review-contract.json']);
-  assert.equal(policy.review_execution.default_mode, 'codex');
-  assert.deepEqual(Object.keys(policy.review_execution.modes).sort(), ['codex','subagents']);
+  assert.equal(policy.review_execution.default_mode, 'host');
+  assert.equal(policy.review_execution.host_default_modes.codex, 'codex');
+  assert.deepEqual(Object.keys(policy.review_execution.modes).sort(), ['claude','codex','subagents']);
   const quality = policy.review_execution.modes.codex.attempt_quality;
   for (const key of ['host_attributed_execution_required','fresh_native_thread_required',
     'native_structured_review_output_required','exact_thread_and_root_turn_required',
@@ -51,7 +52,7 @@ function check(source) {
 }
 check(sources);
 const mutations = [
-  ['legacy default','actuating/references/review-contract.json','"default_mode": "codex"','"default_mode": "cas"'],
+  ['legacy default','actuating/references/review-contract.json','"codex": "codex"','"codex": "cas"'],
   ['count reduced','actuating/references/review-contract.json','"required_consecutive_clean_attempts": 5','"required_consecutive_clean_attempts": 4'],
   ['prose credit','actuating/references/review-contract.json','"process_exit_or_rendered_text_sufficient": false','"process_exit_or_rendered_text_sufficient": true'],
   ['no structured result','actuating/references/review-contract.json','"native_structured_review_output_required": true','"native_structured_review_output_required": false'],

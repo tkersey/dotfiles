@@ -209,6 +209,76 @@ addSubagent('credit-25', {launch_observation:null, terminal_observation:null,
   {standard_count_after:0, auxiliary_count_after:0},
   'Resume cannot reconstruct review evidence from counts or prose. Recover exact results or require a fresh initial wave; retain any separately recoverable findings.');
 
+const claudeRequest = {execution_mode:'claude', standard_level:'high', repository:'fixture/review',
+  base_sha:'b1', head_sha:'h1', scope:'changeset', focus:null, lens_name:'standard', role:'standard',
+  request_id:'standard-5', instruction_identity:'claude-code-review/v1:high'};
+const claudeReadback = {kind:'standard', session_id:'session-5', model:'claude-opus-5-5',
+  observed_level:'high', ok:true, problems:[],
+  result:'Reviewed the full b1..h1 changeset and its callers against the accepted requirements. No findings.'};
+const claudeTranscription = {session_id:'session-5', findings:[], transcription_ok:true, problems:[]};
+const earlierClaude = Array.from({length:4}, (_, i) => ({
+  assignment:{...claudeRequest, request_id:`standard-${i+1}`},
+  readback:{...claudeReadback, session_id:`session-${i+1}`}, credit_disposition:'credit',
+  credit_basis:'Exact current independent Claude Code standard; full inquiry and evidence adequate.'
+}));
+const claudeAuxiliary = {...claudeRequest, lens_name:'fresh-eyes', role:'auxiliary', request_id:'fresh-eyes-1',
+  instruction_identity:null, instruction_digest:'sha256-of-composed-fresh-eyes-request'};
+const claudeCustomReadback = {kind:'custom', session_id:'session-a1', model:'claude-opus-5-5',
+  prompt_sha256:'sha256-of-composed-fresh-eyes-request', ok:true, problems:[],
+  structured_output:{findings:[], overall_correctness:'patch is correct',
+    overall_explanation:'Inspected the complete bound changeset with the fresh-eyes lens. No supported defect or material evidence gap remains.',
+    overall_confidence_score:0.85}};
+function addClaude(id, evidence, decision, basis) {
+  cases.push({id, input:{
+    subject, execution_mode:'claude', lens:'standard', requested_assignment:claudeRequest,
+    launch_observation:{session_id:'session-5', request_id:'standard-5', fresh_session:true,
+      prompt:'/code-review high b1', read_only_flags:true},
+    readback:claudeReadback, transcription:claudeTranscription,
+    prior_standard_reviews:earlierClaude, prior_credit:{standard:4, auxiliary:5},
+    requested_scope:'Changeset-wide standard with Claude Code /code-review at the bound high level. Full source inquiry is complete. All mandatory pre-review proof passed on this exact candidate; no exploratory check was attempted.',
+    other_required_obligations:'All five changeset auxiliaries and the frozen focused-file inventory have exact current claude-mode evidence, adjudication and credit. No unresolved material findings or limitations.',
+    ...evidence
+  }, expected:{credit_disposition:'hold', limitation_disposition:null,
+    standard_count_after:4, auxiliary_count_after:5,
+    public_review_complete:false, original_check_status:'not-run', ...decision}, basis});
+}
+const claudeAuxiliaryEvidence = {lens:'fresh-eyes', requested_assignment:claudeAuxiliary,
+  launch_observation:{session_id:'session-a1', request_id:'fresh-eyes-1', fresh_session:true,
+    prompt_file_sha256:'sha256-of-composed-fresh-eyes-request', read_only_flags:true},
+  readback:claudeCustomReadback, transcription:null,
+  prior_standard_reviews:earlierClaude.slice(0, 1), prior_credit:{standard:1, auxiliary:4},
+  requested_scope:'Changeset fresh-eyes auxiliary delivered as a claude-mode custom review with the exact subagent composition. Full source inquiry is required.',
+  other_required_obligations:'The initial standard and the other four changeset auxiliaries are credited; no focused files were selected.'};
+addClaude('credit-26', {},
+  {credit_disposition:'credit', standard_count_after:5, public_review_complete:true},
+  'A fifth fresh pinned-session /code-review at the bound level, with clean readback and a checked empty transcription, completes Claude Code convergence; the transcription is derived evidence, not the verdict.');
+addClaude('credit-27', {readback:{...claudeReadback, observed_level:'xhigh', ok:false,
+    problems:['recipe ran at xhigh effort, bound level is high']}}, {},
+  'A requested level is not proof of depth. A recipe at another level is not the bound standard policy and cannot extend this streak.');
+addClaude('credit-28', {readback:{...claudeReadback,
+    result:'src/check.mjs:3 - the guard is inverted, so invalid input is accepted and stored.'},
+  transcription:{session_id:'session-5', findings:[], transcription_ok:false,
+    problems:['no findings transcribed from non-(none) text; adjudicate the original']}}, {},
+  'An empty or failed transcription cannot clean a result whose original text reports a finding; adjudicate the original text through Review Fold before any credit.');
+addClaude('credit-29', {...claudeAuxiliaryEvidence, readback:{...claudeCustomReadback, ok:false,
+    problems:['first transcript message is not the exact prompt: delivery unverified']}},
+  {standard_count_after:1, auxiliary_count_after:4},
+  'A matching request digest and a clean object do not prove the exact lens instructions reached the session; without transcript-verified delivery the auxiliary is not credited.');
+addClaude('credit-30', {...claudeAuxiliaryEvidence, readback:{...claudeCustomReadback, ok:false,
+    problems:['permission denied: {"command": "git diff b1 h1"}'],
+    structured_output:{...claudeCustomReadback.structured_output,
+      overall_explanation:'No supported defect found. Bash was denied, so I could not run git diff for b1..h1 and did not inspect the changed hunks.'}}},
+  {limitation_disposition:'unresolved', standard_count_after:1, auxiliary_count_after:4, original_check_status:'blocked'},
+  'A denied read left the subject unseen. A clean object cannot credit an inquiry that never read the diff; recover the observation with an allowed read before credit.');
+addClaude('credit-31', {
+  prior_standard_reviews:earlierStandards.map(entry => ({...entry,
+    assignment:{...entry.assignment, execution_mode:'codex'},
+    provenance:'Exact native Codex standards in the bound campaign.'})),
+  prior_credit:{execution_mode:'codex', standard:4, auxiliary:5},
+  current_campaign:'The bound campaign recorded execution_mode codex. It was resumed from a Claude Code session, whose host default is claude, and this fifth standard was dispatched as a claude-mode /code-review. No explicit mode change was requested.'},
+  {},
+  'The host default binds only a new campaign. A resumed codex campaign continues in codex mode on any host; a claude review neither extends nor replaces the codex streak.');
+
 const fields = {
   credit_disposition:'credit | hold', limitation_disposition:'recovered | covered | not-required | unresolved | null',
   standard_count_after:'integer', auxiliary_count_after:'integer', public_review_complete:'boolean',
@@ -219,6 +289,7 @@ function exported(c) {
   const selected = ['review-closeout.md','references/review-contract.md',
     'references/review-contract.json','references/closure.md'];
   if (c.input.execution_mode === 'subagents') selected.push('references/subagent-reviews.md');
+  if (c.input.execution_mode === 'claude') selected.push('references/subagent-reviews.md', '../cc/SKILL.md');
   const guidance = Object.fromEntries(selected.map(path =>
     [path, readFileSync(new URL(`../${path}`, import.meta.url), 'utf8')]));
   return {task:'Act as the Actuating owner at review admission. Adjudicate this synthetic result using the supplied current workflow. Return the evaluation fields below, with the evidence basis and public updates. Do not fabricate observations or change the required scope. These fields are for offline evaluation, not a new production handoff schema.',

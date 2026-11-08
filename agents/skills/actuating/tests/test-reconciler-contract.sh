@@ -25,8 +25,8 @@ const json = p => JSON.parse(text(p));
 const c = json('references/review-contract.json');
 const d = json('references/decision-contract.json').skill_decision_contract;
 const names = ['standard','soundness-skeptic','footgun-finder','invariant-ace','complexity-mitigator','fresh-eyes'];
-assert.equal(c.schema, 'actuating-review-contract/v21');
-assert.equal(c.contract_id, 'actuating-review-contract-v30');
+assert.equal(c.schema, 'actuating-review-contract/v22');
+assert.equal(c.contract_id, 'actuating-review-contract-v31');
 assert.equal(d.contract_version, 'SKDC-v1');
 assert.equal(d.skill.source_fingerprint, 'actuating-construction-core-v32');
 assert(c.candidate_acceptance.common_obligations.includes(
@@ -35,12 +35,14 @@ assert(!c.candidate_acceptance.common_obligations.some(s => s.includes('explicit
 assert.deepEqual(c.required_lenses.map(l => l.name), names);
 assert.deepEqual(c.required_lenses[0], {name:'standard',role:'standard'});
 const execution = c.review_execution;
-assert.equal(execution.default_mode,'codex');
-assert.deepEqual(Object.keys(execution.modes).sort(),['codex','subagents']);
+assert.equal(execution.default_mode,'host');
+assert.deepEqual(execution.host_default_modes,{codex:'codex','claude-code':'claude'});
+assert.deepEqual(Object.keys(execution.modes).sort(),['claude','codex','subagents']);
 for (const key of ['subagents_requires_explicit_selection','scheduling_independent',
   'bound_in_review_context','mode_change_requires_new_campaign','mode_change_resets_all_review_credit',
-  'mixed_mode_credit_forbidden','silent_fallback_forbidden']) assert.equal(execution[key],true,key);
-const {codex,subagents} = execution.modes;
+  'mixed_mode_credit_forbidden','silent_fallback_forbidden','unrecognized_host_requires_explicit_selection',
+  'recorded_mode_survives_host_change']) assert.equal(execution[key],true,key);
+const {codex,claude,subagents} = execution.modes;
 assert.deepEqual(codex.standard_review, {
   instruction_source:'codex-default',custom_instructions:false,owner:'codex',source:'native-default',
   custom_instructions_argument_forbidden:true,skill_authored_instruction_file_forbidden:true,
@@ -59,6 +61,42 @@ assert.deepEqual(subagents.standard_review, {
 const rubric = readFileSync(resolve(root,subagents.standard_review.instructions_ref.replace('agents/skills/actuating/','')));
 assert.equal(createHash('sha256').update(rubric).digest('hex'),subagents.standard_review.instruction_sha256);
 assert.equal(createHash('sha1').update(`blob ${rubric.length}\0`).update(rubric).digest('hex'),subagents.standard_review.source_blob_sha);
+assert.equal(claude.guidance_ref,'agents/skills/cc/SKILL.md');
+assert.deepEqual(claude.standard_review, {
+  instruction_source:'claude-code-review',instruction_identity:'claude-code-review/v1:<standard_level>',
+  custom_instructions:false,owner:'claude-code',source:'native-code-review',
+  native_code_review_required:true,custom_instructions_forbidden:true,
+  standard_level_bound_in_review_context:true,default_standard_level:'high',
+  max_level_requires_explicit_selection:true,transcription_is_derived_evidence:true,
+  transcription_check_required:true
+});
+assert.deepEqual(claude.custom_review, {
+  applies_to:['changeset-auxiliary','file-standard','file-auxiliary'],
+  composition_ref:'agents/skills/actuating/references/subagent-reviews.md#deliver-the-exact-assignment',
+  output_schema_ref:'agents/skills/cc/references/review-object.schema.json',
+  custom_instructions_inside_code_review_forbidden:true,structured_output_required:true
+});
+assert(text('references/subagent-reviews.md').includes('## Deliver the exact assignment'));
+assert(existsSync(resolve(root,'../cc/SKILL.md')));
+const reviewObject = JSON.parse(readFileSync(resolve(root,'..',claude.custom_review.output_schema_ref.replace('agents/skills/','')),'utf8'));
+assert.deepEqual(reviewObject.required,['findings','overall_correctness','overall_explanation','overall_confidence_score']);
+assert.deepEqual(reviewObject.properties.findings.items.required,['title','body','confidence_score','code_location']);
+assert.deepEqual(Object.keys(reviewObject.properties.findings.items.properties).sort(),
+  ['body','code_location','confidence_score','priority','title']);
+assert.deepEqual(reviewObject.properties.overall_correctness.enum,['patch is correct','patch is incorrect']);
+for (const field of [...reviewObject.required,...Object.keys(reviewObject.properties.findings.items.properties),
+  'absolute_file_path','line_range']) assert(rubric.toString('utf8').includes(`"${field}"`),'rubric field '+field);
+for (const key of ['host_attributed_execution_required','pinned_fresh_session_required',
+  'successful_terminal_execution_required','selected_model_only_required','permission_denial_holds',
+  'observed_standard_level_must_match','custom_delivery_verified_from_transcript',
+  'current_git_subject_required','raw_result_preserved','executor_fallback_forbidden'])
+  assert.equal(claude.attempt_quality[key],true,key);
+assert.equal(claude.attempt_quality.process_exit_sufficient,false);
+assert.equal(claude.file_standard.instruction_source,'pinned-codex-rubric-and-file-focus');
+const contractProse = text('references/review-contract.md').replace(/\s+/g,' ');
+for (const law of ['claude-code-review/v1:','standard_level: null | low | medium | high | xhigh | max',
+  'Never put lens or focus instructions inside `/code-review`',
+  'the host default binds only a new campaign']) assert(contractProse.includes(law), law);
 for (const key of ['host_issued_identity_required','terminal_output_required','fresh_context_per_request_required',
   'sibling_conclusions_forbidden','exact_dispatch_and_output_required','read_only_required',
   'raw_result_preserved','synthesized_cas_receipt_forbidden','lost_provenance_requires_fresh_initial_wave'])

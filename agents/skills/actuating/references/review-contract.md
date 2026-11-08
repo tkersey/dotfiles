@@ -21,25 +21,33 @@ Actuating derives credit and construction consequences from exact owner facts.
 ## Binding and owner authority
 
 Read the exact contract bytes and each custom instruction source without trimming
-or normalization. Bind `execution_mode` before dispatch: `codex` by default,
-`subagents` only when explicitly requested. Scheduling and capacity are separate.
+or normalization. Bind `execution_mode` before dispatch. Without an explicit
+selection, the harness running this turn chooses: Codex selects `codex` and Claude
+Code selects `claude`; any other host requires an explicit selection. Nested
+sessions can inherit a parent's markers (`CODEX_THREAD_ID`, `CLAUDECODE`), so the
+executing harness decides, not the environment alone. `subagents` only when
+explicitly requested. Scheduling and capacity are separate.
 
 | Executor | Standard | Execution evidence |
 |---|---|---|
 | `codex` | Codex native/default changeset review, with no custom instructions argument or skill-authored prompt | Host-attributed native execution and exact native structured result under [reviews.md](../../cas/reviews.md) |
+| `claude` | Claude Code `/code-review` at the bound `standard_level`, with no custom instructions | Pinned-session execution and readback under [cc](../../cc/SKILL.md): exact result text plus checked transcription for standard; transcript-verified prompt and schema-validated structured result for every other request |
 | `subagents` | Packaged upstream Codex rubric, with the exact assignment | Host-attributed terminal output under [subagent-reviews.md](subagent-reviews.md) |
 
-Only native changeset standard uses instruction identity `codex-default-review/v1`.
-It records deliberate absence of customization and does not reproduce or constrain
-Codex's internal prompt. Portable standard hashes its actual delivered instructions.
-File standards in either mode have no changeset convergence credit. Never silently
-switch executors, mix their credits, or represent subagent output as native Codex review evidence.
+Only native changeset standards use fixed instruction identities:
+`codex-default-review/v1` in `codex` mode and `claude-code-review/v1:<standard_level>`
+in `claude` mode. Each records deliberate absence of customization and does not
+reproduce or constrain the executor's internal prompt or recipe. Portable standard
+hashes its actual delivered instructions. File standards in every mode have no
+changeset convergence credit. Never silently switch executors, mix their credits,
+or represent one executor's output as another's native review evidence.
 
 Use the existing canonical ephemeral context:
 
 ```yaml
 review_context:
-  execution_mode: codex | subagents
+  execution_mode: codex | claude | subagents
+  standard_level: null | low | medium | high | xhigh | max
   repository:
   base_sha:
   head_sha:
@@ -56,6 +64,10 @@ review_context:
   publication_observation_ref: null | sha256-digest
   focused_files: []
 ```
+
+`standard_level` is null outside `claude` mode. In `claude` mode it is the
+request's explicit `/code-review` level, otherwise `high`; `max` only when
+explicitly requested. It never follows the session's effort setting.
 
 Each request has `scope: changeset | file` and `focus: null | {base_path, head_path}`.
 Changeset scope requires null focus; file scope requires an exact entry from the
@@ -74,6 +86,8 @@ scope_digest = sha256(canonical JSON of {scope, focus})
 instruction_digest =
   (execution_mode == codex and scope == changeset and lens_name == standard)
     ? sha256("codex-default-review/v1")
+  : (execution_mode == claude and scope == changeset and lens_name == standard)
+    ? sha256("claude-code-review/v1:" || standard_level)
     : sha256(exact delivered custom instruction bytes)
 
 request_fingerprint = sha256(
@@ -95,16 +109,36 @@ unusable output is held. There is no CAS workflow echo, principal field, backend
 class, or compatibility capability to synthesize. Subagent mode retains its own
 direct runtime-attribution contract.
 
-Both modes require the current exact subject, assigned scope/lens, instruction
+In `claude` mode, follow [cc](../../cc/SKILL.md) and its readback rather than
+minting a wrapper receipt. Bind the pinned session ID, launch flags, exact
+delivered prompt bytes or the standard's deliberate absence, readback report,
+original result, and before/after Git subject to this request in the existing
+Working Set. The changeset standard is `/code-review <standard_level> <base_sha>`;
+its native result is the session's rendered result text, and the checked findings
+transcription is derived evidence, never a verdict. A recipe depth header that does
+not name `standard_level`, a failed transcription check, or any permission denial
+holds the result; adjudicate the original text. Every other request (changeset
+auxiliary, file standard, file auxiliary) is a custom review: compose it exactly as
+[subagent-reviews.md](subagent-reviews.md#deliver-the-exact-assignment) specifies
+and deliver those bytes as the whole prompt of a fresh session with the cc
+review-object schema. Never put lens or focus instructions inside `/code-review`;
+its recipe has fixed angles, caps, reading rules, and output shape. Require the
+transcript-verified prompt and schema-validated structured object, then apply
+[Admit actual worker results](subagent-reviews.md#admit-actual-worker-results) to
+its content.
+
+Every mode requires the current exact subject, assigned scope/lens, instruction
 identity, and original output. Execution admission does not award review credit.
 Process exit, prose, and worker/thread handles are not semantic verdicts. Hashes
 do not prove semantic equivalence or evidence delivery. Keep required scope and
 usable prior evidence accessible through repository/task sources or supported
-context delivery, without customizing the native Codex changeset standard.
+context delivery, without customizing a native changeset standard.
 
-The context digest binds execution mode; the contract and delivered instructions
-bind the standard policy. Mode or standard-policy changes start a newly bound
-campaign and reset credit. Resume under the recorded mode and exact contract.
+The context digest binds execution mode and `standard_level`; the contract and
+delivered instructions bind the standard policy. Mode or standard-policy changes
+start a newly bound campaign and reset credit. Resume under the recorded mode and
+exact contract on whichever harness resumes it; the host default binds only a new
+campaign.
 Historical CAS requests, including requests without an explicit mode, retain
 their original attribution; they do not become native Codex requests. Finish/drain
 old campaigns before cutover, or resolve possibly live work and start a newly bound
@@ -159,8 +193,8 @@ subject or restricting access to causal evidence in other files.
 
 File standard is a general best-judgment review with file focus and no auxiliary
 rubric. In `codex` mode it uses custom focus instructions, since native Codex has no
-file-target selector. In subagent mode it receives the pinned standard rubric
-and file focus. Neither is a changeset-standard convergence attempt.
+file-target selector. In subagent and `claude` modes it receives the pinned
+standard rubric and file focus. None is a changeset-standard convergence attempt.
 
 In `codex` mode, compose each file request from the exact
 [file-focus instructions](focused-file-review.md), then, for an auxiliary, its
@@ -170,7 +204,7 @@ exact unchanged checked-in lens bytes, then a JSON assignment containing
 source bytes. File standard has no auxiliary segment. Hash all delivered bytes,
 including separators and assignment. A digest alone does not deliver the accepted
 requirements or source evidence. Native changeset auxiliaries retain their existing
-exact instruction delivery. In subagent mode, use the composition in
+exact instruction delivery. In subagent and `claude` modes, use the composition in
 [subagent-reviews.md](subagent-reviews.md#deliver-the-exact-assignment); the same
 file-focus and auxiliary source bytes remain unchanged.
 
@@ -313,7 +347,8 @@ Do not interpret an observation timeout as terminal failure.
 
 [Review and closure](../review-closeout.md#review-and-closure) owns the unchanged
 five-clean convergence and reset rules. Native Codex confirmations remain native/default;
-subagent confirmations use the pinned rubric in fresh contexts. Rerank files from
+Claude Code confirmations rerun `/code-review` at the bound `standard_level` in fresh
+sessions; subagent confirmations use the pinned rubric in fresh contexts. Rerank files from
 the full bound base for each proved successor. File-standard outcomes neither
 advance nor break the changeset standard suffix; any material finding still
 invalidates all credit. For `N` selected files, a clean epoch requires
@@ -437,7 +472,8 @@ adequate correction, but it must satisfy the same actual-candidate proof bar.
 Never append a named-member guard as evidence of complete family elimination.
 
 Reuse only exact resolvable execution evidence under its original mode and contract:
-native Codex execution/artifacts or host-attributed subagent outputs and assignments.
+native Codex execution/artifacts, pinned Claude Code sessions and their readback, or
+host-attributed subagent outputs and assignments.
 Historical CAS records remain evidence of their original work, not new-mode credit.
 A superseded batch stays closed with its incomplete history; resume successor
 construction rather than restarting old-head requests. Reestablish its terminal
@@ -452,8 +488,9 @@ successor realization; intermediate commits receive no closure credit.
 
 ## Lens ownership and evaluation
 
-Changeset standard uses Codex's native default in `codex` mode and the pinned upstream
-rubric in subagent mode; file standard uses that general investigative remit within
+Changeset standard uses Codex's native default in `codex` mode, Claude Code's
+`/code-review` in `claude` mode, and the pinned upstream rubric in subagent mode;
+file standard uses that general investigative remit within
 its custom file scope. Each auxiliary has a distinct
 investigative starting point, defined by its exact checked-in instruction file:
 

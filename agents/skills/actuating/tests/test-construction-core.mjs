@@ -70,7 +70,7 @@ function check(src) {
   assert(normalized(section(skill,'Proof acceptance')).includes('A passing weakened suite cannot discharge an unchanged requirement'));
   assert(normalized(section(skill,'Proof acceptance')).includes('does not demand a finished causal account before authorized exploration'));
 
-  assert.equal(policy.contract_id,'actuating-review-contract-v30');
+  assert.equal(policy.contract_id,'actuating-review-contract-v31');
   assert.equal(policy.construction_selection.reasoning_sequence_required,false);
   assert.equal(policy.construction_selection.metanoetic_before_universalist_when_triggered,false);
   assert.equal(policy.universalist_compilation.nomination_result_required,false);

@@ -1,6 +1,6 @@
 {
-  "schema": "actuating-review-contract/v21",
-  "contract_id": "actuating-review-contract-v30",
+  "schema": "actuating-review-contract/v22",
+  "contract_id": "actuating-review-contract-v31",
   "required_lenses": [
     {
       "name": "standard",
@@ -33,7 +33,13 @@
     }
   ],
   "review_execution": {
-    "default_mode": "codex",
+    "default_mode": "host",
+    "host_default_modes": {
+      "codex": "codex",
+      "claude-code": "claude"
+    },
+    "unrecognized_host_requires_explicit_selection": true,
+    "recorded_mode_survives_host_change": true,
     "subagents_requires_explicit_selection": true,
     "scheduling_independent": true,
     "bound_in_review_context": true,
@@ -72,6 +78,48 @@
           "process_exit_or_rendered_text_sufficient": false
         },
         "guidance_ref": "agents/skills/cas/reviews.md"
+      },
+      "claude": {
+        "guidance_ref": "agents/skills/cc/SKILL.md",
+        "standard_review": {
+          "instruction_source": "claude-code-review",
+          "instruction_identity": "claude-code-review/v1:<standard_level>",
+          "custom_instructions": false,
+          "owner": "claude-code",
+          "source": "native-code-review",
+          "native_code_review_required": true,
+          "custom_instructions_forbidden": true,
+          "standard_level_bound_in_review_context": true,
+          "default_standard_level": "high",
+          "max_level_requires_explicit_selection": true,
+          "transcription_is_derived_evidence": true,
+          "transcription_check_required": true
+        },
+        "custom_review": {
+          "applies_to": ["changeset-auxiliary", "file-standard", "file-auxiliary"],
+          "composition_ref": "agents/skills/actuating/references/subagent-reviews.md#deliver-the-exact-assignment",
+          "output_schema_ref": "agents/skills/cc/references/review-object.schema.json",
+          "custom_instructions_inside_code_review_forbidden": true,
+          "structured_output_required": true
+        },
+        "file_standard": {
+          "instruction_source": "pinned-codex-rubric-and-file-focus",
+          "custom_instructions": true,
+          "native_default": false
+        },
+        "attempt_quality": {
+          "host_attributed_execution_required": true,
+          "pinned_fresh_session_required": true,
+          "successful_terminal_execution_required": true,
+          "selected_model_only_required": true,
+          "permission_denial_holds": true,
+          "observed_standard_level_must_match": true,
+          "custom_delivery_verified_from_transcript": true,
+          "current_git_subject_required": true,
+          "raw_result_preserved": true,
+          "executor_fallback_forbidden": true,
+          "process_exit_sufficient": false
+        }
       },
       "subagents": {
         "guidance_ref": "agents/skills/actuating/references/subagent-reviews.md",

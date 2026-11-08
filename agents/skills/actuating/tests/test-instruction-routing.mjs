@@ -33,12 +33,12 @@ const coreHashes = {
 };
 // Pin the authorized recovery/epoch revision; unchanged construction and acceptance remain protected.
 const reviewHashes = {
-  "Binding and owner authority": "8ccff9adb49fdc328bc237b31dadce812f16bbb37f8f631620799a161c37fb9f",
-  "Focused file reviews": "3f5bc67a099c0bdcc81917e936fd137771d60fd1708a3ab55d244a31247b980f",
+  "Binding and owner authority": "202e48abc0303cb5f0b129c55d9634f32d9a93e2c766808e22d80cf67f467610",
+  "Focused file reviews": "5b1bec665bf3332c0be22d05facf1fb0a0a814d13fdb3ec1f32657de07ae2de1",
   "Review-credit admission": "2ba81997c7aa9a7ebd59df70f9b43332a809ce05bf9babc2c412608e9fb19ded",
   "Candidate lifecycle and causal response": "a887cf18ee794184cb80e1319500a0af833f94cd8031182f0de3a6af28718bdd",
-  "Falsification and resumption": "053dc2d30477af4a96147cc8804c90184ad7b9f56397ae026a524ad5e0f3290d",
-  "Lens ownership and evaluation": "9f0fc802cbf5d1effdbc44b47337efdc39ccbc0aff770e0270f2b102f2dc7e39"
+  "Falsification and resumption": "9b0359eddd51ffbae1b67e9c69be9da40ef3fda1a618ac0ef6c4d48d655e1452",
+  "Lens ownership and evaluation": "ca266f8614f771af82516be1814f797afed4c4892a1e1b8598dc14b0695bcbe2"
 };
 const closureHash = "d45edd0daf0d8c7ad7d852409b3f2c6c1d61e59cdfaf7eaaae2da93761b6e73d";
 
@@ -83,8 +83,8 @@ function check(src) {
   }
   for (const [heading, digest] of Object.entries(reviewHashes))
     assert.equal(hash(section(review, heading)), digest, heading);
-  assert.equal(blob(src['review-closeout.md']), '4b22bbc12e3438f7d432ce78ccd54de8607af34d');
-  assert.equal(blob(src['references/review-contract.json']), '439c8ddcc2155d4a5942bed4bf082d6d516f72ff');
+  assert.equal(blob(src['review-closeout.md']), '89a9f8e8909dd48c4418d00e0b3091abf00a1d69');
+  assert.equal(blob(src['references/review-contract.json']), '19b6ac35729b748a9b2de7159d20ca21ded21218');
   const complete = src['references/closure.md'].split('For full `complete`, require:\n\n```text\n')[1];
   assert(complete, 'missing terminal contract');
   assert.equal(hash(complete.split('\n```')[0]), closureHash);
