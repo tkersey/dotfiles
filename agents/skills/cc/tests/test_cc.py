@@ -197,6 +197,16 @@ def main():
                               target=target)
             expect(report)
             assert report["diff_reads"][0]["shape"] == "chain", report
+        # The launch passes a range target; the recipe names it and the reviewer diffs it (observed live).
+        span = f"{target}..HEAD"
+        report = readback(tmp, "standard", standard_events(
+            target=span, command=f"git diff {span}; git diff HEAD", output=patch.stdout), target=span)
+        expect(report)
+        assert report["diff_reads"][0]["shape"] == "chain", report
+        # Observed live with a bare-SHA target: the reviewer showed that one commit instead.
+        expect(readback(tmp, "standard", standard_events(
+            target=target, command=f"git show {target} --stat && git show {target} | head -400",
+            output=patch.stdout), target=target), "no successful correlated")
         # `;` hides the diff's own exit code, so a chain needs patch text in its result.
         report = readback(tmp, "standard", standard_events(
             target=target, command=f"git diff {target}; git diff HEAD", output="fatal: bad revision\n"), target=target)

@@ -5,9 +5,9 @@ usage:
   uv run --no-project python -I readback.py custom   EVENTS SESSION_ID MODEL PROMPT_FILE OUT
 
 EVENTS is captured `--output-format stream-json --verbose` stdout. MODEL is the
-full selected model ID. TARGET is the base passed to /review, or "-" when none
-was passed. Custom delivery is checked in the session transcript under
-$CLAUDE_CONFIG_DIR (default ~/.claude)/projects/*/SESSION_ID.jsonl.
+full selected model ID. TARGET is the target passed to /review (`<base>..HEAD`),
+or "-" when none was passed. Custom delivery is checked in the session transcript
+under $CLAUDE_CONFIG_DIR (default ~/.claude)/projects/*/SESSION_ID.jsonl.
 
 The standard read gate recognizes direct Bash `git diff` calls against TARGET
 and the `;`/`&&` chains the native recipe issues around them, not arbitrary

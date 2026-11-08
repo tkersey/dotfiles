@@ -114,7 +114,7 @@ minting a wrapper receipt. Bind the pinned session ID, launch flags, exact
 delivered prompt bytes or the standard's deliberate absence, readback report,
 original result, enforced read-only boundary, and before/after Git subject to this
 request in the existing Working Set. The changeset standard is
-`/review <standard_level> <base_sha>`, the bundled alias that retains native command
+`/review <standard_level> <base_sha>..HEAD`, the bundled alias that retains native command
 resolution when a local `code-review` skill exists. A recipe header alone does not
 establish that origin. Require the bound level and a matching successful diff
 observation; a requested tool call without its successful result is insufficient.

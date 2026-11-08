@@ -127,7 +127,7 @@ read_tools=(Read Grep Glob
   --permission-mode dontAsk --permission-prompts none --allowed-tools "${read_tools[@]}" Agent \
   --disallowed-tools Edit Write NotebookEdit Skill Workflow 'mcp__*' \
   --output-format stream-json --verbose \
-  "/review $level $base" </dev/null >"$events" 2>"$diagnostics")
+  "/review $level $base..HEAD" </dev/null >"$events" 2>"$diagnostics")
 
 # Custom: $prompt holds the exact instruction bytes
 (cd "$repo" && GIT_OPTIONAL_LOCKS=0 claude -p --session-id "$sid" \
@@ -142,8 +142,10 @@ read_tools=(Read Grep Glob
 ```
 
 - Use a new session ID and private `$events`/`$diagnostics` per attempt.
-- Standard adds nothing beyond `/review <level> [target]`; retain native verifier
-  delegation (`Agent`) under the same restrictions. Custom reviews may not launch
+- Standard adds nothing beyond `/review <level> <base>..HEAD`; retain native
+  verifier delegation (`Agent`) under the same restrictions. Pass the range, not
+  a bare base: the recipe can read a bare SHA as one commit to show and review
+  that commit instead of the bound diff (observed). Custom reviews may not launch
   reviewers or invoke skills.
 - Do not pass `--no-session-persistence` (the transcript is evidence), `--bare`,
   `--safe-mode`, bypass flags, or wider tools; do not widen access after a failed
@@ -154,13 +156,13 @@ read_tools=(Read Grep Glob
 
 ```bash
 uv run --no-project python -I "$skill_dir/scripts/readback.py" standard \
-  "$events" "$sid" "$selected_model" "$base" "$level" "$readback_json"
+  "$events" "$sid" "$selected_model" "$base..HEAD" "$level" "$readback_json"
 uv run --no-project python -I "$skill_dir/scripts/readback.py" custom \
   "$events" "$sid" "$selected_model" "$prompt" "$readback_json"
 ```
 
 For an explicitly bound current-diff review, omit the CLI target and pass `-` as
-the helper's target instead of `$base`.
+the helper's target instead of `$base..HEAD`.
 
 [readback.py](scripts/readback.py) writes the evidence and every problem, and
 exits nonzero (hold) unless all of these hold:
