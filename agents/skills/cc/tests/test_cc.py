@@ -183,6 +183,33 @@ def main():
                         f"git diff HEAD -- {BASE}",
                         f"echo 'git diff {BASE} HEAD'", f"git diff {BASE} HEAD; true"]:
             expect(readback(tmp, "standard", standard_events(command=command)), "no successful correlated")
+
+        # Shapes the native recipe issued in real sessions: ;/&& chains around the patch read.
+        stat = " check.txt | 2 +-\n 1 file changed, 1 insertion(+), 1 deletion(-)\n"
+        for command, output in [
+            (f"git diff {target}; git diff HEAD", patch.stdout),
+            (f"git diff {target} HEAD --stat && git diff {target} HEAD; ls -a; "
+             "find . -name CLAUDE.md -not -path './.git/*'", stat + patch.stdout + ".\n..\ncheck.txt\n"),
+            (f"git diff {target[:7]} HEAD --stat && git diff {target[:7]} HEAD && git status --short && ls -la",
+             stat + patch.stdout + "total 8\n"),
+        ]:
+            report = readback(tmp, "standard", standard_events(target=target, command=command, output=output),
+                              target=target)
+            expect(report)
+            assert report["diff_reads"][0]["shape"] == "chain", report
+        # `;` hides the diff's own exit code, so a chain needs patch text in its result.
+        report = readback(tmp, "standard", standard_events(
+            target=target, command=f"git diff {target}; git diff HEAD", output="fatal: bad revision\n"), target=target)
+        expect(report, "no successful correlated")
+        assert report["diff_reads"][0]["reason"] == "chained read returned no patch text"
+        # Rejected by shape even though the output below carries patch text.
+        for command in [f"git diff {BASE} HEAD; git show HEAD", f"git diff {BASE} HEAD; echo 'diff --git a/x b/x'",
+                        f"git diff {BASE} HEAD | head -50", f"git diff {BASE} HEAD && rm -rf build",
+                        f"git diff --stat {BASE} HEAD; git status", "git diff HEAD; ls",
+                        f"git diff {BASE} HEAD; find . -exec cat {{}} +", f"git diff {BASE} HEAD; git status -v",
+                        f"git diff {BASE} HEAD &", f"git diff {BASE} HEAD || true", f"git diff {BASE} HEAD 2>&1",
+                        f"git diff {BASE} HEAD; git diff --stat -p {BASE} HEAD", f"git diff {BASE} HEAD; ; ls"]:
+            expect(readback(tmp, "standard", standard_events(command=command)), "no successful correlated")
         expect(readback(tmp, "standard", standard_events(level="medium")), "recipe ran at medium")
 
         missing = standard_events()

@@ -9,10 +9,12 @@ full selected model ID. TARGET is the base passed to /review, or "-" when none
 was passed. Custom delivery is checked in the session transcript under
 $CLAUDE_CONFIG_DIR (default ~/.claude)/projects/*/SESSION_ID.jsonl.
 
-The standard read gate recognizes direct Bash `git diff` calls against TARGET,
-not arbitrary shell programs. A request needs a later completed tool_result
-with the same tool ID. This is evidence of a diff observation, not proof of
-complete review coverage; Git subject and coverage checks stay with the caller.
+The standard read gate recognizes direct Bash `git diff` calls against TARGET
+and the `;`/`&&` chains the native recipe issues around them, not arbitrary
+shell programs. A request needs a later completed tool_result with the same
+tool ID; a chain's result must also contain patch text. This is evidence of a
+diff observation, not proof of complete review coverage; Git subject and
+coverage checks stay with the caller.
 Native result text and permission denials are preserved without interpreting a
 verdict or deciding whether an optional denied call mattered. OUT receives the
 evidence and problems; exit 0 only when the required checks pass.
@@ -29,6 +31,13 @@ from pathlib import Path
 LEVEL = re.compile(r"`(\w+) effort\b")
 HEX = re.compile(r"[0-9a-f]{7,40}\Z")
 EXIT_CODE = re.compile(r"\A\s*Exit code(?:\s*:\s*|\s+)(\d+)(?:\s|$)", re.IGNORECASE)
+PATCH_TEXT = re.compile(r"^diff --git ", re.MULTILINE)
+CHAIN_OPERATORS = {";", "&&"}
+SUMMARY_DIFF = re.compile(r"--(?:stat|shortstat|numstat|name-only|name-status)(?:=\S*)?")
+PATCH_OPTION = re.compile(r"-p|-u|--patch\S*|-U\S*|--unified\S*")
+QUIET_GIT = {"rev-parse", "merge-base", "ls-files", "check-ignore"}
+FIND_ACTIONS = {"-exec", "-execdir", "-ok", "-okdir", "-delete", "-fprint", "-fprint0", "-fprintf",
+                "-fls", "-printf"}
 
 
 def text_of(content) -> str:
@@ -101,21 +110,85 @@ def common(events: list[dict], sid: str, model: str, problems: list[str]) -> dic
     return result
 
 
-def diff_command(command: str, target: str) -> bool:
-    """Recognize a direct patch read with a base operand, without executing it.
+def pieces(command: str) -> list[list[str]] | None:
+    """Split a `;`/`&&` sequence into argument lists; None for any other shell syntax.
 
-    Deliberately exclude shell operators, substitutions, and summary-only modes.
-    Path-limited reads are observations; the caller judges overall coverage.
-    Unknown command shapes need caller investigation.
+    Pipes, redirects, background `&`, `||`, subshells, substitutions, comments
+    and multi-line programs are not split; they are rejected.
     """
+    if any(token in command for token in ("\n", "\r", "`", "$", "#")):
+        return None
+    lexer = shlex.shlex(command, posix=True, punctuation_chars=True)
+    lexer.whitespace_split = True
     try:
-        words = shlex.split(command)
+        tokens = list(lexer)
     except ValueError:
-        return False
-    if any(token in command for token in ("\n", "\r", ";", "|", "&", "<", ">", "`", "$", "#")):
-        return False
+        return None
+    split, current = [], []
+    for token in tokens:
+        if token in CHAIN_OPERATORS:
+            if not current:
+                return None
+            split.append(current)
+            current = []
+        elif token and set(token) <= set("();<>|&"):
+            return None
+        else:
+            current.append(token)
+    return split + [current] if current else None
+
+
+def quiet(words: list[str]) -> bool:
+    """A read-only piece that cannot print patch text itself.
+
+    `git diff HEAD` qualifies only because the caller freezes a clean working
+    tree before dispatch and rechecks it at admission.
+    """
     if words[:2] == ["git", "--no-pager"]:
-        words.pop(1)
+        words = words[:1] + words[2:]
+    if words[:1] == ["git"] and len(words) > 1:
+        subcommand, args = words[1], words[2:]
+        if subcommand == "status":
+            return not any(a == "--verbose" or (a.startswith("-") and not a.startswith("--") and "v" in a)
+                           for a in args)
+        if subcommand == "diff":
+            options = args[:args.index("--")] if "--" in args else args
+            if options == ["HEAD"]:
+                return True
+            return (any(SUMMARY_DIFF.fullmatch(a) for a in options)
+                    and not any(PATCH_OPTION.fullmatch(a) for a in options))
+        return subcommand in QUIET_GIT
+    if words[:1] == ["ls"] or words == ["pwd"]:
+        return True
+    return words[:1] == ["find"] and not any(word in FIND_ACTIONS for word in words[1:])
+
+
+def diff_read(command: str, target: str) -> str | None:
+    """Classify a Bash command as a patch read of TARGET without executing it.
+
+    "direct": one patch read. "chain": a `;`/`&&` sequence with at least one
+    direct read and otherwise only quiet pieces, as the native recipe issues
+    (`git diff <base>; git diff HEAD`). Since `;` hides earlier exit codes, a
+    chain's result must also contain patch text, which only its direct reads
+    can print. None: anything else, including summary-only reads.
+    """
+    split = pieces(command)
+    if not split or not any(direct_diff(piece, target) for piece in split):
+        return None
+    if len(split) == 1:
+        return "direct"
+    return "chain" if all(direct_diff(piece, target) or quiet(piece) for piece in split) else None
+
+
+def direct_diff(words: list[str], target: str) -> bool:
+    """Recognize a direct patch read with a base operand.
+
+    Summary-only modes and unknown options are excluded, so they cannot
+    silently substitute other output. Path-limited reads are observations; the
+    caller judges overall coverage.
+    """
+    if words[:2] == ["git", "--no-pager"]:
+        words = words[:1] + words[2:]
     if words[:2] != ["git", "diff"]:
         return False
     args = words[2:]
@@ -205,10 +278,11 @@ def standard(events: list[dict], target: str, level: str, problems: list[str]) -
         for index, request in requests:
             inputs = request.get("input")
             command = inputs.get("command") if isinstance(inputs, dict) else None
-            if request.get("name") != "Bash" or not isinstance(command, str) or not diff_command(command, target):
+            shape = diff_read(command, target) if request.get("name") == "Bash" and isinstance(command, str) else None
+            if shape is None:
                 continue
             tool_id = request.get("id")
-            read = {"tool_use_id": tool_id, "command": command, "ok": False}
+            read = {"tool_use_id": tool_id, "command": command, "shape": shape, "ok": False}
             evidence["diff_reads"].append(read)
             if inputs.get("run_in_background"):
                 read["reason"] = "background request does not establish completed diff observation"
@@ -223,8 +297,11 @@ def standard(events: list[dict], target: str, level: str, problems: list[str]) -
                 continue
             _, part, event = matches[0]
             read["ok"], read["reason"] = tool_result_status(part, event, command)
+            if read["ok"] and shape == "chain" and not PATCH_TEXT.search(text_of(part.get("content"))):
+                read["ok"], read["reason"] = False, "chained read returned no patch text"
         if not any(read["ok"] for read in evidence["diff_reads"]):
-            problems.append(f"no successful correlated `git diff` read against {target}; only direct patch reads are recognized")
+            problems.append(f"no successful correlated `git diff` read against {target}; only direct patch reads "
+                            "and read-only `;`/`&&` chains around them are recognized")
     return evidence
 
 

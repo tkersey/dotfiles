@@ -175,7 +175,13 @@ exits nonzero (hold) unless all of these hold:
   insufficient. The helper recognizes direct patch reads, including ordinary
   context options and explicit path limits. A successful per-file read does not
   establish complete changeset coverage; the caller judges that separately.
-  Summary-only or complex shell commands do not establish this gate.
+  It also recognizes the `;`/`&&` chains the native recipe issues, such as
+  `git diff <base>; git diff HEAD`, when every other piece cannot print patch
+  text: a summary diff, `git diff HEAD` on the required clean tree, `git status`,
+  `rev-parse`, `merge-base`, `ls-files`, `check-ignore`, `ls`, `pwd`, or `find`
+  without actions. Because `;` hides earlier exit codes, a chain's result must
+  also contain patch text. Summary-only reads, pipes, redirects, substitutions,
+  and other commands do not establish this gate.
   Recipe text alone does not authenticate native command resolution;
   retain the host's actual `/review` invocation.
 - **Custom:** exactly one transcript `<config>/projects/*/$sid.jsonl` exists and
