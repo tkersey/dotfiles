@@ -40,6 +40,14 @@ choices, observations, continuations, and progress. Difficulty proving a step,
 recovering an observation, or expressing lawful composition is feedback to revise
 the representation, algorithm, or interpretation, not merely add predicates.
 
+When the source requires different decisions for histories that the deciding
+operation cannot distinguish, more predicates over the same information cannot
+establish the distinction. Retain or derive the missing fact, enforce the relation
+at an owner with the necessary knowledge and effect authority, or use a
+source-permitted protocol that removes the dependency. Establish this obstruction
+under the actual information and operation capabilities; it does not prove every
+alternative construction impossible.
+
 For an unresolved operation vocabulary, interacting law family, or observation
 carrier at a live boundary, reuse Universalist's
 [domain-algebra derivation](../../universalist/references/domain-algebra/algebra-driven-design.md).
@@ -125,6 +133,31 @@ claims need a justified generator and preservation argument. Otherwise state the
 bounded domain and residuals. A generated sample or repaired sibling is not a
 universal proof. Choose and execute the native verifier on the actual candidate;
 a proposed argument or nomination is not executed evidence.
+
+## Executable behavioral models
+
+Use a small executable behavioral model, such as Quint, when exploring relevant
+state transitions can distinguish candidate constructions or challenge a required
+relationship. Reuse adequate native evidence or an existing model. Model the
+uncertainty that matters with its source-required observations and permitted
+operations; no new toolchain, model, or checking stage is mandatory.
+
+Keep sampling, bounded exploration, exhaustive finite-model checking, and
+successful induction distinct. Bind the actual checker mode, configuration,
+bounds, assumptions, and terminal result in the existing proof inventory.
+Exhausting one finite configuration does not establish other configurations.
+A reachable success establishes possibility, not every required input's
+acceptance or eventual progress under the source-required environment assumptions.
+
+Treat model atomicity, available knowledge, and effect ownership as implementation
+claims. A guard that excludes a violating transition establishes real exclusion
+only when the actual construction enforces it at the required observation point.
+Use the existing [claim-directed correspondence](../../universalist/references/claim-appropriate-proof.md#claim-directed-correspondence)
+for transfer; trace replay supplies concrete evidence without proving complete
+correspondence. Determine whether a counterexample challenges the construction,
+abstraction, property, or implementation connection under existing admission
+rules. Correct a spurious abstraction from source or implementation evidence;
+do not omit permitted failures or weaken the accepted law merely to obtain a pass.
 
 ## Producer migration and compensator retirement
 
