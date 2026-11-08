@@ -95,8 +95,8 @@ Resolve `$repo`, `$git_dir` and `$git_common` to their physical absolute paths
 `git rev-parse --path-format=absolute --git-common-dir`). Include any additional
 source directories in `denyWrite`. Keep Claude's runtime state, including
 transcripts, and attempt files (`$settings`, `$prompt`, `$events`, `$diagnostics`,
-`$readback_json`) outside those paths. Create these per-attempt settings with a
-JSON encoder:
+`$readback_json`, and any `$reference_patch`) outside those paths. Create these
+per-attempt settings with a JSON encoder:
 
 ```bash
 jq -n --arg repo "$repo" --arg git_dir "$git_dir" --arg git_common "$git_common" '
@@ -167,14 +167,27 @@ read_tools=(Read Grep Glob
 
 ```bash
 uv run --no-project python -I "$skill_dir/scripts/readback.py" standard \
-  "$events" "$sid" "$selected_model" "$base..HEAD" "$level" "$readback_json" \
-  --replay-repo "$repo"
+  "$events" "$sid" "$selected_model" "$base..HEAD" "$level" "$readback_json"
 uv run --no-project python -I "$skill_dir/scripts/readback.py" custom \
   "$events" "$sid" "$selected_model" "$prompt" "$readback_json"
 ```
 
-Run standard readback while the subject is still frozen: `--replay-repo` replays
-the target diff in that checkout.
+For a semicolon-hidden read, optionally append `--reference-patch "$reference_patch"`.
+Reuse a complete reference patch captured by the caller's existing executor under
+an enforced read-only filesystem boundary covering the repository, Git directory,
+and common directory. While the subject is frozen, capture the complete stdout of
+`git diff "$base..HEAD" --` only if that command exits 0. Bind its actual invocation,
+successful exit, full base/head IDs, and effective boundary to this attempt in the
+existing Working Set; retain the unmodified UTF-8 bytes beside the attempt files.
+Do not substitute a partial, path-limited, stale, reformatted, or failed capture.
+
+The helper only reads this file and compares text; it never executes Git or
+authenticates capture provenance. A file path or hash alone establishes neither
+the subject nor successful, protected capture. Do not generate the reference in
+an ordinary host subprocess: Git can invoke configured programs or write textconv
+caches, and `GIT_OPTIONAL_LOCKS=0` is not filesystem enforcement. If protected
+capture or its provenance is unavailable, omit the option and use the existing
+follow-up route below. Do not introduce an unsandboxed replay or widen permissions.
 
 For an explicitly bound current-diff review, omit the CLI target and pass `-` as
 the helper's target instead of `$base..HEAD`.
@@ -187,7 +200,9 @@ exits nonzero (hold) unless all of these hold:
 - **Standard:** native result text is nonempty; the expanded recipe names the
   frozen target, its depth header names the bound level (observed: `medium` ran
   the `high` recipe), and a
-  matching reviewer `git diff` has a correlated successful tool result.
+  matching reviewer `git diff` has a correlated completed tool result establishing
+  either target completion or delivery of the complete bound patch as described
+  below.
   A command request alone, a failed read, or a result for another tool call is
   insufficient. The helper recognizes direct patch reads, including ordinary
   context options and explicit path limits. A successful per-file read does not
@@ -197,16 +212,19 @@ exits nonzero (hold) unless all of these hold:
   read only in its final `&&` group. Thus `git diff <base>..HEAD && git diff HEAD`
   can establish completion, while `git diff <base>..HEAD; git diff HEAD` leaves
   the target's status unavailable even when patch text appears. Companion output
-  cannot authenticate a target read. Exit 1 from `--exit-code` is recognized only
+  alone cannot authenticate a target read. Exit 1 from `--exit-code` is recognized only
   for a direct diff. Summary-only reads, pipes, redirects, substitutions, and
-  unsupported command shapes do not establish this gate. With `--replay-repo`,
-  the helper itself runs `git diff <base>..HEAD --` read-only in the frozen
-  checkout; a semicolon-hidden target read counts when that replay exits 0 with
-  patch text and the read's observed output contains the whole replay. The
-  reviewer then saw the complete patch; a partial or failing diff cannot match,
-  because its replay fails too. Patch markers alone never count. Otherwise retain
-  the unverified compound observation and use the same-session follow-up below;
-  do not replace the native recipe.
+  unsupported command shapes do not establish this gate. With an authenticated
+  `--reference-patch`, a semicolon-hidden target read counts as patch delivery
+  when its completed compound output contains the whole reference at complete
+  line boundaries, allowing omission of one final newline. Retain
+  `completion_status: unknown` for that target command even when
+  `reference_matched: true`: the original command may have failed while another
+  command delivered the complete patch. Comparison establishes observed content,
+  not that the original command succeeded or that review reasoning is adequate.
+  A longer final line, truncated patch, or patch markers alone cannot match.
+  Otherwise retain the unverified compound observation and use the same-session
+  follow-up below; do not replace the native recipe.
   Recipe text alone does not authenticate native command resolution;
   retain the host's actual `/review` invocation.
 - **Custom:** exactly one transcript `<config>/projects/*/$sid.jsonl` exists and
@@ -216,10 +234,10 @@ exits nonzero (hold) unless all of these hold:
 Permission denials remain in the report for caller adjudication. An unresolved
 required read holds credit; a recovered, covered, or demonstrably unnecessary
 check follows the caller's existing limitation rules. Preserve the denied
-operation as denied. `ok` establishes only these execution checks, not a clean
+operation as denied. `ok` establishes only these readback checks, not a clean
 verdict or complete inquiry. The caller also retains the host exit status,
-effective boundary, and rechecks the Git subject. Never select the latest session,
-a title match, or another review's file.
+effective boundary, any reference capture's provenance, and rechecks the Git
+subject. Never select the latest session, a title match, or another review's file.
 
 ## Standard result: adjudicate the original text
 
@@ -261,9 +279,9 @@ Confidence is not evidence.
   result, the concrete gap and the bound subject in the follow-up prompt, as
   `$cas` does for delegated reviewers, and adjudicate the reply as supplemental
   review of that text, not a continuation of the reviewer's inquiry.
-  For an unverified compound diff that no replay establishes, request a standalone
-  foreground `git diff <base>..HEAD` and reassessment of conclusions dependent on
-  that read.
+  For an unverified compound diff that no authenticated reference establishes,
+  request a standalone foreground `git diff <base>..HEAD` and reassessment of
+  conclusions dependent on that read.
   Capture each resumed invocation in its own events file, retaining the actual
   resume invocation and unchanged Git subject; never concatenate terminal streams.
   Pass the original events plus the supplemental stream to standard readback:
@@ -271,7 +289,7 @@ Confidence is not evidence.
   ```bash
   uv run --no-project python -I "$skill_dir/scripts/readback.py" standard \
     "$events" "$sid" "$selected_model" "$base..HEAD" "$level" "$readback_json" \
-    --replay-repo "$repo" --followup "$followup_events"
+    --followup "$followup_events"
   ```
 
   Repeat `--followup` in execution order only within the caller's recovery budget.

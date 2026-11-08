@@ -116,12 +116,22 @@ original result, enforced read-only boundary, and before/after Git subject to th
 request in the existing Working Set. The changeset standard is
 `/review <standard_level> <base_sha>..HEAD`, the bundled alias that retains native command
 resolution when a local `code-review` skill exists. A recipe header alone does not
-establish that origin. Require the bound level and a matching successful diff
+establish that origin. Require the bound level and a matching, correlated diff
 observation; a requested tool call without its successful result is insufficient.
 Compound shell success does not establish an earlier semicolon group's completion.
-cc readback's `--replay-repo` reruns the exact target diff in the frozen checkout;
-a semicolon-hidden read whose observed output contains that whole successful replay
-is a complete observation, while patch markers alone are not. Otherwise, when the
+For an optional `--reference-patch`, the caller must bind a complete successful
+capture of the exact target diff to the same frozen base/head and an enforced
+read-only boundary, using its existing execution evidence. cc readback only reads
+that file; it never runs Git or authenticates its provenance. A semicolon-hidden
+read whose output contains the whole reference at complete line boundaries
+(allowing one omitted final newline) establishes patch delivery. Preserve the
+original target command's `completion_status: unknown`; a reference match does
+not prove that command succeeded, complete dependent reasoning, or award another
+standard. A path, hash, or patch markers alone establishes none of these facts.
+Do not capture a reference in an unprotected host subprocess or treat
+`GIT_OPTIONAL_LOCKS=0` as write prevention. If protected capture or its provenance
+is unavailable, omit that route. Otherwise unresolved observation, coverage, and
+reasoning still follow the existing admission rules below. When the
 existing inquiry-recovery rules authorize a same-session follow-up, pass its
 separately captured stream to cc readback with `--followup`; bind the resume
 invocation and unchanged subject. A resumed `/review` session holds only the

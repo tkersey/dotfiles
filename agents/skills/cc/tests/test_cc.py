@@ -4,9 +4,11 @@ usage: uv run --no-project python -I agents/skills/cc/tests/test_cc.py
 """
 
 import copy
+import hashlib
 import json
 import os
 import re
+import shlex
 import subprocess
 import sys
 import tempfile
@@ -59,7 +61,7 @@ def json_lines(records):
 
 
 def readback(base: Path, kind: str, events, records=None, prompt=PROMPT, extra_transcript=False, target=BASE,
-             followups=(), replay_repo=None, env_extra=None):
+             followups=(), reference_patch=None, env_extra=None, cwd=None):
     tmp = Path(tempfile.mkdtemp(dir=base))
     events_path, out = tmp / "events.jsonl", tmp / "out.json"
     events_path.write_text(json_lines(events), encoding="utf-8")
@@ -76,8 +78,8 @@ def readback(base: Path, kind: str, events, records=None, prompt=PROMPT, extra_t
     prompt_path.write_bytes(prompt)
     args = ([kind, str(events_path), SID, MODEL, target, "high", str(out)] if kind == "standard"
             else [kind, str(events_path), SID, MODEL, str(prompt_path), str(out)])
-    if replay_repo is not None:
-        args.extend(["--replay-repo", str(replay_repo)])
+    if reference_patch is not None:
+        args.extend(["--reference-patch", str(reference_patch)])
     for index, stream in enumerate(followups):
         path = tmp / f"followup-{index}.jsonl"
         path.write_text(json_lines(stream), encoding="utf-8")
@@ -85,7 +87,7 @@ def readback(base: Path, kind: str, events, records=None, prompt=PROMPT, extra_t
     # sys.executable is the interpreter selected by the outer UV invocation.
     proc = subprocess.run([sys.executable, "-I", str(SCRIPT), *args],
                           env={**os.environ, "CLAUDE_CONFIG_DIR": str(config), **(env_extra or {})},
-                          capture_output=True, text=True)
+                          cwd=cwd, capture_output=True, text=True)
     assert out.exists(), proc.stderr
     report = json.loads(out.read_text(encoding="utf-8"))
     assert (proc.returncode == 0) == report["ok"], proc.stderr
@@ -228,26 +230,58 @@ def chain_checks(tmp):
     report = readback(tmp, "standard", original, target=target)
     expect(report, "completion is unverified")
     assert "completion status is unavailable" in report["diff_reads"][0]["reason"]
-    assert all(route in " ".join(report["problems"]) for route in ("--replay-repo", "--followup")), report
-    # The helper's own successful replay, wholly contained in the observed output, establishes the read.
-    git_env = {"GIT_CONFIG_NOSYSTEM": "1", "GIT_CONFIG_GLOBAL": os.devnull}
-    report = readback(tmp, "standard", original, target=target, replay_repo=repo, env_extra=git_env)
+    assert all(route in " ".join(report["problems"]) for route in ("--reference-patch", "--followup")), report
+    reference = tmp / "complete-reference.patch"
+    reference.write_bytes(run.stdout.encode())
+    report = readback(tmp, "standard", original, target=target, reference_patch=reference)
     expect(report)
-    assert report["diff_reads"][0].get("replay_matched") and report["replay"]["exit_code"] == 0, report
-    assert report["replay"]["command"] == ["git", "diff", target, "--"], report
+    assert report["diff_reads"][0].get("reference_matched"), report
+    assert report["diff_reads"][0]["completion_status"] == "unknown", report
+    assert report["result"] == original[-1]["result"]
+    assert report["reference_patch"] == {"path": str(reference),
+        "sha256": hashlib.sha256(reference.read_bytes()).hexdigest(), "patch_text": True}, report
+    for output in [run.stdout.removesuffix("\n"), "before read\n" + run.stdout + "after read\n"]:
+        transported = copy.deepcopy(original)
+        transported[3]["message"]["content"][0]["content"] = output
+        report = readback(tmp, "standard", transported, target=target, reference_patch=reference)
+        expect(report)
+        assert report["diff_reads"][0]["completion_status"] == "unknown"
     truncated = copy.deepcopy(original)
     content = truncated[3]["message"]["content"][0]["content"]
     truncated[3]["message"]["content"][0]["content"] = content[:content.rindex("diff --git")]
-    expect(readback(tmp, "standard", truncated, target=target, replay_repo=repo, env_extra=git_env),
+    expect(readback(tmp, "standard", truncated, target=target, reference_patch=reference),
            "completion is unverified")
-    # An option-shaped target never reaches git.
-    expect(readback(tmp, "standard", original, target="--output=x..HEAD", replay_repo=repo, env_extra=git_env),
-           "cannot replay target")
+    for output in [content.removesuffix("\n") + "_WRONG\n", "prefix" + content,
+                   content.replace("-before\n", "", 1)]:
+        mismatched = copy.deepcopy(original)
+        mismatched[3]["message"]["content"][0]["content"] = output
+        report = readback(tmp, "standard", mismatched, target=target, reference_patch=reference)
+        expect(report, "completion is unverified")
+        assert not report["diff_reads"][0].get("reference_matched"), report
+    blank_terminated = tmp / "blank-terminated-reference.patch"
+    blank_terminated.write_bytes(reference.read_bytes() + b"\n")
+    expect(readback(tmp, "standard", original, target=target, reference_patch=blank_terminated))
+    missing_blank = copy.deepcopy(original)
+    missing_blank[3]["message"]["content"][0]["content"] = content.removesuffix("\n")
+    expect(readback(tmp, "standard", missing_blank, target=target, reference_patch=blank_terminated),
+           "completion is unverified")
+    for invalid_target in ["--output=x..HEAD", "-", "not-a-commit..HEAD"]:
+        expect(readback(tmp, "standard", original, target=invalid_target, reference_patch=reference),
+               "cannot compare reference patch for target")
     assert not any(repo.glob("x*"))
-    duplicate_flag = subprocess.run([sys.executable, "-I", str(SCRIPT), "standard", "events", SID, MODEL, target,
-                                     "high", "out", "--replay-repo", "a", "--replay-repo", "b"],
-                                    capture_output=True, text=True)
-    assert duplicate_flag.returncode != 0 and "usage:" in duplicate_flag.stderr
+    for data, error in [(b"", "reference patch contains no patch text"),
+                        (b"a.txt | 2 +-\n", "reference patch contains no patch text"),
+                        (b"diff --git a/a.txt b/a.txt\n+\xff\n", "cannot read reference patch")]:
+        invalid_reference = tmp / "invalid-reference.patch"
+        invalid_reference.write_bytes(data)
+        expect(readback(tmp, "standard", original, target=target, reference_patch=invalid_reference), error)
+    for missing_reference in [tmp / "missing-reference.patch", repo]:
+        expect(readback(tmp, "standard", original, target=target, reference_patch=missing_reference),
+               "cannot read reference patch")
+    for flags in [["--reference-patch", "a", "--reference-patch", "b"], ["--replay-repo", str(repo)]]:
+        rejected_flag = subprocess.run([sys.executable, "-I", str(SCRIPT), "standard", "events", SID, MODEL,
+                                        target, "high", "out", *flags], capture_output=True, text=True)
+        assert rejected_flag.returncode != 0 and "usage:" in rejected_flag.stderr
     supplemental, _ = observation(f"git diff {target}")
     del supplemental[1]
     supplemental[1]["message"]["content"][0]["id"] = "diff-2"
@@ -294,6 +328,19 @@ def chain_checks(tmp):
     events, run = observation(f"git diff {target} -- ':(bogus)x'; git ls-files --format='diff --git %(path)'")
     assert run.returncode == 0 and "diff --git" in run.stdout and "fatal:" in run.stderr
     expect(readback(tmp, "standard", events, target=target), "no successful correlated")
+    failed_target = subprocess.run(["git", "diff", target, "--", ":(bogus)x"],
+                                   cwd=repo, env=env, capture_output=True, text=True)
+    assert failed_target.returncode == 128 and not failed_target.stdout
+    for output, matched in [(content, True), (content.removesuffix("\n") + "_WRONG\n", False)]:
+        formatted = output.replace("%", "%x25").replace("\n", "%x0a")
+        events, run = observation(f"git diff {target} -- ':(bogus)x'; "
+                                 f"git ls-files --format={shlex.quote(formatted)} -- a.txt")
+        assert run.returncode == 0 and "fatal:" in run.stderr
+        assert (content in run.stdout) == matched
+        report = readback(tmp, "standard", events, target=target, reference_patch=reference)
+        expect(report, None if matched else "completion is unverified")
+        assert report["diff_reads"][0].get("reference_matched", False) == matched, report
+        assert report["diff_reads"][0]["completion_status"] == "unknown", report
     # A companion's exit 1 must not borrow a later, unexecuted diff's --exit-code meaning.
     events, run = observation(f"git ls-files --format='diff --git %(path)' && "
                               f"git check-ignore a.txt && git diff --exit-code {target}")
@@ -307,10 +354,72 @@ def chain_checks(tmp):
     events, run = observation(f"git diff {target}; git diff HEAD")
     assert run.returncode == 0 and "diff --git a/a.txt" in run.stdout and "fatal:" in run.stderr
     expect(readback(tmp, "standard", events, target=target), "no successful correlated")
-    # The masked partial failure replays as a failure, so no replay can vouch for it.
-    report = readback(tmp, "standard", events, target=target, replay_repo=repo, env_extra=git_env)
+    report = readback(tmp, "standard", events, target=target, reference_patch=reference)
     expect(report, "completion is unverified")
-    assert report["replay"]["exit_code"] != 0 and not report["diff_reads"][0].get("replay_matched"), report
+    assert not report["diff_reads"][0].get("reference_matched"), report
+
+
+def reference_boundary(tmp):
+    repo = tmp / "reference-boundary-subject"
+    repo.mkdir()
+    env = {**os.environ, "GIT_CONFIG_NOSYSTEM": "1", "GIT_CONFIG_GLOBAL": os.devnull,
+           "GIT_OPTIONAL_LOCKS": "0"}
+
+    def git(*args):
+        run = subprocess.run(["git", "-c", "core.hooksPath=" + os.devnull,
+                              "-c", "commit.gpgsign=false", "-c", "user.name=CC fixture",
+                              "-c", "user.email=cc-fixture@example.invalid", *args],
+                             cwd=repo, env=env, capture_output=True, text=True)
+        assert run.returncode == 0, run.stderr
+        return run.stdout
+
+    git("init", "-q")
+    (repo / ".gitattributes").write_text("sample.txt diff=probe\n")
+    source, protected = repo / "sample.txt", repo / "protected.txt"
+    source.write_text("before\n")
+    protected.write_text("original tracked contents\n")
+    git("add", ".")
+    git("commit", "-qm", "base")
+    target = git("rev-parse", "HEAD").strip() + "..HEAD"
+    source.write_text("after\n")
+    git("add", ".")
+    git("commit", "-qm", "head")
+    head = git("rev-parse", "HEAD")
+    reference = tmp / "boundary-reference.patch"
+    reference.write_bytes(git("diff", target, "--").encode())
+    command = f"git diff {target}; git diff HEAD"
+    observed = subprocess.run(["bash", "-c", command], cwd=repo, env=env, capture_output=True, text=True)
+    assert observed.returncode == 0 and observed.stdout == reference.read_text()
+    events = standard_events(target=target, command=command, output=observed.stdout)
+    events[3]["message"]["content"][0]["exit_code"] = observed.returncode
+
+    converter = tmp / "writing-textconv"
+    converter.write_text("#!/bin/sh\nprintf 'changed by textconv\\n' >" + shlex.quote(str(protected)) +
+                         '\ncat "$1"\n')
+    converter.chmod(0o755)
+    git("config", "diff.probe.textconv", shlex.quote(str(converter)))
+    git("config", "diff.probe.cachetextconv", "true")
+    assert git("diff", target, "--") == reference.read_text()
+    assert protected.read_text() == "changed by textconv\n"
+    assert "refs/notes/textconv/probe" in git("for-each-ref", "--format=%(refname)")
+    protected.write_text("original tracked contents\n")
+    git("update-ref", "-d", "refs/notes/textconv/probe")
+    assert git("status", "--porcelain") == ""
+
+    binary = tmp / "reference-bin"
+    binary.mkdir()
+    invoked = tmp / "unexpected-git-invocation"
+    stub = binary / "git"
+    stub.write_text("#!/bin/sh\nprintf 'invoked\\n' >" + shlex.quote(str(invoked)) + "\nexit 97\n")
+    stub.chmod(0o755)
+    report = readback(tmp, "standard", events, target=target, reference_patch=reference, cwd=repo,
+                      env_extra={**env, "PATH": str(binary) + os.pathsep + env["PATH"]})
+    expect(report)
+    assert report["diff_reads"][0].get("reference_matched")
+    assert not invoked.exists()
+    assert protected.read_text() == "original tracked contents\n"
+    assert "refs/notes/textconv/probe" not in git("for-each-ref", "--format=%(refname)")
+    assert git("rev-parse", "HEAD") == head and git("status", "--porcelain") == ""
 
 
 def main():
@@ -480,6 +589,7 @@ def main():
 
         launch_effort(tmp)
         chain_checks(tmp)
+        reference_boundary(tmp)
 
     print(f"cc: {checks} readback and launch checks passed, including real Git and conflicting effort environments; no model was called")
 

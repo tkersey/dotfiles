@@ -3,6 +3,7 @@
 // --case supplies current workflow guidance and evidence, never the evaluator key.
 import assert from 'node:assert/strict';
 import {spawnSync} from 'node:child_process';
+import {createHash} from 'node:crypto';
 import {mkdtempSync, readFileSync, writeFileSync, rmSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
@@ -215,10 +216,11 @@ const claudeTarget = `${claudeSubject.base}..HEAD`;
 const claudeModel = 'claude-opus-5-5';
 const claudeSession = n => `11111111-2222-4333-8444-${String(n).padStart(12, '0')}`;
 const claudeCleanText = 'Reviewed the full bound changeset and its callers against the accepted requirements. No findings.';
+const claudePatch = 'diff --git a/src/check.mjs b/src/check.mjs\n@@ -1 +1 @@\n-old\n+new';
 const claudeFollowupPrompt = `Read ${claudeTarget} with a standalone git diff, complete the missing source inquiry, and reassess the original review.`;
 // Exercise the actual helper on synthetic native-shaped events. This is not a live Claude run.
 function claudeObservation({sid=claudeSession(5), level='high', result=claudeCleanText,
-  diff='success', permissionDenials=[], followup=null} = {}) {
+  diff='success', permissionDenials=[], followup=null, reference=false, observedPatch=claudePatch} = {}) {
   const dir = mkdtempSync(join(tmpdir(), 'actuating-claude-credit-'));
   try {
     const events = [
@@ -230,7 +232,7 @@ function claudeObservation({sid=claudeSession(5), level='high', result=claudeCle
       id, name:'Bash', input:{command}}]}});
     const response = (id, failed) => ({type:'user', message:{content:[{type:'tool_result',
       tool_use_id:id, is_error:failed, content:failed ? 'Exit code 129\nerror: invalid option' :
-        'diff --git a/src/check.mjs b/src/check.mjs\n@@ -1 +1 @@\n-old\n+new'}]}});
+        observedPatch}]}});
     events.push(request('diff-1', diff === 'unverified-chain' ? `git diff ${claudeTarget}; git diff HEAD` : undefined));
     if (diff !== 'missing-result') events.push(response('diff-1', !['success', 'unverified-chain'].includes(diff)));
     if (diff === 'recovered') events.push(request('diff-2'), response('diff-2', false));
@@ -239,6 +241,10 @@ function claudeObservation({sid=claudeSession(5), level='high', result=claudeCle
     const input = join(dir, 'events.jsonl'), output = join(dir, 'readback.json');
     writeFileSync(input, events.map(event => JSON.stringify(event)).join('\n') + '\n');
     const extra = [];
+    if (reference) {
+      writeFileSync(join(dir, 'reference.patch'), claudePatch + '\n');
+      extra.push('--reference-patch', 'reference.patch');
+    }
     if (followup) {
       const supplemental = [
         {type:'system', subtype:'init', session_id:sid, model:claudeModel},
@@ -255,7 +261,9 @@ function claudeObservation({sid=claudeSession(5), level='high', result=claudeCle
       'standard', input, sid, claudeModel, claudeTarget, 'high', output, ...extra], {encoding:'utf8', cwd:dir});
     const report = JSON.parse(readFileSync(output, 'utf8'));
     assert.equal(run.status === 0, report.ok, run.stderr);
-    assert.equal(report.ok, level === 'high' && (['success', 'recovered'].includes(diff) || followup !== null), run.stderr);
+    const matchedReference = reference && diff === 'unverified-chain' && observedPatch === claudePatch;
+    assert.equal(report.ok, level === 'high' && (['success', 'recovered'].includes(diff)
+      || followup !== null || matchedReference), run.stderr);
     assert.equal(report.result, result);
     assert.deepEqual(report.permission_denials, permissionDenials);
     if (followup) {
@@ -263,7 +271,13 @@ function claudeObservation({sid=claudeSession(5), level='high', result=claudeCle
         permission_denials:followup.permissionDenials ?? []}]);
       assert.equal(report.diff_reads.find(read => read.followup === 1)?.ok, true);
     }
-    if (diff === 'unverified-chain') assert.equal(report.diff_reads[0].ok, false);
+    if (diff === 'unverified-chain') {
+      assert.equal(report.diff_reads[0].ok, matchedReference);
+      assert.equal(report.diff_reads[0].completion_status, 'unknown');
+      assert.equal(Boolean(report.diff_reads[0].reference_matched), matchedReference);
+    }
+    if (reference) assert.equal(report.reference_patch.sha256,
+      createHash('sha256').update(claudePatch + '\n').digest('hex'));
     return report;
   } finally { rmSync(dir, {recursive:true, force:true}); }
 }
@@ -386,6 +400,55 @@ addClaude('credit-40', {readback:claudeObservation({diff:'unverified-chain', fol
     other_required_obligations:'The other initial reviews have exact current evidence and previously admitted credit. The supplemental finding is the only newly reported issue.'},
   {limitation_disposition:'recovered', standard_count_after:0, auxiliary_count_after:0, original_check_status:'unknown'},
   'A successful follow-up read does not preserve an overturned clean verdict. The admitted material supplemental finding invalidates all credit, while the original unverified completion remains unknown.');
+
+const claudeReferenceCapture = {source:'synthetic caller/runtime capture record', repository:'fixture/review',
+  base_sha:claudeSubject.base, head_sha:claudeSubject.head, command:['git','diff',claudeTarget,'--'],
+  process_exit:0, stdout_file:'reference.patch',
+  stdout_sha256:createHash('sha256').update(claudePatch + '\n').digest('hex'),
+  stdout:claudePatch + '\n', complete_capture:true,
+  execution_boundary:'The existing caller runtime denied writes to the physical repository, Git directory and Git common directory while capturing the reference.',
+  subject_observation:'The capture belongs to the same frozen base and head as the review; the host verified the unchanged clean subject before admission.'};
+const claudeReferenceReadback = claudeObservation({diff:'unverified-chain', reference:true});
+const claudeReferenceEvidence = {readback:claudeReferenceReadback, reference_capture:claudeReferenceCapture,
+  requested_scope:'Changeset-wide source review. The reviewer completed all dependent source reasoning and reported no findings or limitations. Its only diff call was git diff <base>..HEAD; git diff HEAD. The target completion status is unavailable from aggregate success. The captured tool output contains the complete caller-authenticated reference patch, omitting only its final transport newline. No new reviewer session or follow-up occurred.'};
+addClaude('credit-41', claudeReferenceEvidence,
+  {credit_disposition:'credit', limitation_disposition:'covered', standard_count_after:5,
+    public_review_complete:true, original_check_status:'unknown'},
+  'Faithful comparison with a complete, successful reference captured for the same frozen subject under the enforced boundary establishes original patch delivery. Credit this adequate original standard once; retain its unknown target completion and do not count reference capture as another reviewer or execution by the original reviewer.');
+addClaude('credit-42', {...claudeReferenceEvidence, reference_capture:null,
+    requested_scope:'Changeset-wide source review. Readback found a matching reference.patch file, but the caller has only its path and hash. No capture command, process outcome, subject binding, complete-output record, or enforced boundary is available. There is no independently verified target read or follow-up.'},
+  {limitation_disposition:'unresolved', original_check_status:'unknown'},
+  'A matching file and passing comparator cannot authenticate reference acquisition. Hold the fifth standard without relabeling the original completion or erasing prior valid credits.');
+addClaude('credit-43', {...claudeReferenceEvidence,
+    reference_capture:{...claudeReferenceCapture, head_sha:'f'.repeat(40),
+      subject_observation:'The reference was captured on a different head; equivalence to the bound review subject has not been established.'},
+    requested_scope:'Changeset-wide source review of the bound subject. The helper matched the supplied reference bytes, but the caller capture records a different head. No other verified patch delivery or follow-up is present.'},
+  {limitation_disposition:'unresolved', original_check_status:'unknown'},
+  'A comparison against another head cannot establish delivery of the bound changeset; a reference hash does not repair the subject mismatch.');
+addClaude('credit-44', {...claudeReferenceEvidence,
+    readback:claudeObservation({diff:'unverified-chain', reference:true, observedPatch:claudePatch + '_WRONG'}),
+    requested_scope:'Changeset-wide source review. The only observed diff-like output ends with +new_WRONG; the bound reference ends with +new on a complete line. The compound command completed successfully and the reviewer reported no findings. No other complete patch observation or follow-up exists.'},
+  {limitation_disposition:'unresolved', original_check_status:'unknown'},
+  'A correct line prefix in incorrect observed content is not delivery of the reference patch. Preserve the held comparison and original unknown completion.');
+addClaude('credit-45', {...claudeReferenceEvidence,
+    readback:claudeObservation({diff:'unverified-chain', reference:true,
+      observedPatch:claudePatch.slice(0, claudePatch.lastIndexOf('\n') + 1)}),
+    requested_scope:'Changeset-wide source review. The sole observed patch is truncated before the final added line. The caller has a complete reference capture, but no evidence that the reviewer received the missing line or reassessed it.'},
+  {limitation_disposition:'unresolved', original_check_status:'unknown'},
+  'Possession of a complete caller reference does not deliver omitted content to the reviewer. Hold the original standard; reference capture alone cannot supply missing inquiry.');
+addClaude('credit-46', {...claudeReferenceEvidence,
+    readback:claudeObservation({diff:'unverified-chain', reference:true,
+      result:'I saw the full patch, but did not finish tracing the new branch through its callers. I cannot conclude whether the changed guard preserves the required behavior.'}),
+    requested_scope:'Changeset-wide source review, including the changed guard and its callers. The complete bound patch was delivered and comparison is valid, but the original reviewer explicitly left dependent source reasoning unfinished. No supplemental reassessment occurred.'},
+  {limitation_disposition:'unresolved', original_check_status:'unknown'},
+  'Reference agreement establishes patch delivery, not completed reasoning. The missing dependent inquiry still holds credit despite successful readback.');
+addClaude('credit-47', {...claudeReferenceEvidence,
+    readback:claudeObservation({diff:'unverified-chain', reference:true,
+      permissionDenials:[{tool_name:'Bash', tool_input:{command:'git show HEAD:src/validator.mjs'}}],
+      result:'The complete patch was visible, but git show HEAD:src/validator.mjs was denied. I did not inspect the required validation contract or complete the reasoning that depends on it.'}),
+    requested_scope:'Changeset-wide source review requires inspecting the validation contract in src/validator.mjs. Reference agreement establishes full patch delivery, but the required contract read was denied and no other source supplied it. Adjudicate that denied read as the original check; the compound diff completion separately remains unknown.'},
+  {limitation_disposition:'unresolved', original_check_status:'blocked'},
+  'A matching patch cannot discharge another failed required read or its dependent reasoning. Retain the denial as blocked and the compound diff status as unknown; hold without resetting prior valid credit.');
 
 const fields = {
   credit_disposition:'credit | hold', limitation_disposition:'recovered | covered | not-required | unresolved | null',

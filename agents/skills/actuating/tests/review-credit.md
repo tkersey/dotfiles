@@ -21,8 +21,11 @@ key isolation, rejection of incorrect structured responses, and malformed input.
 Claude standard cases generate native-shaped event streams and invoke the actual
 `cc/scripts/readback.py`; their `ok` values and preserved original text are helper
 output, including ordinary clean prose, failed or missing diff results, recovery,
-and retained permission denials. The streams remain synthetic, as do the custom
-review and host-boundary observations.
+and retained permission denials. Reference cases pass a patch file to the actual
+comparator and retain the original command's unknown completion status. The
+streams and reference bytes remain synthetic, as do reference acquisition,
+custom review and host-boundary observations. A helper match does not authenticate
+the caller's reference capture or establish adequate reviewer reasoning.
 It does not execute Actuating or prove that an agent follows the changed guidance.
 The grader is test-only; it is not a runtime coverage classifier or credit gate.
 
@@ -51,6 +54,9 @@ particular, a scoped credited review may be complete while its original executio
 remains blocked. Reject prose that claims the blocked command passed or that a
 parent-run test was an independent reviewer confirmation. Do not use keyword
 matching or a confidence threshold to decide adequacy.
+For reference comparison, preserve the original target command's unknown
+completion status even when complete patch delivery is established. Count only
+the original review obligation; reference capture supplies no independent clean.
 
 | Cases | Discriminator |
 |---|---|
@@ -72,6 +78,10 @@ matching or a confidence threshold to decide adequacy.
 | 31 | A resumed Codex campaign cannot acquire Claude credit from the current host's default. |
 | 32 / 33 / 36 | A diff request without a result, a failed diff despite terminal success, and successful same-session recovery. |
 | 34 / 35 | The same retained permission denial is nonblocking for an explicitly adequate static scope and unresolved when its relevance has not been assessed. |
+| 38 / 39 / 40 | Unknown semicolon-hidden completion, adequate separately captured follow-up, and a supplemental material finding that overturns the original clean result. |
+| 41 / 42 / 43 | Complete reference-confirmed patch delivery under a bound capture versus missing capture provenance or a reference from another head. |
+| 44 / 45 | A wrong final-line suffix or truncated reviewer output cannot match the complete reference patch. |
+| 46 / 47 | Valid reference agreement does not complete unfinished reasoning or discharge a separate denied required read. |
 
 Cases 19 and 23 retain authentic attributed output but lack the required new
 independent inquiry. Its disposition is `unresolved`: continuing an already
@@ -103,3 +113,10 @@ separate, preserve findings and denials from both, and verify that recovery can
 restore only the original attempt's eligibility. Exercise conflicting inherited
 `CLAUDE_CODE_EFFORT_LEVEL` values and an incompatible managed effort cap; the
 selected effort must take effect or dispatch must hold.
+
+For reference comparison, qualify acquisition through the caller's existing
+enforced read-only runtime on the frozen subject. Retain the command, successful
+complete stdout capture, and subject and boundary evidence with the attempt;
+then pass the patch file to readback. Verify that a valid comparison preserves
+unknown historical completion and credits at most the original standard, while
+missing acquisition evidence or unresolved dependent inquiry still holds credit.
