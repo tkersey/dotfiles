@@ -96,3 +96,10 @@ credit and closeout rules. Check that a write-capable Git command and an ambient
 allowed write command cannot modify the subject, while required reads and native
 verifier delegation still work. Offline traces do not establish these runtime
 properties or replace that qualification.
+
+Also qualify a native semicolon read followed by a caller-authorized same-session
+standalone read and reassessment. Keep the original and supplemental streams
+separate, preserve findings and denials from both, and verify that recovery can
+restore only the original attempt's eligibility. Exercise conflicting inherited
+`CLAUDE_CODE_EFFORT_LEVEL` values and an incompatible managed effort cap; the
+selected effort must take effect or dispatch must hold.

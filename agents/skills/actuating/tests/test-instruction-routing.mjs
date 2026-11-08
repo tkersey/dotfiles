@@ -33,7 +33,7 @@ const coreHashes = {
 };
 // Pin the authorized recovery/epoch revision; unchanged construction and acceptance remain protected.
 const reviewHashes = {
-  "Binding and owner authority": "84dc70634fe5fcc93575214603834f51565ae500fe8573a8cda5bc9000c65062",
+  "Binding and owner authority": "32e4d06ee0f89e3d3f320fa60b465f1d5fc0e237e7ac11af8e1e9b141cc92ff7",
   "Focused file reviews": "5b1bec665bf3332c0be22d05facf1fb0a0a814d13fdb3ec1f32657de07ae2de1",
   "Review-credit admission": "2ba81997c7aa9a7ebd59df70f9b43332a809ce05bf9babc2c412608e9fb19ded",
   "Candidate lifecycle and causal response": "a887cf18ee794184cb80e1319500a0af833f94cd8031182f0de3a6af28718bdd",

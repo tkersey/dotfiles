@@ -118,6 +118,12 @@ request in the existing Working Set. The changeset standard is
 resolution when a local `code-review` skill exists. A recipe header alone does not
 establish that origin. Require the bound level and a matching successful diff
 observation; a requested tool call without its successful result is insufficient.
+Compound shell success does not establish an earlier semicolon group's completion.
+When the existing inquiry-recovery rules authorize a same-session follow-up, pass
+its separately captured stream to cc readback with `--followup`; bind the resume
+invocation and unchanged subject. Retain the original native result and all
+supplemental results and denials. The follow-up supplies evidence and reassessment,
+not a fresh standard or another clean credit.
 Adjudicate the original rendered text directly, including findings and limitations.
 No transcription or second model call is required. A derived view cannot replace
 that source or add an admission prerequisite.

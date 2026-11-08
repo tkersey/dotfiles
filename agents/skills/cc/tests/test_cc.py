@@ -6,6 +6,7 @@ usage: uv run --no-project python -I agents/skills/cc/tests/test_cc.py
 import copy
 import json
 import os
+import re
 import subprocess
 import sys
 import tempfile
@@ -57,7 +58,8 @@ def json_lines(records):
     return records if isinstance(records, str) else "".join(json.dumps(r) + "\n" for r in records)
 
 
-def readback(base: Path, kind: str, events, records=None, prompt=PROMPT, extra_transcript=False, target=BASE):
+def readback(base: Path, kind: str, events, records=None, prompt=PROMPT, extra_transcript=False, target=BASE,
+             followups=()):
     tmp = Path(tempfile.mkdtemp(dir=base))
     events_path, out = tmp / "events.jsonl", tmp / "out.json"
     events_path.write_text(json_lines(events), encoding="utf-8")
@@ -74,6 +76,10 @@ def readback(base: Path, kind: str, events, records=None, prompt=PROMPT, extra_t
     prompt_path.write_bytes(prompt)
     args = ([kind, str(events_path), SID, MODEL, target, "high", str(out)] if kind == "standard"
             else [kind, str(events_path), SID, MODEL, str(prompt_path), str(out)])
+    for index, stream in enumerate(followups):
+        path = tmp / f"followup-{index}.jsonl"
+        path.write_text(json_lines(stream), encoding="utf-8")
+        args.extend(["--followup", str(path)])
     # sys.executable is the interpreter selected by the outer UV invocation.
     proc = subprocess.run([sys.executable, "-I", str(SCRIPT), *args],
                           env={**os.environ, "CLAUDE_CONFIG_DIR": str(config)}, capture_output=True, text=True)
@@ -131,6 +137,155 @@ def git_observations(tmp):
     return target, patch, failed, changed, scoped
 
 
+def launch_effort(tmp):
+    global checks
+    skill = SCRIPT.parent.parent
+    blocks = re.findall(r"^[ \t]*```bash\n(.*?)\n[ \t]*```", (skill / "SKILL.md").read_text(), re.S | re.M)
+    for block in blocks:
+        subprocess.run(["bash", "-n"], input=block, text=True, check=True)
+    launch = next(block for block in blocks if "\n# Standard\n" in block)
+    setup, commands = launch.split("\n# Standard\n", 1)
+    standard, custom = commands.split("\n# Custom: $prompt holds the exact instruction bytes\n", 1)
+    binary = tmp / "launch-bin"
+    binary.mkdir()
+    stub = binary / "claude"
+    stub.write_text('''#!/bin/bash
+printf 'environment=%s\\nlocks=%s\\n' "$CLAUDE_CODE_EFFORT_LEVEL" "$GIT_OPTIONAL_LOCKS"
+while (($#)); do
+  if [[ "$1" == "--effort" ]]; then printf 'flag=%s\\n' "$2"; fi
+  shift
+done
+''')
+    stub.chmod(0o755)
+    repo = tmp / "launch subject with spaces"
+    repo.mkdir()
+    prompt = tmp / "launch prompt with spaces"
+    prompt.write_bytes(PROMPT)
+    settings = tmp / "launch-settings.json"
+    settings.write_text("{}\n")
+    for kind, command in [("standard", standard), ("custom", custom)]:
+        for selected, inherited in [("high", "low"), ("low", "max")]:
+            events = tmp / f"launch-{kind}-{selected}.jsonl"
+            env = {**os.environ, "PATH": str(binary) + os.pathsep + os.environ["PATH"],
+                   "CLAUDE_CODE_EFFORT_LEVEL": inherited, "selected_effort": selected,
+                   "repo": str(repo), "selected_model": MODEL, "level": "high", "base": BASE,
+                   "settings": str(settings), "events": str(events),
+                   "diagnostics": str(tmp / "launch-errors"), "prompt": str(prompt), "skill_dir": str(skill)}
+            script = f"uuidgen() {{ printf '%s\\n' '{SID}'; }}\n" + setup + "\n" + command
+            run = subprocess.run(["bash", "-eu", "-c", script], env=env, capture_output=True, text=True)
+            assert run.returncode == 0, run.stderr
+            observed = dict(line.split("=", 1) for line in events.read_text().splitlines())
+            assert observed == {"environment": selected, "locks": "0", "flag": selected}, observed
+            checks += 1
+
+
+def chain_checks(tmp):
+    repo = tmp / "chain-subject"
+    repo.mkdir()
+    env = {**os.environ, "GIT_CONFIG_NOSYSTEM": "1", "GIT_CONFIG_GLOBAL": os.devnull,
+           "GIT_OPTIONAL_LOCKS": "0"}
+
+    def git(*args):
+        run = subprocess.run(["git", "-c", "core.hooksPath=" + os.devnull,
+                              "-c", "commit.gpgsign=false", "-c", "user.name=CC fixture",
+                              "-c", "user.email=cc-fixture@example.invalid", *args],
+                             cwd=repo, env=env, capture_output=True, text=True)
+        assert run.returncode == 0, run.stderr
+        return run.stdout.strip()
+
+    git("init", "-q")
+    (repo / ".gitattributes").write_text("z.txt diff=fail\n")
+    for name in ("a.txt", "z.txt"):
+        (repo / name).write_text("before\n")
+    git("add", ".")
+    git("commit", "-qm", "base")
+    target = git("rev-parse", "HEAD") + "..HEAD"
+    for name in ("a.txt", "z.txt"):
+        (repo / name).write_text("after\n")
+    git("add", ".")
+    git("commit", "-qm", "head")
+
+    def observation(command):
+        run = subprocess.run(["bash", "-c", command], cwd=repo, env=env, capture_output=True, text=True)
+        events = standard_events(target=target, command=command, output=run.stdout + run.stderr)
+        events[3]["message"]["content"][0].update(is_error=run.returncode != 0, exit_code=run.returncode)
+        assert git("status", "--porcelain") == ""
+        return events, run
+
+    for command in [f"git diff {target} && git diff HEAD",
+                    f"git diff {target} --stat; git diff {target}",
+                    f"git diff {target} --stat && git diff {target} && git status --short && ls -la",
+                    f"git diff {target} -- 'literal;path' 'literal&&path'"]:
+        events, run = observation(command)
+        assert run.returncode == 0
+        expect(readback(tmp, "standard", events, target=target))
+
+    original, run = observation(f"git diff {target}; git diff HEAD")
+    assert run.returncode == 0 and "diff --git" in run.stdout
+    report = readback(tmp, "standard", original, target=target)
+    expect(report, "no successful correlated")
+    assert "completion status is unavailable" in report["diff_reads"][0]["reason"]
+    supplemental, _ = observation(f"git diff {target}")
+    del supplemental[1]
+    supplemental[1]["message"]["content"][0]["id"] = "diff-2"
+    supplemental[2]["message"]["content"][0]["tool_use_id"] = "diff-2"
+    supplemental[-1]["result"] = "Completed the missing read and reassessed it: a.txt:1 has a defect."
+    denied = [{"tool_name": "Bash", "tool_input": {"command": "npm test"}}]
+    supplemental[-1]["permission_denials"] = denied
+    report = readback(tmp, "standard", original, target=target, followups=[supplemental])
+    expect(report)
+    assert report["result"] == original[-1]["result"]
+    assert [read["ok"] for read in report["diff_reads"]] == [False, True]
+    assert report["diff_reads"][1]["followup"] == 1
+    assert report["followups"][0]["result"] == supplemental[-1]["result"]
+    assert report["followups"][0]["permission_denials"] == denied and report["permission_denials"] == []
+    for index, key, value, error in [(0, "session_id", "other", "init session"),
+                                    (0, "model", "other", "init model"),
+                                    (-1, "subtype", "error_during_execution", "result is"),
+                                    (-1, "result", "", "nonempty follow-up")]:
+        invalid = copy.deepcopy(supplemental)
+        invalid[index][key] = value
+        expect(readback(tmp, "standard", original, target=target, followups=[invalid]), error)
+    expect(readback(tmp, "standard", original, target=target, followups=[supplemental[:-1]]), "not terminal")
+    duplicate = copy.deepcopy(supplemental)
+    duplicate[1]["message"]["content"][0]["id"] = "diff-1"
+    duplicate[2]["message"]["content"][0]["tool_use_id"] = "diff-1"
+    expect(readback(tmp, "standard", original, target=target, followups=[duplicate]), "no successful correlated")
+    wrong_target = copy.deepcopy(supplemental)
+    wrong_target[1]["message"]["content"][0]["input"]["command"] = "git diff " + "f" * 40 + "..HEAD"
+    expect(readback(tmp, "standard", original, target=target, followups=[wrong_target]), "no successful correlated")
+    failed = copy.deepcopy(supplemental)
+    failed[2]["message"]["content"][0].update(is_error=True, exit_code=128, content="fatal: failed read")
+    expect(readback(tmp, "standard", original, target=target, followups=[failed]), "no successful correlated")
+    second = copy.deepcopy(supplemental)
+    second[1]["message"]["content"][0]["id"] = "diff-3"
+    second[2]["message"]["content"][0]["tool_use_id"] = "diff-3"
+    report = readback(tmp, "standard", original, target=target, followups=[failed, second])
+    expect(report)
+    assert [read["ok"] for read in report["diff_reads"]] == [False, False, True]
+
+    for separator in ["';'", "'&&'", r"\;", r"\&\&"]:
+        events, run = observation(f"git rev-parse -- 'diff --git a/x b/x' {separator} git diff {target}")
+        assert run.returncode == 0 and "diff --git" in run.stdout
+        expect(readback(tmp, "standard", events, target=target), "no successful correlated")
+    events, run = observation(f"git diff {target} -- ':(bogus)x'; git ls-files --format='diff --git %(path)'")
+    assert run.returncode == 0 and "diff --git" in run.stdout and "fatal:" in run.stderr
+    expect(readback(tmp, "standard", events, target=target), "no successful correlated")
+    # A companion's exit 1 must not borrow a later, unexecuted diff's --exit-code meaning.
+    events, run = observation(f"git ls-files --format='diff --git %(path)' && "
+                              f"git check-ignore a.txt && git diff --exit-code {target}")
+    assert run.returncode == 1 and "diff --git" in run.stdout
+    expect(readback(tmp, "standard", events, target=target), "no successful correlated")
+
+    git("config", "diff.fail.textconv", "false")
+    direct, run = observation(f"git diff {target}")
+    assert run.returncode == 128 and "diff --git a/a.txt" in run.stdout and "fatal:" in run.stderr
+    expect(readback(tmp, "standard", direct, target=target), "no successful correlated")
+    events, run = observation(f"git diff {target}; git diff HEAD")
+    assert run.returncode == 0 and "diff --git a/a.txt" in run.stdout and "fatal:" in run.stderr
+    expect(readback(tmp, "standard", events, target=target), "no successful correlated")
+
+
 def main():
     with tempfile.TemporaryDirectory() as raw:
         tmp = Path(raw)
@@ -184,11 +339,11 @@ def main():
                         f"echo 'git diff {BASE} HEAD'", f"git diff {BASE} HEAD; true"]:
             expect(readback(tmp, "standard", standard_events(command=command)), "no successful correlated")
 
-        # Shapes the native recipe issued in real sessions: ;/&& chains around the patch read.
+        # Only the final && group is established by successful compound completion.
         stat = " check.txt | 2 +-\n 1 file changed, 1 insertion(+), 1 deletion(-)\n"
         for command, output in [
-            (f"git diff {target}; git diff HEAD", patch.stdout),
-            (f"git diff {target} HEAD --stat && git diff {target} HEAD; ls -a; "
+            (f"git diff {target} && git diff HEAD", patch.stdout),
+            (f"git diff {target} HEAD --stat && git diff {target} HEAD && ls -a && "
              "find . -name CLAUDE.md -not -path './.git/*'", stat + patch.stdout + ".\n..\ncheck.txt\n"),
             (f"git diff {target[:7]} HEAD --stat && git diff {target[:7]} HEAD && git status --short && ls -la",
              stat + patch.stdout + "total 8\n"),
@@ -201,17 +356,17 @@ def main():
         span = f"{target}..HEAD"
         report = readback(tmp, "standard", standard_events(
             target=span, command=f"git diff {span}; git diff HEAD", output=patch.stdout), target=span)
-        expect(report)
+        expect(report, "no successful correlated")
         assert report["diff_reads"][0]["shape"] == "chain", report
         # Observed live with a bare-SHA target: the reviewer showed that one commit instead.
         expect(readback(tmp, "standard", standard_events(
             target=target, command=f"git show {target} --stat && git show {target} | head -400",
             output=patch.stdout), target=target), "no successful correlated")
-        # `;` hides the diff's own exit code, so a chain needs patch text in its result.
+        # Patch text cannot restore a status discarded by a semicolon.
         report = readback(tmp, "standard", standard_events(
             target=target, command=f"git diff {target}; git diff HEAD", output="fatal: bad revision\n"), target=target)
         expect(report, "no successful correlated")
-        assert report["diff_reads"][0]["reason"] == "chained read returned no patch text"
+        assert "completion status is unavailable" in report["diff_reads"][0]["reason"]
         # Rejected by shape even though the output below carries patch text.
         for command in [f"git diff {BASE} HEAD; git show HEAD", f"git diff {BASE} HEAD; echo 'diff --git a/x b/x'",
                         f"git diff {BASE} HEAD | head -50", f"git diff {BASE} HEAD && rm -rf build",
@@ -296,7 +451,10 @@ def main():
         expect(report)
         assert report["permission_denials"] == denial
 
-    print(f"cc: {checks} readback checks passed, including real Git success/exit-129/exit-1 probes; no model was called")
+        launch_effort(tmp)
+        chain_checks(tmp)
+
+    print(f"cc: {checks} readback and launch checks passed, including real Git and conflicting effort environments; no model was called")
 
 
 if __name__ == "__main__":

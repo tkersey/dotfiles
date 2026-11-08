@@ -23,7 +23,7 @@ Two review kinds:
   [review-object.schema.json](references/review-object.schema.json), is the Codex
   review object from Actuating's pinned rubric. Never put custom instructions
   inside `/review`: its recipe owns the review angles, reading rules, and output
-  shape. A custom review never earns standard credit.
+  shape. A custom review never earns changeset-standard convergence credit.
 
 The runtime owns execution and its original output. The caller owns requirements,
 review credit, finding truth, repairs, publication, and closure. Implicit
@@ -49,11 +49,20 @@ without a level reuses whatever level was typed last.
   caller's explicit selection; otherwise resolve Claude Code's configured `model`
   and that model's `modelSettings.*.effortLevel` from user settings, and label
   them **configured default, not inherited**.
-- An explicit caller override wins for its field only. If a value cannot be
-  established, report it before dispatch; do not guess. Pass the full model ID.
+- An explicit caller override selects its field only; effective policy must
+  permit it. If a value cannot be established, hold before dispatch; do not guess.
+  Pass the full model ID.
 - **Standard level** (`low|medium|high|xhigh|max`): the caller's explicit level,
   otherwise the selected effort. `max` only on explicit request; otherwise cap
   at `xhigh`.
+
+Bind `CLAUDE_CODE_EFFORT_LEVEL` to `$selected_effort` on every launch and resume:
+it overrides `--effort` and survives `--restricted`. Inspect effective managed
+`env` and applicable global/per-model `maxEffortLevel` caps before dispatch; hold
+if they change or lower the selected effort, or cannot be established. Do not
+bypass policy. The recipe header establishes review level, not effective reasoning
+effort. See [effort precedence](https://code.claude.com/docs/en/env-vars#precedence)
+and [effort caps](https://code.claude.com/docs/en/settings-reference#maxeffortlevel).
 
 ## Freeze the subject
 
@@ -120,7 +129,8 @@ read_tools=(Read Grep Glob
   'Bash(git grep:*)' 'Bash(git blame:*)' 'Bash(git check-ignore:*)')
 
 # Standard
-(cd "$repo" && GIT_OPTIONAL_LOCKS=0 claude -p --session-id "$sid" \
+(cd "$repo" && GIT_OPTIONAL_LOCKS=0 CLAUDE_CODE_EFFORT_LEVEL="$selected_effort" \
+  claude -p --session-id "$sid" \
   --model "$selected_model" --effort "$selected_effort" \
   --restricted --settings "$settings" --tools "Read,Grep,Glob,Bash,Agent" \
   --strict-mcp-config --mcp-config '{"mcpServers":{}}' \
@@ -130,7 +140,8 @@ read_tools=(Read Grep Glob
   "/review $level $base..HEAD" </dev/null >"$events" 2>"$diagnostics")
 
 # Custom: $prompt holds the exact instruction bytes
-(cd "$repo" && GIT_OPTIONAL_LOCKS=0 claude -p --session-id "$sid" \
+(cd "$repo" && GIT_OPTIONAL_LOCKS=0 CLAUDE_CODE_EFFORT_LEVEL="$selected_effort" \
+  claude -p --session-id "$sid" \
   --model "$selected_model" --effort "$selected_effort" \
   --restricted --settings "$settings" --tools "Read,Grep,Glob,Bash" \
   --strict-mcp-config --mcp-config '{"mcpServers":{}}' \
@@ -177,13 +188,16 @@ exits nonzero (hold) unless all of these hold:
   insufficient. The helper recognizes direct patch reads, including ordinary
   context options and explicit path limits. A successful per-file read does not
   establish complete changeset coverage; the caller judges that separately.
-  It also recognizes the `;`/`&&` chains the native recipe issues, such as
-  `git diff <base>; git diff HEAD`, when every other piece cannot print patch
-  text: a summary diff, `git diff HEAD` on the required clean tree, `git status`,
-  `rev-parse`, `merge-base`, `ls-files`, `check-ignore`, `ls`, `pwd`, or `find`
-  without actions. Because `;` hides earlier exit codes, a chain's result must
-  also contain patch text. Summary-only reads, pipes, redirects, substitutions,
-  and other commands do not establish this gate.
+  It recognizes bounded `;`/`&&` chains without treating quoted or escaped
+  operators as shell syntax. A successful compound result establishes a target
+  read only in its final `&&` group. Thus `git diff <base>..HEAD && git diff HEAD`
+  can establish completion, while `git diff <base>..HEAD; git diff HEAD` leaves
+  the target's status unavailable even when patch text appears. Companion output
+  cannot authenticate a target read. Exit 1 from `--exit-code` is recognized only
+  for a direct diff. Summary-only reads, pipes, redirects, substitutions, and
+  unsupported command shapes do not establish this gate. Retain an unverified
+  compound observation and use the existing same-session inquiry follow-up when
+  needed; do not replace the native recipe or infer success from patch markers.
   Recipe text alone does not authenticate native command resolution;
   retain the host's actual `/review` invocation.
 - **Custom:** exactly one transcript `<config>/projects/*/$sid.jsonl` exists and
@@ -226,11 +240,29 @@ Confidence is not evidence.
 - Cancellation: terminate only the host-owned process, confirm it exited, and
   treat a late result as evidence, not credit.
 - **Incomplete inquiry follow-up** (caller-authorized): continue the same session
-  with `claude -p --resume "$sid"` plus the same model, effort, permission, tool
-  and schema flags, `--output-format stream-json --verbose`, `</dev/null`. Name
+  with `CLAUDE_CODE_EFFORT_LEVEL="$selected_effort" claude -p --resume "$sid"`
+  plus the same model, effort, permission, tool and schema flags,
+  `--output-format stream-json --verbose`, `</dev/null`. Name
   the concrete gap, exact paths and ranges; ask it to complete the observation and
   reassess, overturning conclusions when warranted. The response is supplemental
   evidence attributed separately, not a new verdict or an additional clean.
+  For an unverified compound diff, request a standalone foreground
+  `git diff <base>..HEAD` and reassessment of conclusions dependent on that read.
+  Capture each resumed invocation in its own events file, retaining the actual
+  resume invocation and unchanged Git subject; never concatenate terminal streams.
+  Pass the original events plus the supplemental stream to standard readback:
+
+  ```bash
+  uv run --no-project python -I "$skill_dir/scripts/readback.py" standard \
+    "$events" "$sid" "$selected_model" "$base..HEAD" "$level" "$readback_json" \
+    --followup "$followup_events"
+  ```
+
+  Repeat `--followup` in execution order only within the caller's recovery budget.
+  The helper checks each stream's session, model, terminal result and correlated
+  reads. It preserves the original `result`, every failed/unverified read, and
+  supplemental results and denials under `followups`. Adjudicate all of them;
+  successful readback does not establish adequate reassessment or erase a finding.
 - Compaction alone is not failure or a fresh review.
 
 ## Hard rules

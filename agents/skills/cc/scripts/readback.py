@@ -1,7 +1,7 @@
 """Admit or hold one native Claude Code review session from its own evidence.
 
 usage:
-  uv run --no-project python -I readback.py standard EVENTS SESSION_ID MODEL TARGET LEVEL OUT
+  uv run --no-project python -I readback.py standard EVENTS SESSION_ID MODEL TARGET LEVEL OUT [--followup EVENTS]...
   uv run --no-project python -I readback.py custom   EVENTS SESSION_ID MODEL PROMPT_FILE OUT
 
 EVENTS is captured `--output-format stream-json --verbose` stdout. MODEL is the
@@ -10,11 +10,12 @@ or "-" when none was passed. Custom delivery is checked in the session transcrip
 under $CLAUDE_CONFIG_DIR (default ~/.claude)/projects/*/SESSION_ID.jsonl.
 
 The standard read gate recognizes direct Bash `git diff` calls against TARGET
-and the `;`/`&&` chains the native recipe issues around them, not arbitrary
-shell programs. A request needs a later completed tool_result with the same
-tool ID; a chain's result must also contain patch text. This is evidence of a
-diff observation, not proof of complete review coverage; Git subject and
-coverage checks stay with the caller.
+and bounded `;`/`&&` chains, not arbitrary shell programs. Shell success proves
+only the final && group's completion; earlier semicolon groups remain unknown.
+A request needs a later completed tool_result with the same tool ID. Optional
+same-session follow-up streams can supply a missing observation while retaining
+the original result and every supplemental result separately. Git subject,
+recovery authorization, reassessment, and coverage remain with the caller.
 Native result text and permission denials are preserved without interpreting a
 verdict or deciding whether an optional denied call mattered. OUT receives the
 evidence and problems; exit 0 only when the required checks pass.
@@ -32,10 +33,9 @@ LEVEL = re.compile(r"`(\w+) effort\b")
 HEX = re.compile(r"[0-9a-f]{7,40}\Z")
 EXIT_CODE = re.compile(r"\A\s*Exit code(?:\s*:\s*|\s+)(\d+)(?:\s|$)", re.IGNORECASE)
 PATCH_TEXT = re.compile(r"^diff --git ", re.MULTILINE)
-CHAIN_OPERATORS = {";", "&&"}
 SUMMARY_DIFF = re.compile(r"--(?:stat|shortstat|numstat|name-only|name-status)(?:=\S*)?")
 PATCH_OPTION = re.compile(r"-p|-u|--patch\S*|-U\S*|--unified\S*")
-QUIET_GIT = {"rev-parse", "merge-base", "ls-files", "check-ignore"}
+COMPANION_GIT = {"rev-parse", "merge-base", "ls-files", "check-ignore"}
 FIND_ACTIONS = {"-exec", "-execdir", "-ok", "-okdir", "-delete", "-fprint", "-fprint0", "-fprintf",
                 "-fls", "-printf"}
 
@@ -110,40 +110,46 @@ def common(events: list[dict], sid: str, model: str, problems: list[str]) -> dic
     return result
 
 
-def pieces(command: str) -> list[list[str]] | None:
-    """Split a `;`/`&&` sequence into argument lists; None for any other shell syntax.
-
-    Pipes, redirects, background `&`, `||`, subshells, substitutions, comments
-    and multi-line programs are not split; they are rejected.
-    """
+def pieces(command: str) -> tuple[list[list[str]], list[str]] | None:
+    """Split unquoted `;`/`&&` operators before decoding each argument list."""
     if any(token in command for token in ("\n", "\r", "`", "$", "#")):
         return None
-    lexer = shlex.shlex(command, posix=True, punctuation_chars=True)
-    lexer.whitespace_split = True
+    raw, operators = [], []
+    start = index = 0
+    quote = None
+    while index < len(command):
+        char = command[index]
+        if quote:
+            if char == quote:
+                quote = None
+            elif char == "\\" and quote == '"':
+                index += 1
+        elif char in "'\"":
+            quote = char
+        elif char == "\\":
+            index += 1
+        elif char == ";" or command.startswith("&&", index):
+            operator = ";" if char == ";" else "&&"
+            raw.append(command[start:index])
+            operators.append(operator)
+            index += len(operator)
+            start = index
+            continue
+        elif char in "()<>|&":
+            return None
+        index += 1
+    if quote:
+        return None
+    raw.append(command[start:])
     try:
-        tokens = list(lexer)
+        commands = [shlex.split(part) for part in raw]
     except ValueError:
         return None
-    split, current = [], []
-    for token in tokens:
-        if token in CHAIN_OPERATORS:
-            if not current:
-                return None
-            split.append(current)
-            current = []
-        elif token and set(token) <= set("();<>|&"):
-            return None
-        else:
-            current.append(token)
-    return split + [current] if current else None
+    return (commands, operators) if all(commands) else None
 
 
-def quiet(words: list[str]) -> bool:
-    """A read-only piece that cannot print patch text itself.
-
-    `git diff HEAD` qualifies only because the caller freezes a clean working
-    tree before dispatch and rechecks it at admission.
-    """
+def companion_read(words: list[str]) -> bool:
+    """Recognize companion reads; their output never authenticates a target read."""
     if words[:2] == ["git", "--no-pager"]:
         words = words[:1] + words[2:]
     if words[:1] == ["git"] and len(words) > 1:
@@ -157,27 +163,34 @@ def quiet(words: list[str]) -> bool:
                 return True
             return (any(SUMMARY_DIFF.fullmatch(a) for a in options)
                     and not any(PATCH_OPTION.fullmatch(a) for a in options))
-        return subcommand in QUIET_GIT
+        return subcommand in COMPANION_GIT
     if words[:1] == ["ls"] or words == ["pwd"]:
         return True
     return words[:1] == ["find"] and not any(word in FIND_ACTIONS for word in words[1:])
 
 
-def diff_read(command: str, target: str) -> str | None:
+def diff_read(command: str, target: str) -> tuple[str, bool, bool] | None:
     """Classify a Bash command as a patch read of TARGET without executing it.
 
-    "direct": one patch read. "chain": a `;`/`&&` sequence with at least one
-    direct read and otherwise only quiet pieces, as the native recipe issues
-    (`git diff <base>; git diff HEAD`). Since `;` hides earlier exit codes, a
-    chain's result must also contain patch text, which only its direct reads
-    can print. None: anything else, including summary-only reads.
+    Return shape, whether shell success establishes a target read's success,
+    and whether exit 1 has the direct diff's --exit-code meaning. In a chain,
+    only the final && group is established by a successful aggregate result.
     """
-    split = pieces(command)
-    if not split or not any(direct_diff(piece, target) for piece in split):
+    parsed = pieces(command)
+    if not parsed:
         return None
-    if len(split) == 1:
-        return "direct"
-    return "chain" if all(direct_diff(piece, target) or quiet(piece) for piece in split) else None
+    commands, operators = parsed
+    target_reads = [direct_diff(piece, target) for piece in commands]
+    if not any(target_reads):
+        return None
+    if not operators:
+        words = commands[0]
+        options = words[:words.index("--")] if "--" in words else words
+        return "direct", True, "--exit-code" in options
+    if not all(read or companion_read(piece) for read, piece in zip(target_reads, commands)):
+        return None
+    final_group = max((index + 1 for index, op in enumerate(operators) if op == ";"), default=0)
+    return "chain", any(target_reads[final_group:]), False
 
 
 def direct_diff(words: list[str], target: str) -> bool:
@@ -211,7 +224,7 @@ def direct_diff(words: list[str], target: str) -> bool:
     return bool(HEX.fullmatch(base) and target.startswith(base) and head == "HEAD")
 
 
-def tool_result_status(part: dict, event: dict, command: str) -> tuple[bool, str]:
+def tool_result_status(part: dict, event: dict, difference_exit: bool) -> tuple[bool, str]:
     """Use native tool_result errors, plus explicit Bash completion metadata.
 
     Bash commonly reports failures as `is_error` with an `Exit code N` prefix.
@@ -246,16 +259,14 @@ def tool_result_status(part: dict, event: dict, command: str) -> tuple[bool, str
     if len(set(codes)) > 1:
         return False, "conflicting Bash exit codes"
     code = codes[0] if codes else None
-    words = shlex.split(command)
-    options = words[:words.index("--")] if "--" in words else words
-    if code == 1 and "--exit-code" in options and re.search(r"^diff --git ", content, re.MULTILINE):
+    if code == 1 and difference_exit and PATCH_TEXT.search(content):
         return True, "git diff --exit-code returned a patch (exit 1)"
     if failed or code not in (None, 0):
         return False, f"Bash tool_result failed (is_error={failed}, exit_code={code})"
     return True, "completed correlated Bash tool_result"
 
 
-def standard(events: list[dict], target: str, level: str, problems: list[str]) -> dict:
+def standard(events: list[dict], target: str, level: str, problems: list[str], followups=()) -> dict:
     terminal = next((i for i, e in enumerate(events) if e.get("type") == "result"), len(events))
     session = events[:terminal]
     recipe = next((text_of(e.get("message", {}).get("content")) for e in session
@@ -273,32 +284,38 @@ def standard(events: list[dict], target: str, level: str, problems: list[str]) -
         if target != "-" and f"Review target: `{target}`" not in recipe:
             problems.append(f"recipe target is not {target}")
     if target != "-":
-        requests = [(i, p) for i, e in enumerate(session) if e.get("type") == "assistant"
+        sessions = [session] + [stream[:next((i for i, e in enumerate(stream) if e.get("type") == "result"), len(stream))]
+                                for stream in followups]
+        requests = [(source, i, p) for source, stream in enumerate(sessions)
+                    for i, e in enumerate(stream) if e.get("type") == "assistant"
                     for p in parts_of(e) if p.get("type") == "tool_use"]
-        for index, request in requests:
+        for source, index, request in requests:
             inputs = request.get("input")
             command = inputs.get("command") if isinstance(inputs, dict) else None
-            shape = diff_read(command, target) if request.get("name") == "Bash" and isinstance(command, str) else None
-            if shape is None:
+            observation = diff_read(command, target) if request.get("name") == "Bash" and isinstance(command, str) else None
+            if observation is None:
                 continue
+            shape, completion_bound, difference_exit = observation
             tool_id = request.get("id")
             read = {"tool_use_id": tool_id, "command": command, "shape": shape, "ok": False}
+            if source:
+                read["followup"] = source
             evidence["diff_reads"].append(read)
             if inputs.get("run_in_background"):
                 read["reason"] = "background request does not establish completed diff observation"
                 continue
-            if not isinstance(tool_id, str) or not tool_id or sum(p.get("id") == tool_id for _, p in requests) != 1:
+            if not isinstance(tool_id, str) or not tool_id or sum(p.get("id") == tool_id for _, _, p in requests) != 1:
                 read["reason"] = "missing or duplicate tool_use ID"
                 continue
-            matches = [(i, p, e) for i, e in enumerate(session) if e.get("type") == "user"
+            matches = [(i, p, e) for i, e in enumerate(sessions[source]) if e.get("type") == "user"
                        for p in parts_of(e) if p.get("type") == "tool_result" and p.get("tool_use_id") == tool_id]
             if len(matches) != 1 or matches[0][0] <= index:
                 read["reason"] = "no unique later correlated tool_result"
                 continue
             _, part, event = matches[0]
-            read["ok"], read["reason"] = tool_result_status(part, event, command)
-            if read["ok"] and shape == "chain" and not PATCH_TEXT.search(text_of(part.get("content"))):
-                read["ok"], read["reason"] = False, "chained read returned no patch text"
+            read["ok"], read["reason"] = tool_result_status(part, event, difference_exit)
+            if read["ok"] and not completion_bound:
+                read["ok"], read["reason"] = False, "target diff precedes a semicolon; its completion status is unavailable"
         if not any(read["ok"] for read in evidence["diff_reads"]):
             problems.append(f"no successful correlated `git diff` read against {target}; only direct patch reads "
                             "and read-only `;`/`&&` chains around them are recognized")
@@ -340,8 +357,10 @@ def custom(result: dict, sid: str, prompt: bytes, problems: list[str]) -> dict:
 
 def main() -> None:
     kind, args = (sys.argv[1], sys.argv[2:]) if len(sys.argv) > 1 else (None, [])
-    if kind == "standard" and len(args) == 6:
-        events_path, sid, model, target, level, out = args
+    followup_paths = []
+    if kind == "standard" and len(args) >= 6 and len(args) % 2 == 0 and all(arg == "--followup" for arg in args[6::2]):
+        events_path, sid, model, target, level, out = args[:6]
+        followup_paths = args[7::2]
     elif kind == "custom" and len(args) == 5:
         events_path, sid, model, prompt_path, out = args
     else:
@@ -354,7 +373,18 @@ def main() -> None:
     if kind == "standard":
         if not isinstance(result.get("result"), str) or not result["result"].strip():
             problems.append("no nonempty native result text")
-        report.update(standard(events, target, level, problems))
+        followups = []
+        for path in followup_paths:
+            issues = []
+            stream = load_events(Path(path), issues, "follow-up events")
+            supplemental = common(stream, sid, model, issues)
+            if not isinstance(supplemental.get("result"), str) or not supplemental["result"].strip():
+                issues.append("no nonempty follow-up result text")
+            problems.extend(f"follow-up {len(followups) + 1}: {issue}" for issue in issues)
+            followups.append(stream)
+            report.setdefault("followups", []).append({"events": path, "result": supplemental.get("result"),
+                "permission_denials": supplemental.get("permission_denials", [])})
+        report.update(standard(events, target, level, problems, followups))
     else:
         try:
             prompt = Path(prompt_path).read_bytes()
