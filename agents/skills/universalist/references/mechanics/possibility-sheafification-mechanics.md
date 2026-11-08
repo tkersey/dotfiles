@@ -1,8 +1,12 @@
 # Possibility Sheafification Mechanics
 
-Use this reference when a Universalist Track G handoff has identified an inexact abstraction.
+Consult this reference when local meanings, restrictions, and overlaps raise a
+question about compatibility or gluing. Determine whether the defining laws hold
+before diagnosing a failure. A repair proposal needs an evidenced defect and
+preservation argument; recognition of lawful gluing needs neither a Track G
+handoff nor a replacement artifact.
 
-## Required data
+## Data for a repair proposal
 
 - Abstraction name and files.
 - Usage site: local contexts that cover it.

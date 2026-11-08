@@ -7,7 +7,7 @@ Pullback: select or construct the most general object whose two views agree.
 Pushout:  construct the most general object obtained by gluing two objects along an explicit overlap.
 ```
 
-Use this mechanics reference only after Universalist has named the worlds, maps, observations, witness slice, and falsifier. A pullback or pushout is justified only when its universal property changes code shape, proof obligations, or ownership.
+Consult this reference when observations appear to agree through a common target or sources appear to be glued along an overlap. Recover the diagram during inquiry; the universal claim requires its commutation, mediation, and uniqueness. Recognition can establish an existing construction without a code change. Introducing new machinery additionally requires an engineering dividend.
 
 An owned compatibility object or named integration may suffice without a universal
 claim. Retain its construction and preservation laws; use the

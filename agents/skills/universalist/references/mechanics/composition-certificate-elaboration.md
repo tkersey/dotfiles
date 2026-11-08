@@ -42,7 +42,7 @@ Use when the artifact is local to a boundary value.
 
 ## Output requirement
 
-Every Kan elaboration should end with certificate status:
+When the task requests certificate elaboration, include its status:
 
 ```text
 verified / obstructed / approximate / planned / primitive exception

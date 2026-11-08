@@ -1,6 +1,6 @@
 # Defunctionalization
 
-Defunctionalization turns higher-order boundary behavior into first-order IR.
+Defunctionalization represents higher-order behavior with first-order data and an interpreter.
 
 ```text
 callback / continuation / selector / handler / predicate / builder
@@ -8,6 +8,6 @@ callback / continuation / selector / handler / predicate / builder
   -> apply / interpret / project / satisfy
 ```
 
-Use it when behavior crosses architecture boundaries and must be inspected, serialized, generated, audited, or law-tested.
+Investigate this correspondence in local algorithms as well as at architecture boundaries. Identify the function family, captured environments, constructors, and interpreter, and establish evaluation preservation for the claimed domain.
 
-Do not use it for small local callbacks that do not participate in a boundary.
+Introducing the representation needs a material benefit such as inspection, serialization, analysis, or optimization. Recognizing an existing defunctionalized implementation needs no further redesign.

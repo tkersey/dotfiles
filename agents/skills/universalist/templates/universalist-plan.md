@@ -61,6 +61,10 @@ Reuse the supporting evidence rather than allocating another model or report.
 ### Successor packets: owner + axis + seam / none
 
 ## Latent structure recognition (complete only when material):
+Use the relevant concept's defining data, laws, hypotheses, and equality at the
+claimed level. Card-selection conditions are not additional mathematical premises.
+Keep the supported correspondence and consequences in these existing fields;
+complete realization and transition fields only for the construction being proposed.
 ### Current encoding and representative instances or first-use requirement-bound derivation:
 ### Carriers / operations / observations:
 ### Candidate equations / known non-laws:

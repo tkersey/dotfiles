@@ -4,6 +4,9 @@ Use laws at the strength claimed. Ordinary or `structure` nominations need their
 construction, operation, and preservation laws. Factorization and uniqueness are
 additional obligations for a `universal` claim under the
 [universal witness contract](claim-appropriate-proof.md#universal-witness-contract).
+The use cases below motivate construction choices; recognizing existing structure
+requires its defining data and laws, not a proposed redesign. Engineering checks
+such as fixture parity supply evidence without replacing a universal property.
 
 ## Product
 
@@ -15,7 +18,7 @@ Use when cases are mutually exclusive. Laws: exhaustive handling; impossible sta
 
 ## Refined type / equalizer
 
-Use when repeated predicates should be centralized. Laws: valid accepted, invalid rejected, normalization idempotent.
+Use when a stable predicate defines valid values. Laws: exactly the admitted values satisfy the predicate and permitted operations preserve it. Require normalization idempotence only when normalization is present and claimed. An equalizer additionally specifies parallel maps and their equality locus; its universal claim needs the unique factorization through that locus.
 
 ## Pullback
 
@@ -70,11 +73,11 @@ The pushout complement removes `L-K` from a matched host while preserving `K`; a
 
 ## Exponential
 
-Use when behavior should be supplied rather than branched. Laws: strategy/callback parity against old branch fixtures.
+Use when behavior should be supplied rather than branched. Callback parity is an engineering check. An exponential claim identifies evaluation and currying, with their beta/eta equations (the natural correspondence between maps into the exponential and maps out of the product).
 
 ## Free construction / initial algebra
 
-Use when syntax should be separated from execution. Laws: interpreters agree on fixtures; fold/interpreter totality.
+Use when syntax should be separated from execution. For initiality, establish a unique constructor-preserving fold into every admissible algebra. A free construction specifies its generators and the corresponding extension property. Interpreter agreement on fixtures is useful evidence, not either universal property by itself.
 
 ## Canonical boundary artifact
 

@@ -81,6 +81,16 @@ certify that hypothesis. A task-grounded question is enough to consult a focused
 reference. Develop laws, alternatives, and discriminators during inquiry rather
 than demand the finished discovery as its admission condition.
 
+Apply this recognition to every relevant concept in the corpus, not only the
+atlas's examples or construction cards. Recover the concept's defining data,
+specific laws, hypotheses, and equality at the claimed level; map them to concrete
+implementation evidence, then derive the supported consequences and limits.
+Separate mathematical premises from conditions for adopting new machinery.
+A concept may already be realized implicitly, through an encoding, across modules,
+or on a restricted domain. Establish that correspondence rather than requiring its
+name, a new artifact, or a redesign. Use focused theory references for the actual
+claim; a generic resemblance or checklist cannot substitute for its definition.
+
 When an uncertain premise could change the decision, use the developing argument
 to choose the smallest available discriminator: which source inspection or
 already-authorized observation would separate that premise from a plausible

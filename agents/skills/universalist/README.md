@@ -1,4 +1,4 @@
-# Universalist 18.0.3
+# Universalist 18.0.4
 
 Universalist uses algebraic and categorical knowledge to **recognize mathematical
 structure, formulate problems, and derive solutions**. A supported correspondence
@@ -9,7 +9,8 @@ and its consequences can complete an analysis without requiring a code change.
 ```text
 required uses and concrete evidence <-> relevant mathematical hypotheses
 -> derived carriers, operations, observations, composition, and proof
--> supported native construction or transformation
+-> supported correspondence, consequences, and limits
+-> native construction or transformation when needed
 ```
 
 ## Discovery is ordinary; acceptance is earned
@@ -30,8 +31,9 @@ An ordinary implementation is a comparison baseline, not a required first attemp
 or a ceiling on the derivation. Mathematics can disappear in specialization: a
 native loop, count map, transition, summary, or preserved incumbent can be success.
 Consult focused references to formulate or resolve questions; establish actual
-correspondence, laws, valid behavior, effects, feasibility, and dividend before
-retaining a candidate. The entrypoint owns inquiry eligibility when supporting
+correspondence and claim-specific laws before accepting a mathematical account;
+establish valid behavior, effects, feasibility, and dividend before retaining a
+proposed construction. The entrypoint owns inquiry eligibility when supporting
 references use narrower acceptance language.
 
 Reuse sufficient derivations. Purely mechanical realization, unchanged checks,
@@ -56,6 +58,13 @@ retrieval aids, not an exhaustive list of permitted ideas. Unlisted construction
 and combinations need the same evidence, not a new card. Corpus expansion remains
 frozen pending incremental efficacy evidence; that maintenance policy does not
 prohibit using relevant knowledge outside the corpus.
+
+Recognition applies across the theory corpus. Recover each concept's defining
+data, laws, hypotheses, and equality; map them to implementation evidence at the
+claimed level; derive the supported consequences and limits. Selection conditions
+for introducing machinery do not decide whether an existing structure is lawful.
+The same method handles ordinary, implicit, encoded, distributed, and restricted
+realizations without adding a separate workflow for each concept.
 
 Existing material on claim strength, exact context, effects, future observations,
 Church-style representations, Day convolution, Tambara modules, comonadic context,

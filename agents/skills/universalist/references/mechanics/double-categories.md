@@ -2,7 +2,7 @@
 
 ## Scope
 
-This reference concerns double categories in the Ehresmann/Grandis-Paré/Shulman sense: objects, two different kinds of arrows, and squares that compose in two directions.
+This reference concerns double categories in the Ehresmann/Grandis-Paré/Shulman sense: objects, horizontal and vertical arrows, and squares that compose in two directions.
 
 It does not mean:
 
@@ -50,7 +50,13 @@ g : B -> B'      vertical arrow
 α                 square with boundary (H,K,f,g)
 ```
 
-The symbols are mnemonic; a repository may choose the opposite orientation. What matters is that the arrow kinds have different meaning and independent composition.
+The symbols are mnemonic; a repository may choose the opposite orientation. Both
+arrow structures need their identities and composition, but they need not have
+different underlying arrows or architectural meanings. For example, the
+commutative squares of a category form a double category using its morphisms in
+both directions. Degenerate directions also require their actual data and laws.
+Distinct architectural responsibilities can justify new machinery; they are not
+an additional defining axiom.
 
 ### Horizontal and vertical composition
 
@@ -438,7 +444,7 @@ bounded approximation
 2. Two unrelated categories are not a double category.
 3. A 2-category may be the smaller honest structure.
 4. Interchange is not effect commutativity.
-5. Pseudo coherence needs an effective normal form or observation policy.
+5. Pseudo coherence needs its specified comparison isomorphisms and coherence laws. An effective implementation additionally needs a justified comparison or observation strategy; a normal form is one possible realization.
 6. Spans/cospans still depend on pullback/pushout existence.
 7. Equipment requires companions/conjoints or restrictions.
 8. A virtual double category may be more honest when horizontal composites are unavailable.
@@ -447,7 +453,7 @@ bounded approximation
 
 ## 16. Falsifier catalogue
 
-Use at least one:
+Use a relevant discriminator when the corresponding claim is in question:
 
 ```text
 a square accepts mismatched boundaries
@@ -456,12 +462,16 @@ vertical pasting changes a required observation
 interchange changes effect trace, authority, failure, or cost
 an alleged vertical map cannot act on the horizontal process
 an alleged companion/conjoint fails its triangle law
-a pseudo composite has no canonical/effective normalization
-one arrow family never composes, so an ordinary category/adapter suffices
+a claimed pseudo comparison fails its coherence law
+an effective implementation claims a comparison strategy it cannot supply
+an alleged arrow family lacks the required identities or composition
 square invalidation cannot be bounded after boundary changes
 ```
 
 ## 17. Compact recipe
+
+For a proposed implementation, use the applicable steps below. Recognition uses
+the defining data and laws without requiring a new IR or implementation seam.
 
 ```text
 1. Name the two arrow families in repository language.
@@ -473,5 +483,5 @@ square invalidation cannot be bounded after boundary changes
 7. Add one double-functor lowering.
 8. Add mismatch and interchange falsifiers.
 9. Record pseudo coherence, resources, and invalidation.
-10. Stop at one witness seam.
+10. Verify one witness seam, then complete the remaining authorized scope.
 ```

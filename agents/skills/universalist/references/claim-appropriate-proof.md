@@ -18,10 +18,13 @@ Keep claim kind separate from realization strength. A lawful categorical model
 (`structure`) is not automatically a universal construction (`universal`).
 Use the existing proof-profile surface; do not add a workflow or route.
 
-For a **structure** claim, establish the carrier and operations, their applicable
-laws, preservation by interpretation and permitted operations, effectivity, and a
-discriminating counterexample. A coalgebra needs transition/observation laws,
-not finality. An observation vocabulary needs preservation and, before quotienting,
+For a **structure** claim, establish its defining data, hypotheses, equality, and
+applicable laws, with the correspondence and preservation required by the claimed
+implementation domain. Use a direct argument, deciding observation, law check, or
+counterexample as appropriate; effectivity is an obligation of an effective
+realization claim. An `F`-coalgebra needs a functor and a well-typed structure map;
+additional behavioral guarantees and finality need their own evidence.
+An observation vocabulary needs preservation and, before quotienting,
 adequacy under required future continuations, not a fabricated Yoneda argument.
 A lawful transformation needs its hypotheses and observation-preserving equation;
 performance or resource improvements need their own evidence.
@@ -133,9 +136,12 @@ proof length is not evidence strength. Keep runtime-cost claims separately groun
 
 ## Universal witness contract
 
-Only a nomination that claims a **universal construction** additionally requires
+A claim of a **universal construction**, including recognition of an existing
+implementation, additionally requires
 an explicit diagram, admissible competitors and maps, factorization equations,
-and a uniqueness argument. The full profile is:
+and a uniqueness argument. Apply the implementation and budget obligations to the
+realization actually claimed; abstract existence does not establish an effective
+algorithm. The full profile is:
 
 ```text
 Existence:

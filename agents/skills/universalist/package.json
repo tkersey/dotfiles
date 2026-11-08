@@ -1,7 +1,7 @@
 {
   "name": "universalist",
-  "version": "18.0.2",
-  "description": "Task-grounded algebraic and categorical derivation, proactive abstraction discovery, native realization, claim-bound acceptance, 56 optional construction cards, and standalone-only durability.",
+  "version": "18.0.4",
+  "description": "Task-grounded algebraic and categorical recognition and derivation across the theory corpus, native realization, claim-bound acceptance, 56 optional construction cards, and standalone-only durability.",
   "private": true,
   "unified_mechanics": true,
   "custom_subagents": true,
@@ -23,7 +23,7 @@
   "runtime_scripts": 0,
   "tests_shipped": false,
   "validation_surface": "skdc-routing-and-artifact-corpus-and-standalone-ledger-receipt-binding",
-  "artifacts": "context-relative-native-construction-or-transformation",
+  "artifacts": "supported-mathematical-correspondence-or-native-construction-or-transformation",
   "latent_structure_recognition": true,
   "progressive_disclosure": "question-led-inquiry-claim-bound-acceptance",
   "artifact_evaluation_cases": 34,

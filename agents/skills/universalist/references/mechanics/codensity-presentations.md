@@ -28,8 +28,7 @@ small dense probes + duality/observation bridge -> reconstructed semantics
 ## Data to recover
 
 - Target monad/effect/behavior.
-- Direct algebraic presentation attempt.
-- Why operations/equations are awkward, infinitary, or not useful.
+- Available algebraic presentation and its tradeoffs when comparing realizations; no prior failed attempt is required.
 - Small probe category/world.
 - Dense functor/probe map.
 - Duality or observation bridge.

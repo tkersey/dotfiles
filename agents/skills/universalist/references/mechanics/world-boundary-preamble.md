@@ -1,6 +1,8 @@
 # World Boundary Preamble
 
-Before using Kan vocabulary, recover the worlds and boundary.
+Use these prompts to recover the worlds and maps relevant to a Kan hypothesis.
+Establish the defining data before asserting the corresponding claim; a named
+artifact or completed inventory is not required to investigate it.
 
 ## World fields
 
@@ -15,7 +17,10 @@ Composition rules:
 Equality/coherence notion:
 ```
 
-A world is too weak if it has only nouns, no transformations, no equality/coherence notion, no observations, unstable invariants, or no law test.
+Names alone do not establish a category. Identify its objects, morphisms,
+identities, composition, and equality/coherence, with evidence for the relevant
+laws. Observations and invariants scope an implementation correspondence; an
+executable law test is one possible source of evidence, not a category axiom.
 
 ## Boundary fields
 
@@ -35,4 +40,5 @@ Law:
 Falsifier:
 ```
 
-Use this preamble to prevent fake categorical data.
+Artifact fields apply to an actual construction proposal. Use the applicable
+data in the requested explanation rather than allocating another inventory.

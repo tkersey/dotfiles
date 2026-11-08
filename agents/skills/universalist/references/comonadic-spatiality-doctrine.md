@@ -323,7 +323,9 @@ These structures may combine, but do not conflate their laws.
 
 ## Selection rule
 
-Use Comonadic Spatiality only when all are true:
+When selecting new comonadic-spatial machinery, require the following adoption
+conditions. Recognizing existing structure instead needs the data and laws of
+the particular comonad, spatial, basis, or continuity claim, without a code delta:
 
 ```text
 locality changes correctness or ownership;

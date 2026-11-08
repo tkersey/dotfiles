@@ -4,7 +4,7 @@
     "skill": {
       "name": "universalist",
       "kind": "mixed",
-      "source_fingerprint": "universalist-generative-derivation-v18.0-v5"
+      "source_fingerprint": "universalist-generative-derivation-v18.0-v6"
     },
     "triggers": [
       {
@@ -224,7 +224,7 @@
           "carriers, operations, and observations relevant to the question",
           "candidate laws distinguished from requirements and known non-laws",
           "nearest false friend",
-          "discriminating law or counterexample",
+          "claim-appropriate argument, discriminating law, or counterexample",
           "engineering dividend when recommending a construction or change",
           "transition witness when material"
         ],
@@ -232,6 +232,8 @@
           "requirements and concrete evidence suggest structures while mathematical knowledge suggests task-relevant hypotheses",
           "focused references may formulate a question before a construction or its prerequisites are established",
           "recognition identifies the subject, mathematical parameters, and structural operations at the claimed level; only justified consequences transfer",
+          "every relevant corpus concept is investigable through its own defining data, laws, hypotheses, and equality; atlas examples and construction cards do not limit recognition",
+          "mathematical premises are distinguished from construction-selection and realization conditions; recognition can establish an implicit, encoded, distributed, or restricted instance",
           "a recommended construction removes or centralizes an obligation, derives an algorithm, enables a lawful transformation, or strengthens a reusable proof",
           "a disputed abstraction separates an omitted behavior-changing premise from a broader unclaimed generalization",
           "unlisted constructions and combinations can be investigated under the same claim standards",
@@ -239,6 +241,7 @@
         ],
         "failure_signals": [
           "pattern selected by name",
+          "a generic law checklist replaces the candidate concept's definition or an adoption prerequisite is mistaken for a necessary mathematical condition",
           "new abstraction machinery adopted without dividend",
           "a supported correspondence is dismissed as analogy or left incomplete solely because no code change is warranted",
           "a law about one representation, transformation, or interface is credited as an unestablished claim about the whole system",

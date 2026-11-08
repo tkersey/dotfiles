@@ -23,7 +23,7 @@ The root agent owns:
 - synthesis and route selection under standalone root authority;
 - returning the supported argument when the requesting workflow owns selection;
 - write ordering and conflict resolution;
-- the Boundary Artifact Contract candidate;
+- the supported recognition argument or Boundary Artifact Contract candidate;
 - the root receipt when independent durability requires one;
 - user-facing conclusions and closure.
 
@@ -63,34 +63,41 @@ distributed owners and bypasses
 
 Do this before categorical selection.
 
-### Nominate
+### Establish the correspondence or nominate a construction
 
-Require every retained recognition to state:
+For a retained recognition, establish:
 
 ```text
 current encoding relation
 nearest false friend
 discriminating law
-generalization dividend
-observation-preserving transition witness
+supported consequences and limits
 ```
 
-Every candidate packet also names evidence, prerequisites, card disposition,
-residual obligations, invalidators, resource bounds, and falsifiers.
+Require a generalization dividend for proposed new machinery and an
+observation-preserving transition witness when changing an existing path.
+Complete the existing packet's evidence, prerequisites, card dispositions,
+residual obligations, invalidators, resource bounds, and falsifiers as applicable
+to the actual claim. Recognition needs no invented artifact or transition.
 
 ### Synthesize
 
 Wait for every required packet. Reject stale packets whose artifact state no
 longer matches.
 
-The root synthesizes exactly one current-context comparison and one Boundary
-Artifact Contract candidate. In supporting analysis, return that argument to
-the requesting workflow without independently selecting or granting mutation.
+The root synthesizes the supported mathematical account, consequences, limits,
+and unresolved premises. For construction work, synthesize the current-context
+comparison and Boundary Artifact Contract candidate. In supporting analysis,
+return the argument to the requesting workflow without independently selecting
+or granting mutation.
 
 ### Adversarial gate
 
-Send the synthesized candidate and strongest ordinary alternative to
-`universalist-proof-auditor`. Require it to attack:
+Send the synthesized claim and its strongest relevant challenge to
+`universalist-proof-auditor`: a neighboring mathematical interpretation or false
+friend for recognition, and an ordinary alternative for a construction decision.
+Attack the correspondence, hypotheses, defining laws, and claimed consequences.
+Apply the following construction and proof checks only where the claim needs them:
 
 ```text
 prerequisites
@@ -118,17 +125,17 @@ law.
 
 ### Verify
 
-Send the exact diff, Boundary Artifact Contract, transition witness, and proof
-commands to `universalist-verifier`.
+For implemented changes, send the exact diff, Boundary Artifact Contract,
+transition witness, and proof commands to `universalist-verifier`.
 
 Verification independently checks the selected seam, required observations,
 bypasses, residuals, invalidators, and relevant mechanic laws.
 
 ### Close
 
-Integrate the evidence, record reclassification if the proof lease changed,
-name the next seam only when scope permits it, and stop after the first verified
-seam by default.
+Integrate the evidence and complete the assigned scope. A first verified seam is
+a checkpoint, not completion of a broader authorized task. Record reclassification
+when its actual gate is live; recognition can finish with its supported argument.
 
 Emit a root receipt only when the independent-durability gate is live.
 
