@@ -35,5 +35,10 @@
   "preferredNotifChannel": "ghostty",
   "feedbackSurveyState": {
     "lastShownTime": 1754083542456
+  },
+  "modelSettings": {
+    "claude-opus-5-5": {
+      "effortLevel": "high"
+    }
   }
 }
