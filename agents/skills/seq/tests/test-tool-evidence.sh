@@ -18,7 +18,7 @@ for owner in seq tune; do
     definition="$skill_root/definitions/seq/tool-search.json"
     metadata=rows
     raw=rows-raw
-    params=()
+    params=(--param exclude_session_id=)
   else
     definition="$skill_root/../tune/definitions/seq/skill-decision-audit.json"
     metadata=tools

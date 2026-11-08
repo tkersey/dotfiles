@@ -1,8 +1,8 @@
 ---
 name: seq
-description: "Reconstruct provenance-preserving observations from Codex, Pi, and OpenCode execution/session evidence with Seq 1.x. Use for explicit `$seq`, session/tool/message forensics, skill activation and outcome audits, decision provenance, `$tune` evidence, watched-session deltas, worker attribution, or reproducible historical reports. Use native commands only for physical session structure; use the owning passive observation definition for every higher-level question."
+description: "Reconstruct bounded, provenance-preserving observations from Codex rollouts, upstream Pi sessions, OpenCode prompt history, and explicit input relations with Seq 1.x. Use for `$seq`, session, tool, and message forensics, token accounting, worker attribution, or historical evidence reports."
 metadata:
-  version: "2.2.0"
+  version: "2.3.0"
 ---
 
 # Seq
@@ -20,44 +20,54 @@ publication, or closure authority.
 
 ## Source boundary
 
-Seq reads only:
+Seq reads Codex rollouts, upstream Pi session JSONL, OpenCode prompt history,
+and caller-supplied immutable relations. It does not read Claude Code transcripts;
+a shared skill directory does not supply an adapter. Select a supported source
+explicitly when invoking this skill from another harness.
 
-- Codex rollout JSONL and session/state metadata needed to locate or interpret it;
-- upstream Pi session JSONL selected with `--path`, `--root`, or Pi current-session hints;
-- supported OpenCode execution/session sources;
-- explicit immutable input relations supplied by the caller.
+### Codex
 
-Select OpenCode prompt history explicitly with
-`--path ~/.local/state/opencode/prompt-history.jsonl`; its prompts, parts, and
-tool lifecycle use the canonical physical relations, never a source-specific
-command.
+The default corpus includes Codex's `sessions` and `archived_sessions`
+directories. An explicit `--root` limits discovery to that directory; it
+does not silently add its sibling archive. Both `.jsonl` and `.jsonl.zst`
+rollouts are supported. Preserve the resolved active/archive roots from the
+result, and treat unreadable, corrupt, or unsupported evidence as an obstruction
+to a complete historical claim.
 
-Select Pi sessions explicitly; the default Codex source remains unchanged:
+Select time through `--since`/`--until`, not calendar subfolders. A session's
+folder reflects its start date; later work and fork ancestors can live outside
+the requested month. Time selection does not reduce input bytes read before
+filtering, and compression does not reduce the decoded input budget. Do not
+describe a bound failure or an omitted archive as zero activity.
 
-```bash
-pi_session_root="${PI_CODING_AGENT_SESSION_DIR:-${PI_CODING_AGENT_DIR:-$HOME/.pi/agent}/sessions}"
-seq sessions --root "$pi_session_root" --format json
-```
+A fork can begin with child metadata followed by copied ancestor metadata and
+history. Use the primary identity, `forked_from_id`, and the
+`subagent_history_start_ordinal` replay boundary;
+inherited metadata is not another child or an independent execution. Worker
+edges require recorded linkage; copied history alone proves neither a spawn nor
+new work. Use `CODEX_THREAD_ID` only when it identifies this audit's actual
+Codex session, and bind that ID to a definition's exclusion parameter.
 
-Use `--path <pi-session.jsonl>` for one file, or `--path "$PI_SESSION_FILE"`
-when the host supplies that variable. `seq tail --current --once` uses Pi's
-`PI_SESSION_FILE`, or resolves `PI_SESSION_ID` under the selected Pi session
-root. If both Codex and Pi current-session hints are present, select `--path`
-explicitly to resolve the ambiguity. Scope this adapter to upstream Pi; do not
-infer support for Oh My Pi from a shared name or ancestry.
+### Pi and OpenCode
 
-Treat Pi evidence as all persisted branches in append order, not a replay of
-only the active branch. Preserve raw entry `id` and `parentId`; attribute user
-turns through branch ancestry rather than adjacency in the file. Pi message
-text and ordinary source payloads exclude thinking blocks; explicit `raw_json`
-retains the original entry. `toolCall`/`toolResult` records use the
-canonical tool lifecycle. Do not interpret branch navigation as a worker graph
-or the `parentSession` file path as a worker session ID.
+Select upstream Pi with `--path <pi-session.jsonl>` or `--root <pi-sessions>`.
+Its usual root is `PI_CODING_AGENT_SESSION_DIR`, otherwise
+`${PI_CODING_AGENT_DIR:-$HOME/.pi/agent}/sessions`.
+`seq tail --current --once` uses the host's `PI_SESSION_FILE` or resolves
+`PI_SESSION_ID`. Select a path when Codex and Pi hints conflict. Do not infer
+Oh My Pi support. Pi evidence includes all persisted branches in append order;
+use entry ancestry for turns. Branch navigation and a `parentSession` file
+path are not worker edges. Ordinary text omits thinking; explicit `raw_json`
+retains the original entry. Compaction does not reconstruct effective context.
+One user entry remains one turn: its final answer is the latest persisted answer,
+while message/source rows retain alternatives. Preserve raw `id` and `parentId`
+when attributing Pi evidence.
 
-One user entry remains one turn: its final-answer field holds the latest
-persisted answer to that entry, while message/source rows retain alternative
-answers. Compaction and context edits remain physical evidence; Seq does not
-replay them to reconstruct Pi's effective model context.
+Select OpenCode only with
+`--path ~/.local/state/opencode/prompt-history.jsonl`. This is prompt history,
+not a general execution-session reader. It rejects `--repo`, `--since`,
+`--until`, and `--last`, and does not support lineage observations. Its
+file-derived identity cannot isolate the current conversation within that file.
 
 Seq does not scan memory roots, Ledger stores, artifact directories, or another
 durable source implicitly. Compose durable facts explicitly:
@@ -81,7 +91,8 @@ seq observe \
 ## Bootstrap and capability boundary
 
 Require Seq major version 1, `seq-observation-abi/v1`, and
-`seq-observation-result/v2` in the capability `result_schemas` list:
+`seq-observation-result/v2` in `result_schemas`. Search excerpts additionally
+require the advertised `derive` operator version 3 or newer (`text-prefix`):
 
 ```bash
 seq version
@@ -95,6 +106,8 @@ an older result envelope as if it carried the current scope and health fields.
 
 Before reading Pi evidence, require `pi-session-jsonl/v1` in `source_adapters`.
 If it is absent, upgrade Seq; do not interpret Pi files with a Codex-only reader.
+For compressed history, require `jsonl.zst` in `source_encodings`; a clean result
+from an older executable does not prove it discovered compressed files.
 
 Capabilities report only physical adapters, native operators, renderers, cache
 format, and generic limits. A missing skill-specific flag is never a fallback
@@ -102,33 +115,29 @@ signal; load the owning definition and check its ABI/operators.
 
 ## Native surface
 
-Use native commands only for physical session structure:
+Use native commands for physical session structure. Use `<command> --help`
+for its selectors; a definition's selectors are independently declared.
+For `observe`, `--path` cannot be combined with `--root` or `--session-id`.
 
-```text
-seq definition check
-seq definition describe
-seq observe
-seq explain
-seq sessions
-seq turns
-seq session-detail
-seq tool-lifecycle
-seq session-graph
-seq tail
-seq find-session
-seq datasets
-seq dataset-schema
-seq query
-seq index
-seq capabilities
-seq version
-```
+| Need | Command |
+| --- | --- |
+| Find a path from an ID | `seq find-session --session-id <id> --format json` |
+| Inspect one session | `seq session-detail --path <rollout> --format json` |
+| Inspect turns, tools, or edges | `seq turns`, `seq tool-lifecycle`, or `seq session-graph`, with `--path <rollout> --format json` |
+| Discover fields | `seq datasets --format json`; `seq dataset-schema --dataset <name> --format json` |
+| Check a definition | `seq definition check --definition <file> --format json` |
+| Inspect its interface and plan | `seq definition describe --definition <file> --format json`; `seq explain --definition <file> --projection <name> --param <name>=<value> --format json` |
 
-If a higher-level question cannot be expressed, add a passive observation
-definition to the semantic owner. Request a new native operator only when it is
-domain-independent, explicitly bounded, and necessary for three unrelated
-definitions or for preserving one live behavior without material performance
-loss.
+`seq query --spec <json|@file>` accepts only `dataset`, `select`,
+`where`, `sort`, `limit`, and `format`. Use passive observations for
+grouping, aggregates, and higher-level questions. Native failures remain failures;
+read their diagnostics or use an observation that preserves parser limitations.
+Never parse a failed command's stdout as successful rows.
+
+For a one-off question, write a temporary passive definition, check it, and
+preserve its closure digest with the result. Reuse an owning definition when one
+fits; save a recurring interpretation with its semantic owner. A temporary
+checked definition needs no skill edit and grants no new authority.
 
 ## Standard Seq definitions
 
@@ -142,21 +151,35 @@ CLI access. Seq owns reusable physical analyses under:
 <seq-skill-root>/definitions/seq/
 ```
 
-Current definitions:
+| Definition | Accepted selection | Projection |
+| --- | --- | --- |
+| `message-search.json`, `tool-search.json` | `path`, `root`, `session-id`, `repo`, `since`, `until`, `last` | `rows`; `rows-raw` for necessary payloads |
+| `session-summary.json`, `turn-report.json` | `path` only; resolve an ID through `find-session` first | `rows` |
+| `turn-metrics.json` | `path`, `root`, `session-id`, `repo`, `since`, `until`, `last` | `summary` |
+| `token-usage.json` | `path`, `root`, `session-id`, `repo`, `since`, `until` | `summary` |
 
-```text
-message-search.json
-session-summary.json
-token-usage.json
-tool-search.json
-turn-metrics.json
-turn-report.json
-```
+Both searches require `needle` and an explicit `exclude_session_id`. Bind the
+verified current identity for historical audits; bind an empty string only for
+intentional non-exclusion and report that choice. Missing or ambiguous identity
+remains unresolved. `message-search` also accepts `role=user` or
+`role=assistant`; its default empty role selects all public message roles.
+Private messages are excluded; remaining rows can still be injected instructions
+or quoted prompts.
+
+Searches return at most 100 rows with deterministic timestamp/path/identity ties.
+`rows` includes UTF-8-safe excerpts capped at 512 bytes and an explicit
+per-excerpt truncation flag. Bounded text is not automatic redaction. A full
+100-row page may omit more matches: narrow the selection or check a temporary
+count/projection before making an exhaustive claim. A definition-bound limitation
+states a configured bound, not proof that truncation occurred.
 
 `tool-search.json` searches the current scalar output and retained
 `output_parts_json`, including earlier outputs of a call that later completed.
-It returns metadata through `rows`. Request `rows-raw` only when raw arguments,
-inputs, commands, and output parts are necessary and safe. JSON-field matches
+Its `rows` projection adds `request_kind`, `request_excerpt`, and
+`request_excerpt_truncated`, choosing recorded command text, then input text,
+then argument JSON. An `exec` input is code supplied to a wrapper, not proof of
+which commands ran. Request `rows-raw` only when full arguments, inputs, commands,
+and output parts are necessary and safe. JSON-field matches
 are candidate evidence; identify the matching text or reported result before
 interpreting them.
 
@@ -187,10 +210,36 @@ deduplication. Exact repeated profiles count once; a contradictory repetition
 cannot erase invalid evidence. Different plausible profiles for one cumulative
 total leave ownership ambiguous.
 
-Exclude only exact transitions replayed from a strict ancestor; retain sibling
-and independent-root usage. Apply session and time selection after ownership,
-preserving unresolved ancestry even when the selected child or window omits
-the ancestor. Require a timestamp to assign usage to a bounded window.
+Exclude a matching ancestor transition only when the child's persisted rollout
+ordinal places the record before `subagent_history_start_ordinal`. The physical
+`source_ordinal` is an occurrence index, not that persisted ordinal. A record
+after the boundary can repeat a seeded baseline without new usage. For child
+progress, require the latest preceding complete observed cumulative tuple to
+equal `total_token_usage - last_token_usage` in all five components. Neutral
+records preserve that baseline; incomplete or invalid assertions break it.
+Preserve same-session exact-profile deduplication across the boundary. This
+retains proven child work even when an ancestor later records the same tuple.
+
+A fork-linked record with unknown ordinal/boundary, an unobserved initial
+baseline, or unmatched inherited usage leaves attribution unavailable. Older
+logs without those facts no longer receive a confident total from counter
+equality alone. Retain sibling and independent-root usage. Apply session and time
+selection after ownership, preserving unresolved ancestry even when the selected
+child or window omits the ancestor. Require a timestamp to assign usage to a
+bounded window.
+
+This definition makes `--session-id` and `--path` tree-inclusive: they count the
+selected session and its control descendants, while loading history ancestors
+for ownership. `control_parent_session_id` selects workers;
+`parent_session_id` records history ancestry. They may differ legitimately.
+An ancestor outside the selected control tree is read without counting its work.
+Use it for that requested scope and report worker inclusion. For an exact-session
+question, use a checked variant that selects only the seed after ownership; do
+not silently present a tree total as the selected session alone. A `valid` verdict
+means the observed counters are consistent, not that corpus coverage is complete.
+`--repo` excludes evidence outside that repository, including history ancestors;
+an in-repository child can therefore be unavailable. Use a broader source scope
+without that repository filter when the question requires complete ownership.
 
 Return `invalid` for inconsistent counters and `unavailable` when missing fields,
 ambiguous ownership, total-only legacy snapshots, or unresolved time/ancestry
@@ -198,6 +247,11 @@ prevent accounting. Both verdicts carry null token totals and diagnostic counts.
 Missing cached/reasoning fields are unknown, not observed zero; they can prevent
 exact lineage attribution without making the source malformed. Do not sum
 cumulative legacy snapshots or infer unsupported increments from their order.
+An absent, excluded, or unread history ancestor, or one with no asserted token
+tuples, also leaves descendant ownership unavailable under this attribution rule.
+`token_usage_observation_count` measures asserted records before replay removal;
+replayed counters and observed zero remain evidence. Neutral records alone do not
+establish an ancestor's usage baseline, though neutral leaves remain harmless.
 
 Retain genuinely observed zero-token transitions as valid zero usage. Null-info
 events are neutral observations without a usage tuple; count them separately
@@ -225,14 +279,18 @@ totals. These sums do not establish deduplicated fork/worker usage or billing.
 seq_definition_root="$seq_skill_root/definitions/seq"
 seq observe \
   --definition "$seq_definition_root/token-usage.json" \
-  --root "${CODEX_HOME:-$HOME/.codex}/sessions/2026/07" \
-  --since 2026-07-01T00:00:00-07:00 \
-  --until 2026-08-01T00:00:00-07:00 \
+  --since 2026-11-01T00:00:00-07:00 \
+  --until 2026-11-08T00:00:00-08:00 \
   --projection summary \
   --format json
 ```
 
-Example:
+The omitted root uses both default Codex directories. Replace these example
+bounds with the requested window and its actual timezone offsets. An explicit
+root must contain every relevant session and ancestor, not just session starts
+inside the window.
+
+Example for deliberate inspection of one supported file:
 
 ```bash
 seq_definition_root="$seq_skill_root/definitions/seq"
@@ -240,6 +298,8 @@ seq observe \
   --definition "$seq_definition_root/message-search.json" \
   --path <rollout.jsonl> \
   --param "needle=<term>" \
+  --param exclude_session_id= \
+  --param role=user \
   --projection rows \
   --format json
 ```
@@ -306,6 +366,10 @@ Include linked workers only when requested or when the relevant evidence occurs
 there. Preserve root session, worker session, parent edge, lane/receipt ID,
 declared skills, observation, and outcome. Never merge unlinked workers into the
 root denominator.
+Treat a zero count as no worker evidence in the selected sources, not proof that
+no worker existed. Preserve edge relation and provenance so a continuation fork
+is not silently counted as a worker spawn. Keep control-parent linkage separate
+from the history-parent relation used to exclude replayed token transitions.
 
 ## Privacy and contamination
 
@@ -324,9 +388,9 @@ audit corpus. Preserve suspected and unresolved contamination in the report.
 - Use the narrowest native physical command or owning passive definition.
 - State denominators, exclusions, time bounds, and timezone.
 - Preserve evidence provenance and definition identity.
-- Use one fused scan when several requested projections share a source.
+- `observe` accepts one projection. Design one projection carrying the needed
+  evidence when a shared scan matters; separate invocations perform separate work.
 - Never treat raw `turns` or `sessions` token sums as lineage-owned corpus usage.
-- Do not interpret a definition condition-by-condition in the hot loop.
 - Do not validate SKDC, SDR, DCP, EPG, or another durable artifact with Seq;
   use its canonical Ledger definition.
 - Do not read a Ledger store or memory root implicitly.

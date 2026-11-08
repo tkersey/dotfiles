@@ -3,4 +3,4 @@ policy:
 interface:
   display_name: "seq"
   short_description: "Observe session facts with provenance and limits"
-  default_prompt: "Use $seq with the narrowest native physical command or owning passive observation definition from the selected skill package. Require Seq 1.x, seq-observation-abi/v1, and seq-observation-result/v2; preserve scope, corpus identity, provenance, contamination, limitations, and uncertainty; never treat an observation as semantic authority."
+  default_prompt: "Use $seq with the narrowest native physical command or owning passive observation definition from the selected skill package. Require Seq 1.x, seq-observation-abi/v1, seq-observation-result/v2, and derive operator v3 for bounded search excerpts; preserve scope, corpus identity, provenance, contamination, limitations, and uncertainty; never treat an observation as semantic authority."
