@@ -24,6 +24,11 @@
     "deny": []
   },
   "model": "opus[1m]",
+  "attribution": {
+    "commit": "",
+    "pr": "",
+    "sessionUrl": false
+  },
   "statusLine": {
     "type": "command",
     "command": "$HOME/.dotfiles/claude/statusline.py"
