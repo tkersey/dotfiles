@@ -59,7 +59,7 @@ def json_lines(records):
 
 
 def readback(base: Path, kind: str, events, records=None, prompt=PROMPT, extra_transcript=False, target=BASE,
-             followups=()):
+             followups=(), replay_repo=None, env_extra=None):
     tmp = Path(tempfile.mkdtemp(dir=base))
     events_path, out = tmp / "events.jsonl", tmp / "out.json"
     events_path.write_text(json_lines(events), encoding="utf-8")
@@ -76,13 +76,16 @@ def readback(base: Path, kind: str, events, records=None, prompt=PROMPT, extra_t
     prompt_path.write_bytes(prompt)
     args = ([kind, str(events_path), SID, MODEL, target, "high", str(out)] if kind == "standard"
             else [kind, str(events_path), SID, MODEL, str(prompt_path), str(out)])
+    if replay_repo is not None:
+        args.extend(["--replay-repo", str(replay_repo)])
     for index, stream in enumerate(followups):
         path = tmp / f"followup-{index}.jsonl"
         path.write_text(json_lines(stream), encoding="utf-8")
         args.extend(["--followup", str(path)])
     # sys.executable is the interpreter selected by the outer UV invocation.
     proc = subprocess.run([sys.executable, "-I", str(SCRIPT), *args],
-                          env={**os.environ, "CLAUDE_CONFIG_DIR": str(config)}, capture_output=True, text=True)
+                          env={**os.environ, "CLAUDE_CONFIG_DIR": str(config), **(env_extra or {})},
+                          capture_output=True, text=True)
     assert out.exists(), proc.stderr
     report = json.loads(out.read_text(encoding="utf-8"))
     assert (proc.returncode == 0) == report["ok"], proc.stderr
@@ -223,8 +226,28 @@ def chain_checks(tmp):
     original, run = observation(f"git diff {target}; git diff HEAD")
     assert run.returncode == 0 and "diff --git" in run.stdout
     report = readback(tmp, "standard", original, target=target)
-    expect(report, "no successful correlated")
+    expect(report, "completion is unverified")
     assert "completion status is unavailable" in report["diff_reads"][0]["reason"]
+    assert all(route in " ".join(report["problems"]) for route in ("--replay-repo", "--followup")), report
+    # The helper's own successful replay, wholly contained in the observed output, establishes the read.
+    git_env = {"GIT_CONFIG_NOSYSTEM": "1", "GIT_CONFIG_GLOBAL": os.devnull}
+    report = readback(tmp, "standard", original, target=target, replay_repo=repo, env_extra=git_env)
+    expect(report)
+    assert report["diff_reads"][0].get("replay_matched") and report["replay"]["exit_code"] == 0, report
+    assert report["replay"]["command"] == ["git", "diff", target, "--"], report
+    truncated = copy.deepcopy(original)
+    content = truncated[3]["message"]["content"][0]["content"]
+    truncated[3]["message"]["content"][0]["content"] = content[:content.rindex("diff --git")]
+    expect(readback(tmp, "standard", truncated, target=target, replay_repo=repo, env_extra=git_env),
+           "completion is unverified")
+    # An option-shaped target never reaches git.
+    expect(readback(tmp, "standard", original, target="--output=x..HEAD", replay_repo=repo, env_extra=git_env),
+           "cannot replay target")
+    assert not any(repo.glob("x*"))
+    duplicate_flag = subprocess.run([sys.executable, "-I", str(SCRIPT), "standard", "events", SID, MODEL, target,
+                                     "high", "out", "--replay-repo", "a", "--replay-repo", "b"],
+                                    capture_output=True, text=True)
+    assert duplicate_flag.returncode != 0 and "usage:" in duplicate_flag.stderr
     supplemental, _ = observation(f"git diff {target}")
     del supplemental[1]
     supplemental[1]["message"]["content"][0]["id"] = "diff-2"
@@ -284,6 +307,10 @@ def chain_checks(tmp):
     events, run = observation(f"git diff {target}; git diff HEAD")
     assert run.returncode == 0 and "diff --git a/a.txt" in run.stdout and "fatal:" in run.stderr
     expect(readback(tmp, "standard", events, target=target), "no successful correlated")
+    # The masked partial failure replays as a failure, so no replay can vouch for it.
+    report = readback(tmp, "standard", events, target=target, replay_repo=repo, env_extra=git_env)
+    expect(report, "completion is unverified")
+    assert report["replay"]["exit_code"] != 0 and not report["diff_reads"][0].get("replay_matched"), report
 
 
 def main():

@@ -167,10 +167,14 @@ read_tools=(Read Grep Glob
 
 ```bash
 uv run --no-project python -I "$skill_dir/scripts/readback.py" standard \
-  "$events" "$sid" "$selected_model" "$base..HEAD" "$level" "$readback_json"
+  "$events" "$sid" "$selected_model" "$base..HEAD" "$level" "$readback_json" \
+  --replay-repo "$repo"
 uv run --no-project python -I "$skill_dir/scripts/readback.py" custom \
   "$events" "$sid" "$selected_model" "$prompt" "$readback_json"
 ```
+
+Run standard readback while the subject is still frozen: `--replay-repo` replays
+the target diff in that checkout.
 
 For an explicitly bound current-diff review, omit the CLI target and pass `-` as
 the helper's target instead of `$base..HEAD`.
@@ -195,9 +199,14 @@ exits nonzero (hold) unless all of these hold:
   the target's status unavailable even when patch text appears. Companion output
   cannot authenticate a target read. Exit 1 from `--exit-code` is recognized only
   for a direct diff. Summary-only reads, pipes, redirects, substitutions, and
-  unsupported command shapes do not establish this gate. Retain an unverified
-  compound observation and use the existing same-session inquiry follow-up when
-  needed; do not replace the native recipe or infer success from patch markers.
+  unsupported command shapes do not establish this gate. With `--replay-repo`,
+  the helper itself runs `git diff <base>..HEAD --` read-only in the frozen
+  checkout; a semicolon-hidden target read counts when that replay exits 0 with
+  patch text and the read's observed output contains the whole replay. The
+  reviewer then saw the complete patch; a partial or failing diff cannot match,
+  because its replay fails too. Patch markers alone never count. Otherwise retain
+  the unverified compound observation and use the same-session follow-up below;
+  do not replace the native recipe.
   Recipe text alone does not authenticate native command resolution;
   retain the host's actual `/review` invocation.
 - **Custom:** exactly one transcript `<config>/projects/*/$sid.jsonl` exists and
@@ -246,8 +255,15 @@ Confidence is not evidence.
   the concrete gap, exact paths and ranges; ask it to complete the observation and
   reassess, overturning conclusions when warranted. The response is supplemental
   evidence attributed separately, not a new verdict or an additional clean.
-  For an unverified compound diff, request a standalone foreground
-  `git diff <base>..HEAD` and reassessment of conclusions dependent on that read.
+  In `-p` mode `/review` runs as a forked command: the resumed session holds the
+  command and its rendered result, not the reviewer's reads or reasoning, which
+  stay in the session's `subagents/` transcript (observed). Put the original
+  result, the concrete gap and the bound subject in the follow-up prompt, as
+  `$cas` does for delegated reviewers, and adjudicate the reply as supplemental
+  review of that text, not a continuation of the reviewer's inquiry.
+  For an unverified compound diff that no replay establishes, request a standalone
+  foreground `git diff <base>..HEAD` and reassessment of conclusions dependent on
+  that read.
   Capture each resumed invocation in its own events file, retaining the actual
   resume invocation and unchanged Git subject; never concatenate terminal streams.
   Pass the original events plus the supplemental stream to standard readback:
@@ -255,7 +271,7 @@ Confidence is not evidence.
   ```bash
   uv run --no-project python -I "$skill_dir/scripts/readback.py" standard \
     "$events" "$sid" "$selected_model" "$base..HEAD" "$level" "$readback_json" \
-    --followup "$followup_events"
+    --replay-repo "$repo" --followup "$followup_events"
   ```
 
   Repeat `--followup` in execution order only within the caller's recovery budget.

@@ -119,9 +119,15 @@ resolution when a local `code-review` skill exists. A recipe header alone does n
 establish that origin. Require the bound level and a matching successful diff
 observation; a requested tool call without its successful result is insufficient.
 Compound shell success does not establish an earlier semicolon group's completion.
-When the existing inquiry-recovery rules authorize a same-session follow-up, pass
-its separately captured stream to cc readback with `--followup`; bind the resume
-invocation and unchanged subject. Retain the original native result and all
+cc readback's `--replay-repo` reruns the exact target diff in the frozen checkout;
+a semicolon-hidden read whose observed output contains that whole successful replay
+is a complete observation, while patch markers alone are not. Otherwise, when the
+existing inquiry-recovery rules authorize a same-session follow-up, pass its
+separately captured stream to cc readback with `--followup`; bind the resume
+invocation and unchanged subject. A resumed `/review` session holds only the
+rendered result, not the forked reviewer's reads or reasoning, so supply the
+original result and gap and treat the reply as supplemental review of that text.
+Retain the original native result and all
 supplemental results and denials. The follow-up supplies evidence and reassessment,
 not a fresh standard or another clean credit.
 Adjudicate the original rendered text directly, including findings and limitations.

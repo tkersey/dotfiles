@@ -1,7 +1,8 @@
 """Admit or hold one native Claude Code review session from its own evidence.
 
 usage:
-  uv run --no-project python -I readback.py standard EVENTS SESSION_ID MODEL TARGET LEVEL OUT [--followup EVENTS]...
+  uv run --no-project python -I readback.py standard EVENTS SESSION_ID MODEL TARGET LEVEL OUT
+      [--replay-repo REPO] [--followup EVENTS]...
   uv run --no-project python -I readback.py custom   EVENTS SESSION_ID MODEL PROMPT_FILE OUT
 
 EVENTS is captured `--output-format stream-json --verbose` stdout. MODEL is the
@@ -12,10 +13,17 @@ under $CLAUDE_CONFIG_DIR (default ~/.claude)/projects/*/SESSION_ID.jsonl.
 The standard read gate recognizes direct Bash `git diff` calls against TARGET
 and bounded `;`/`&&` chains, not arbitrary shell programs. Shell success proves
 only the final && group's completion; earlier semicolon groups remain unknown.
-A request needs a later completed tool_result with the same tool ID. Optional
-same-session follow-up streams can supply a missing observation while retaining
-the original result and every supplemental result separately. Git subject,
-recovery authorization, reassessment, and coverage remain with the caller.
+A request needs a later completed tool_result with the same tool ID.
+
+With --replay-repo, the helper runs exactly `git diff <base>..HEAD --` in the
+frozen checkout (GIT_OPTIONAL_LOCKS=0). A target read that precedes `;` counts
+only when that replay exits 0 with patch text and the read's observed output
+contains the whole replay: the reviewer saw the complete patch, whatever the
+masked exit status. A failing or partial diff cannot match, because its replay
+fails too. Patch markers alone never count. Optional same-session follow-up
+streams can supply a missing observation while retaining the original result
+and every supplemental result separately. Git subject, recovery authorization,
+reassessment, and coverage remain with the caller.
 Native result text and permission denials are preserved without interpreting a
 verdict or deciding whether an optional denied call mattered. OUT receives the
 evidence and problems; exit 0 only when the required checks pass.
@@ -26,11 +34,13 @@ import json
 import os
 import re
 import shlex
+import subprocess
 import sys
 from pathlib import Path
 
 LEVEL = re.compile(r"`(\w+) effort\b")
 HEX = re.compile(r"[0-9a-f]{7,40}\Z")
+REPLAY_SPEC = re.compile(r"[0-9a-f]{7,40}\.\.HEAD\Z")
 EXIT_CODE = re.compile(r"\A\s*Exit code(?:\s*:\s*|\s+)(\d+)(?:\s|$)", re.IGNORECASE)
 PATCH_TEXT = re.compile(r"^diff --git ", re.MULTILINE)
 SUMMARY_DIFF = re.compile(r"--(?:stat|shortstat|numstat|name-only|name-status)(?:=\S*)?")
@@ -266,7 +276,40 @@ def tool_result_status(part: dict, event: dict, difference_exit: bool) -> tuple[
     return True, "completed correlated Bash tool_result"
 
 
-def standard(events: list[dict], target: str, level: str, problems: list[str], followups=()) -> dict:
+def replay_diff(repo: str, target: str, problems: list[str]) -> tuple[dict, str | None]:
+    """Replay the target diff read-only in the frozen checkout.
+
+    Return evidence plus the replay text when usable: exit 0 with patch text.
+    The strict target grammar keeps option-shaped targets out of the argv.
+    """
+    spec = target if ".." in target else f"{target}..HEAD"
+    if not REPLAY_SPEC.fullmatch(spec):
+        problems.append(f"cannot replay target {target!r}; expected <base>..HEAD")
+        return {"error": "unsupported target"}, None
+    command = ["git", "diff", spec, "--"]
+    env = {**os.environ, "GIT_OPTIONAL_LOCKS": "0"}
+    try:
+        diff = subprocess.run(command, cwd=repo, env=env, capture_output=True, timeout=120)
+        head = subprocess.run(["git", "rev-parse", "HEAD"], cwd=repo, env=env, capture_output=True,
+                              text=True, timeout=30)
+    except (OSError, subprocess.SubprocessError) as exc:
+        problems.append(f"cannot replay the target diff: {exc}")
+        return {"command": command, "error": str(exc)}, None
+    text = diff.stdout.decode("utf-8", errors="replace")
+    evidence = {"command": command, "exit_code": diff.returncode,
+                "head": head.stdout.strip() if head.returncode == 0 else None,
+                "sha256": hashlib.sha256(diff.stdout).hexdigest(), "patch_text": bool(PATCH_TEXT.search(text))}
+    return evidence, (text if diff.returncode == 0 and evidence["patch_text"] else None)
+
+
+def replay_observed(content: str, replay: str | None) -> bool:
+    """True when the observed output contains the whole usable replay."""
+    patch = replay.rstrip("\n") if replay else ""
+    return bool(patch) and patch in content
+
+
+def standard(events: list[dict], target: str, level: str, problems: list[str], followups=(),
+             replay: str | None = None) -> dict:
     terminal = next((i for i, e in enumerate(events) if e.get("type") == "result"), len(events))
     session = events[:terminal]
     recipe = next((text_of(e.get("message", {}).get("content")) for e in session
@@ -315,10 +358,20 @@ def standard(events: list[dict], target: str, level: str, problems: list[str], f
             _, part, event = matches[0]
             read["ok"], read["reason"] = tool_result_status(part, event, difference_exit)
             if read["ok"] and not completion_bound:
-                read["ok"], read["reason"] = False, "target diff precedes a semicolon; its completion status is unavailable"
+                if replay_observed(text_of(part.get("content")), replay):
+                    read.update(replay_matched=True, reason="target diff precedes a semicolon; its observed output "
+                                "contains the whole successful replay")
+                else:
+                    read.update(ok=False, unverified=True,
+                                reason="target diff precedes a semicolon; its completion status is unavailable")
         if not any(read["ok"] for read in evidence["diff_reads"]):
-            problems.append(f"no successful correlated `git diff` read against {target}; only direct patch reads "
-                            "and read-only `;`/`&&` chains around them are recognized")
+            if any(read.get("unverified") for read in evidence["diff_reads"]):
+                problems.append(f"no successful correlated `git diff` read against {target}: the recognized read "
+                                "precedes a `;`, so its completion is unverified; pass --replay-repo or recover "
+                                "with a same-session --followup")
+            else:
+                problems.append(f"no successful correlated `git diff` read against {target}; only direct patch "
+                                "reads and read-only `;`/`&&` chains around them are recognized")
     return evidence
 
 
@@ -357,10 +410,13 @@ def custom(result: dict, sid: str, prompt: bytes, problems: list[str]) -> dict:
 
 def main() -> None:
     kind, args = (sys.argv[1], sys.argv[2:]) if len(sys.argv) > 1 else (None, [])
-    followup_paths = []
-    if kind == "standard" and len(args) >= 6 and len(args) % 2 == 0 and all(arg == "--followup" for arg in args[6::2]):
+    followup_paths, replay_repo = [], None
+    flags = list(zip(args[6::2], args[7::2])) if kind == "standard" and len(args) >= 6 and len(args) % 2 == 0 else None
+    if (flags is not None and all(flag in ("--followup", "--replay-repo") for flag, _ in flags)
+            and sum(flag == "--replay-repo" for flag, _ in flags) <= 1):
         events_path, sid, model, target, level, out = args[:6]
-        followup_paths = args[7::2]
+        followup_paths = [value for flag, value in flags if flag == "--followup"]
+        replay_repo = next((value for flag, value in flags if flag == "--replay-repo"), None)
     elif kind == "custom" and len(args) == 5:
         events_path, sid, model, prompt_path, out = args
     else:
@@ -373,6 +429,9 @@ def main() -> None:
     if kind == "standard":
         if not isinstance(result.get("result"), str) or not result["result"].strip():
             problems.append("no nonempty native result text")
+        replay = None
+        if replay_repo is not None and target != "-":
+            report["replay"], replay = replay_diff(replay_repo, target, problems)
         followups = []
         for path in followup_paths:
             issues = []
@@ -384,7 +443,7 @@ def main() -> None:
             followups.append(stream)
             report.setdefault("followups", []).append({"events": path, "result": supplemental.get("result"),
                 "permission_denials": supplemental.get("permission_denials", [])})
-        report.update(standard(events, target, level, problems, followups))
+        report.update(standard(events, target, level, problems, followups, replay))
     else:
         try:
             prompt = Path(prompt_path).read_bytes()
