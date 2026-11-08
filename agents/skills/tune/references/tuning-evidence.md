@@ -118,6 +118,7 @@ seq observe \
   --projection evidence \
   --root <sessions-root> \
   --session-id <session> \
+  --param exclude_session_id= \
   --param needle=<skill> \
   --format json
 ```
@@ -126,17 +127,37 @@ Use `--repo`, `--since`, `--until`, `--last`, or explicit sessions only when the
 question requires them. Record the exact selector set. Do not silently replace
 an arbitrary-history request with a default recent window.
 
-For root scans, bind `exclude_session_id` to the current `CODEX_THREAD_ID` so the
-audit cannot count its own prompt or invocation. Treat returned rows as
-candidates until Tune classifies user activation, assistant declaration,
-injected skill text, skill-file read, decision receipt, route statement,
-outcome, and raw mention.
+Bind the required `exclude_session_id` explicitly. For root scans, resolve the
+current session identity for the selected adapter: the verified Codex
+`CODEX_THREAD_ID`, the Pi session ID from the selected session header or host
+hint. Do not apply a different harness's environment variable to that corpus.
+The supported OpenCode prompt-history adapter derives one session ID from the
+file path; excluding it excludes the entire file, not the current conversation.
+When the current identity is absent, ambiguous, or not represented separately
+by the source, report exclusion as unresolved; an empty parameter does not prove
+that the audit excluded itself.
+
+The watched-session example deliberately supplies an empty exclusion to inspect
+that entire session. Use this only when inclusion is intentional, and record
+that no session was excluded. A historical root scan normally uses the resolved
+current ID. Treat returned rows as candidates until Tune classifies user
+activation, assistant declaration, injected skill text, skill-file read,
+decision receipt, route statement, outcome, and raw mention.
 
 The default `tools` projection excludes raw payloads. Use `tools-raw` only when
 the user explicitly requests raw tool payloads and the selected evidence is safe
-to disclose.
+to disclose. Both projections match retained `output_parts_json` as well as the
+latest scalar output, so earlier asynchronous observations remain discoverable.
+JSON-field matches can include serialized metadata; classify the actual text
+or reported process result before attribution. The raw projection preserves
+each part's provenance and reported `process_results`. Wrapper completion,
+inner process status, application success, and a verified user-visible effect
+are separate claims; wrapper exit zero does not establish the others.
 
-Use stable `source_event_id`, session, path, line, and turn fields as provenance.
+Bind `source_event_id`, session, path, line, and turn locators to the observation's
+corpus digest. Preserve its resolved selection, time/freshness context, parser
+health, and semantic contamination assessment; zero parser warnings cannot
+classify an audit prompt or quoted report as uncontaminated.
 Use narrow physical follow-ups only for a specific unresolved question, such as
 session detail, turn boundaries, tool lifecycle, or session graph.
 

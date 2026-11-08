@@ -2,7 +2,7 @@
 name: seq
 description: "Reconstruct provenance-preserving observations from Codex, Pi, and OpenCode execution/session evidence with Seq 1.x. Use for explicit `$seq`, session/tool/message forensics, skill activation and outcome audits, decision provenance, `$tune` evidence, watched-session deltas, worker attribution, or reproducible historical reports. Use native commands only for physical session structure; use the owning passive observation definition for every higher-level question."
 metadata:
-  version: "2.1.0"
+  version: "2.2.0"
 ---
 
 # Seq
@@ -80,7 +80,8 @@ seq observe \
 
 ## Bootstrap and capability boundary
 
-Require Seq major version 1 and `seq-observation-abi/v1`:
+Require Seq major version 1, `seq-observation-abi/v1`, and
+`seq-observation-result/v2` in the capability `result_schemas` list:
 
 ```bash
 seq version
@@ -89,7 +90,8 @@ seq capabilities --format json
 
 Check once per unchanged executable and execution environment; reuse the result
 across observations. Recheck the selected definition when its closure or required
-operators change.
+operators change. Upgrade Seq when these contracts are absent; do not interpret
+an older result envelope as if it carried the current scope and health fields.
 
 Before reading Pi evidence, require `pi-session-jsonl/v1` in `source_adapters`.
 If it is absent, upgrade Seq; do not interpret Pi files with a Codex-only reader.
@@ -130,10 +132,14 @@ loss.
 
 ## Standard Seq definitions
 
-Seq owns reusable physical analyses under:
+Resolve this skill through the current harness's catalog or an explicitly
+selected repository/package. Load definitions from that same package and
+version; do not infer its location from `CODEX_HOME` or another harness's install
+layout. Set `seq_skill_root` to the resolved local package directory for native
+CLI access. Seq owns reusable physical analyses under:
 
 ```text
-${CODEX_HOME:-$HOME/.codex}/skills/seq/definitions/seq/
+<seq-skill-root>/definitions/seq/
 ```
 
 Current definitions:
@@ -147,8 +153,21 @@ turn-metrics.json
 turn-report.json
 ```
 
-`tool-search.json` returns metadata through `rows`. Request `rows-raw` only
-when raw arguments, inputs, commands, and outputs are necessary and safe.
+`tool-search.json` searches the current scalar output and retained
+`output_parts_json`, including earlier outputs of a call that later completed.
+It returns metadata through `rows`. Request `rows-raw` only when raw arguments,
+inputs, commands, and output parts are necessary and safe. JSON-field matches
+are candidate evidence; identify the matching text or reported result before
+interpreting them.
+
+Keep wrapper lifecycle, reported inner process status, and application outcome
+separate. A completed wrapper with exit code zero can contain a failed process;
+a successful process does not establish the requested application effect. Read
+each retained part's `process_results` and preserve its `source_event_id`, line,
+timestamp, and `payload_pointer`. The result's `json_pointer` addresses JSON
+decoded from that part's text, not the source payload. Printed envelopes remain
+reported evidence, not independent proof of execution; quoted examples and
+stdout from reading an earlier result do not establish another execution.
 
 `turn-metrics.json` reports raw sums over the selected physical `turns` rows.
 Its `selected_turn_*_sum` fields are not lineage-owned token usage and must not
@@ -159,18 +178,35 @@ Those questions require an owning passive definition over lineage-owned token
 deltas; if the installed Seq ABI does not expose that relation or operator,
 report obstruction rather than summing `turns` or `sessions` token fields.
 
-`token-usage.json` is the owning Codex corpus-usage definition. It reconstructs
-cumulative token transitions in source order from both `total_token_usage` and
-`last_token_usage`. For modern rows, the transition is `(total - last) -> total`
-and the counted delta is `last`; null-info events are observations without usage
-and do not become zero-token transitions. The definition keeps the first
-emission of a cumulative total within each session, excludes only exact
-transitions replayed from a strict ancestor, retains sibling and independent-root
-usage, and applies session and `since`/`until` selection after ownership.
-Total-only legacy rows use an estimated snapshot fallback. Inconsistent
-modern tuples make the result `invalid` and its token totals null. Its cached
-percentage denominator is input tokens:
-`cached_input_tokens / input_tokens * 100`.
+`token-usage.json` owns Codex lineage accounting and emits
+`seq-token-usage-result/v2`. For a complete modern tuple, the transition is
+`(total_token_usage - last_token_usage) -> total_token_usage`, and the counted
+delta is `last_token_usage`. Validate nonnegative counters, cached/input and
+reasoning/output subsets, reported totals, and the implied predecessor before
+deduplication. Exact repeated profiles count once; a contradictory repetition
+cannot erase invalid evidence. Different plausible profiles for one cumulative
+total leave ownership ambiguous.
+
+Exclude only exact transitions replayed from a strict ancestor; retain sibling
+and independent-root usage. Apply session and time selection after ownership,
+preserving unresolved ancestry even when the selected child or window omits
+the ancestor. Require a timestamp to assign usage to a bounded window.
+
+Return `invalid` for inconsistent counters and `unavailable` when missing fields,
+ambiguous ownership, total-only legacy snapshots, or unresolved time/ancestry
+prevent accounting. Both verdicts carry null token totals and diagnostic counts.
+Missing cached/reasoning fields are unknown, not observed zero; they can prevent
+exact lineage attribution without making the source malformed. Do not sum
+cumulative legacy snapshots or infer unsupported increments from their order.
+
+Retain genuinely observed zero-token transitions as valid zero usage. Null-info
+events are neutral observations without a usage tuple; count them separately
+without treating them as zero-token transitions or invalidating otherwise known
+usage. With no observed transition, return unavailable rather than valid zero.
+The `usage_scope` is `observed-lineage-owned-transitions`: numeric results do not
+certify that every request or selected session recorded usage. Preserve the
+diagnostic counts alongside the totals. Compute cached percentage as
+`cached_input_tokens / input_tokens * 100`; leave it null for zero input.
 
 Do not apply that Codex cumulative-counter definition to Pi corpus or billing
 questions; requests for Pi cumulative token events fail with
@@ -186,7 +222,7 @@ Standalone compaction/summary usage remains raw and is excluded from these
 totals. These sums do not establish deduplicated fork/worker usage or billing.
 
 ```bash
-seq_definition_root="$(realpath "${CODEX_HOME:-$HOME/.codex}/skills/seq/definitions/seq")"
+seq_definition_root="$seq_skill_root/definitions/seq"
 seq observe \
   --definition "$seq_definition_root/token-usage.json" \
   --root "${CODEX_HOME:-$HOME/.codex}/sessions/2026/07" \
@@ -199,7 +235,7 @@ seq observe \
 Example:
 
 ```bash
-seq_definition_root="$(realpath "${CODEX_HOME:-$HOME/.codex}/skills/seq/definitions/seq")"
+seq_definition_root="$seq_skill_root/definitions/seq"
 seq observe \
   --definition "$seq_definition_root/message-search.json" \
   --path <rollout.jsonl> \
@@ -222,16 +258,34 @@ definition id and closure digest
 Seq ABI and binary version
 source adapter/schema version
 session IDs and path/corpus digest
-explicit since/until and timezone when applicable
+resolved selection and selection digest; explicit time bounds and timezone
+observation time, freshness policy, and source-metadata digest
 worker inclusion
 current-session exclusion
 files opened and bytes read
+discovery files opened and bytes read
 physical passes and rows scanned/materialized
-contamination
+parser warning count and semantic contamination assessment
 limitations and uncertainty
 ```
 
-A fixed time window is not an immutable corpus snapshot.
+Preserve the observation envelope's `seq_version`, `selection`,
+`selection_digest`, and `context` alongside the definition, parameter, and corpus
+digests. `context.as_of_ms`, `context.ongoing_threshold_secs`, and
+`context.source_metadata_digest` bind the time, freshness policy, and file
+metadata used to assess liveness. Liveness is an assessment at that time, not a
+historical event. A fixed time window is not an immutable corpus snapshot.
+Source-event IDs locate records within a source; bind them to the corpus digest
+when citing immutable evidence. A path and line can be reused after a rewrite.
+
+`physical_passes` counts relation execution passes. Identity discovery can read
+the same files separately; preserve its I/O counters rather than treating one
+physical pass as one total read.
+
+Resolve current-session exclusion against the selected source adapter. Use the
+host's verified current identity, not a variable from another harness. If the
+identity is unavailable or ambiguous, report exclusion as unresolved; do not
+claim that the current audit was excluded.
 
 Distinguish:
 
@@ -259,6 +313,11 @@ Default to sanitized references and bounded excerpts. Detect injected skill
 blocks, current audit prompts, generated reports, quoted transcripts, memory
 summaries supplied as explicit inputs, and examples. Do not expose private
 reasoning as report evidence.
+
+`corpus.parser_warning_count` describes parser health only.
+`corpus.semantic_contamination: "not_assessed"` leaves semantic classification
+to the observation's owner. Zero parser warnings do not establish a clean
+audit corpus. Preserve suspected and unresolved contamination in the report.
 
 ## Hard rules
 
