@@ -1,7 +1,8 @@
 # Universalist 18.0.3
 
-Universalist uses algebraic and categorical knowledge to **formulate and derive**
-solutions, not only recognize abstractions after a boundary decision is named.
+Universalist uses algebraic and categorical knowledge to **recognize mathematical
+structure, formulate problems, and derive solutions**. A supported correspondence
+and its consequences can complete an analysis without requiring a code change.
 
 > Generalize in the reasoning. Specialize in the realization. Prove the connection.
 

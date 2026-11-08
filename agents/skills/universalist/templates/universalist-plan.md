@@ -3,6 +3,8 @@
 Use only when the Universalist decision must remain independently durable.
 For supporting analysis, carry the contribution in the requesting task's
 existing evidence instead of allocating this plan.
+Recognizing mathematical structure alone does not select a construction or require
+this plan.
 
 This template is a standalone storage-consumer format, not a runtime reporting
 requirement. Preserve its headings for the owner definition; reuse evidence and

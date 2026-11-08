@@ -1,7 +1,8 @@
 ---
 name: universalist
 description: >-
-  Use algebraic and categorical reasoning to derive simpler correct solutions.
+  Use algebraic and categorical reasoning to recognize mathematical structure
+  and derive simpler correct solutions.
   Invoke when design, implementation, review, or simplification requires deriving
   or reconsidering behavior, algorithms, representations, composition,
   observations, effects, ownership, or proof, including internal choices under
@@ -14,8 +15,8 @@ description: >-
 
 **Generalize in the reasoning. Specialize in the realization. Prove the connection.**
 
-Use relevant algebraic and categorical knowledge to formulate the problem and derive
-its solution, not merely recognize a structure after an architecture has been chosen.
+Use relevant algebraic and categorical knowledge to recognize structure in existing
+implementations, formulate problems, and derive solutions.
 Seek constructions and transformations that make required behavior structural,
 remove accidental choices or repeated obligations, or eliminate unnecessary work.
 Lower to repository-native code, not a categorical framework by default.
@@ -118,7 +119,7 @@ adequate incumbent without manufacturing a challenger or change.
 
 ## Earn the nomination
 
-Inquiry is not acceptance. Before retaining a candidate, establish its actual
+Inquiry is not acceptance. Before retaining a construction, establish its actual
 correspondence to the task, applicable laws and non-laws, distinguishing
 counterexample or proof, required-valid preservation, effects, feasibility, and
 engineering dividend. The dividend may be a simpler representation or algorithm,
@@ -169,7 +170,7 @@ Do not load the whole corpus or every linked method at entry.
 
 | Question or claim | Focused guidance | Acceptance requirement |
 |---|---|---|
-| What law-bearing formulation could simplify the required behavior or proof? (`UNI-RECOGNIZE`) | `references/latent-structure-recognition.md` | establish the correspondence, discriminator, dividend, and transition when material |
+| What mathematical structure is present, or what formulation could simplify the required behavior or proof? (`UNI-RECOGNIZE`) | `references/latent-structure-recognition.md` | establish the correspondence, discriminator, consequences, and limits; require a dividend for a proposed construction and a transition when material |
 | What operations, equations, carrier, or observation should be derived? | `references/domain-algebra/algebra-driven-design.md` | distinguish candidate laws from accepted requirements and preserve required uses |
 | Where could a categorical construction resolve the question? | `advanced-mechanics.md`, relevant selector/registry fragments and exact theory references | actual prerequisites and claim-appropriate witness before retention; no mandatory prior failed ordinary candidate |
 | Plausible candidates materially differ (`UNI-CONSEQUENTIAL`) | `references/consequential-boundary.md` | complete native comparison before recommendation or affected mutation |
@@ -251,17 +252,21 @@ only the affected decision and continue independent authorized work.
 
 ## Output contract
 
-Complete the requested kind and scope of work. Analysis returns a supported
-nomination or unresolved result; authorized implementation includes required
-verification, callers, and migration. A first witness does not prove coverage of
-every sanctioned path or complete a multi-seam request. Do not widen work merely
+Complete the requested kind and scope of work. Analysis may establish a mathematical
+correspondence and its consequences and limits, nominate a construction, or return
+an unresolved question. A supported recognition result can complete the request
+without changing code or assigning a construction route. For construction work,
+authorized implementation includes required verification, callers, and migration.
+A first witness does not prove coverage of every sanctioned path or complete a
+multi-seam request. Do not widen work merely
 because a general construction expresses more. In a receiving workflow, the
 applicable adapter owns the contribution's form; that workflow retains execution
 and completion authority. A contribution does not complete the enclosing task.
 
 Use repository and domain language. Convey the material question, resulting
-construction and owner, baseline when present, required observations, law and
-falsifier, decision consequence, mechanism, and invalidators once through existing
+correspondence or construction, owner and baseline when applicable, required
+observations, law and falsifier, decision consequence, mechanism, and invalidators
+once through existing
 evidence. These are conclusion obligations, not prerequisites to inquiry, mandatory
 headings, or a second report. Do not invent an incumbent, delta, or final route.
 Surface useful consequences, not a transcript of the reasoning procedure or a

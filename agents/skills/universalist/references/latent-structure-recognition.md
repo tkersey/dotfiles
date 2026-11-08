@@ -14,20 +14,22 @@ The goal is:
 ```text
 required uses and concrete evidence <-> relevant mathematical hypotheses
   -> derived carriers, operations, observations, laws, and non-laws
-  -> one evidenced general pattern
-  -> one repository-native realization
+  -> supported correspondence, consequences, and limits
+  -> one repository-native realization when needed
   -> one observation-preserving transition when needed
 ```
 
-Recognition nominates. Existing comparison, theorem-card, route, authority, and obstruction rules still decide whether anything changes.
+Recognition can establish a supported correspondence and its consequences.
+When the task calls for a construction change, existing comparison, theorem-card,
+route, authority, and obstruction rules govern its nomination and adoption.
 
 ## Governing rule
 
 ```text
 Let theory suggest hypotheses; establish structure by laws, not labels.
 Derive the formulation as well as recognizing an existing encoding.
-Retain a generalization only for a material dividend.
-Justify the native realization and any required transition.
+Adopt new abstraction machinery only for a material dividend.
+Justify any proposed native realization and required transition.
 ```
 
 A general pattern may be useful even when no advanced construction card is selected. Products, coproducts, monoids, actions, homomorphisms, folds, state machines, adapters, and checked witnesses often remain `UNI-ORDINARY`.
@@ -89,6 +91,12 @@ Evidence debt:
 Do not erase effects, authority, provenance, ordering, failure, locality, or resources while anti-unifying the instances.
 
 ## Encoding relations
+
+Identify the subject and level of the claim: a representation family, individual
+value, transformation, interpreter, or evolving system. Map the mathematical
+parameters and structural operations to concrete evidence. The same implementation
+may realize different structures at different levels; transfer only consequences
+supported by the particular correspondence and its assumptions.
 
 When a current implementation exists, describe the material aspects of its
 relation together. Correspondence, scope, law strength, and placement are not
@@ -346,7 +354,8 @@ because the general pattern can express more.
 
 ### 8. Return to ordinary Universalist adjudication
 
-Compare:
+For a requested recognition analysis, return the supported correspondence, useful
+consequences, and limits. For a construction decision, compare:
 
 ```text
 ordinary candidate

@@ -4,7 +4,7 @@
     "skill": {
       "name": "universalist",
       "kind": "mixed",
-      "source_fingerprint": "universalist-generative-derivation-v18.0-v4"
+      "source_fingerprint": "universalist-generative-derivation-v18.0-v5"
     },
     "triggers": [
       {
@@ -131,14 +131,14 @@
         "prohibited_routes": [],
         "required_artifacts": [
           "trigger evidence",
-          "resulting construction or transformation and its boundary when applicable",
-          "incumbent when present and native comparison baseline",
-          "owner of the retained result",
+          "supported correspondence or resulting construction or transformation, with boundary when applicable",
+          "incumbent when present and native comparison baseline when selecting a construction",
+          "owner of any retained construction",
           "required observations",
           "law",
           "falsifier",
-          "material decision consequence or explicit unresolved question",
-          "mechanic",
+          "supported mathematical consequence, material decision consequence, or explicit unresolved question",
+          "mechanic when a construction is selected",
           "invalidators"
         ],
         "success_signals": [
@@ -150,6 +150,7 @@
           "an equivalent sufficient receiving-workflow derivation is reused without a second pass",
           "applicable evidence is conveyed once using the receiving workflow representation without duplicate packets",
           "completion follows the authorized task; one coherent seam bounds reasoning rather than ending a multi-seam request",
+          "recognition-only analysis can finish with a supported correspondence, consequences, and limits without a code change or construction route",
           "feedback-dependent claims trace the necessary causal extent and can close with an ordinary owner without another route or report"
         ],
         "failure_signals": [
@@ -224,27 +225,30 @@
           "candidate laws distinguished from requirements and known non-laws",
           "nearest false friend",
           "discriminating law or counterexample",
-          "generalization or preservation dividend",
+          "engineering dividend when recommending a construction or change",
           "transition witness when material"
         ],
         "success_signals": [
           "requirements and concrete evidence suggest structures while mathematical knowledge suggests task-relevant hypotheses",
           "focused references may formulate a question before a construction or its prerequisites are established",
-          "a retained pattern removes or centralizes an obligation, derives an algorithm, enables a lawful transformation, or strengthens a reusable proof",
+          "recognition identifies the subject, mathematical parameters, and structural operations at the claimed level; only justified consequences transfer",
+          "a recommended construction removes or centralizes an obligation, derives an algorithm, enables a lawful transformation, or strengthens a reusable proof",
           "a disputed abstraction separates an omitted behavior-changing premise from a broader unclaimed generalization",
           "unlisted constructions and combinations can be investigated under the same claim standards",
           "an adequate incumbent survives without a manufactured alternative"
         ],
         "failure_signals": [
           "pattern selected by name",
-          "generalization accepted without dividend",
+          "new abstraction machinery adopted without dividend",
+          "a supported correspondence is dismissed as analogy or left incomplete solely because no code change is warranted",
+          "a law about one representation, transformation, or interface is credited as an unestablished claim about the whole system",
           "a relevant narrower premise is erased or a useful shared law is rejected because a broader unclaimed law fails",
           "discovery is withheld until its result is already known",
           "a catalogue is treated as the limit of available mathematical knowledge",
           "hypothesis generation is treated as acceptance or authority to mutate",
           "the entire corpus or a fixed candidate inventory is required for every task"
         ],
-        "rationale": "Generative reasoning may discover the problem formulation; retention requires supported correspondence, laws, consequences, and native realization."
+        "rationale": "Recognition establishes correspondence, laws, consequences, and limits; recommending a construction also requires its engineering dividend and justified native realization."
       },
       {
         "clause_id": "UNI-CONTEXT-001",
