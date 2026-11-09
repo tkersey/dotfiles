@@ -191,6 +191,12 @@ A missing universal proof is evidence debt about that stronger claim, not an
 obstruction to an adequate structure-only implementation. Nominate the weaker
 honest artifact when it suffices, without silently retaining universal wording.
 
+For a claimed universal lawful refinement, distinguish extracting justified
+specifications from repairing executable behavior; use
+[resource-sensitive effects](resource-sensitive-effects.md#a-core-refines-specifications)
+when frame preservation is the live law. Check the comparison direction and
+required-valid behavior under the actual order and morphisms.
+
 ## Transport across interpretations
 
 Before moving a result through an interpreter, name the source and target maps

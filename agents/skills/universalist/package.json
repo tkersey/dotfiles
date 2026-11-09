@@ -1,6 +1,6 @@
 {
   "name": "universalist",
-  "version": "18.0.4",
+  "version": "18.0.5",
   "description": "Task-grounded algebraic and categorical recognition and derivation across the theory corpus, native realization, claim-bound acceptance, 56 optional construction cards, and standalone-only durability.",
   "private": true,
   "unified_mechanics": true,
@@ -26,6 +26,6 @@
   "artifacts": "supported-mathematical-correspondence-or-native-construction-or-transformation",
   "latent_structure_recognition": true,
   "progressive_disclosure": "question-led-inquiry-claim-bound-acceptance",
-  "artifact_evaluation_cases": 34,
+  "artifact_evaluation_cases": 38,
   "workflow_evaluation_cases": 9
 }
