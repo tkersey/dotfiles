@@ -384,3 +384,91 @@ the instruction based on untouched cases, not these disclosed examples alone.
 Added vocabulary without better successors, lost valid behavior, or unnecessary
 machinery counts against the change. Source-contract mutations test instruction
 preservation, not model behavior; these trials earn no production review credit.
+
+## Dependency-respecting construction
+
+Status: **one bounded first-successor observation completed**. The historical
+comparisons above remain unrun. This case checks transfer to another independently
+decidable condition; it does not establish incremental or general skill efficacy.
+Use the existing isolation and scoring rules above for any further comparison.
+
+### Accepted task
+
+Implement synchronous, self-contained `assessRelease(plan, manifest, observations)`
+without mutating its inputs. The plan fixes string `artifactId` and `requiredDigest`,
+positive integer `requiredBytes`, and a nonempty list of distinct string IDs in
+`destinations`. Release requires a matching manifest digest and at least one planned
+destination that is both reachable and has `freeBytes >= requiredBytes`.
+
+A manifest is an object or null; its digest is a string or unknown (null or omitted).
+Its evidence applies only to the plan's artifact. Destination observations identify
+an artifact and destination, with Boolean-or-unknown `reachable` and nonnegative
+integer-or-unknown `freeBytes`. These two measurements may be available independently.
+Exactly one observation matching both identities supplies a planned destination's
+evidence; zero or multiple applicable observations leave both measurements unknown.
+Identical duplicates still count. Foreign or unplanned observations do not participate
+or create duplicates. Required destinations come from the plan, not the reports.
+
+Return true when admitted evidence ensures release, false when it rules release out,
+and null when both outcomes remain possible. Unknown facts can independently resolve
+either way. Support every well-formed plan in this domain; malformed types are outside
+the task. This source defines admission and the quantified relationship, without
+prescribing a helper, representation, or particular repair.
+
+### Discriminator and preservation
+
+The supplied counterexample was only an admitted digest mismatch hidden by absent
+destination observations. The selected transfer discriminator keeps admitted
+insufficient-capacity evidence fixed while reachability becomes unknown. A
+destination already ruled out by capacity must remain ruled out. When every planned
+destination is ruled out, release is false even with an unknown digest. The enclosing
+result still follows its own composition: one failing destination cannot veto a
+different destination that supplies a complete successful witness.
+
+The oracle enumerates all 243 partial assignments of digest equality, reachability,
+and capacity for two destinations. Its 1,024 ordinary Boolean completions evaluate
+`digest && ((reachableEast && capacityEast) || (reachableWest && capacityWest))`;
+agreement determines true or false, and disagreement determines null. Twenty-two
+additional cases exercise admission, missing and duplicate reports, same-destination
+binding, threshold equality, omitted fields, order, and a renamed three-destination
+plan. These include required-valid success and genuinely unresolved dependencies.
+The finite matrix is not exhaustive over all well-formed plans.
+
+### Observed first successors
+
+One fresh no-history implementation agent received the task and current Actuating
+at `0ab3718aa027cb5633c01bdfe825836d45a69d3d`; another received the same task and this
+revision. Their initial task prompts differed only by the assigned skill and subject paths.
+Both first completed candidates were frozen before assessment or repair feedback.
+The independent oracle and its cases were fixed before either implementation ran.
+
+| Subject | Bounded artifact result | Interpretation |
+|---|---|---|
+| Original global-completeness implementation | 138 passed, 127 failed; all 32 fully observed matrix cases passed. | The discriminator detects lost decisions under partial evidence. |
+| First successor using the revised guidance | 265 passed, 0 failed; fixed inputs and candidate bytes unchanged. | Observed transfer beyond the supplied digest witness, with admission and valid behavior preserved in this domain. |
+| First successor using current main | 265 passed, 0 failed; fixed inputs and candidate bytes unchanged. | Evaluator information was exposed through the shared agent registry before its first edit; unsuitable as an isolated comparison. |
+
+The revised-guidance agent reported no access to evaluator material, other task
+copies, or the agent registry. Shared filesystem visibility was not technically
+restricted. The current-main agent reported its exposure immediately and continued;
+that attempt was retained, not replaced. These results establish neither a clean
+comparative advantage nor broad efficacy, and confer no production review credit.
+
+`fixtures/dependency-release-before.mjs` retains the original implementation.
+`fixtures/dependency-release.mjs` retains the revised-guidance first successor
+verbatim (SHA-256 `a4f5d035fba6b4ad6dc81f0a27c115e0285d38e40a8e7ce99c83f4832b531589`).
+Its condition-local decisions and source-required composition are visible in code.
+The current-main successor's SHA-256 was
+`a319b3b65cbe5b29bc60aaa4d082e61e176401030199d6425efa18a4c0d1c9fe`.
+The revised construction guidance's SHA-256 at dispatch was
+`1ed15b8b33818bba9e1b0b36ae52c04818ba0fc0fb197c2faab2cb52fba41e76`.
+
+Replay the disclosed artifact cases, not the model trial, with:
+
+```sh
+node --test agents/skills/actuating/tests/test-dependency-construction.mjs
+```
+
+The checked-in regression retains the frozen oracle's cases and completion method,
+input-preservation checks, and predecessor sensitivity. These are now disclosed
+calibration cases, not untouched holdouts or a new production delivery gate.
