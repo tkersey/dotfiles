@@ -56,18 +56,26 @@ before treating its proposed remedy as necessary. Do not silently assume a missi
 premise, transfer it to callers, or reject required-valid behavior to avoid it.
 
 Prefer constructions that make required relationships consequences of permitted
-operations over ones that repeatedly ask callers to reconstruct them. Preserve
-authoritative facts, derived observations, and distinct history in their actual
-roles. A local correction remains adequate when the existing construction already
-establishes the general relationship; neither local-repair-first nor redesign is
-compulsory. A larger owner, extra type, or relocated check is not itself a gain.
+operations over ones that repeatedly ask callers to reconstruct them. When the
+relationship composes judgments, derive what each required condition can decide
+from admitted evidence and its actual applicability, identity, and lifetime
+dependencies. Distinguish prerequisites for using that evidence from other
+conditions required for the enclosing result. Make the relationship explicit in
+the native code: preserve independently decidable conditions and combine them
+with the source-required scope, bindings, and quantifiers. Missing evidence may
+obscure a condition only when that judgment depends on it; admission remains a
+genuine dependency.
 
-Develop the implementation and its argument together. Hard or repetitive proof may
-justify changing the representation, algorithm, or decomposition. Establish the
-required behavior of primitives and their composition, including exceptional
-outcomes and subsequent behavior. Complete the affected producers, consumers,
-migrations, and retirements; a partial slice remains work in progress. Preserve
-independent evidence even when production meanings are shared.
+Develop the implementation and its argument together. Establish primitive meaning
+and why permitted composition gives the required result, including exceptional
+outcomes and subsequent behavior. Hard or repetitive proof may justify changing
+the representation, algorithm, or decomposition. Preserve authoritative facts,
+derived observations, distinct history, and independent evidence in their actual
+roles even when production meanings are shared. Complete the affected producers,
+consumers, migrations, and retirements; a partial slice remains work in progress.
+A local correction remains adequate when the existing construction establishes
+the general relationship; neither local-repair-first nor redesign is compulsory.
+A larger owner, extra type, or relocated check is not itself a gain.
 
 Use the [construction repertoire](references/counterexample-guided-normalization.md#constructive-derivation)
 and [supporting skills](architecture.md) when useful. Their examples are not
@@ -104,8 +112,15 @@ evidence lifetime, including composition and resource growth when the source
 constrains them. Preserve distinct historical and current-authority judgments when
 reusing immutable evidence. A narrower improvement remains partial; a desirable
 stronger property is not a correctness liability without source authority. Choose
-a source-supported falsifier or decisive source argument and the exact-head
-verifier before that realization. This selection rule does not demand a finished
+a source-supported discriminator or decisive source argument and the exact-head
+verifier before that realization. When partial evidence may introduce an unnecessary
+dependency, keep a condition's deciding evidence fixed while varying a source-permitted
+observation outside its dependencies. Check both the condition and its contribution
+to the required result; the enclosing result need not remain unchanged. Preserve the
+nearest required-valid case and a case whose genuine missing premise requires
+uncertainty. Derive the variation from the source and native evidence path;
+independently named fields do not establish independent meaning.
+This selection rule does not demand a finished
 causal account before authorized exploration; experiments remain subject to the
 common proof and effect rules. Acceptance requires the actual mechanism,
 migrations, and retirements, not intent.

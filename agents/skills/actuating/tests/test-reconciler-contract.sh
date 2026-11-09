@@ -344,8 +344,9 @@ const packet = text('../universalist/references/workflow/subagent-packet-contrac
 assert(packet.includes('axis and typed hole may be derived or revised during inquiry'));
 assert(packet.includes('do not invent an incumbent, axis, or hole'));
 const categorical = text('../../../codex/agents/universalist-categorical-architect.toml');
-assert(categorical.includes('focused theory lookup before ordinary comparison'));
-assert(categorical.includes('theory suggests hypotheses but does not certify applicability'));
+assert(categorical.includes('Consult focused theory references as questions develop'));
+assert(categorical.includes('An incumbent, architectural axis, typed hole, or candidate need not exist on entry'));
+assert(categorical.includes('map these to implementation evidence; derive only supported consequences'));
 assert(!categorical.includes('Only when ordinary comparison leaves a concrete typed hole'));
 assert(text('counterexamples.md').includes('never changed expectations merely to agree with the candidate'));
 assert(causal.includes('Prefer making an equivalent omission unavailable to other operations'));
@@ -385,6 +386,7 @@ console.log('actuating: contract, routing, proof ownership, challenger pairing, 
 JS
 node "$skill_root/tests/test-instruction-routing.mjs"
 node "$skill_root/tests/test-construction-core.mjs"
+node --test "$skill_root/tests/test-dependency-construction.mjs"
 node "$skill_root/tests/test-review-credit.mjs"
 sh "$skill_root/tests/test-construction-cycle-scenarios.sh"
 sh "$skill_root/tests/test-post-elimination-scenarios.sh"
