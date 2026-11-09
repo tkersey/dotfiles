@@ -1,4 +1,4 @@
-# Universalist 18.0.4
+# Universalist 18.0.5
 
 Universalist uses algebraic and categorical knowledge to **recognize mathematical
 structure, formulate problems, and derive solutions**. A supported correspondence
@@ -51,6 +51,7 @@ extra review lane, or separate discovery report are introduced.
 | Which materially different native realization should be retained? | `references/consequential-boundary.md` |
 | Which premise needs investigation, or what proof/correspondence does the actual claim need? | `references/claim-appropriate-proof.md` |
 | Do accumulation, feedback, adaptation, or recovery change the claim? | `references/system-dynamics.md` |
+| Does an effect preserve surrounding resources, depend on them, or only refine justified specifications? | `references/resource-sensitive-effects.md` |
 | Should data be materialized or eliminated directly? | `references/syntax-semantics-pivot.md` |
 
 The 56 construction cards and 12 architectural axes remain available. They are
@@ -169,13 +170,16 @@ historical receipts and audit fixtures retain their original attribution.
 
 `references/efficacy-evaluation.md` separates routing, artifact correctness,
 workflow authority, prompt dependence, and incremental reference contribution.
-The routing corpus now has 30 routing cases, 18 artifact cases, and nine workflow
+The routing corpus now has 30 routing cases, 22 artifact cases, and nine workflow
 cases. The unchanged representation corpus adds 16 artifact cases and retains its
 17.8.0 authoring baseline; it is not evidence that 18.0.0 has been evaluated.
 All 61 existing cases across those corpora remain present, with activation scenarios
 updated to distinguish mechanical realization from unresolved semantic reasoning.
 Twelve new cases cover unprompted synthesis, fixed-interface algorithms, semantic
 oracles, unlisted constructions, false friends, negative controls, and both callers.
+Four further artifact cases cover resource preservation versus result dependence,
+valid operations in extended contexts, specification refinement versus execution
+repair, and operational adequacy beyond one-way weakest-precondition rules.
 
 Present only ordinary task scenarios to evaluated agents; keep expected patterns,
 falsifiers, and scoring criteria evaluator-only. Reserve independently selected

@@ -38,6 +38,11 @@ First seam examples:
 - one plugin/rule operation;
 - one test handler for an existing service call.
 
+When the question is which resource assertions an effect establishes or preserves,
+use [resource-sensitive effects](resource-sensitive-effects.md). Effect syntax,
+ordinary monad strength, and Tambara context coherence alone do not establish
+assertion-level framing or independence of the required observations.
+
 ## Applicative / Day static descriptions
 
 Use when an effectful computation's full operation/dependency shape is known before intermediate results are available.

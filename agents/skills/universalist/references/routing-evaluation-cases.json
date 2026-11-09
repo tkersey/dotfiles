@@ -1,6 +1,6 @@
 {
   "schema": "universalist-routing-evaluation/v1",
-  "skill_fingerprint": "universalist-generative-derivation-v18.0-v6",
+  "skill_fingerprint": "universalist-generative-derivation-v18.0-v7",
   "purpose": "Evaluate task-grounded discovery separately from acceptance and model efficacy. Present only scenario/requirements to the agent; keep expected outcomes and discriminators evaluator-only. Skip means no new invocation, route, record, or receipt.",
   "expectations": {
     "skip": "No unresolved task-relevant semantic question remains; reuse adequate derivations silently.",
@@ -460,6 +460,61 @@
         "dropping the failure observation to obtain a simpler proof"
       ],
       "claim_check": "Permit discovery, demand claim-appropriate evidence, and accept an adequate native alternative. derived:<name> is attribution rather than proof or a new route."
+    },
+    {
+      "id": "resource-preservation-and-result-dependence",
+      "scenario": "An operation returns whether a key exists anywhere in a shared map and leaves every entry unchanged. Its contract requires the result to depend only on the requesting tenant. The existing proof compares map contents before and after.",
+      "must_preserve": [
+        "required tenant-local queries",
+        "unchanged entries owned by other tenants"
+      ],
+      "must_reject": [
+        "inferring result independence from an unchanged map",
+        "rejecting every query whenever another tenant has entries"
+      ],
+      "claim_check": "Vary another tenant's entries while fixing the requesting tenant's deciding inputs. Check the result as well as the preserved state; a frame-stable state-only postcondition does not settle the result-sensitive claim."
+    },
+    {
+      "id": "scoped-effect-valid-context",
+      "scenario": "A rollback may delete only the current transaction's staging entries and must remain usable while another transaction has entries. One implementation deletes all staging entries; another refuses rollback whenever any unrelated entry exists; a third has an adequate scoped deletion operation.",
+      "must_preserve": [
+        "other transactions' entries on success and required failure paths",
+        "required rollback with a populated unrelated context",
+        "an adequate scoped incumbent"
+      ],
+      "must_reject": [
+        "treating blanket refusal as a complete repair",
+        "requiring a categorical runtime despite an adequate native operation",
+        "assuming distinct handle names exclude aliases"
+      ],
+      "claim_check": "Derive the permitted footprint and legal context, inspect the actual deletion and recovery paths, and retain the valid operation while testing preservation of the complement."
+    },
+    {
+      "id": "frame-core-is-specification-refinement",
+      "scenario": "A proposed fix applies a frame-preserving core to a specification lifting but leaves executable code unchanged. The old lifting justified an operation that the revised lifting no longer admits, although that operation is source-required.",
+      "must_preserve": [
+        "the required-valid operation as an undischarged implementation obligation",
+        "the distinction between the computation monad and its assertion lifting"
+      ],
+      "must_reject": [
+        "claiming the core repairs execution or proves every former guarantee",
+        "reversing the pointwise refinement order",
+        "claiming a universal minimum without fixing comparison objects and maps"
+      ],
+      "claim_check": "Under the higher-order bunched fibration and fibered-lifting hypotheses, fix the fibration, computation monad, and strength; identify the greatest strong lifting below the original, its unchanged lawful cases, and idempotence. Narrowing justified specifications alone does not satisfy the missing behavior."
+    },
+    {
+      "id": "weakest-precondition-rule-adequacy",
+      "scenario": "A verifier defines wp(c,Q) as true for every computation and postcondition. Its one-way Return, Bind, Frame, and Monotonicity checks pass. It claims this proves that a terminating command establishes any accepted postcondition.",
+      "must_preserve": [
+        "separate structural-law and operational-adequacy judgments",
+        "any adequate interpretation whose actual premises support the required behavior"
+      ],
+      "must_reject": [
+        "accepting an impossible postcondition for a terminating command solely because those rules pass",
+        "declaring the cited categorical framework unsound from an inadequately interpreted checker"
+      ],
+      "claim_check": "Use a terminating computation and false postcondition to refute the claimed implication. Identify the missing correspondence rather than treating rule satisfaction as operational adequacy."
     }
   ],
   "status": "authored_not_model_replayed",

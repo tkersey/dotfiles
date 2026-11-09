@@ -66,6 +66,16 @@ with the source-required scope, bindings, and quantifiers. Missing evidence may
 obscure a condition only when that judgment depends on it; admission remains a
 genuine dependency.
 
+When effects must preserve separately owned resources, derive the permitted
+footprint, legal surrounding context, and preservation by primitives and their
+composition, including failure and recovery. Establish required information
+independence separately: unchanged resources and differently named owners do not
+alone prove it. Use the existing dependency variation in [proof acceptance](#proof-acceptance).
+If the effect/specification relationship or a proposed refinement is unresolved,
+consult [resource-sensitive effects](../universalist/references/resource-sensitive-effects.md).
+Distinguish repairing execution from restricting admission or justified claims;
+every source-required valid operation remains an obligation.
+
 Develop the implementation and its argument together. Establish primitive meaning
 and why permitted composition gives the required result, including exceptional
 outcomes and subsequent behavior. Hard or repetitive proof may justify changing
