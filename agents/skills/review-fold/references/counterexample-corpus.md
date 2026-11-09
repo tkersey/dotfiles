@@ -66,7 +66,7 @@ logical slot in Ledger personal custody
 ```
 
 Before the first Ledger command in the enclosing workflow, load `$ledger` and
-complete `$ledger ensure` with `--min-version 1.7.0` once.
+complete `$ledger ensure` with `--min-version 1.8.0` once.
 
 Resolve the personal context through Ledger's canonical-custody guidance and use
 its `native_args` for every corpus operation. Preserve existing repository IDs
@@ -152,10 +152,13 @@ Counterexample admission established validity and current Goal relevance
 owner-issued evidence and original subject are exact
 ```
 
-Before the first semantic capture, run Ledger's strict `--ensure-owner` with the
-same selection, definition, and manifest. A successful read does not satisfy write
-preparation or prove legacy writers have stopped. Use the returned managed
-selector; retain semantic-capture failure separately from successful preparation.
+Before the first semantic capture, run Ledger's `--ensure-owner` with the
+same selection, definition, and manifest. Healthy managed custody needs no
+sibling scan. Its `source_coverage: not_checked` does not prove first occurrence,
+complete recurrence history, or legacy writer cutover. An admitted independent
+witness may still be captured under its original identity and authority; select
+Ledger's reconciliation route when the intended historical claim needs it.
+Use the returned managed selector and retain the capture outcome separately.
 
 ```bash
 ledger transact \

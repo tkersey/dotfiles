@@ -87,9 +87,10 @@ def owner_command(repo, definition, *, store_id=None, binary=None, mode='--ensur
     return argv
 
 
-def owner_context(repo, definition, *, store_id=None, maintain=False, read_only=False, confirm_no_writers=False, binary=None, skill_root=None):
+def owner_context(repo, definition, *, store_id=None, maintain=False, read_only=False, reconcile=False, confirm_no_writers=False, binary=None, skill_root=None):
     return invoke(owner_command(repo, definition, store_id=store_id, binary=binary,
-                               mode='--ensure-owner' if maintain else '--read-only', confirm_no_writers=confirm_no_writers))
+                               mode='--reconcile-owner' if reconcile else '--ensure-owner' if maintain else '--read-only',
+                               confirm_no_writers=confirm_no_writers))
 
 
 def restore_archived_slot(context, definition, *, binary=None, skill_root=None, confirm_no_writers=False):

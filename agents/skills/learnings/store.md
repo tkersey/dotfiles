@@ -3,7 +3,7 @@
 ## Canonical Store
 
 Before the first native command, load `$ledger` and complete `$ledger ensure`
-with `--min-version 1.7.0` for canonical owner access and `ledger-artifact-abi/v1`.
+with `--min-version 1.8.0` for canonical owner access and `ledger-artifact-abi/v1`.
 The Ledger skill owns physical location, the personal catalog, initialization,
 and legacy import. Do not derive a store from the current checkout or duplicate
 its lookup/migration policy here.
@@ -16,8 +16,11 @@ learnings_definition="$(realpath "${CODEX_HOME:-$HOME/.codex}/skills/learnings/d
 
 Follow `$ledger`'s [owner access](../ledger/references/canonical-custody.md#owner-access):
 read healthy present custody first, select preparation or restoration only for
-its exact typed condition, and run strict preparation before the first semantic
-write. Reuse the returned context and its coverage qualification. Explicit
+its exact typed condition, and use `--ensure-owner` before the first semantic
+write. Healthy managed history needs no sibling scan. Reuse the returned context
+and its coverage qualification; an independent new lesson needs its own evidence,
+while a supersession or absence claim needing unknown history requires Ledger's
+explicit reconciliation route. Explicit
 file/custody restrictions prevent maintenance, not healthy reads; preparation
 grants no new learning capture or memory admission authority.
 

@@ -6,11 +6,11 @@ change effect authority or activate capture/admission.
 ## Canonical Store and CLI
 
 Load `$ledger` and complete its owner-specific bootstrap before the first native
-command. Canonical owner access requires Ledger 1.7.0 and `ledger-artifact-abi/v1`:
+command. Canonical owner access requires Ledger 1.8.0 and `ledger-artifact-abi/v1`:
 
 ```bash
 ledger_skill_root="$(realpath "${CODEX_HOME:-$HOME/.codex}/skills/ledger")"
-"$ledger_skill_root/scripts/ensure-ledger" --min-version 1.7.0
+"$ledger_skill_root/scripts/ensure-ledger" --min-version 1.8.0
 ```
 
 When installation is already authorized, add `--install` to that same command.
@@ -29,8 +29,11 @@ check while the definition and executable are unchanged.
 
 Follow `$ledger`'s [owner access](../../ledger/references/canonical-custody.md#owner-access)
 for this definition: read healthy present custody first; prepare or restore only
-for its exact typed condition, and run strict preparation before the first
-semantic write. Retain the returned `store_root`,
+for its exact typed condition, and use `--ensure-owner` before the first
+semantic write. An intact managed owner needs no sibling scan; its readiness
+does not establish complete lifecycle history. Select Ledger's explicit
+reconciliation route when a gate or transition depends on an unresolved source.
+Retain the returned `store_root`,
 `store_id`, and stable `repository_id`; `workspace_root` is optional provenance.
 All canonical operations use that selector, including admission. Direct
 `--store-id` selection requires no Git workspace; `--repo` can resolve a cataloged

@@ -1,6 +1,6 @@
 ---
 name: learnings
-description: "Capture or recall evidence-backed execution learnings. Use when observed evidence changes a reusable decision, reveals a durable footgun, or corrects a prior learning; also for lessons learned, learning recall, or memory admission and supersession. Delivery alone is not a trigger."
+description: "Recall lessons; assess reusable fixes, regressions, footguns, and strategy pivots. Capture only observed evidence that changes a transferable decision; also use for lessons learned, learning correction, or memory admission and supersession. Delivery alone is not a trigger."
 metadata:
   version: "8.4.0"
 ---
