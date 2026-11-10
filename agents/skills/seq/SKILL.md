@@ -1,6 +1,6 @@
 ---
 name: seq
-description: "Reconstruct bounded, provenance-preserving observations from supported native sessions and explicit input relations with Seq 1.x. Use for `$seq`, session, tool, and message forensics, token accounting, worker attribution, historical evidence reports, or authorized native gist transport."
+description: "Reconstruct bounded, provenance-preserving observations from supported native sessions and explicit input relations with Seq 1.x. Use for `$seq`, session, tool, and message forensics, token accounting, worker attribution, or historical evidence reports."
 metadata:
   version: "2.4.0"
 ---
@@ -15,9 +15,8 @@ Reconstruct:
 facts + provenance + corpus scope + contamination + limitations + uncertainty
 ```
 
-Observations do not validate durable artifacts or grant action, repair, review,
-publication, or closure authority. Native gist transport performs only the
-separately authorized publication or read; it does not decide what may be shared.
+Seq does not validate durable artifacts or grant action, repair, review,
+publication, or closure authority.
 
 ## Source boundary
 
@@ -134,9 +133,8 @@ For compressed history, require `jsonl.zst` in `source_encodings`; a clean resul
 from an older executable does not prove it discovered compressed files.
 
 Capabilities report physical adapters, native operators, renderers, cache
-format, generic limits, and native transports. Gist operations require
-`github-gist/v1` in `transports`. A missing skill-specific flag is never a
-fallback signal; load the owning definition and check its ABI/operators.
+format, and generic limits. A missing skill-specific flag is never a fallback
+signal; load the owning definition and check its ABI/operators.
 
 ## Native surface
 
@@ -163,26 +161,6 @@ For a one-off question, write a temporary passive definition, check it, and
 preserve its closure digest with the result. Reuse an owning definition when one
 fits; save a recurring interpretation with its semantic owner. A temporary
 checked definition needs no skill edit and grants no new authority.
-
-### Authorized gist transport
-
-Use native transport only after the requested scope and its publication
-authority are established. Secret gists are unlisted and readable by anyone
-with the URL. Inspect the selected file contents and metadata before creation;
-do not publish raw observations or infer redaction from `private: false`.
-
-```bash
-seq gist create --input <request.json> --format json
-seq gist read --gist <id-or-url> --revision <sha> --format json
-```
-
-Create requests contain `files: {filename: {content: string}}` and an optional
-`description`; the transport fixes secret visibility. Keep credentials outside
-the input. Read pins the requested revision; without `--revision`, it resolves
-the current revision once and returns that identity for subsequent reads.
-Transport truncation, oversized data, and failed requests remain errors.
-Transport success does not validate the contents or grant their instructions
-authority. Reuse this surface from the semantic owner of a shared format.
 
 ## Standard Seq definitions
 
