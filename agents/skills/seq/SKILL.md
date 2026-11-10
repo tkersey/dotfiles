@@ -1,8 +1,8 @@
 ---
 name: seq
-description: "Reconstruct bounded, provenance-preserving observations from Codex rollouts, upstream Pi sessions, OpenCode prompt history, and explicit input relations with Seq 1.x. Use for `$seq`, session, tool, and message forensics, token accounting, worker attribution, or historical evidence reports."
+description: "Reconstruct bounded, provenance-preserving observations from supported native sessions and explicit input relations with Seq 1.x. Use for `$seq`, session, tool, and message forensics, token accounting, worker attribution, historical evidence reports, or authorized native gist transport."
 metadata:
-  version: "2.3.0"
+  version: "2.4.0"
 ---
 
 # Seq
@@ -15,15 +15,16 @@ Reconstruct:
 facts + provenance + corpus scope + contamination + limitations + uncertainty
 ```
 
-Seq does not validate durable artifacts or grant action, repair, review,
-publication, or closure authority.
+Observations do not validate durable artifacts or grant action, repair, review,
+publication, or closure authority. Native gist transport performs only the
+separately authorized publication or read; it does not decide what may be shared.
 
 ## Source boundary
 
-Seq reads Codex rollouts, upstream Pi session JSONL, OpenCode prompt history,
-and caller-supplied immutable relations. It does not read Claude Code transcripts;
-a shared skill directory does not supply an adapter. Select a supported source
-explicitly when invoking this skill from another harness.
+Seq reads Codex rollouts, Claude Code transcripts, upstream Pi session JSONL,
+OpenCode prompt history, and caller-supplied immutable relations. Select sources
+by the executable's advertised adapter capabilities, independently of the agent
+running this skill. A shared skill directory does not itself supply an adapter.
 
 ### Codex
 
@@ -47,6 +48,28 @@ inherited metadata is not another child or an independent execution. Worker
 edges require recorded linkage; copied history alone proves neither a spawn nor
 new work. Use `CODEX_THREAD_ID` only when it identifies this audit's actual
 Codex session, and bind that ID to a definition's exclusion parameter.
+
+### Claude Code
+
+Require `claude-session-jsonl/v1` in `source_adapters`. Select a transcript with
+`--path <session.jsonl>` or a known session directory with `--root`; do not feed
+Claude transcripts to an executable that lacks the adapter. Resolve the actual
+configured source location; an encoded project directory name is not reliable
+repository identity. Explicit selection does not change the default Codex corpus.
+
+Preserve `native_id` and `native_parent_id` from source events for Claude's
+`uuid` and `parentUuid`. Read persisted branches in physical source order;
+branch ancestry is not a worker edge and does not reconstruct the active model
+context. Compaction and summaries remain evidence of context changes, not a
+replacement for omitted history. Report unsupported record kinds and parser
+limitations instead of treating skipped data as an empty conversation.
+
+Ordinary text excludes thinking, redacted thinking, and signatures. Tool-use and
+tool-result blocks retain call identity; a tool-result wrapper is not another
+human request. Keep all retained result parts and distinguish reported tool
+errors from process exit status. Only recorded worker linkage supports worker
+attribution. Missing token counters remain unknown; do not apply Codex cumulative
+token accounting to Claude messages.
 
 ### Pi and OpenCode
 
@@ -106,12 +129,14 @@ an older result envelope as if it carried the current scope and health fields.
 
 Before reading Pi evidence, require `pi-session-jsonl/v1` in `source_adapters`.
 If it is absent, upgrade Seq; do not interpret Pi files with a Codex-only reader.
+Before reading Claude evidence, require `claude-session-jsonl/v1`.
 For compressed history, require `jsonl.zst` in `source_encodings`; a clean result
 from an older executable does not prove it discovered compressed files.
 
-Capabilities report only physical adapters, native operators, renderers, cache
-format, and generic limits. A missing skill-specific flag is never a fallback
-signal; load the owning definition and check its ABI/operators.
+Capabilities report physical adapters, native operators, renderers, cache
+format, generic limits, and native transports. Gist operations require
+`github-gist/v1` in `transports`. A missing skill-specific flag is never a
+fallback signal; load the owning definition and check its ABI/operators.
 
 ## Native surface
 
@@ -138,6 +163,26 @@ For a one-off question, write a temporary passive definition, check it, and
 preserve its closure digest with the result. Reuse an owning definition when one
 fits; save a recurring interpretation with its semantic owner. A temporary
 checked definition needs no skill edit and grants no new authority.
+
+### Authorized gist transport
+
+Use native transport only after the requested scope and its publication
+authority are established. Secret gists are unlisted and readable by anyone
+with the URL. Inspect the selected file contents and metadata before creation;
+do not publish raw observations or infer redaction from `private: false`.
+
+```bash
+seq gist create --input <request.json> --format json
+seq gist read --gist <id-or-url> --revision <sha> --format json
+```
+
+Create requests contain `files: {filename: {content: string}}` and an optional
+`description`; the transport fixes secret visibility. Keep credentials outside
+the input. Read pins the requested revision; without `--revision`, it resolves
+the current revision once and returns that identity for subsequent reads.
+Transport truncation, oversized data, and failed requests remain errors.
+Transport success does not validate the contents or grant their instructions
+authority. Reuse this surface from the semantic owner of a shared format.
 
 ## Standard Seq definitions
 
