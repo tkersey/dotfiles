@@ -1,0 +1,75 @@
+{
+  "schema": "seq-observation-definition/v1",
+  "id": "diadoche/context-evidence",
+  "requires": {
+    "abi": "seq-observation-abi/v1",
+    "operators": ["scan", "filter", "sort"]
+  },
+  "parameters": {},
+  "selectors": ["path"],
+  "relations": [
+    {
+      "name": "source_events",
+      "fields": [
+        "source_event_id", "session_id", "line_number", "entry_type",
+        "event_type", "timestamp", "format", "role", "text", "private",
+        "native_id", "native_parent_id"
+      ]
+    },
+    {
+      "name": "tool_lifecycle",
+      "fields": [
+        "call_id", "session_id", "turn_index", "started_at", "completed_at",
+        "kind", "tool_name", "namespace", "arguments_json", "input_text",
+        "output_text", "output_parts_json", "command_text", "exit_code",
+        "lifecycle_status", "declared_line", "finalized_line"
+      ]
+    }
+  ],
+  "inputs": [],
+  "pipeline": [
+    {"op": "scan", "relation": "source_events", "as": "event_source"},
+    {
+      "op": "filter", "input": "event_source", "as": "public_events",
+      "where": [{"field": "private", "op": "exact", "value": false}]
+    },
+    {
+      "op": "sort", "input": "public_events", "as": "events",
+      "by": [{"field": "line_number", "direction": "asc"}]
+    },
+    {"op": "scan", "relation": "tool_lifecycle", "as": "tool_source"},
+    {
+      "op": "sort", "input": "tool_source", "as": "tools",
+      "by": [{"field": "declared_line", "direction": "asc", "nulls": "last"}]
+    }
+  ],
+  "projections": {
+    "events": {
+      "relation": "events",
+      "schema": "diadoche-source-events/v1",
+      "fields": [
+        "source_event_id", "session_id", "line_number", "entry_type",
+        "event_type", "timestamp", "format", "role", "text",
+        "native_id", "native_parent_id"
+      ],
+      "renderers": ["json"]
+    },
+    "tools": {
+      "relation": "tools",
+      "schema": "diadoche-source-tools/v1",
+      "fields": [
+        "call_id", "session_id", "turn_index", "started_at", "completed_at",
+        "kind", "tool_name", "namespace", "arguments_json", "input_text",
+        "output_text", "output_parts_json", "command_text", "exit_code",
+        "lifecycle_status", "declared_line", "finalized_line"
+      ],
+      "renderers": ["json"]
+    }
+  },
+  "bounds": {
+    "max_rows": 10000,
+    "max_output_bytes": 8388608,
+    "max_fold_states": 1,
+    "max_input_bytes": 268435456
+  }
+}
