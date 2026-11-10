@@ -38,10 +38,14 @@ Add a continuity sentence only when the relation to the previous answer is not a
 Follow the host's current tool contract and mode restrictions. Tool availability
 alone does not authorize using it for approvals or blocking decisions.
 
-Use `request_user_input_async` when permitted to ask while independent authorized
-work continues. Use `request_user_input` only for questions the current mode permits
-it to carry. If a required answer cannot use either tool, ask one concise,
-self-contained plain-text question. Do not turn a missing answer into approval.
+Prefer the built-in question UI over a plain-text question. Use
+`request_user_input_async` when permitted, whether independent authorized work
+remains or the next action is to yield for the answer. Independent work is not a
+prerequisite for async delivery. Otherwise use `request_user_input` when the
+current mode permits it to carry the question and its schema can honestly
+represent the answer space. Use plain text only when neither available tool can
+carry the question under the host's current rules, or a confirmed tool failure
+prevents delivery. Do not turn a missing answer into approval.
 
 Keep the skill's small question budget across deliveries, not just within one
 call. The live schema is authoritative; do not transfer fields between tools.
@@ -65,7 +69,8 @@ string `options`, not synchronous `id`, `header`, `question`, or option objects.
 Keep conceptual ids internally. Make each title self-contained, including the
 context needed to decide; put consequences in the title or concise option strings.
 Omit `options` for a free-text-only question rather than fabricating choices. When
-async is not permitted for that question, use the plain-text fallback.
+async is not permitted for that question, consider the synchronous UI under its
+mode and schema restrictions before using the plain-text fallback.
 
 The immediate `{"accepted":true}` response acknowledges delivery, not the user's
 decision. Replies arrive later as new user messages. Keep the question pending in

@@ -134,6 +134,12 @@ When the frontier contains more than three decisions, ask the one to three with 
 
 ### 5. Ask precisely
 
+Use the host's built-in question UI whenever an available question tool is
+permitted for the question. This includes standalone grilling with no independent
+work to continue: deliver the question, then yield for the answer. Plain text is
+a fallback only when no available question tool can carry the question under
+the host's current rules, or a confirmed tool failure prevents delivery.
+
 Read [references/question-interface.md](references/question-interface.md) only when a question must be asked.
 
 Questions must be:
