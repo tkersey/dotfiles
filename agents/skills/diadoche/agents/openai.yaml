@@ -1,4 +1,4 @@
 interface:
   display_name: "Diadoche"
   short_description: "Share useful coding context through secret gists"
-  default_prompt: "Use $diadoche to share or receive scoped coding-session context with Seq."
+  default_prompt: "Use $diadoche to share or receive scoped coding-session context, using Seq for native evidence and Ledger for artifact exchange."

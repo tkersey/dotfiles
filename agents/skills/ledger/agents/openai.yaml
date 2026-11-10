@@ -1,6 +1,6 @@
 interface:
   display_name: "Ledger"
-  short_description: "Operate the passive artifact runtime"
-  default_prompt: "Use $ledger to run the owner-selected passive protocol with explicit custody, read healthy canonical owners without legacy discovery, and perform only the required authorized preparation or exact recovery."
+  short_description: "Validate, retain, and exchange artifacts"
+  default_prompt: "Use $ledger for the selected operation: run the owner-selected passive protocol with explicit custody, read healthy canonical owners without legacy discovery, perform only required authorized preparation or exact recovery, or exchange authorized artifact files through native gist commands without local custody setup."
 policy:
   allow_implicit_invocation: true

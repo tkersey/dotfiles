@@ -1,7 +1,7 @@
 # Diadoche context v1
 
 Sections: [Files and identity](#files-and-identity), [Context](#context),
-[Evidence](#evidence), [Seq transport request](#seq-transport-request).
+[Evidence](#evidence), [Ledger transport request](#ledger-transport-request).
 
 ## Files and identity
 
@@ -100,7 +100,7 @@ by the context must exist in the supplied evidence file. Every evidence source
 must appear in `sources`. If the source content cannot be shared, describe the
 claim as reported with unavailable support and omit the citation.
 
-## Seq transport request
+## Ledger transport request
 
 Author this shape with the harness's file tools, using the exact prepared bytes
 as JSON strings. Escape JSON through the host's serializer; do not interpolate
@@ -117,7 +117,7 @@ the file contents into a shell command.
 }
 ```
 
-The transport creates only secret gists. Keep credentials outside the request.
+Ledger creates only secret gists. Keep credentials outside the request.
 The returned gist revision identifies the published bytes, not their truth or
 the sender's authority over the recipient. Gist history can retain older content;
 do not rely on a later edit to undo disclosure.
