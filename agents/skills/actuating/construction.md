@@ -144,8 +144,12 @@ When transfer from a model or abstraction to the implementation remains unresolv
 use [claim-directed correspondence](../universalist/references/claim-appropriate-proof.md#claim-directed-correspondence).
 Reuse adequate native evidence.
 
-When deciding evidence compares a projection, normalization, summary, or round
-trip, and the claim requires more than that comparison directly observes, use
+When a construction or its deciding evidence uses a projection, normalization,
+summary, reconstructed witness, or round trip, inspect the actual consumer and
+establish whether its inputs determine the source-required judgment. For a common
+witness, distinguish the adequacy of its relevant producer paths from the
+correctness of the shared judgment. When the claim requires more than those inputs
+directly observe, use
 [determination before cancellation](../universalist/references/claim-appropriate-proof.md#determination-before-cancellation).
 Reuse an adequate argument or establish why agreement determines the required
 property. Include the next actions and claims justified by the evidence: could
