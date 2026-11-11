@@ -35,7 +35,9 @@ ownership, dependency-tracking or hook-selection correctness. Keep migrations
 scoped; do not format unrelated changes or generated/vendor sources.
 
 Replace removed array repetition with typed `@splat` when repeating a single
-element; a repeated multi-element pattern needs explicit construction. Replace
+element; a repeated multi-element pattern needs explicit construction. A leftover
+`"ab" ** 2` fails with `binary operator '*' has whitespace on one side, but not the
+other`, which does not name the removal (observed with 0.17.1). Replace
 `void{}` with `{}`. Remove `errdefer |err|` captures: retain cleanup with `errdefer`
 and observe errors at an appropriate `catch` boundary. Do not log twice or alter
 the advertised failure guarantee. `i0` and the `internal`/`link_once` global
