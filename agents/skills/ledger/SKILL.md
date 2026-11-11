@@ -49,9 +49,12 @@ Before the first native Ledger command, complete `$ledger ensure` once. Reuse
 readiness while the resolved executable and execution environment are unchanged;
 recheck when either changes. `$ledger` is skill syntax, not a shell command.
 
+Bind `ledger_skill_root` to the absolute directory containing this `SKILL.md`,
+using the Ledger package location supplied by the executing harness. Do not infer
+it from `CODEX_HOME` or a fixed `.codex` or `.agents` installation directory.
+
 ```bash
-ledger_skill_root="$(realpath "${CODEX_HOME:-$HOME/.codex}/skills/ledger")"
-"$ledger_skill_root/scripts/ensure-ledger"
+"${ledger_skill_root:?Bind ledger_skill_root to the loaded Ledger package}/scripts/ensure-ledger"
 ```
 
 After `ledger-bootstrap-ready/v1`, invoke the native CLI directly. The handler
