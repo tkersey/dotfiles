@@ -8,6 +8,13 @@ git clone https://github.com/tkersey/dotfiles.git ~/.dotfiles && cd ~/.dotfiles 
 See [Ghostty configuration](ghostty/README.md) for themes, agent-session shortcuts,
 the one-time tip-cask migration, and local validation.
 
+### Shared agent instructions
+
+`agents/AGENTS.md` is the shared instruction source. The repository-root
+`CLAUDE.md` symlinks to it, and the installer links `~/.claude/CLAUDE.md` through
+that root file. The earlier `claude/CLAUDE.md` symlink remains available for
+existing installations.
+
 ### Codex configuration
 
 The shared Codex config is installed as a symlink:

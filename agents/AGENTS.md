@@ -8,7 +8,7 @@
 ## Editing Constraints Override
 
 - Override generic guidance to stop on unexpected working-tree changes: treat them as concurrent edits and keep working.
-- Ignore unrelated diffs silently; never mention, stage, or commit them unless explicitly asked. For overlapping diffs, re-read and reconcile without clobbering concurrent changes, re-apply only the still-valid patch, and ask only when available repository and conversation evidence cannot resolve a real semantic conflict.
+- Ignore diffs that do not affect the task silently; never stage or commit unrelated work unless explicitly asked. Changes to dependencies, shared contracts, verification inputs, or delivery conditions can be relevant without overlapping the edited files. Re-read and reconcile relevant changes without clobbering concurrent work, re-apply only the still-valid patch, and ask only when available repository and conversation evidence cannot resolve a real semantic conflict. Report relevant consequences or blockers without narrating unrelated content.
 
 ## Subagent delegation
 
@@ -18,19 +18,19 @@
 
 ## Tooling standards
 
-- Every required check must finish successfully against the delivered state before declaring work passed, verified, or complete. Stopped, interrupted, timed-out, missing, or inconclusive checks remain outstanding: resume or rerun them; if blocked, report the blocker and incomplete status. Do not waive or narrow accepted verification requirements unless explicitly directed. Preserve required review counts and reset rules. Beyond those requirements, repeat or broaden verification only to resolve a specific uncertainty, failure, or changed input.
+- Every check required by the task, applicable repository instructions, or governing workflow must finish successfully against the delivered state before declaring work passed, verified, or complete. Stopped, interrupted, timed-out, missing, or inconclusive checks remain incomplete: resume or rerun applicable obligations once their obstruction is addressed; if blocked, report the blocker and incomplete status. Do not waive or narrow accepted verification requirements unless explicitly directed. Preserve required review counts, reset rules, and the governing workflow's supersession conditions; superseded attempts supply no completion credit. An attempted optional diagnostic does not by itself create an acceptance gate; retain relevant defects it reveals. Beyond required checks, repeat or broaden verification only to resolve a specific uncertainty, failure, or changed input.
 
 ### Git
 
 - Prefer rebase and fast-forward integration over merge commits. Use merge commits only when explicitly requested, required by repository policy, or necessary to preserve shared history or required commit provenance; explain the exception. Rebase conflicts alone are not an exception. This preference does not authorize rewriting history others depend on.
 - Prefix `git merge --continue` and `git rebase --continue` with `GIT_EDITOR=true`.
 - Do not force-add paths matching `.git/info/exclude` unless explicitly asked.
-- Before `git commit`, inspect session-owned changes and stage only authorized, publishable artifacts. Source owners govern publication; `$ledger` governs custody. Do not infer publishability merely because evidence explains work.
+- Before `git commit`, inspect the complete proposed commit, include only authorized, publishable changes, and preserve unrelated work and staging. Ensure verification applies to the delivered artifact, accounting for material differences from the tested working tree. Source owners govern publication; `$ledger` governs custody. Do not infer publishability merely because evidence explains work.
 
 ### Python
 
 - Use `uv` for Python package/project operations; do not use direct `python`, `pip`, `pipx`, `venv`, `virtualenv`, `poetry`, or `conda` unless the user explicitly asks or the repo requires it.
-- Run Python scripts, tests, linters, and CLIs through `uv run ...`. For project work, use the project's declared dependencies and managed environment; keep `pyproject.toml` and `uv.lock` authoritative with `uv sync`, or `uv lock` followed by `uv sync`.
+- Run Python scripts, tests, linters, and CLIs through `uv run ...`. For project work, use the project's declared dependencies and managed environment; keep `pyproject.toml` and `uv.lock` authoritative with `uv sync`, or `uv lock` followed by `uv sync`. When validating an existing locked project, use `uv run --locked ...` or `uv sync --locked` unless dependency changes are authorized; report an outdated lockfile instead of silently updating it.
 - For helpers independent of the project, prefer `uvx TOOL` or `uv run --no-project --isolated --with PACKAGE COMMAND ...`. Do not create or reuse project `.venv*` environments or use `uv pip install` for helper-only dependencies unless persistent dependencies are explicitly requested.
 
 ### Containers
