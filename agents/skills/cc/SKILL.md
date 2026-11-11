@@ -54,7 +54,9 @@ without a level reuses whatever level was typed last.
   Pass the full model ID.
 - **Standard level** (`low|medium|high|xhigh|max`): the caller's explicit level,
   otherwise the selected effort. `max` only on explicit request; otherwise cap
-  at `xhigh`.
+  at `xhigh`. A standard launch selects effort equal to that level: the bundled
+  recipe follows the effective effort, not a different `/review` argument
+  (observed: effort `max` ran the `max` recipe for `/review high`).
 
 Bind `CLAUDE_CODE_EFFORT_LEVEL` to `$selected_effort` on every launch and resume:
 it overrides `--effort` and survives `--restricted`. Inspect effective managed
@@ -92,8 +94,18 @@ See the [CLI reference](https://code.claude.com/docs/en/cli-reference) and
 
 Resolve `$repo`, `$git_dir` and `$git_common` to their physical absolute paths
 (repository root, `git rev-parse --absolute-git-dir`, and
-`git rev-parse --path-format=absolute --git-common-dir`). Include any additional
-source directories in `denyWrite`. Keep Claude's runtime state, including
+`git rev-parse --path-format=absolute --git-common-dir`). `--restricted` confines
+file tools to the working directory, so grant source the review must read, such
+as the toolchain's standard library, with `--add-dir` at launch. Include every
+additional source directory in `denyWrite`. Ask the reviewer to read added sources by
+absolute path: under `dontAsk`, a `cd` into an added directory made every later Bash
+call fail (observed in a custom review). The launch disables `core.fsmonitor`
+through `GIT_CONFIG_*`: inside the sandbox its IPC fails, and the error output drew
+denied `git -c` retries in 13 of 16 reviews of one campaign and none afterward. A
+custom caller may also state the read-only envelope in its own evidence (the
+permitted Git subcommands without `-c` or `-C`, read-only filters in pipes, and no
+redirects, temporary files, builds, or tests); together these cut denied calls
+from 2.4 to 0.8 per review. Keep Claude's runtime state, including
 transcripts, and attempt files (`$settings`, `$prompt`, `$events`, `$diagnostics`,
 `$readback_json`, and any `$reference_patch`) outside those paths. Create these
 per-attempt settings with a JSON encoder:
@@ -129,7 +141,8 @@ read_tools=(Read Grep Glob
   'Bash(git grep:*)' 'Bash(git blame:*)' 'Bash(git check-ignore:*)')
 
 # Standard
-(cd "$repo" && GIT_OPTIONAL_LOCKS=0 CLAUDE_CODE_EFFORT_LEVEL="$selected_effort" \
+(cd "$repo" && GIT_OPTIONAL_LOCKS=0 GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=core.fsmonitor \
+  GIT_CONFIG_VALUE_0=false CLAUDE_CODE_EFFORT_LEVEL="$selected_effort" \
   claude -p --session-id "$sid" \
   --model "$selected_model" --effort "$selected_effort" \
   --restricted --settings "$settings" --tools "Read,Grep,Glob,Bash,Agent" \
@@ -140,7 +153,8 @@ read_tools=(Read Grep Glob
   "/review $level $base..HEAD" </dev/null >"$events" 2>"$diagnostics")
 
 # Custom: $prompt holds the exact instruction bytes
-(cd "$repo" && GIT_OPTIONAL_LOCKS=0 CLAUDE_CODE_EFFORT_LEVEL="$selected_effort" \
+(cd "$repo" && GIT_OPTIONAL_LOCKS=0 GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=core.fsmonitor \
+  GIT_CONFIG_VALUE_0=false CLAUDE_CODE_EFFORT_LEVEL="$selected_effort" \
   claude -p --session-id "$sid" \
   --model "$selected_model" --effort "$selected_effort" \
   --restricted --settings "$settings" --tools "Read,Grep,Glob,Bash" \
