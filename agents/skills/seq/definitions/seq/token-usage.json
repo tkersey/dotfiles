@@ -1,234 +1,685 @@
 {
   "schema": "seq-observation-definition/v1",
   "id": "seq/token-usage",
-  "requires": {
-    "abi": "seq-observation-abi/v1",
-    "operators": ["aggregate", "derive", "distinct", "filter", "join", "reachability", "scan"]
-  },
+  "requires": {"abi":"seq-observation-abi/v1","operators":["aggregate","derive","distinct","filter","join","ordered-fold","project","reachability","scan"]},
   "parameters": {},
-  "selectors": ["path", "root", "session-id", "repo", "since", "until"],
+  "selectors": ["path","root","session-id","repo","since","until"],
   "relations": [
-    {"name": "sessions", "fields": ["session_id", "path", "parent_session_id", "lineage_conflict"]},
-    {
-      "name": "token_events",
-      "fields": [
-        "session_id", "timestamp_ms", "source_ordinal", "has_total_usage", "has_last_usage",
-        "total_input_tokens", "total_cached_input_tokens", "total_output_tokens",
-        "total_reasoning_output_tokens", "total_total_tokens",
-        "last_input_tokens", "last_cached_input_tokens", "last_output_tokens",
-        "last_reasoning_output_tokens", "last_total_tokens"
-      ]
-    }
+    {"name":"sessions","fields":["session_id","path","parent_session_id","control_parent_session_id","lineage_conflict","token_usage_observation_count"]},
+    {"name":"token_events","fields":["session_id","timestamp_ms","source_ordinal","has_total_usage","has_last_usage","total_input_tokens","total_cached_input_tokens","total_output_tokens","total_reasoning_output_tokens","total_total_tokens","last_input_tokens","last_cached_input_tokens","last_output_tokens","last_reasoning_output_tokens","last_total_tokens","persisted_ordinal","subagent_history_start_ordinal","parent_session_id"]}
   ],
   "inputs": [],
   "pipeline": [
-    {"op": "scan", "relation": "sessions", "as": "session_rows"},
+    {"op":"scan","relation":"sessions","as":"session_rows"},
     {
-      "op": "derive", "input": "session_rows", "as": "session_seeds",
-      "fields": [{
-        "name": "selected_seed", "type": "boolean", "nullable": false,
-        "expr": {"op": "or", "args": [
-          {"op": "and", "args": [
-            {"op": "is-null", "args": [{"selector": "session-id"}]},
-            {"op": "is-null", "args": [{"selector": "path"}]}
-          ]},
-          {"op": "or", "args": [
-            {"op": "eq", "args": [{"field": "session_id"}, {"selector": "session-id"}]},
-            {"op": "eq", "args": [{"field": "path"}, {"selector": "path"}]}
-          ]}
-        ]}
-      }]
+      "op": "derive",
+      "input": "session_rows",
+      "as": "session_seeds",
+      "fields": [{"name":"scope_parent_session_id","type":"string","nullable":true,"expr":{"op":"coalesce","args":[{"field":"control_parent_session_id"},{"field":"parent_session_id"}]}},{"name":"selected_seed","type":"boolean","nullable":false,"expr":{"op":"or","args":[{"op":"and","args":[{"op":"is-null","args":[{"selector":"session-id"}]},{"op":"is-null","args":[{"selector":"path"}]}]},{"op":"or","args":[{"op":"eq","args":[{"field":"session_id"},{"selector":"session-id"}]},{"op":"eq","args":[{"field":"path"},{"selector":"path"}]}]}]}}]
     },
+    {"op":"filter","input":"session_seeds","as":"identified_sessions","where":[{"field":"session_id","op":"not-equal","value":null}]},
     {
-      "op": "filter", "input": "session_seeds", "as": "identified_sessions",
-      "where": [{"field": "session_id", "op": "not-equal", "value": null}]
+      "op": "reachability",
+      "input": "identified_sessions",
+      "as": "session_scope",
+      "keys": {"node":"session_id","parent":"scope_parent_session_id","seed":"selected_seed","direction":"descendants"},
+      "fields": [{"name":"session_id","type":"string","nullable":false,"field":"session_id"},{"name":"parent_session_id","type":"string","nullable":true,"field":"parent_session_id"},{"name":"lineage_conflict","type":"boolean","nullable":false,"field":"lineage_conflict"},{"name":"reachable","type":"boolean","nullable":false,"meta":"reachable"}]
     },
+    {"op":"filter","input":"session_scope","as":"selected_sessions","where":[{"field":"reachable","op":"exact","value":true}]},
+    {"op":"scan","relation":"token_events","as":"token_rows"},
     {
-      "op": "reachability", "input": "identified_sessions", "as": "session_scope",
-      "keys": {"node": "session_id", "parent": "parent_session_id", "seed": "selected_seed", "direction": "descendants"},
+      "op": "derive",
+      "input": "token_rows",
+      "as": "validated_rows",
       "fields": [
-        {"name": "session_id", "type": "string", "nullable": false, "field": "session_id"},
-        {"name": "parent_session_id", "type": "string", "nullable": true, "field": "parent_session_id"},
-        {"name": "lineage_conflict", "type": "boolean", "nullable": false, "field": "lineage_conflict"},
-        {"name": "reachable", "type": "boolean", "nullable": false, "meta": "reachable"}
+        {
+          "name": "unanchored_ordinal",
+          "type": "integer",
+          "nullable": false,
+          "expr": {"op":"if","args":[{"op":"and","args":[{"op":"not","args":[{"op":"is-null","args":[{"field":"total_input_tokens"}]}]},{"op":"and","args":[{"op":"not","args":[{"op":"is-null","args":[{"field":"total_output_tokens"}]}]},{"op":"not","args":[{"op":"is-null","args":[{"field":"total_total_tokens"}]}]}]}]},0,{"field":"source_ordinal"}]}
+        },
+        {
+          "name": "invalid_tuple",
+          "type": "boolean",
+          "nullable": false,
+          "expr": {
+            "op": "or",
+            "args": [
+              {
+                "op": "or",
+                "args": [
+                  {
+                    "op": "or",
+                    "args": [
+                      {"op":"or","args":[{"op":"and","args":[{"op":"not","args":[{"op":"is-null","args":[{"field":"total_input_tokens"}]}]},{"op":"lt","args":[{"field":"total_input_tokens"},0]}]},{"op":"and","args":[{"op":"not","args":[{"op":"is-null","args":[{"field":"total_cached_input_tokens"}]}]},{"op":"lt","args":[{"field":"total_cached_input_tokens"},0]}]}]},
+                      {
+                        "op": "or",
+                        "args": [
+                          {"op":"and","args":[{"op":"not","args":[{"op":"is-null","args":[{"field":"total_output_tokens"}]}]},{"op":"lt","args":[{"field":"total_output_tokens"},0]}]},
+                          {"op":"or","args":[{"op":"and","args":[{"op":"not","args":[{"op":"is-null","args":[{"field":"total_reasoning_output_tokens"}]}]},{"op":"lt","args":[{"field":"total_reasoning_output_tokens"},0]}]},{"op":"and","args":[{"op":"not","args":[{"op":"is-null","args":[{"field":"total_total_tokens"}]}]},{"op":"lt","args":[{"field":"total_total_tokens"},0]}]}]}
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "op": "or",
+                    "args": [
+                      {
+                        "op": "or",
+                        "args": [
+                          {"op":"and","args":[{"op":"not","args":[{"op":"is-null","args":[{"field":"last_input_tokens"}]}]},{"op":"lt","args":[{"field":"last_input_tokens"},0]}]},
+                          {"op":"or","args":[{"op":"and","args":[{"op":"not","args":[{"op":"is-null","args":[{"field":"last_cached_input_tokens"}]}]},{"op":"lt","args":[{"field":"last_cached_input_tokens"},0]}]},{"op":"and","args":[{"op":"not","args":[{"op":"is-null","args":[{"field":"last_output_tokens"}]}]},{"op":"lt","args":[{"field":"last_output_tokens"},0]}]}]}
+                        ]
+                      },
+                      {
+                        "op": "or",
+                        "args": [
+                          {"op":"and","args":[{"op":"not","args":[{"op":"is-null","args":[{"field":"last_reasoning_output_tokens"}]}]},{"op":"lt","args":[{"field":"last_reasoning_output_tokens"},0]}]},
+                          {
+                            "op": "or",
+                            "args": [
+                              {"op":"and","args":[{"op":"not","args":[{"op":"is-null","args":[{"field":"last_total_tokens"}]}]},{"op":"lt","args":[{"field":"last_total_tokens"},0]}]},
+                              {"op":"and","args":[{"op":"and","args":[{"op":"not","args":[{"op":"is-null","args":[{"field":"total_cached_input_tokens"}]}]},{"op":"not","args":[{"op":"is-null","args":[{"field":"total_input_tokens"}]}]}]},{"op":"gt","args":[{"field":"total_cached_input_tokens"},{"field":"total_input_tokens"}]}]}
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "op": "or",
+                "args": [
+                  {
+                    "op": "or",
+                    "args": [
+                      {
+                        "op": "or",
+                        "args": [
+                          {"op":"and","args":[{"op":"and","args":[{"op":"not","args":[{"op":"is-null","args":[{"field":"total_reasoning_output_tokens"}]}]},{"op":"not","args":[{"op":"is-null","args":[{"field":"total_output_tokens"}]}]}]},{"op":"gt","args":[{"field":"total_reasoning_output_tokens"},{"field":"total_output_tokens"}]}]},
+                          {
+                            "op": "or",
+                            "args": [
+                              {
+                                "op": "if",
+                                "args": [
+                                  {
+                                    "op": "and",
+                                    "args": [
+                                      {"op":"and","args":[{"op":"not","args":[{"op":"is-null","args":[{"field":"total_input_tokens"}]}]},{"op":"ge","args":[{"field":"total_input_tokens"},0]}]},
+                                      {"op":"and","args":[{"op":"and","args":[{"op":"not","args":[{"op":"is-null","args":[{"field":"total_output_tokens"}]}]},{"op":"ge","args":[{"field":"total_output_tokens"},0]}]},{"op":"and","args":[{"op":"not","args":[{"op":"is-null","args":[{"field":"total_total_tokens"}]}]},{"op":"ge","args":[{"field":"total_total_tokens"},0]}]}]}
+                                    ]
+                                  },
+                                  {"op":"ne","args":[{"op":"subtract","args":[{"field":"total_total_tokens"},{"field":"total_input_tokens"}]},{"field":"total_output_tokens"}]},
+                                  false
+                                ]
+                              },
+                              {"op":"and","args":[{"op":"and","args":[{"op":"not","args":[{"op":"is-null","args":[{"field":"last_cached_input_tokens"}]}]},{"op":"not","args":[{"op":"is-null","args":[{"field":"last_input_tokens"}]}]}]},{"op":"gt","args":[{"field":"last_cached_input_tokens"},{"field":"last_input_tokens"}]}]}
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "op": "or",
+                        "args": [
+                          {"op":"and","args":[{"op":"and","args":[{"op":"not","args":[{"op":"is-null","args":[{"field":"last_reasoning_output_tokens"}]}]},{"op":"not","args":[{"op":"is-null","args":[{"field":"last_output_tokens"}]}]}]},{"op":"gt","args":[{"field":"last_reasoning_output_tokens"},{"field":"last_output_tokens"}]}]},
+                          {
+                            "op": "or",
+                            "args": [
+                              {
+                                "op": "if",
+                                "args": [
+                                  {
+                                    "op": "and",
+                                    "args": [
+                                      {"op":"and","args":[{"op":"not","args":[{"op":"is-null","args":[{"field":"last_input_tokens"}]}]},{"op":"ge","args":[{"field":"last_input_tokens"},0]}]},
+                                      {"op":"and","args":[{"op":"and","args":[{"op":"not","args":[{"op":"is-null","args":[{"field":"last_output_tokens"}]}]},{"op":"ge","args":[{"field":"last_output_tokens"},0]}]},{"op":"and","args":[{"op":"not","args":[{"op":"is-null","args":[{"field":"last_total_tokens"}]}]},{"op":"ge","args":[{"field":"last_total_tokens"},0]}]}]}
+                                    ]
+                                  },
+                                  {"op":"ne","args":[{"op":"subtract","args":[{"field":"last_total_tokens"},{"field":"last_input_tokens"}]},{"field":"last_output_tokens"}]},
+                                  false
+                                ]
+                              },
+                              {"op":"and","args":[{"op":"and","args":[{"op":"not","args":[{"op":"is-null","args":[{"field":"total_input_tokens"}]}]},{"op":"not","args":[{"op":"is-null","args":[{"field":"last_input_tokens"}]}]}]},{"op":"gt","args":[{"field":"last_input_tokens"},{"field":"total_input_tokens"}]}]}
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "op": "or",
+                    "args": [
+                      {
+                        "op": "or",
+                        "args": [
+                          {"op":"and","args":[{"op":"and","args":[{"op":"not","args":[{"op":"is-null","args":[{"field":"total_cached_input_tokens"}]}]},{"op":"not","args":[{"op":"is-null","args":[{"field":"last_cached_input_tokens"}]}]}]},{"op":"gt","args":[{"field":"last_cached_input_tokens"},{"field":"total_cached_input_tokens"}]}]},
+                          {
+                            "op": "or",
+                            "args": [
+                              {"op":"and","args":[{"op":"and","args":[{"op":"not","args":[{"op":"is-null","args":[{"field":"total_output_tokens"}]}]},{"op":"not","args":[{"op":"is-null","args":[{"field":"last_output_tokens"}]}]}]},{"op":"gt","args":[{"field":"last_output_tokens"},{"field":"total_output_tokens"}]}]},
+                              {"op":"and","args":[{"op":"and","args":[{"op":"not","args":[{"op":"is-null","args":[{"field":"total_reasoning_output_tokens"}]}]},{"op":"not","args":[{"op":"is-null","args":[{"field":"last_reasoning_output_tokens"}]}]}]},{"op":"gt","args":[{"field":"last_reasoning_output_tokens"},{"field":"total_reasoning_output_tokens"}]}]}
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "op": "or",
+                        "args": [
+                          {"op":"and","args":[{"op":"and","args":[{"op":"not","args":[{"op":"is-null","args":[{"field":"total_total_tokens"}]}]},{"op":"not","args":[{"op":"is-null","args":[{"field":"last_total_tokens"}]}]}]},{"op":"gt","args":[{"field":"last_total_tokens"},{"field":"total_total_tokens"}]}]},
+                          {
+                            "op": "or",
+                            "args": [
+                              {
+                                "op": "if",
+                                "args": [
+                                  {
+                                    "op": "and",
+                                    "args": [
+                                      {"op":"and","args":[{"op":"and","args":[{"op":"not","args":[{"op":"is-null","args":[{"field":"total_cached_input_tokens"}]}]},{"op":"ge","args":[{"field":"total_cached_input_tokens"},0]}]},{"op":"and","args":[{"op":"not","args":[{"op":"is-null","args":[{"field":"last_cached_input_tokens"}]}]},{"op":"ge","args":[{"field":"last_cached_input_tokens"},0]}]}]},
+                                      {"op":"and","args":[{"op":"and","args":[{"op":"not","args":[{"op":"is-null","args":[{"field":"total_input_tokens"}]}]},{"op":"ge","args":[{"field":"total_input_tokens"},0]}]},{"op":"and","args":[{"op":"not","args":[{"op":"is-null","args":[{"field":"last_input_tokens"}]}]},{"op":"ge","args":[{"field":"last_input_tokens"},0]}]}]}
+                                    ]
+                                  },
+                                  {"op":"gt","args":[{"op":"subtract","args":[{"field":"total_cached_input_tokens"},{"field":"last_cached_input_tokens"}]},{"op":"subtract","args":[{"field":"total_input_tokens"},{"field":"last_input_tokens"}]}]},
+                                  false
+                                ]
+                              },
+                              {
+                                "op": "if",
+                                "args": [
+                                  {
+                                    "op": "and",
+                                    "args": [
+                                      {
+                                        "op": "and",
+                                        "args": [{"op":"and","args":[{"op":"not","args":[{"op":"is-null","args":[{"field":"total_reasoning_output_tokens"}]}]},{"op":"ge","args":[{"field":"total_reasoning_output_tokens"},0]}]},{"op":"and","args":[{"op":"not","args":[{"op":"is-null","args":[{"field":"last_reasoning_output_tokens"}]}]},{"op":"ge","args":[{"field":"last_reasoning_output_tokens"},0]}]}]
+                                      },
+                                      {"op":"and","args":[{"op":"and","args":[{"op":"not","args":[{"op":"is-null","args":[{"field":"total_output_tokens"}]}]},{"op":"ge","args":[{"field":"total_output_tokens"},0]}]},{"op":"and","args":[{"op":"not","args":[{"op":"is-null","args":[{"field":"last_output_tokens"}]}]},{"op":"ge","args":[{"field":"last_output_tokens"},0]}]}]}
+                                    ]
+                                  },
+                                  {"op":"gt","args":[{"op":"subtract","args":[{"field":"total_reasoning_output_tokens"},{"field":"last_reasoning_output_tokens"}]},{"op":"subtract","args":[{"field":"total_output_tokens"},{"field":"last_output_tokens"}]}]},
+                                  false
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "complete_core",
+          "type": "boolean",
+          "nullable": false,
+          "expr": {
+            "op": "and",
+            "args": [
+              {"field":"has_total_usage"},
+              {
+                "op": "and",
+                "args": [
+                  {"field":"has_last_usage"},
+                  {
+                    "op": "and",
+                    "args": [
+                      {"op":"and","args":[{"op":"not","args":[{"op":"is-null","args":[{"field":"total_input_tokens"}]}]},{"op":"and","args":[{"op":"not","args":[{"op":"is-null","args":[{"field":"total_output_tokens"}]}]},{"op":"not","args":[{"op":"is-null","args":[{"field":"total_total_tokens"}]}]}]}]},
+                      {"op":"and","args":[{"op":"not","args":[{"op":"is-null","args":[{"field":"last_input_tokens"}]}]},{"op":"and","args":[{"op":"not","args":[{"op":"is-null","args":[{"field":"last_output_tokens"}]}]},{"op":"not","args":[{"op":"is-null","args":[{"field":"last_total_tokens"}]}]}]}]}
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "complete_details",
+          "type": "boolean",
+          "nullable": false,
+          "expr": {
+            "op": "and",
+            "args": [
+              {"op":"and","args":[{"op":"not","args":[{"op":"is-null","args":[{"field":"total_cached_input_tokens"}]}]},{"op":"not","args":[{"op":"is-null","args":[{"field":"total_reasoning_output_tokens"}]}]}]},
+              {"op":"and","args":[{"op":"not","args":[{"op":"is-null","args":[{"field":"last_cached_input_tokens"}]}]},{"op":"not","args":[{"op":"is-null","args":[{"field":"last_reasoning_output_tokens"}]}]}]}
+            ]
+          }
+        }
       ]
     },
     {
-      "op": "filter", "input": "session_scope", "as": "selected_sessions",
-      "where": [{"field": "reachable", "op": "exact", "value": true}]
+      "op": "ordered-fold",
+      "input": "validated_rows",
+      "as": "progress_rows",
+      "keys": ["session_id"],
+      "order_by": [{"field":"session_id","direction":"asc"},{"field":"source_ordinal","direction":"asc"}],
+      "state": [{"name":"previous_input_tokens","type":"integer","nullable":true,"initial":null},{"name":"previous_cached_input_tokens","type":"integer","nullable":true,"initial":null},{"name":"previous_output_tokens","type":"integer","nullable":true,"initial":null},{"name":"previous_reasoning_output_tokens","type":"integer","nullable":true,"initial":null},{"name":"previous_total_tokens","type":"integer","nullable":true,"initial":null},{"name":"progress_proven","type":"boolean","nullable":false,"initial":false}],
+      "transitions": [{"state":"previous_input_tokens","expr":{"op":"if","args":[{"op":"or","args":[{"field":"has_total_usage"},{"field":"has_last_usage"}]},{"op":"if","args":[{"op":"and","args":[{"op":"and","args":[{"field":"complete_core"},{"field":"complete_details"}]},{"op":"not","args":[{"field":"invalid_tuple"}]}]},{"field":"total_input_tokens"},null]},{"state":"previous_input_tokens"}]}},{"state":"previous_cached_input_tokens","expr":{"op":"if","args":[{"op":"or","args":[{"field":"has_total_usage"},{"field":"has_last_usage"}]},{"op":"if","args":[{"op":"and","args":[{"op":"and","args":[{"field":"complete_core"},{"field":"complete_details"}]},{"op":"not","args":[{"field":"invalid_tuple"}]}]},{"field":"total_cached_input_tokens"},null]},{"state":"previous_cached_input_tokens"}]}},{"state":"previous_output_tokens","expr":{"op":"if","args":[{"op":"or","args":[{"field":"has_total_usage"},{"field":"has_last_usage"}]},{"op":"if","args":[{"op":"and","args":[{"op":"and","args":[{"field":"complete_core"},{"field":"complete_details"}]},{"op":"not","args":[{"field":"invalid_tuple"}]}]},{"field":"total_output_tokens"},null]},{"state":"previous_output_tokens"}]}},{"state":"previous_reasoning_output_tokens","expr":{"op":"if","args":[{"op":"or","args":[{"field":"has_total_usage"},{"field":"has_last_usage"}]},{"op":"if","args":[{"op":"and","args":[{"op":"and","args":[{"field":"complete_core"},{"field":"complete_details"}]},{"op":"not","args":[{"field":"invalid_tuple"}]}]},{"field":"total_reasoning_output_tokens"},null]},{"state":"previous_reasoning_output_tokens"}]}},{"state":"previous_total_tokens","expr":{"op":"if","args":[{"op":"or","args":[{"field":"has_total_usage"},{"field":"has_last_usage"}]},{"op":"if","args":[{"op":"and","args":[{"op":"and","args":[{"field":"complete_core"},{"field":"complete_details"}]},{"op":"not","args":[{"field":"invalid_tuple"}]}]},{"field":"total_total_tokens"},null]},{"state":"previous_total_tokens"}]}},{"state":"progress_proven","expr":{"op":"and","args":[{"op":"and","args":[{"op":"and","args":[{"op":"and","args":[{"op":"and","args":[{"op":"and","args":[{"op":"and","args":[{"field":"complete_core"},{"field":"complete_details"}]},{"op":"not","args":[{"field":"invalid_tuple"}]}]},{"op":"and","args":[{"op":"not","args":[{"op":"is-null","args":[{"state":"previous_input_tokens"}]}]},{"op":"eq","args":[{"op":"subtract","args":[{"field":"total_input_tokens"},{"field":"last_input_tokens"}]},{"state":"previous_input_tokens"}]}]}]},{"op":"and","args":[{"op":"not","args":[{"op":"is-null","args":[{"state":"previous_cached_input_tokens"}]}]},{"op":"eq","args":[{"op":"subtract","args":[{"field":"total_cached_input_tokens"},{"field":"last_cached_input_tokens"}]},{"state":"previous_cached_input_tokens"}]}]}]},{"op":"and","args":[{"op":"not","args":[{"op":"is-null","args":[{"state":"previous_output_tokens"}]}]},{"op":"eq","args":[{"op":"subtract","args":[{"field":"total_output_tokens"},{"field":"last_output_tokens"}]},{"state":"previous_output_tokens"}]}]}]},{"op":"and","args":[{"op":"not","args":[{"op":"is-null","args":[{"state":"previous_reasoning_output_tokens"}]}]},{"op":"eq","args":[{"op":"subtract","args":[{"field":"total_reasoning_output_tokens"},{"field":"last_reasoning_output_tokens"}]},{"state":"previous_reasoning_output_tokens"}]}]}]},{"op":"and","args":[{"op":"not","args":[{"op":"is-null","args":[{"state":"previous_total_tokens"}]}]},{"op":"eq","args":[{"op":"subtract","args":[{"field":"total_total_tokens"},{"field":"last_total_tokens"}]},{"state":"previous_total_tokens"}]}]}]}}],
+      "emit": [{"name":"session_id","type":"string","nullable":true,"expr":{"field":"session_id"}},{"name":"timestamp_ms","type":"integer","nullable":true,"expr":{"field":"timestamp_ms"}},{"name":"source_ordinal","type":"integer","nullable":false,"expr":{"field":"source_ordinal"}},{"name":"has_total_usage","type":"boolean","nullable":false,"expr":{"field":"has_total_usage"}},{"name":"has_last_usage","type":"boolean","nullable":false,"expr":{"field":"has_last_usage"}},{"name":"total_input_tokens","type":"integer","nullable":true,"expr":{"field":"total_input_tokens"}},{"name":"total_cached_input_tokens","type":"integer","nullable":true,"expr":{"field":"total_cached_input_tokens"}},{"name":"total_output_tokens","type":"integer","nullable":true,"expr":{"field":"total_output_tokens"}},{"name":"total_reasoning_output_tokens","type":"integer","nullable":true,"expr":{"field":"total_reasoning_output_tokens"}},{"name":"total_total_tokens","type":"integer","nullable":true,"expr":{"field":"total_total_tokens"}},{"name":"last_input_tokens","type":"integer","nullable":true,"expr":{"field":"last_input_tokens"}},{"name":"last_cached_input_tokens","type":"integer","nullable":true,"expr":{"field":"last_cached_input_tokens"}},{"name":"last_output_tokens","type":"integer","nullable":true,"expr":{"field":"last_output_tokens"}},{"name":"last_reasoning_output_tokens","type":"integer","nullable":true,"expr":{"field":"last_reasoning_output_tokens"}},{"name":"last_total_tokens","type":"integer","nullable":true,"expr":{"field":"last_total_tokens"}},{"name":"persisted_ordinal","type":"integer","nullable":true,"expr":{"field":"persisted_ordinal"}},{"name":"subagent_history_start_ordinal","type":"integer","nullable":true,"expr":{"field":"subagent_history_start_ordinal"}},{"name":"parent_session_id","type":"string","nullable":true,"expr":{"field":"parent_session_id"}},{"name":"unanchored_ordinal","type":"integer","nullable":false,"expr":{"field":"unanchored_ordinal"}},{"name":"invalid_tuple","type":"boolean","nullable":false,"expr":{"field":"invalid_tuple"}},{"name":"complete_core","type":"boolean","nullable":false,"expr":{"field":"complete_core"}},{"name":"complete_details","type":"boolean","nullable":false,"expr":{"field":"complete_details"}},{"name":"progress_proven","type":"boolean","nullable":false,"expr":{"state":"progress_proven"}}]
     },
-    {"op": "scan", "relation": "token_events", "as": "token_rows"},
+{"op":"distinct","input":"progress_rows","as":"unique_rows","keys":["session_id","has_total_usage","has_last_usage","total_input_tokens","total_cached_input_tokens","total_output_tokens","total_reasoning_output_tokens","total_total_tokens","last_input_tokens","last_cached_input_tokens","last_output_tokens","last_reasoning_output_tokens","last_total_tokens","unanchored_ordinal"]},
+    {"op":"distinct","input":"unique_rows","as":"first_total_rows","keys":["session_id","has_total_usage","has_last_usage","total_input_tokens","total_output_tokens","total_total_tokens","unanchored_ordinal"]},
+    {"op":"filter","input":"unique_rows","as":"invalid_rows","where":[{"field":"invalid_tuple","op":"exact","value":true}]},
+    {"op":"distinct","input":"invalid_rows","as":"invalid_totals","keys":["session_id","has_total_usage","has_last_usage","total_input_tokens","total_output_tokens","total_total_tokens","unanchored_ordinal"]},
     {
-      "op": "filter", "input": "token_rows", "as": "usage_rows",
-      "where": [{"field": "has_total_usage", "op": "exact", "value": true}]
-    },
-    {
-      "op": "distinct", "input": "usage_rows", "as": "first_total_rows",
-      "keys": [
-        "session_id",
-        "total_input_tokens", "total_cached_input_tokens", "total_output_tokens",
-        "total_reasoning_output_tokens", "total_total_tokens"
-      ]
-    },
-    {
-      "op": "derive", "input": "first_total_rows", "as": "transitions", "preserve_input": false, "sequential": true,
-      "fields": [
-        {"name": "session_id", "type": "string", "nullable": false, "expr": {"field": "session_id"}},
-        {"name": "timestamp_ms", "type": "integer", "nullable": true, "expr": {"field": "timestamp_ms"}},
-        {"name": "source_ordinal", "type": "integer", "nullable": false, "expr": {"field": "source_ordinal"}},
-        {"name": "pred_input", "type": "integer", "nullable": false, "expr": {"op": "if", "args": [{"field": "has_last_usage"}, {"op": "subtract", "args": [{"op": "coalesce", "args": [{"field": "total_input_tokens"}, 0]}, {"op": "coalesce", "args": [{"field": "last_input_tokens"}, 0]}]}, 0]}},
-        {"name": "pred_cached", "type": "integer", "nullable": false, "expr": {"op": "if", "args": [{"field": "has_last_usage"}, {"op": "subtract", "args": [{"op": "coalesce", "args": [{"field": "total_cached_input_tokens"}, 0]}, {"op": "coalesce", "args": [{"field": "last_cached_input_tokens"}, 0]}]}, 0]}},
-        {"name": "pred_output", "type": "integer", "nullable": false, "expr": {"op": "if", "args": [{"field": "has_last_usage"}, {"op": "subtract", "args": [{"op": "coalesce", "args": [{"field": "total_output_tokens"}, 0]}, {"op": "coalesce", "args": [{"field": "last_output_tokens"}, 0]}]}, 0]}},
-        {"name": "pred_reasoning", "type": "integer", "nullable": false, "expr": {"op": "if", "args": [{"field": "has_last_usage"}, {"op": "subtract", "args": [{"op": "coalesce", "args": [{"field": "total_reasoning_output_tokens"}, 0]}, {"op": "coalesce", "args": [{"field": "last_reasoning_output_tokens"}, 0]}]}, 0]}},
-        {"name": "pred_total", "type": "integer", "nullable": false, "expr": {"op": "if", "args": [{"field": "has_last_usage"}, {"op": "subtract", "args": [{"op": "coalesce", "args": [{"field": "total_total_tokens"}, 0]}, {"op": "coalesce", "args": [{"field": "last_total_tokens"}, 0]}]}, 0]}},
-        {"name": "total_input", "type": "integer", "nullable": false, "expr": {"op": "coalesce", "args": [{"field": "total_input_tokens"}, 0]}},
-        {"name": "total_cached", "type": "integer", "nullable": false, "expr": {"op": "coalesce", "args": [{"field": "total_cached_input_tokens"}, 0]}},
-        {"name": "total_output", "type": "integer", "nullable": false, "expr": {"op": "coalesce", "args": [{"field": "total_output_tokens"}, 0]}},
-        {"name": "total_reasoning", "type": "integer", "nullable": false, "expr": {"op": "coalesce", "args": [{"field": "total_reasoning_output_tokens"}, 0]}},
-        {"name": "total_total", "type": "integer", "nullable": false, "expr": {"op": "coalesce", "args": [{"field": "total_total_tokens"}, 0]}},
-        {"name": "input_tokens", "type": "integer", "nullable": false, "expr": {"op": "if", "args": [{"field": "has_last_usage"}, {"op": "coalesce", "args": [{"field": "last_input_tokens"}, 0]}, {"op": "coalesce", "args": [{"field": "total_input_tokens"}, 0]}]}},
-        {"name": "cached_input_tokens", "type": "integer", "nullable": false, "expr": {"op": "if", "args": [{"field": "has_last_usage"}, {"op": "coalesce", "args": [{"field": "last_cached_input_tokens"}, 0]}, {"op": "coalesce", "args": [{"field": "total_cached_input_tokens"}, 0]}]}},
-        {"name": "output_tokens", "type": "integer", "nullable": false, "expr": {"op": "if", "args": [{"field": "has_last_usage"}, {"op": "coalesce", "args": [{"field": "last_output_tokens"}, 0]}, {"op": "coalesce", "args": [{"field": "total_output_tokens"}, 0]}]}},
-        {"name": "reasoning_output_tokens", "type": "integer", "nullable": false, "expr": {"op": "if", "args": [{"field": "has_last_usage"}, {"op": "coalesce", "args": [{"field": "last_reasoning_output_tokens"}, 0]}, {"op": "coalesce", "args": [{"field": "total_reasoning_output_tokens"}, 0]}]}},
-        {"name": "delta_total", "type": "integer", "nullable": false, "expr": {"op": "if", "args": [{"field": "has_last_usage"}, {"op": "coalesce", "args": [{"field": "last_total_tokens"}, 0]}, {"op": "coalesce", "args": [{"field": "total_total_tokens"}, 0]}]}},
-        {"name": "estimated_count", "type": "integer", "nullable": false, "expr": {"op": "if", "args": [{"op": "not", "args": [{"field": "has_last_usage"}]}, 1, 0]}},
-        {"name": "invalid_count", "type": "integer", "nullable": false, "expr": {"op": "if", "args": [
-          {"op": "and", "args": [
-            {"field": "has_last_usage"},
-            {"op": "or", "args": [
-              {"op": "or", "args": [
-                {"op": "gt", "args": [{"op": "coalesce", "args": [{"field": "last_input_tokens"}, 0]}, {"op": "coalesce", "args": [{"field": "total_input_tokens"}, 0]}]},
-                {"op": "gt", "args": [{"op": "coalesce", "args": [{"field": "last_cached_input_tokens"}, 0]}, {"op": "coalesce", "args": [{"field": "total_cached_input_tokens"}, 0]}]}
-              ]},
-              {"op": "or", "args": [
-                {"op": "or", "args": [
-                  {"op": "gt", "args": [{"op": "coalesce", "args": [{"field": "last_output_tokens"}, 0]}, {"op": "coalesce", "args": [{"field": "total_output_tokens"}, 0]}]},
-                  {"op": "gt", "args": [{"op": "coalesce", "args": [{"field": "last_reasoning_output_tokens"}, 0]}, {"op": "coalesce", "args": [{"field": "total_reasoning_output_tokens"}, 0]}]}
-                ]},
-                {"op": "gt", "args": [{"op": "coalesce", "args": [{"field": "last_total_tokens"}, 0]}, {"op": "coalesce", "args": [{"field": "total_total_tokens"}, 0]}]}
-              ]}
-            ]}
-          ]},
-          1,
-          0
-        ]}},
-        {"name": "valid_for_ownership", "type": "boolean", "nullable": false, "expr": {"op": "eq", "args": [{"field": "invalid_count"}, 0]}},
-        {"name": "retain_transition", "type": "boolean", "nullable": false, "expr": {"op": "or", "args": [{"op": "gt", "args": [{"field": "invalid_count"}, 0]}, {"op": "gt", "args": [{"field": "delta_total"}, 0]}]}}
-      ]
-    },
-    {
-      "op": "filter", "input": "transitions", "as": "candidate_transitions",
-      "where": [{"field": "retain_transition", "op": "exact", "value": true}]
-    },
-    {
-      "op": "join", "inputs": ["candidate_transitions", "candidate_transitions", "identified_sessions"], "as": "owned_transitions",
+      "op": "join",
+      "inputs": ["unique_rows","first_total_rows"],
+      "as": "variant_rows",
       "on": {
-        "kind": "anti", "left_true": "valid_for_ownership", "right_true": "valid_for_ownership",
+        "kind": "semi",
         "keys": [
-          {"left": "pred_input", "right": "pred_input"},
-          {"left": "pred_cached", "right": "pred_cached"},
-          {"left": "pred_output", "right": "pred_output"},
-          {"left": "pred_reasoning", "right": "pred_reasoning"},
-          {"left": "pred_total", "right": "pred_total"},
-          {"left": "total_input", "right": "total_input"},
-          {"left": "total_cached", "right": "total_cached"},
-          {"left": "total_output", "right": "total_output"},
-          {"left": "total_reasoning", "right": "total_reasoning"},
-          {"left": "total_total", "right": "total_total"}
-        ],
-        "lineage": {"left": "session_id", "right": "session_id", "node": "session_id", "parent": "parent_session_id"}
+          {"left":"session_id","right":"session_id","nulls_equal":true},
+          {"left":"has_total_usage","right":"has_total_usage","nulls_equal":true},
+          {"left":"has_last_usage","right":"has_last_usage","nulls_equal":true},
+          {"left":"total_input_tokens","right":"total_input_tokens","nulls_equal":true},
+          {"left":"total_output_tokens","right":"total_output_tokens","nulls_equal":true},
+          {"left":"total_total_tokens","right":"total_total_tokens","nulls_equal":true},
+          {"left":"unanchored_ordinal","right":"unanchored_ordinal","nulls_equal":true},
+          {"left":"source_ordinal","right":"source_ordinal","op":"gt"}
+        ]
       },
       "fields": [
-        {"source": 0, "field": "session_id", "name": "session_id", "type": "string", "nullable": false},
-        {"source": 0, "field": "timestamp_ms", "name": "timestamp_ms", "type": "integer", "nullable": true},
-        {"source": 0, "field": "source_ordinal", "name": "source_ordinal", "type": "integer", "nullable": false},
-        {"source": 0, "field": "pred_input", "name": "pred_input", "type": "integer", "nullable": false},
-        {"source": 0, "field": "pred_cached", "name": "pred_cached", "type": "integer", "nullable": false},
-        {"source": 0, "field": "pred_output", "name": "pred_output", "type": "integer", "nullable": false},
-        {"source": 0, "field": "pred_reasoning", "name": "pred_reasoning", "type": "integer", "nullable": false},
-        {"source": 0, "field": "pred_total", "name": "pred_total", "type": "integer", "nullable": false},
-        {"source": 0, "field": "total_input", "name": "total_input", "type": "integer", "nullable": false},
-        {"source": 0, "field": "total_cached", "name": "total_cached", "type": "integer", "nullable": false},
-        {"source": 0, "field": "total_output", "name": "total_output", "type": "integer", "nullable": false},
-        {"source": 0, "field": "total_reasoning", "name": "total_reasoning", "type": "integer", "nullable": false},
-        {"source": 0, "field": "total_total", "name": "total_total", "type": "integer", "nullable": false},
-        {"source": 0, "field": "input_tokens", "name": "input_tokens", "type": "integer", "nullable": false},
-        {"source": 0, "field": "cached_input_tokens", "name": "cached_input_tokens", "type": "integer", "nullable": false},
-        {"source": 0, "field": "output_tokens", "name": "output_tokens", "type": "integer", "nullable": false},
-        {"source": 0, "field": "reasoning_output_tokens", "name": "reasoning_output_tokens", "type": "integer", "nullable": false},
-        {"source": 0, "field": "delta_total", "name": "delta_total", "type": "integer", "nullable": false},
-        {"source": 0, "field": "estimated_count", "name": "estimated_count", "type": "integer", "nullable": false},
-        {"source": 0, "field": "invalid_count", "name": "invalid_count", "type": "integer", "nullable": false},
-        {"source": 0, "field": "valid_for_ownership", "name": "valid_for_ownership", "type": "boolean", "nullable": false},
-        {"source": 0, "field": "retain_transition", "name": "retain_transition", "type": "boolean", "nullable": false}
+        {"source":0,"field":"session_id","name":"session_id","type":"string","nullable":false},
+        {"source":0,"field":"timestamp_ms","name":"timestamp_ms","type":"integer","nullable":true},
+        {"source":0,"field":"source_ordinal","name":"source_ordinal","type":"integer","nullable":false},
+        {"source":0,"field":"has_total_usage","name":"has_total_usage","type":"boolean","nullable":false},
+        {"source":0,"field":"has_last_usage","name":"has_last_usage","type":"boolean","nullable":false},
+        {"source":0,"field":"total_input_tokens","name":"total_input_tokens","type":"integer","nullable":true},
+        {"source":0,"field":"total_cached_input_tokens","name":"total_cached_input_tokens","type":"integer","nullable":true},
+        {"source":0,"field":"total_output_tokens","name":"total_output_tokens","type":"integer","nullable":true},
+        {"source":0,"field":"total_reasoning_output_tokens","name":"total_reasoning_output_tokens","type":"integer","nullable":true},
+        {"source":0,"field":"total_total_tokens","name":"total_total_tokens","type":"integer","nullable":true},
+        {"source":0,"field":"last_input_tokens","name":"last_input_tokens","type":"integer","nullable":true},
+        {"source":0,"field":"last_cached_input_tokens","name":"last_cached_input_tokens","type":"integer","nullable":true},
+        {"source":0,"field":"last_output_tokens","name":"last_output_tokens","type":"integer","nullable":true},
+        {"source":0,"field":"last_reasoning_output_tokens","name":"last_reasoning_output_tokens","type":"integer","nullable":true},
+        {"source":0,"field":"last_total_tokens","name":"last_total_tokens","type":"integer","nullable":true},
+        {"source":0,"field":"unanchored_ordinal","name":"unanchored_ordinal","type":"integer","nullable":false},
+        {"source":0,"field":"invalid_tuple","name":"invalid_tuple","type":"boolean","nullable":false},
+        {"source":0,"field":"complete_core","name":"complete_core","type":"boolean","nullable":false},
+        {"source":0,"field":"complete_details","name":"complete_details","type":"boolean","nullable":false},
+        {"source":0,"field":"persisted_ordinal","name":"persisted_ordinal","type":"integer","nullable":true},
+        {"source":0,"field":"subagent_history_start_ordinal","name":"subagent_history_start_ordinal","type":"integer","nullable":true},
+        {"source":0,"field":"parent_session_id","name":"parent_session_id","type":"string","nullable":true},
+        {"source":0,"field":"progress_proven","name":"progress_proven","type":"boolean","nullable":false}
       ]
     },
+    {"op":"distinct","input":"variant_rows","as":"ambiguous_totals","keys":["session_id","has_total_usage","has_last_usage","total_input_tokens","total_output_tokens","total_total_tokens","unanchored_ordinal"]},
     {
-      "op": "join", "inputs": ["owned_transitions", "selected_sessions"], "as": "selected_transitions",
-      "on": {"kind": "semi", "keys": [{"left": "session_id", "right": "session_id"}]},
+      "op": "join",
+      "inputs": ["first_total_rows","invalid_totals"],
+      "as": "checked_totals",
+      "on": {
+        "kind": "left",
+        "keys": [
+          {"left":"session_id","right":"session_id","nulls_equal":true},
+          {"left":"has_total_usage","right":"has_total_usage","nulls_equal":true},
+          {"left":"has_last_usage","right":"has_last_usage","nulls_equal":true},
+          {"left":"total_input_tokens","right":"total_input_tokens","nulls_equal":true},
+          {"left":"total_output_tokens","right":"total_output_tokens","nulls_equal":true},
+          {"left":"total_total_tokens","right":"total_total_tokens","nulls_equal":true},
+          {"left":"unanchored_ordinal","right":"unanchored_ordinal","nulls_equal":true}
+        ]
+      },
       "fields": [
-        {"source": 0, "field": "session_id", "name": "session_id", "type": "string", "nullable": false},
-        {"source": 0, "field": "timestamp_ms", "name": "timestamp_ms", "type": "integer", "nullable": true},
-        {"source": 0, "field": "input_tokens", "name": "input_tokens", "type": "integer", "nullable": false},
-        {"source": 0, "field": "cached_input_tokens", "name": "cached_input_tokens", "type": "integer", "nullable": false},
-        {"source": 0, "field": "output_tokens", "name": "output_tokens", "type": "integer", "nullable": false},
-        {"source": 0, "field": "reasoning_output_tokens", "name": "reasoning_output_tokens", "type": "integer", "nullable": false},
-        {"source": 0, "field": "estimated_count", "name": "estimated_count", "type": "integer", "nullable": false},
-        {"source": 0, "field": "invalid_count", "name": "invalid_count", "type": "integer", "nullable": false}
+        {"source":0,"field":"session_id","name":"session_id","type":"string","nullable":false},
+        {"source":0,"field":"timestamp_ms","name":"timestamp_ms","type":"integer","nullable":true},
+        {"source":0,"field":"source_ordinal","name":"source_ordinal","type":"integer","nullable":false},
+        {"source":0,"field":"has_total_usage","name":"has_total_usage","type":"boolean","nullable":false},
+        {"source":0,"field":"has_last_usage","name":"has_last_usage","type":"boolean","nullable":false},
+        {"source":0,"field":"total_input_tokens","name":"total_input_tokens","type":"integer","nullable":true},
+        {"source":0,"field":"total_cached_input_tokens","name":"total_cached_input_tokens","type":"integer","nullable":true},
+        {"source":0,"field":"total_output_tokens","name":"total_output_tokens","type":"integer","nullable":true},
+        {"source":0,"field":"total_reasoning_output_tokens","name":"total_reasoning_output_tokens","type":"integer","nullable":true},
+        {"source":0,"field":"total_total_tokens","name":"total_total_tokens","type":"integer","nullable":true},
+        {"source":0,"field":"last_input_tokens","name":"last_input_tokens","type":"integer","nullable":true},
+        {"source":0,"field":"last_cached_input_tokens","name":"last_cached_input_tokens","type":"integer","nullable":true},
+        {"source":0,"field":"last_output_tokens","name":"last_output_tokens","type":"integer","nullable":true},
+        {"source":0,"field":"last_reasoning_output_tokens","name":"last_reasoning_output_tokens","type":"integer","nullable":true},
+        {"source":0,"field":"last_total_tokens","name":"last_total_tokens","type":"integer","nullable":true},
+        {"source":0,"field":"unanchored_ordinal","name":"unanchored_ordinal","type":"integer","nullable":false},
+        {"source":0,"field":"invalid_tuple","name":"invalid_tuple","type":"boolean","nullable":false},
+        {"source":0,"field":"complete_core","name":"complete_core","type":"boolean","nullable":false},
+        {"source":0,"field":"complete_details","name":"complete_details","type":"boolean","nullable":false},
+        {"source":1,"field":"invalid_tuple","name":"group_invalid","type":"boolean","nullable":true},
+        {"source":0,"field":"persisted_ordinal","name":"persisted_ordinal","type":"integer","nullable":true},
+        {"source":0,"field":"subagent_history_start_ordinal","name":"subagent_history_start_ordinal","type":"integer","nullable":true},
+        {"source":0,"field":"parent_session_id","name":"parent_session_id","type":"string","nullable":true},
+        {"source":0,"field":"progress_proven","name":"progress_proven","type":"boolean","nullable":false}
       ]
     },
     {
-      "op": "derive", "input": "selected_transitions", "as": "window_flags",
-      "fields": [{
-        "name": "in_window", "type": "boolean", "nullable": false,
-        "expr": {"op": "and", "args": [
-          {"op": "or", "args": [{"op": "is-null", "args": [{"selector": "since"}]}, {"op": "ge", "args": [{"field": "timestamp_ms"}, {"selector": "since"}]}]},
-          {"op": "or", "args": [{"op": "is-null", "args": [{"selector": "until"}]}, {"op": "lt", "args": [{"field": "timestamp_ms"}, {"selector": "until"}]}]}
-        ]}
-      }]
+      "op": "join",
+      "inputs": ["checked_totals","ambiguous_totals"],
+      "as": "qualified_totals",
+      "on": {
+        "kind": "left",
+        "keys": [
+          {"left":"session_id","right":"session_id","nulls_equal":true},
+          {"left":"has_total_usage","right":"has_total_usage","nulls_equal":true},
+          {"left":"has_last_usage","right":"has_last_usage","nulls_equal":true},
+          {"left":"total_input_tokens","right":"total_input_tokens","nulls_equal":true},
+          {"left":"total_output_tokens","right":"total_output_tokens","nulls_equal":true},
+          {"left":"total_total_tokens","right":"total_total_tokens","nulls_equal":true},
+          {"left":"unanchored_ordinal","right":"unanchored_ordinal","nulls_equal":true}
+        ]
+      },
+      "fields": [
+        {"source":0,"field":"session_id","name":"session_id","type":"string","nullable":false},
+        {"source":0,"field":"timestamp_ms","name":"timestamp_ms","type":"integer","nullable":true},
+        {"source":0,"field":"source_ordinal","name":"source_ordinal","type":"integer","nullable":false},
+        {"source":0,"field":"has_total_usage","name":"has_total_usage","type":"boolean","nullable":false},
+        {"source":0,"field":"has_last_usage","name":"has_last_usage","type":"boolean","nullable":false},
+        {"source":0,"field":"total_input_tokens","name":"total_input_tokens","type":"integer","nullable":true},
+        {"source":0,"field":"total_cached_input_tokens","name":"total_cached_input_tokens","type":"integer","nullable":true},
+        {"source":0,"field":"total_output_tokens","name":"total_output_tokens","type":"integer","nullable":true},
+        {"source":0,"field":"total_reasoning_output_tokens","name":"total_reasoning_output_tokens","type":"integer","nullable":true},
+        {"source":0,"field":"total_total_tokens","name":"total_total_tokens","type":"integer","nullable":true},
+        {"source":0,"field":"last_input_tokens","name":"last_input_tokens","type":"integer","nullable":true},
+        {"source":0,"field":"last_cached_input_tokens","name":"last_cached_input_tokens","type":"integer","nullable":true},
+        {"source":0,"field":"last_output_tokens","name":"last_output_tokens","type":"integer","nullable":true},
+        {"source":0,"field":"last_reasoning_output_tokens","name":"last_reasoning_output_tokens","type":"integer","nullable":true},
+        {"source":0,"field":"last_total_tokens","name":"last_total_tokens","type":"integer","nullable":true},
+        {"source":0,"field":"unanchored_ordinal","name":"unanchored_ordinal","type":"integer","nullable":false},
+        {"source":0,"field":"invalid_tuple","name":"invalid_tuple","type":"boolean","nullable":false},
+        {"source":0,"field":"complete_core","name":"complete_core","type":"boolean","nullable":false},
+        {"source":0,"field":"complete_details","name":"complete_details","type":"boolean","nullable":false},
+        {"source":0,"field":"group_invalid","name":"group_invalid","type":"boolean","nullable":true},
+        {"source":1,"field":"source_ordinal","name":"variant_ordinal","type":"integer","nullable":true},
+        {"source":0,"field":"persisted_ordinal","name":"persisted_ordinal","type":"integer","nullable":true},
+        {"source":0,"field":"subagent_history_start_ordinal","name":"subagent_history_start_ordinal","type":"integer","nullable":true},
+        {"source":0,"field":"parent_session_id","name":"parent_session_id","type":"string","nullable":true},
+        {"source":0,"field":"progress_proven","name":"progress_proven","type":"boolean","nullable":false}
+      ]
     },
-    {"op": "filter", "input": "window_flags", "as": "windowed_transitions", "where": [{"field": "in_window", "op": "exact", "value": true}]},
     {
-      "op": "aggregate", "input": "windowed_transitions", "as": "usage_totals",
+      "op": "derive",
+      "input": "qualified_totals",
+      "as": "transitions",
+      "preserve_input": false,
+      "sequential": true,
+      "fields": [
+        {"name":"session_id","type":"string","nullable":false,"expr":{"field":"session_id"}},
+        {"name":"timestamp_ms","type":"integer","nullable":true,"expr":{"field":"timestamp_ms"}},
+        {"name":"source_ordinal","type":"integer","nullable":false,"expr":{"field":"source_ordinal"}},
+        {"name":"has_total_usage","type":"boolean","nullable":false,"expr":{"field":"has_total_usage"}},
+        {"name":"has_last_usage","type":"boolean","nullable":false,"expr":{"field":"has_last_usage"}},
+        {"name":"total_input_tokens","type":"integer","nullable":true,"expr":{"field":"total_input_tokens"}},
+        {"name":"total_cached_input_tokens","type":"integer","nullable":true,"expr":{"field":"total_cached_input_tokens"}},
+        {"name":"total_output_tokens","type":"integer","nullable":true,"expr":{"field":"total_output_tokens"}},
+        {"name":"total_reasoning_output_tokens","type":"integer","nullable":true,"expr":{"field":"total_reasoning_output_tokens"}},
+        {"name":"total_total_tokens","type":"integer","nullable":true,"expr":{"field":"total_total_tokens"}},
+        {"name":"last_input_tokens","type":"integer","nullable":true,"expr":{"field":"last_input_tokens"}},
+        {"name":"last_cached_input_tokens","type":"integer","nullable":true,"expr":{"field":"last_cached_input_tokens"}},
+        {"name":"last_output_tokens","type":"integer","nullable":true,"expr":{"field":"last_output_tokens"}},
+        {"name":"last_reasoning_output_tokens","type":"integer","nullable":true,"expr":{"field":"last_reasoning_output_tokens"}},
+        {"name":"last_total_tokens","type":"integer","nullable":true,"expr":{"field":"last_total_tokens"}},
+        {"name":"invalid_count","type":"integer","nullable":false,"expr":{"op":"if","args":[{"op":"coalesce","args":[{"field":"group_invalid"},false]},1,0]}},
+        {"name":"ambiguous_count","type":"integer","nullable":false,"expr":{"op":"if","args":[{"op":"is-null","args":[{"field":"variant_ordinal"}]},0,1]}},
+        {"name":"missing_core_count","type":"integer","nullable":false,"expr":{"op":"if","args":[{"op":"and","args":[{"field":"has_total_usage"},{"op":"and","args":[{"field":"has_last_usage"},{"op":"not","args":[{"field":"complete_core"}]}]}]},1,0]}},
+        {"name":"missing_detail_count","type":"integer","nullable":false,"expr":{"op":"if","args":[{"op":"and","args":[{"field":"has_total_usage"},{"op":"and","args":[{"field":"has_last_usage"},{"op":"not","args":[{"field":"complete_details"}]}]}]},1,0]}},
+        {"name":"legacy_count","type":"integer","nullable":false,"expr":{"op":"if","args":[{"op":"and","args":[{"field":"has_total_usage"},{"op":"not","args":[{"field":"has_last_usage"}]}]},1,0]}},
+        {"name":"unanchored_count","type":"integer","nullable":false,"expr":{"op":"if","args":[{"op":"and","args":[{"op":"not","args":[{"field":"has_total_usage"}]},{"field":"has_last_usage"}]},1,0]}},
+        {"name":"no_usage_count","type":"integer","nullable":false,"expr":{"op":"if","args":[{"op":"and","args":[{"op":"not","args":[{"field":"has_total_usage"}]},{"op":"not","args":[{"field":"has_last_usage"}]}]},1,0]}},
+        {"name":"valid_for_ownership","type":"boolean","nullable":false,"expr":{"op":"and","args":[{"op":"and","args":[{"field":"complete_core"},{"field":"complete_details"}]},{"op":"and","args":[{"op":"eq","args":[{"field":"invalid_count"},0]},{"op":"eq","args":[{"field":"ambiguous_count"},0]}]}]}},
+        {"name":"unresolved_seed","type":"boolean","nullable":false,"expr":{"op":"and","args":[{"op":"or","args":[{"field":"has_total_usage"},{"field":"has_last_usage"}]},{"op":"or","args":[{"op":"or","args":[{"op":"not","args":[{"field":"valid_for_ownership"}]},{"op":"and","args":[{"op":"and","args":[{"op":"not","args":[{"op":"is-null","args":[{"field":"persisted_ordinal"}]}]},{"op":"not","args":[{"op":"is-null","args":[{"field":"subagent_history_start_ordinal"}]}]}]},{"op":"lt","args":[{"field":"persisted_ordinal"},{"field":"subagent_history_start_ordinal"}]}]}]},{"op":"and","args":[{"op":"not","args":[{"op":"is-null","args":[{"field":"parent_session_id"}]}]},{"op":"not","args":[{"op":"and","args":[{"op":"and","args":[{"op":"and","args":[{"op":"not","args":[{"op":"is-null","args":[{"field":"persisted_ordinal"}]}]},{"op":"not","args":[{"op":"is-null","args":[{"field":"subagent_history_start_ordinal"}]}]}]},{"op":"ge","args":[{"field":"persisted_ordinal"},{"field":"subagent_history_start_ordinal"}]}]},{"field":"progress_proven"}]}]}]}]}]}},
+        {"name":"unavailable_count","type":"integer","nullable":false,"expr":{"op":"if","args":[{"op":"and","args":[{"op":"eq","args":[{"field":"invalid_count"},0]},{"field":"unresolved_seed"}]},1,0]}},
+        {"name":"transition_count","type":"integer","nullable":false,"expr":{"op":"if","args":[{"op":"and","args":[{"field":"valid_for_ownership"},{"op":"not","args":[{"field":"unresolved_seed"}]}]},1,0]}},
+        {"name":"input_tokens","type":"integer","nullable":true,"expr":{"op":"if","args":[{"field":"valid_for_ownership"},{"field":"last_input_tokens"},null]}},
+        {"name":"cached_input_tokens","type":"integer","nullable":true,"expr":{"op":"if","args":[{"field":"valid_for_ownership"},{"field":"last_cached_input_tokens"},null]}},
+        {"name":"output_tokens","type":"integer","nullable":true,"expr":{"op":"if","args":[{"field":"valid_for_ownership"},{"field":"last_output_tokens"},null]}},
+        {"name":"reasoning_output_tokens","type":"integer","nullable":true,"expr":{"op":"if","args":[{"field":"valid_for_ownership"},{"field":"last_reasoning_output_tokens"},null]}},
+        {"name":"persisted_ordinal","type":"integer","nullable":true,"expr":{"field":"persisted_ordinal"}},
+        {"name":"subagent_history_start_ordinal","type":"integer","nullable":true,"expr":{"field":"subagent_history_start_ordinal"}},
+        {"name":"parent_session_id","type":"string","nullable":true,"expr":{"field":"parent_session_id"}},
+        {"name":"progress_proven","type":"boolean","nullable":false,"expr":{"field":"progress_proven"}},
+        {"name":"valid_for_replay","type":"boolean","nullable":false,"expr":{"op":"and","args":[{"field":"valid_for_ownership"},{"op":"and","args":[{"op":"and","args":[{"op":"not","args":[{"op":"is-null","args":[{"field":"persisted_ordinal"}]}]},{"op":"not","args":[{"op":"is-null","args":[{"field":"subagent_history_start_ordinal"}]}]}]},{"op":"lt","args":[{"field":"persisted_ordinal"},{"field":"subagent_history_start_ordinal"}]}]}]}}
+      ]
+    },
+    {
+      "op": "join",
+      "inputs": ["transitions","transitions","identified_sessions"],
+      "as": "owned_transitions",
+      "on": {
+        "kind": "anti",
+        "left_true": "valid_for_replay",
+        "right_true": "valid_for_ownership",
+        "keys": [
+          {"left":"total_input_tokens","right":"total_input_tokens","nulls_equal":true},
+          {"left":"total_cached_input_tokens","right":"total_cached_input_tokens","nulls_equal":true},
+          {"left":"total_output_tokens","right":"total_output_tokens","nulls_equal":true},
+          {"left":"total_reasoning_output_tokens","right":"total_reasoning_output_tokens","nulls_equal":true},
+          {"left":"total_total_tokens","right":"total_total_tokens","nulls_equal":true},
+          {"left":"last_input_tokens","right":"last_input_tokens","nulls_equal":true},
+          {"left":"last_cached_input_tokens","right":"last_cached_input_tokens","nulls_equal":true},
+          {"left":"last_output_tokens","right":"last_output_tokens","nulls_equal":true},
+          {"left":"last_reasoning_output_tokens","right":"last_reasoning_output_tokens","nulls_equal":true},
+          {"left":"last_total_tokens","right":"last_total_tokens","nulls_equal":true}
+        ],
+        "lineage": {"left":"session_id","right":"session_id","node":"session_id","parent":"parent_session_id"}
+      },
+      "fields": [
+        {"source":0,"field":"session_id","name":"session_id","type":"string","nullable":false},
+        {"source":0,"field":"timestamp_ms","name":"timestamp_ms","type":"integer","nullable":true},
+        {"source":0,"field":"source_ordinal","name":"source_ordinal","type":"integer","nullable":false},
+        {"source":0,"field":"has_total_usage","name":"has_total_usage","type":"boolean","nullable":false},
+        {"source":0,"field":"has_last_usage","name":"has_last_usage","type":"boolean","nullable":false},
+        {"source":0,"field":"total_input_tokens","name":"total_input_tokens","type":"integer","nullable":true},
+        {"source":0,"field":"total_cached_input_tokens","name":"total_cached_input_tokens","type":"integer","nullable":true},
+        {"source":0,"field":"total_output_tokens","name":"total_output_tokens","type":"integer","nullable":true},
+        {"source":0,"field":"total_reasoning_output_tokens","name":"total_reasoning_output_tokens","type":"integer","nullable":true},
+        {"source":0,"field":"total_total_tokens","name":"total_total_tokens","type":"integer","nullable":true},
+        {"source":0,"field":"last_input_tokens","name":"last_input_tokens","type":"integer","nullable":true},
+        {"source":0,"field":"last_cached_input_tokens","name":"last_cached_input_tokens","type":"integer","nullable":true},
+        {"source":0,"field":"last_output_tokens","name":"last_output_tokens","type":"integer","nullable":true},
+        {"source":0,"field":"last_reasoning_output_tokens","name":"last_reasoning_output_tokens","type":"integer","nullable":true},
+        {"source":0,"field":"last_total_tokens","name":"last_total_tokens","type":"integer","nullable":true},
+        {"source":0,"field":"invalid_count","name":"invalid_count","type":"integer","nullable":false},
+        {"source":0,"field":"ambiguous_count","name":"ambiguous_count","type":"integer","nullable":false},
+        {"source":0,"field":"missing_core_count","name":"missing_core_count","type":"integer","nullable":false},
+        {"source":0,"field":"missing_detail_count","name":"missing_detail_count","type":"integer","nullable":false},
+        {"source":0,"field":"legacy_count","name":"legacy_count","type":"integer","nullable":false},
+        {"source":0,"field":"unanchored_count","name":"unanchored_count","type":"integer","nullable":false},
+        {"source":0,"field":"no_usage_count","name":"no_usage_count","type":"integer","nullable":false},
+        {"source":0,"field":"valid_for_ownership","name":"valid_for_ownership","type":"boolean","nullable":false},
+        {"source":0,"field":"unresolved_seed","name":"unresolved_seed","type":"boolean","nullable":false},
+        {"source":0,"field":"unavailable_count","name":"unavailable_count","type":"integer","nullable":false},
+        {"source":0,"field":"transition_count","name":"transition_count","type":"integer","nullable":false},
+        {"source":0,"field":"input_tokens","name":"input_tokens","type":"integer","nullable":true},
+        {"source":0,"field":"cached_input_tokens","name":"cached_input_tokens","type":"integer","nullable":true},
+        {"source":0,"field":"output_tokens","name":"output_tokens","type":"integer","nullable":true},
+        {"source":0,"field":"reasoning_output_tokens","name":"reasoning_output_tokens","type":"integer","nullable":true},
+        {"source":0,"field":"persisted_ordinal","name":"persisted_ordinal","type":"integer","nullable":true},
+        {"source":0,"field":"subagent_history_start_ordinal","name":"subagent_history_start_ordinal","type":"integer","nullable":true},
+        {"source":0,"field":"parent_session_id","name":"parent_session_id","type":"string","nullable":true},
+        {"source":0,"field":"progress_proven","name":"progress_proven","type":"boolean","nullable":false},
+        {"source":0,"field":"valid_for_replay","name":"valid_for_replay","type":"boolean","nullable":false}
+      ]
+    },
+    {"op":"project","input":"owned_transitions","as":"ownership_status","fields":["session_id","unresolved_seed"]},
+    {"op":"filter","input":"ownership_status","as":"unresolved_rows","where":[{"field":"unresolved_seed","op":"exact","value":true}]},
+    {"op":"distinct","input":"unresolved_rows","as":"unresolved_sessions","keys":["session_id"]},
+    {
+      "op": "join",
+      "inputs": ["identified_sessions","identified_sessions"],
+      "as": "lineage_metadata",
+      "on": {"kind":"left","keys":[{"left":"parent_session_id","right":"session_id"}]},
+      "fields": [{"source":0,"field":"session_id","name":"session_id","type":"string","nullable":false},{"source":0,"field":"parent_session_id","name":"parent_session_id","type":"string","nullable":true},{"source":0,"field":"lineage_conflict","name":"lineage_conflict","type":"boolean","nullable":false},{"source":1,"field":"session_id","name":"visible_parent","type":"string","nullable":true},{"source":1,"field":"token_usage_observation_count","name":"parent_usage_observation_count","type":"integer","nullable":true}]
+    },
+    {
+      "op": "derive", "input": "lineage_metadata", "as": "lineage_status",
+      "fields": [{"name":"metadata_unresolved","type":"boolean","nullable":false,"expr":{"op":"or","args":[{"field":"lineage_conflict"},{"op":"and","args":[{"op":"not","args":[{"op":"is-null","args":[{"field":"parent_session_id"}]}]},{"op":"or","args":[{"op":"is-null","args":[{"field":"visible_parent"}]},{"op":"or","args":[{"op":"is-null","args":[{"field":"parent_usage_observation_count"}]},{"op":"eq","args":[{"field":"parent_usage_observation_count"},0]}]}]}]}]}}]
+    },
+    {
+      "op": "join",
+      "inputs": ["lineage_status","unresolved_sessions"],
+      "as": "ancestry_seed_sources",
+      "on": {"kind":"left","keys":[{"left":"parent_session_id","right":"session_id"}]},
+      "fields": [{"source":0,"field":"session_id","name":"session_id","type":"string","nullable":false},{"source":0,"field":"parent_session_id","name":"parent_session_id","type":"string","nullable":true},{"source":0,"field":"metadata_unresolved","name":"metadata_unresolved","type":"boolean","nullable":false},{"source":1,"field":"unresolved_seed","name":"usage_unresolved","type":"boolean","nullable":true}]
+    },
+    {
+      "op": "derive", "input": "ancestry_seed_sources", "as": "ancestry_seeds",
+      "fields": [{"name":"unresolved_seed","type":"boolean","nullable":false,"expr":{"op":"or","args":[{"field":"metadata_unresolved"},{"op":"coalesce","args":[{"field":"usage_unresolved"},false]}]}}]
+    },
+    {"op":"reachability","input":"ancestry_seeds","as":"ancestry_status","keys":{"node":"session_id","parent":"parent_session_id","seed":"unresolved_seed","direction":"descendants"},"fields":[{"name":"session_id","type":"string","nullable":false,"field":"session_id"},{"name":"unresolved_ancestry","type":"boolean","nullable":false,"meta":"reachable"}]},
+    {"op":"join","inputs":["selected_sessions","ancestry_status"],"as":"qualified_sessions","on":{"kind":"inner","keys":[{"left":"session_id","right":"session_id"}]},"fields":[{"source":0,"field":"session_id","name":"session_id","type":"string","nullable":false},{"source":1,"field":"unresolved_ancestry","name":"unresolved_ancestry","type":"boolean","nullable":false}]},
+    {
+      "op": "join",
+      "inputs": ["owned_transitions","qualified_sessions"],
+      "as": "selected_transitions",
+      "on": {"kind":"inner","keys":[{"left":"session_id","right":"session_id"}]},
+      "fields": [
+        {"source":0,"field":"session_id","name":"session_id","type":"string","nullable":false},
+        {"source":0,"field":"timestamp_ms","name":"timestamp_ms","type":"integer","nullable":true},
+        {"source":0,"field":"invalid_count","name":"invalid_count","type":"integer","nullable":false},
+        {"source":0,"field":"ambiguous_count","name":"ambiguous_count","type":"integer","nullable":false},
+        {"source":0,"field":"missing_core_count","name":"missing_core_count","type":"integer","nullable":false},
+        {"source":0,"field":"missing_detail_count","name":"missing_detail_count","type":"integer","nullable":false},
+        {"source":0,"field":"legacy_count","name":"legacy_count","type":"integer","nullable":false},
+        {"source":0,"field":"unanchored_count","name":"unanchored_count","type":"integer","nullable":false},
+        {"source":0,"field":"no_usage_count","name":"no_usage_count","type":"integer","nullable":false},
+        {"source":0,"field":"unavailable_count","name":"unavailable_count","type":"integer","nullable":false},
+        {"source":0,"field":"transition_count","name":"transition_count","type":"integer","nullable":false},
+        {"source":0,"field":"input_tokens","name":"input_tokens","type":"integer","nullable":true},
+        {"source":0,"field":"cached_input_tokens","name":"cached_input_tokens","type":"integer","nullable":true},
+        {"source":0,"field":"output_tokens","name":"output_tokens","type":"integer","nullable":true},
+        {"source":0,"field":"reasoning_output_tokens","name":"reasoning_output_tokens","type":"integer","nullable":true},
+        {"source":1,"field":"unresolved_ancestry","name":"unresolved_ancestry","type":"boolean","nullable":false}
+      ]
+    },
+    {
+      "op": "derive",
+      "input": "selected_transitions",
+      "as": "window_flags",
+      "fields": [
+        {"name":"selected_transition_count","type":"integer","nullable":false,"expr":{"op":"if","args":[{"field":"unresolved_ancestry"},0,{"field":"transition_count"}]}},
+        {"name":"unresolved_ancestry_count","type":"integer","nullable":false,"expr":{"op":"if","args":[{"field":"unresolved_ancestry"},1,0]}},
+        {"name":"selected_no_usage_count","type":"integer","nullable":false,"expr":{"op":"if","args":[{"op":"and","args":[{"op":"or","args":[{"op":"not","args":[{"op":"is-null","args":[{"selector":"since"}]}]},{"op":"not","args":[{"op":"is-null","args":[{"selector":"until"}]}]}]},{"op":"is-null","args":[{"field":"timestamp_ms"}]}]},0,{"field":"no_usage_count"}]}},
+        {
+          "name": "unplaced_no_usage_count",
+          "type": "integer",
+          "nullable": false,
+          "expr": {"op":"if","args":[{"op":"and","args":[{"op":"and","args":[{"op":"or","args":[{"op":"not","args":[{"op":"is-null","args":[{"selector":"since"}]}]},{"op":"not","args":[{"op":"is-null","args":[{"selector":"until"}]}]}]},{"op":"is-null","args":[{"field":"timestamp_ms"}]}]},{"op":"gt","args":[{"field":"no_usage_count"},0]}]},1,0]}
+        },
+        {
+          "name": "unresolved_time_count",
+          "type": "integer",
+          "nullable": false,
+          "expr": {"op":"if","args":[{"op":"and","args":[{"op":"and","args":[{"op":"or","args":[{"op":"not","args":[{"op":"is-null","args":[{"selector":"since"}]}]},{"op":"not","args":[{"op":"is-null","args":[{"selector":"until"}]}]}]},{"op":"is-null","args":[{"field":"timestamp_ms"}]}]},{"op":"eq","args":[{"field":"no_usage_count"},0]}]},1,0]}
+        },
+        {
+          "name": "in_window",
+          "type": "boolean",
+          "nullable": false,
+          "expr": {
+            "op": "or",
+            "args": [
+              {"op":"and","args":[{"op":"or","args":[{"op":"not","args":[{"op":"is-null","args":[{"selector":"since"}]}]},{"op":"not","args":[{"op":"is-null","args":[{"selector":"until"}]}]}]},{"op":"is-null","args":[{"field":"timestamp_ms"}]}]},
+              {"op":"and","args":[{"op":"or","args":[{"op":"is-null","args":[{"selector":"since"}]},{"op":"ge","args":[{"field":"timestamp_ms"},{"selector":"since"}]}]},{"op":"or","args":[{"op":"is-null","args":[{"selector":"until"}]},{"op":"lt","args":[{"field":"timestamp_ms"},{"selector":"until"}]}]}]}
+            ]
+          }
+        }
+      ]
+    },
+    {"op":"filter","input":"window_flags","as":"windowed_transitions","where":[{"field":"in_window","op":"exact","value":true}]},
+    {
+      "op": "aggregate",
+      "input": "windowed_transitions",
+      "as": "usage_totals",
       "metrics": [
-        {"name": "transition_count", "op": "count"},
-        {"name": "raw_input_tokens", "op": "sum", "field": "input_tokens"},
-        {"name": "raw_cached_input_tokens", "op": "sum", "field": "cached_input_tokens"},
-        {"name": "raw_output_tokens", "op": "sum", "field": "output_tokens"},
-        {"name": "raw_reasoning_output_tokens", "op": "sum", "field": "reasoning_output_tokens"},
-        {"name": "estimated_transition_count", "op": "sum", "field": "estimated_count"},
-        {"name": "invalid_transition_count", "op": "sum", "field": "invalid_count"}
+        {"name":"candidate_count","op":"count"},
+        {"name":"transition_count","op":"sum","field":"selected_transition_count"},
+        {"name":"invalid_observation_count","op":"sum","field":"invalid_count"},
+        {"name":"ambiguous_observation_count","op":"sum","field":"ambiguous_count"},
+        {"name":"missing_core_observation_count","op":"sum","field":"missing_core_count"},
+        {"name":"missing_detail_observation_count","op":"sum","field":"missing_detail_count"},
+        {"name":"legacy_observation_count","op":"sum","field":"legacy_count"},
+        {"name":"unanchored_observation_count","op":"sum","field":"unanchored_count"},
+        {"name":"no_usage_observation_count","op":"sum","field":"selected_no_usage_count"},
+        {"name":"unplaced_no_usage_observation_count","op":"sum","field":"unplaced_no_usage_count"},
+        {"name":"unavailable_observation_count","op":"sum","field":"unavailable_count"},
+        {"name":"unresolved_ancestry_observation_count","op":"sum","field":"unresolved_ancestry_count"},
+        {"name":"unresolved_time_observation_count","op":"sum","field":"unresolved_time_count"},
+        {"name":"raw_input_tokens","op":"sum","field":"input_tokens"},
+        {"name":"raw_cached_input_tokens","op":"sum","field":"cached_input_tokens"},
+        {"name":"raw_output_tokens","op":"sum","field":"output_tokens"},
+        {"name":"raw_reasoning_output_tokens","op":"sum","field":"reasoning_output_tokens"}
       ]
     },
     {
-      "op": "derive", "input": "usage_totals", "as": "summary",
+      "op": "derive",
+      "input": "usage_totals",
+      "as": "qualified_usage",
       "fields": [
-        {"name": "input_tokens", "type": "integer", "nullable": true, "expr": {"op": "if", "args": [{"op": "gt", "args": [{"field": "invalid_transition_count"}, 0]}, null, {"field": "raw_input_tokens"}]}},
-        {"name": "cached_input_tokens", "type": "integer", "nullable": true, "expr": {"op": "if", "args": [{"op": "gt", "args": [{"field": "invalid_transition_count"}, 0]}, null, {"field": "raw_cached_input_tokens"}]}},
-        {"name": "output_tokens", "type": "integer", "nullable": true, "expr": {"op": "if", "args": [{"op": "gt", "args": [{"field": "invalid_transition_count"}, 0]}, null, {"field": "raw_output_tokens"}]}},
-        {"name": "reasoning_output_tokens", "type": "integer", "nullable": true, "expr": {"op": "if", "args": [{"op": "gt", "args": [{"field": "invalid_transition_count"}, 0]}, null, {"field": "raw_reasoning_output_tokens"}]}},
-        {"name": "total_tokens", "type": "integer", "nullable": true, "expr": {"op": "if", "args": [{"op": "gt", "args": [{"field": "invalid_transition_count"}, 0]}, null, {"op": "add", "args": [{"field": "raw_input_tokens"}, {"field": "raw_output_tokens"}]}]}},
-        {"name": "cached_percentage", "type": "float", "nullable": true, "expr": {"op": "if", "args": [{"op": "or", "args": [{"op": "gt", "args": [{"field": "invalid_transition_count"}, 0]}, {"op": "le", "args": [{"field": "raw_input_tokens"}, 0]}]}, null, {"op": "divide", "args": [{"op": "multiply", "args": [{"field": "raw_cached_input_tokens"}, 100]}, {"field": "raw_input_tokens"}]}]}},
-        {"name": "verdict", "type": "string", "nullable": false, "expr": {"op": "if", "args": [{"op": "gt", "args": [{"field": "invalid_transition_count"}, 0]}, "invalid", {"op": "if", "args": [{"op": "gt", "args": [{"field": "estimated_transition_count"}, 0]}, "estimated", "valid"]}]}},
-        {"name": "since_ms", "type": "integer", "nullable": true, "expr": {"selector": "since"}},
-        {"name": "until_ms", "type": "integer", "nullable": true, "expr": {"selector": "until"}}
+        {
+          "name": "totals_available",
+          "type": "boolean",
+          "nullable": false,
+          "expr": {
+            "op": "not",
+            "args": [
+              {
+                "op": "or",
+                "args": [{"op":"or","args":[{"op":"gt","args":[{"field":"invalid_observation_count"},0]},{"op":"gt","args":[{"field":"unavailable_observation_count"},0]}]},{"op":"or","args":[{"op":"gt","args":[{"field":"unresolved_ancestry_observation_count"},0]},{"op":"or","args":[{"op":"gt","args":[{"field":"unresolved_time_observation_count"},0]},{"op":"eq","args":[{"field":"transition_count"},0]}]}]}]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "op": "derive",
+      "input": "qualified_usage",
+      "as": "summary",
+      "fields": [
+        {"name":"input_tokens","type":"integer","nullable":true,"expr":{"op":"if","args":[{"op":"not","args":[{"field":"totals_available"}]},null,{"field":"raw_input_tokens"}]}},
+        {"name":"cached_input_tokens","type":"integer","nullable":true,"expr":{"op":"if","args":[{"op":"not","args":[{"field":"totals_available"}]},null,{"field":"raw_cached_input_tokens"}]}},
+        {"name":"output_tokens","type":"integer","nullable":true,"expr":{"op":"if","args":[{"op":"not","args":[{"field":"totals_available"}]},null,{"field":"raw_output_tokens"}]}},
+        {"name":"reasoning_output_tokens","type":"integer","nullable":true,"expr":{"op":"if","args":[{"op":"not","args":[{"field":"totals_available"}]},null,{"field":"raw_reasoning_output_tokens"}]}},
+        {"name":"total_tokens","type":"integer","nullable":true,"expr":{"op":"if","args":[{"op":"not","args":[{"field":"totals_available"}]},null,{"op":"add","args":[{"field":"raw_input_tokens"},{"field":"raw_output_tokens"}]}]}},
+        {"name":"cached_percentage","type":"float","nullable":true,"expr":{"op":"if","args":[{"op":"or","args":[{"op":"not","args":[{"field":"totals_available"}]},{"op":"le","args":[{"field":"raw_input_tokens"},0]}]},null,{"op":"multiply","args":[{"op":"divide","args":[{"field":"raw_cached_input_tokens"},{"field":"raw_input_tokens"}]},100]}]}},
+        {"name":"verdict","type":"string","nullable":false,"expr":{"op":"if","args":[{"op":"gt","args":[{"field":"invalid_observation_count"},0]},"invalid",{"op":"if","args":[{"op":"not","args":[{"field":"totals_available"}]},"unavailable","valid"]}]}},
+        {"name":"usage_scope","type":"string","nullable":false,"expr":"observed-lineage-owned-transitions"},
+        {"name":"since_ms","type":"integer","nullable":true,"expr":{"selector":"since"}},
+        {"name":"until_ms","type":"integer","nullable":true,"expr":{"selector":"until"}}
       ]
     }
   ],
   "projections": {
     "summary": {
-      "relation": "summary", "schema": "seq-token-usage-result/v1",
-      "fields": ["transition_count", "input_tokens", "cached_input_tokens", "output_tokens", "reasoning_output_tokens", "total_tokens", "cached_percentage", "verdict", "estimated_transition_count", "invalid_transition_count", "since_ms", "until_ms"],
+      "relation": "summary",
+      "schema": "seq-token-usage-result/v2",
+      "fields": [
+        "candidate_count",
+        "transition_count",
+        "input_tokens",
+        "cached_input_tokens",
+        "output_tokens",
+        "reasoning_output_tokens",
+        "total_tokens",
+        "cached_percentage",
+        "verdict",
+        "usage_scope",
+        "invalid_observation_count",
+        "unavailable_observation_count",
+        "ambiguous_observation_count",
+        "missing_core_observation_count",
+        "missing_detail_observation_count",
+        "legacy_observation_count",
+        "unanchored_observation_count",
+        "no_usage_observation_count",
+        "unplaced_no_usage_observation_count",
+        "unresolved_ancestry_observation_count",
+        "unresolved_time_observation_count",
+        "since_ms",
+        "until_ms"
+      ],
       "renderers": ["json"]
     }
   },
-  "bounds": {
-    "max_rows": 10000000,
-    "max_output_bytes": 1048576,
-    "max_fold_states": 32,
-    "max_input_bytes": 68719476736,
-    "max_graph_depth": 256,
-    "max_graph_nodes": 1000000,
-    "max_diagnostics": 128
-  }
+  "bounds": {"max_rows":10000000,"max_output_bytes":1048576,"max_fold_states":32,"max_input_bytes":68719476736,"max_graph_depth":256,"max_graph_nodes":1000000,"max_diagnostics":128}
 }
