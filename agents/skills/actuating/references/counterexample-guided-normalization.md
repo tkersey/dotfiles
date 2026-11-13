@@ -65,14 +65,20 @@ source-required judgments, not exact whole-program inference by default. Optiona
 safe behavior excluded by approximation must be disclosed; no required distinction
 may be erased. Do not invent these transformations for candidates that do not use them.
 
-When code under construction optimizes a path whose behavior the source also
-requires, such as a streaming, cached, or fast path beside a complete one, the
-deciding evidence is a differential property: both paths agree on generated inputs
-across the optimized path's domain. Define that domain once, as a positive
-predicate that dispatch itself uses, so the generator and the dispatcher cannot
-disagree. Draw most cases from inside it, report how many exercised the optimized
-path, and include cases outside it to confirm they take the reference path.
-Narrowing the domain changes that predicate rather than adding an exception.
+When construction relies on agreement between execution paths, establish the
+source-required relation over the same logical inputs, scope, relevant state, and
+observations. A reference path is an oracle only where the source requires its
+behavior; preserve permitted differences or use the required refinement relation.
+Reuse adequate native proof. For unresolved agreement, retain a direct comparison
+that exercises the implicated paths and generalize it to the supported mechanism.
+When using generated comparisons, use the dispatch owner to target cases in the
+actual optimized domain, and derive required-valid and boundary cases independently
+from the accepted source.
+Check rejected cases against their required fallback or rejection behavior.
+Establish actual path execution and sensitivity to the disputed distinction under
+[generator and observer adequacy](../../universalist/references/domain-algebra/property-test-derivation.md#generator-observer-and-shrinker-adequacy),
+reusing applicable evidence. A changed dispatch domain must preserve required
+capability; its own predicate does not establish that preservation.
 
 Use the strongest adequate native evidence for the affected seam: closed types
 and their construction/operation surface, compiler IR, schemas, exports, build or

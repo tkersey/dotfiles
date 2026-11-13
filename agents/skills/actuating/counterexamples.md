@@ -66,13 +66,13 @@ root's [automatic construction reconsideration](SKILL.md#mission). Reuse inquiry
 across witnesses only when the same supported causal mechanism covers them; account
 for each new witness and reopen the explanation when it adds a causal distinction.
 A shared reviewer, file, owner, or law alone does not establish a common cause.
-Separately, name the code pattern that produced each admitted defect, such as a
-second reader of one fact, a loop that enforces a rule on its first match, or a
-walk that applies its own bound. Search the changed code and the in-scope code it
-calls for other instances, stating the search and its bound. Cover instances that
-share the defect's law and supported mechanism in the response; route others
-through Review Fold as self-discovered candidates. Sibling tests sample this
-search; they do not replace it.
+When the supported mechanism may recur in other in-scope code, identify its
+generating pattern, such as a second reader of one fact, a loop that enforces a
+rule on its first match, or a walk that applies its own bound. Search the changed
+code and in-scope callees for other instances, stating the search and its bound.
+Cover instances that share the defect's law and supported mechanism in the
+response; route others through Review Fold as self-discovered candidates. Sibling
+tests sample this search; they do not replace it.
 Reconsideration belongs to response selection, not a separate pass or a demand to
 redesign. Acceptance establishes a supported
 disagreement, not the causal explanation. Investigate the implementation, model,

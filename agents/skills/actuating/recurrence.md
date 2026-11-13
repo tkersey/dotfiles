@@ -48,9 +48,10 @@ Keep a compact history in the existing Working Set: closed review epochs (includ
 superseded batches with incomplete inquiry) and
 relevant terminal verification attempts, the unresolved obligation or obstruction,
 each relevant intervention and its predicted versus observed result, the last
-supported progress, and the evidence basis of the latest shared activation. For
-each successor, add its production lines added and deleted and its change in
-[deciding sites](construction.md#initial-construction) for each law it touched.
+supported progress, and the evidence basis of the latest shared activation. Use
+production growth or changes in [deciding sites](construction.md#initial-construction)
+when they resolve a material uncertainty about accretion or remaining independent
+interpretations.
 Reference existing owner results rather than copying logs or adding a store.
 Preserve this history across new heads, clean-credit resets, changed finding labels,
 delegation, and compaction. Reclassify applicability when the accepted source
@@ -79,14 +80,15 @@ stagnation, automatic passage reinjection, a redesign requirement, or round limi
 Act on an earlier causal trigger without waiting for either count. Applying a
 skill, making a commit, or passing an unrelated check is not supported progress.
 
-Escalate when an admitted defect lies in a deciding site that an intervention in
-this history added, or comes from the same supported causal mechanism as a defect
-an earlier intervention addressed: that construction did not hold. Add no deciding
-site for it; fix the sole site, delegate to the law's owner, or retire or unify the
-implicated sites under the [deciding-site rule](construction.md#initial-construction).
-Select that construction with
-[independent reconstruction](references/independent-reconstruction.md) within its
-authority limits.
+When an admitted defect lies in a deciding site an earlier intervention added,
+inspect that site's role and the argument that justified it. When a supported
+mechanism survives an attempted correction, reassess the explanation and required
+relationship under the rules above. Fix an adequate sole site, delegate to the
+law's owner, or retire or unify unnecessary interpretations under the
+[deciding-site rule](construction.md#initial-construction). Apply
+[architecture selection](architecture.md) to any required independent
+reconstruction, preserving its evidence-backed direct-correction exception.
+Recent code origin alone does not require a separate context.
 
 Reconsider the implicated mechanism, assumptions, oracle, environment, verification
 arrangement, or task decomposition while keeping the accepted Goal fixed. Select

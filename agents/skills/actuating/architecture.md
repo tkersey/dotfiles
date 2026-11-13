@@ -46,10 +46,8 @@ representation, authority rule, or lifetime assumption. Establish this from evid
 independent of the failing check; a newly named canonical helper or agreement with that check cannot
 justify the exception. Keep the deciding evidence in the existing selection work.
 
-Outside that witness-triggered selection and an escalation under
-[recurrence](recurrence.md#progress-before-another-iteration), independent
-reconstruction remains discretionary. Read its effect and isolation rules before
-using a separate context.
+Outside that witness-triggered selection, independent reconstruction remains
+discretionary. Read its effect and isolation rules before using a separate context.
 A selected reconstruction replaces the inquiry into the implicated successor;
 it adds no standing worker, review lane,
 or parallel implementation requirement. Supporting skills cannot expand the task's

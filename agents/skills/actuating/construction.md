@@ -92,7 +92,9 @@ decides. Tests and independent oracles are evidence, not deciding sites. Add non
 unless it carries a distinct accepted obligation or a justified derived
 defense-in-depth or observation role, classified as [$reduce](../reduce/SKILL.md)
 classifies enforcement sites; otherwise fix the sole site, delegate to the law's
-owner, or unify the sites. Judge size by the resulting deciding sites, not the diff.
+owner, or unify the sites. Compare the resulting semantic responsibilities,
+implementation complexity, and proof burden; a site count or smaller diff alone
+does not establish adequacy.
 
 Use the [construction repertoire](references/counterexample-guided-normalization.md#constructive-derivation)
 and [supporting skills](architecture.md) when useful. Their examples are not
@@ -184,12 +186,12 @@ replacement could pass despite a source-relevant failure the prior witness would
 expose, even with unchanged assertions. Preserve required deciding evidence through
 the replacement or another adequate argument, and describe any reduced coverage.
 Reuse decisive native evidence; incidental fixture detail or redundant execution
-need not survive merely because it existed. A witness's regression test seeds a
-property for its law: when another witness exercises the same law, fold them into
-one check over the law's domain, table-driven for a finite domain and generated for
-an open one, using as oracle a reference path whose behavior the source requires,
-where one exists. Keep their inputs as named cases and re-establish the folded
-check's sensitivity to each.
+need not survive merely because it existed. When another witness exercises the
+same supported relationship, generalize the deciding evidence through an adequate
+property, table, generator, or native argument. Use a reference path as oracle only
+where the source requires its behavior. Keep witness inputs as named cases and
+preserve or re-establish sensitivity to each distinct violation. Retain separate
+checks when they supply independent evidence or observe different required behavior.
 
 Before accepting validation for local completion or reviewability, inspect the
 base-to-candidate diff and actual check selection for deleted tests, weakened
