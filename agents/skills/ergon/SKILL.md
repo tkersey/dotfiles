@@ -14,7 +14,7 @@ agent-maintained readiness cache.
 Use when explicitly invoked or when the request calls for maintaining or querying
 a durable task graph, such as tracking task prerequisites or finding ready and
 blocked tasks. Do not turn ordinary coding into mandatory bookkeeping, migrate
-existing tasks implicitly, or change `$plan`/`$actuating` routing. Work against the
+existing tasks implicitly, or change `$actuating` routing. Work against the
 caller-selected repository, not a guessed location.
 
 ## Runtime and custody

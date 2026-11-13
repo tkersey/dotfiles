@@ -80,7 +80,6 @@ with an unobserved harness.
 | PR comments requested for construction | Elenctic selects proposal-only existing-discussion analysis; no implementation, publication, thread mutation, Viewed mutation, or unsolicited review campaign. | Bare Actuating, worker-level synthesis, or inference of authority from PR authorship. |
 | Validation passes after assertions/tests were weakened | Actuating preserves the source-backed obligation and holds dependent completion until adequate proof or authorized retirement. | Green status discharging an unchanged requirement. |
 | Six-review or focused-context evaluation | Tune records evaluation-only results and missing coverage, with no production credit. | Claiming five-clean convergence, a qualifying Elenctic seed, or production fallback. |
-| Explicit Prove It claim stress-test | Preserve the nine concurrent lenses and subsequent oracle with artifactless execution. | Root-authored pseudo-rounds, early verdict, or ordinary rigor triggering the gauntlet. |
 
 ### Bounded invariant and presentation probes
 

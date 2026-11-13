@@ -54,6 +54,10 @@ bind internal writes under campaign.md. Neither limit is a code blocker.
 
 ## Presentation input
 
+The renderer also supports saved `ergasterion-report/v1` artifacts from the
+retired Ergasterion workflow, preserving their original identities and handling
+state when regenerated.
+
 `scripts/report.py` validates `elenctic-report/v1`. This object is a derived view,
 not a second source of review truth:
 
@@ -94,9 +98,10 @@ construction analyses have no execution mode or worker provenance.
 New native campaign and construction-analysis identities include the actual
 `merge_policy` (`pragmatic` or `pedantic`). Historical omission stays omitted and
 is labeled **Historical policy · mode unrecorded**, never inferred from a verdict.
-Null and unknown policy values are invalid. A composed campaign preserves the
-actual Elenctic source choice only at `identity.assessments.elenctic.merge_policy`;
-the aggregate identity has no Elenctic-specific root policy field.
+Null and unknown policy values are invalid. When displaying a historical composed
+report, preserve the actual Elenctic source choice only at
+`identity.assessments.elenctic.merge_policy`; the aggregate identity has no
+Elenctic-specific root policy field.
 Do not infer missing SHAs/IDs or change coverage to satisfy validation. Dispositions
 are exactly `merge-blocker`, `risk`, `concern`. Include all retained findings once,
 not only blockers; keep nonblocking items nonblocking. With zero findings use `[]`.
@@ -263,9 +268,9 @@ proposals / Original findings, the full feedback-adjudication ledger, explicit c
 changes and copyable evidence-bound handoffs. A feedback-only analysis displays
 No review verdict. Rejected-only output remains visible without invented repair units.
 Display the selected merge policy (adjudication policy for analysis, source-qualified
-Elenctic policy for composition) and retain it in copied handoffs. Label nonblocker
-outcomes **Optional follow-up** so known risks and concerns cannot reappear as
-mandatory work through presentation or synthesis.
+Elenctic policy for historical composition reports) and retain it in copied
+handoffs. Label nonblocker outcomes **Optional follow-up** so known risks and
+concerns cannot reappear as mandatory work through presentation or synthesis.
 
 Use readable restrained styling, visible focus, labeled native controls, responsive
 layout and print support; no remote fonts, dependencies or telemetry. Copy failure

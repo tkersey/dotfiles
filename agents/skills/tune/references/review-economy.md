@@ -28,9 +28,8 @@ cases are missing, finish an evidence-bound analysis or proposed experiment;
 identify the missing execution condition, never manufacture a run or verdict.
 
 Keep the current production contracts unchanged: Actuating's five standard
-cleans and five auxiliary obligations, its epoch/reset/proof rules, Elenctic's
-full-history seed requirement, and Prove It's selected nine-lens-plus-oracle
-gauntlet. Evaluation results earn **no production review, Viewed, thread,
+cleans and five auxiliary obligations, its epoch/reset/proof rules, and Elenctic's
+full-history seed requirement. Evaluation results earn **no production review, Viewed, thread,
 publication, or closure credit**. A prospective variant is not a completed
 Actuating or Elenctic run and cannot be used as a fallback for one.
 

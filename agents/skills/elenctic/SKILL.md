@@ -74,13 +74,10 @@ pragmatic requires practical merge necessity or a binding obligation for a
 construction finding. Neither policy invents requirements or waives mandatory
 conditions.
 
-`selection=unchecked` remains the default. Explicit `selection=all-changed` or
-an accepted Ergasterion composition loads
-[ergasterion-composition.md](references/ergasterion-composition.md) before campaign preflight.
-That owner-approved route changes the inventory partition, not review standards,
-worker provenance or implementation authority. An enclosing Ergasterion can also
-explicitly defer presentation/synthesis to its joint aggregate under that contract;
-standalone invocation retains the existing automatic report and output workflows.
+`selection=unchecked` remains the default. Explicit `selection=all-changed` loads
+[selection.md](references/selection.md) before campaign preflight. This changes
+the inventory partition while preserving review standards, worker provenance,
+implementation authority, and the existing automatic report and output workflows.
 
 Resolve an unqualified request with `gh pr view` without a positional selector.
 Pass an explicit PR number, URL, or named branch unchanged as its selector; never
