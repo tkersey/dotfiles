@@ -80,7 +80,10 @@ read them when a binding, audit, or evaluation needs them.
 After an invalidated review epoch closes, recover the source-bound assignment,
 material [attempt history](recurrence.md#progress-before-another-iteration),
 deciding evidence, and unresolved questions from their existing owners before
-selecting another successor. Preserve the applicability and provenance of earlier
+selecting another successor. Before that selection, compare the previous
+intervention's predicted and observed results, and apply the fresh activation or
+explicit assessment that a failed prediction or a reached epoch backstop requires.
+Preserve the applicability and provenance of earlier
 failures and predictions across compaction. An unresolved mechanism remains
 investigable under the existing authority and epoch rules. Missing evidence blocks
 only its dependent judgment, claim, or action; missing narration alone does not
