@@ -26,11 +26,14 @@ LEDGER_BIN=/path/to/ledger JAQ_BIN=jaq \
   sh agents/skills/review-fold/tests/test-counterexample-corpus.sh
 ```
 
-Use Ledger 1.7.0 or newer; `JAQ_BIN=jq` also works. The isolated fixture first
-observes the missing-owner result, prepares custody, captures and projects a real
-record, retries idempotently, removes its temporary checkout, and retrieves the
-same record by stable store ID and original semantic repository scope. It does
-not exercise a model's decision to obtain that context or admit a delayed witness.
+Use Ledger 1.8.0 or newer; `JAQ_BIN=jq` also works. The isolated fixture first
+observes the missing-owner result, prepares empty custody without a quiescence
+assertion, captures and projects a real record, and retries idempotently. A later
+invocation from a new Git worktree selects the same managed owner and captures a
+second witness without legacy preparation. After both checkouts are removed, the
+fixture retrieves the original record unchanged by stable store ID and original
+semantic repository scope. It does not exercise a model's decision to obtain that
+context or admit a delayed witness.
 
 The reference dispositions are evaluator expectations, not an implemented
 adjudicator. Passing probes validate the fixtures and source consistency; they

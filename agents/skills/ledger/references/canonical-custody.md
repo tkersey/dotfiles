@@ -73,7 +73,7 @@ checkout path or bare `NEG` number.
 
 ## Owner access
 
-Bootstrap Ledger 1.7.0 or newer with `ensure-ledger --min-version 1.7.0` before
+Bootstrap Ledger 1.8.0 or newer with `ensure-ledger --min-version 1.8.0` before
 owner selection. Start a canonical read with the owner's installed definition
 and migration manifest:
 
@@ -97,6 +97,15 @@ Handle only the returned condition:
 - `OwnerPreparationRequired`: when maintenance is allowed, run
   [automatic owner upgrade](automatic-migration.md#automatic-owner-upgrade) with
   the same selection, definition, and manifest, then use its returned selector.
+  A missing owner in an ID with workspace associations needs the actual workspace
+  for source discovery. If direct-ID preparation returns
+  `OwnerPreparationRequiresWorkspace`, preserve the ID and supply that workspace;
+  unknown or unavailable history remains a blocker.
+- `TransactionRecoveryRequired`, `EventStoreBusy`, or `LockBusy`: when custody
+  maintenance is allowed, use `--ensure-owner` with the same selection. It waits
+  for participating writers and uses native recovery for supported interrupted
+  target transactions, then checks that owner again. Malformed journals, unknown
+  recovery state, and contention beyond the bounded wait remain blockers.
 - `StoreBindingWithoutSlot`: retain the verified context returned with the
   error, then select [exact archive repair](automatic-migration.md#exact-archive-repair)
   by that same store ID. Adopt an existing uncataloged registration only as that
@@ -116,10 +125,22 @@ empty projection or merely assert that history was unavailable.
 
 Before the first authorized semantic write, use `--ensure-owner --definition
 --owner-manifest` under the owner-upgrade guidance even if a prior read succeeded.
-Reuse its result while the relevant selection and preparation premises remain
-unchanged. This protected source check is point-in-time preparation, not a fence
-against later legacy writers. A read result grants neither write readiness nor
-semantic capture authority. All operations retain the same managed identity.
+For a present healthy owner, ensure checks the selected identity, custody, and
+recovery state without enumerating sibling worktrees. Valid target recovery and
+writer waiting also stay within that selected custody. It reports
+`source_coverage: not_checked`, equally for workspace and direct-ID selection.
+An independently justified new capture can proceed under its owner's gate;
+absence claims, sequence identity across unreconciled lineages, and lifecycle
+decisions cannot borrow historical completeness from that success.
+
+When such a premise requires live-source reconciliation, select
+`--reconcile-owner` with the same definition, manifest, and verified store ID,
+plus the workspace supplying the source family. This retains strict source
+coverage, divergence, and writer checks. Unknown or unavailable sources remain
+blockers to that claim. A checked source snapshot is point-in-time evidence,
+not a fence against later legacy writers. Reuse successful readiness only while
+its relevant premises remain unchanged. All operations retain the same managed
+identity and their separate semantic authority.
 
 ## Explicit adoption and migration
 

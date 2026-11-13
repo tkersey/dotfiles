@@ -1,6 +1,6 @@
 ---
 name: ledger
-description: "Operate Ledger for owner-defined artifact validation, materialization, personal custody, migration, and recovery. Use for runtime bootstrap, passive definitions, stable store selection, or explicit historical import; not merely because work creates history or a receipt."
+description: "Read or write owner-selected canonical evidence; validate or materialize artifacts. Use for runtime bootstrap, passive definitions, stable store selection, personal custody, migration, or recovery. Semantic owners choose recall and capture; creating history or a receipt alone is not a trigger."
 ---
 
 # Ledger
@@ -60,7 +60,7 @@ it from `CODEX_HOME` or a fixed `.codex` or `.agents` installation directory.
 After `ledger-bootstrap-ready/v1`, invoke the native CLI directly. The handler
 defaults to Ledger 1.6.0 or newer within major version 1 and
 `ledger-artifact-abi/v1`. An owner requiring a newer runtime must pass its minimum,
-for example `ensure-ledger --min-version 1.7.0`. Preserve that option when adding
+for example `ensure-ledger --min-version 1.8.0`. Preserve that option when adding
 `--install`; an earlier baseline readiness result does not satisfy the owner.
 The handler can install or upgrade `tkersey/tap/ledger` only when
 user-level provisioning is authorized. Otherwise stop with its remediation.
@@ -70,8 +70,8 @@ installation during an active repository effect. It does not proxy commands.
 Readiness is not compatibility with every definition. Use `definition check`
 when selecting a new/changed closure or diagnosing operator support, not as a
 redundant preflight for every unchanged operation.
-Owner read selection and the recovery routes below require Ledger 1.7.0 or newer;
-bootstrap them with `ensure-ledger --min-version 1.7.0`. The shared baseline still
+The owner-access and reconciliation routes below require Ledger 1.8.0 or newer;
+bootstrap them with `ensure-ledger --min-version 1.8.0`. The shared baseline still
 suffices for unchanged pure operations.
 
 ## Select the operation
@@ -191,7 +191,10 @@ coverage, and current owner authority.
 
 Before the first semantic write, use `--ensure-owner --definition
 --owner-manifest` under [automatic owner upgrade](references/automatic-migration.md#automatic-owner-upgrade).
-A successful read does not satisfy that preparation or authorize capture.
+An intact present owner is admitted without rescanning worktrees. Missing owner
+history still requires preparation. Neither result grants semantic capture
+authority or establishes complete historical coverage. Select `--reconcile-owner`
+when the operation's premise requires coverage of the discovered legacy sources.
 Reads that need initialization or exact restoration follow only the typed routes
 in owner access. Routine preparation has standing authority independently of new
 semantic capture; analysis alone does not prohibit it. Explicit no-file/custody
@@ -211,7 +214,9 @@ only when that maintenance is selected. A missing or corrupt established root
 still fails closed; it is never replaced with an empty store.
 
 Automatic preparation initializes or migrates compatible local history; exact
-restoration preserves an existing binding. Both wait for participating writers.
+restoration preserves an existing binding. Empty sources acquire real native
+coordination before observation; existing uncoordinated history still requires
+actual writer quiescence. Both paths retain participating-writer exclusion.
 Read-only selection never creates or repairs custody. Failures never select a
 local-store fallback or convert unknown history into an empty owner.
 

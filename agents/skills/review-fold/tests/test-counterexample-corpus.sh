@@ -13,6 +13,9 @@ trap 'rm -rf "$tmp"' EXIT HUP INT TERM
 repo="$tmp/repo"
 catalog="$tmp/personal-custody"
 mkdir -p "$repo"
+git -C "$repo" init -q
+git -C "$repo" -c user.name=Fixture -c user.email=fixture@example.invalid \
+  commit --allow-empty -qm fixture
 
 "$ledger_bin" definition check \
   --definition "$definition" \
@@ -38,9 +41,14 @@ test ! -e "$catalog"
 
 "$ledger_bin" context --catalog-root "$catalog" --workspace "$repo" \
   --ensure-owner --definition "$definition" --owner-manifest "$manifest" \
-  --confirm-no-legacy-writers >"$tmp/context.json"
+  >"$tmp/context.json"
 store_root=$("$jaq_bin" -r '.store_root' "$tmp/context.json")
 store_id=$("$jaq_bin" -r '.store_id' "$tmp/context.json")
+"$jaq_bin" -e '
+  .source_coverage == "checked" and .source_coordination_mutated == true and
+  .storage_mutated == true and .authority_granted == false
+' "$tmp/context.json" >/dev/null
+test ! -e "$repo/.ledger/review-fold/counterexamples/events.jsonl"
 
 "$ledger_bin" transact \
   --definition "$definition" \
@@ -87,6 +95,39 @@ counterexample_id=$(
 "$jaq_bin" -e '.valid == true and .effects[0].result == "idempotent"' \
   "$tmp/retry.json" >/dev/null
 
+next_repo="$tmp/later-worktree"
+git -C "$repo" worktree add --detach "$next_repo" >/dev/null
+"$ledger_bin" context --catalog-root "$catalog" --workspace "$next_repo" \
+  --ensure-owner --definition "$definition" --owner-manifest "$manifest" \
+  >"$tmp/next-context.json"
+"$jaq_bin" -e --arg id "$store_id" --arg root "$store_root" '
+  .store_id == $id and .store_root == $root and
+  .source_coverage == "not_checked" and .owner_health.healthy == true and
+  .authority_granted == false
+' "$tmp/next-context.json" >/dev/null
+test ! -e "$next_repo/.ledger"
+
+"$jaq_bin" '
+  .record.observed_fact += " A later session witnessed the independent recovery entry point." |
+  .record.source_refs[0].ref = "cas:receipt:review-002#finding-1" |
+  .record.evidence_refs = ["cas:receipt:review-002", "test:recovery-property:case-3"]
+' "$valid" >"$tmp/next-witness.json"
+"$ledger_bin" transact \
+  --definition "$definition" --operation capture \
+  --store-root "$store_root" --store-id "$store_id" \
+  --input "submission=$tmp/next-witness.json" --format json >"$tmp/next-capture.json"
+"$jaq_bin" -e '.valid == true and .effects[0].result == "appended"' \
+  "$tmp/next-capture.json" >/dev/null
+"$ledger_bin" project \
+  --definition "$definition" --projection basis \
+  --store-root "$store_root" --store-id "$store_id" \
+  --param repository=example/repository --payload-only --format json \
+  >"$tmp/next-basis.json"
+"$jaq_bin" -e --arg id "$counterexample_id" '
+  length == 2 and (map(select(.id == $id)) | length == 1)
+' "$tmp/next-basis.json" >/dev/null
+
+git -C "$repo" worktree remove "$next_repo"
 rm -rf "$repo"
 "$ledger_bin" context --catalog-root "$catalog" --store-id "$store_id" \
   --read-only --definition "$definition" --owner-manifest "$manifest" \
@@ -120,7 +161,7 @@ cmp "$tmp/original-record.json" "$tmp/later-record.json"
   --payload-only \
   --format json >"$tmp/law-history.json"
 
-"$jaq_bin" -e 'length == 1 and .[0].id == $id' \
+"$jaq_bin" -e 'length == 2 and (map(select(.id == $id)) | length == 1)' \
   --arg id "$counterexample_id" \
   "$tmp/law-history.json" >/dev/null
 
