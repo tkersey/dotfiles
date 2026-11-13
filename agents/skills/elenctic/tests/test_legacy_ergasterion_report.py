@@ -1,4 +1,4 @@
-"""Derived report boundaries only; no model dispatch or review-credit simulation."""
+"""Saved Ergasterion report compatibility; no active composition workflow."""
 from copy import deepcopy
 import importlib.util
 import json
@@ -8,7 +8,7 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-MODULE = Path(__file__).resolve().parents[2] / "elenctic" / "scripts" / "report.py"
+MODULE = Path(__file__).resolve().parents[1] / "scripts" / "report.py"
 SPEC = importlib.util.spec_from_file_location("ergasterion_shared_report", MODULE)
 report = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(report)
@@ -69,12 +69,13 @@ def analysis_fixture(*, composed=True):
 
 
 class CompositionReportTests(unittest.TestCase):
-    def test_composition_policy_is_in_native_snapshot_inventory(self):
+    def test_selection_policy_is_in_native_snapshot_inventory(self):
         path = MODULE.with_name("freeze_policy.py")
         spec = importlib.util.spec_from_file_location("ergasterion_policy_inventory", path)
         policy = importlib.util.module_from_spec(spec); spec.loader.exec_module(policy)
         paths = policy.runtime_paths(MODULE.parents[2])
-        self.assertIn("elenctic/references/ergasterion-composition.md", paths)
+        self.assertIn("elenctic/references/selection.md", paths)
+        self.assertNotIn("elenctic/references/ergasterion-composition.md", paths)
         self.assertIn("elenctic/scripts/report.py", paths)
 
     def test_native_identity_and_namespace_unchanged(self):

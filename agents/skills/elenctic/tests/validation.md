@@ -217,7 +217,7 @@ Reproduce the combined implementation checks with:
 uv run --no-project python -B -m unittest discover \
   -s agents/skills/elenctic/tests -p 'test_*.py' -v
 uv run --no-project python -B -m unittest discover \
-  -s agents/skills/ergasterion/tests -p test_report.py -v
+  -s agents/skills/elenctic/tests -p test_legacy_ergasterion_report.py -v
 ```
 
 ### Three-arm comparison
