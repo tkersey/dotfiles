@@ -85,7 +85,14 @@ roles even when production meanings are shared. Complete the affected producers,
 consumers, migrations, and retirements; a partial slice remains work in progress.
 A local correction remains adequate when the existing construction establishes
 the general relationship; neither local-repair-first nor redesign is compulsory.
-A larger owner, extra type, or relocated check is not itself a gain.
+A larger owner, extra type, or relocated check is not itself a gain, and neither
+is a second deciding site: production code, such as a guard, reader, walk, or
+eligibility predicate, that independently decides a law another site already
+decides. Tests and independent oracles are evidence, not deciding sites. Add none
+unless it carries a distinct accepted obligation or a justified derived
+defense-in-depth or observation role, classified as [$reduce](../reduce/SKILL.md)
+classifies enforcement sites; otherwise fix the sole site, delegate to the law's
+owner, or unify the sites. Judge size by the resulting deciding sites, not the diff.
 
 Use the [construction repertoire](references/counterexample-guided-normalization.md#constructive-derivation)
 and [supporting skills](architecture.md) when useful. Their examples are not
@@ -177,7 +184,12 @@ replacement could pass despite a source-relevant failure the prior witness would
 expose, even with unchanged assertions. Preserve required deciding evidence through
 the replacement or another adequate argument, and describe any reduced coverage.
 Reuse decisive native evidence; incidental fixture detail or redundant execution
-need not survive merely because it existed.
+need not survive merely because it existed. A witness's regression test seeds a
+property for its law: when another witness exercises the same law, fold them into
+one check over the law's domain, table-driven for a finite domain and generated for
+an open one, using as oracle a reference path whose behavior the source requires,
+where one exists. Keep their inputs as named cases and re-establish the folded
+check's sensitivity to each.
 
 Before accepting validation for local completion or reviewability, inspect the
 base-to-candidate diff and actual check selection for deleted tests, weakened

@@ -65,6 +65,15 @@ source-required judgments, not exact whole-program inference by default. Optiona
 safe behavior excluded by approximation must be disclosed; no required distinction
 may be erased. Do not invent these transformations for candidates that do not use them.
 
+When code under construction optimizes a path whose behavior the source also
+requires, such as a streaming, cached, or fast path beside a complete one, the
+deciding evidence is a differential property: both paths agree on generated inputs
+across the optimized path's domain. Define that domain once, as a positive
+predicate that dispatch itself uses, so the generator and the dispatcher cannot
+disagree. Draw most cases from inside it, report how many exercised the optimized
+path, and include cases outside it to confirm they take the reference path.
+Narrowing the domain changes that predicate rather than adding an exception.
+
 Use the strongest adequate native evidence for the affected seam: closed types
 and their construction/operation surface, compiler IR, schemas, exports, build or
 route registries, reachability, or generated producer/codec inventories. Bind the
@@ -168,7 +177,9 @@ serialization, and composition. Where compatibility is reversible, prove its
 round trips modulo the declared equivalence.
 
 After realization, inspect current correctness-bearing factors and retire those
-subsumed by the selected construction. A retained factor must carry a distinct
+subsumed by the selected construction, including compensators that earlier
+interventions in the [attempt history](../recurrence.md#progress-before-another-iteration)
+added. A retained factor must carry a distinct
 accepted obligation or a justified derived defense-in-depth/observation role.
 A source digest, guard count, or smaller diff is not evidence of adequacy.
 Preserve witness provenance when redundant tests collapse into a stronger proof;

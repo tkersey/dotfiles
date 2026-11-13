@@ -75,6 +75,29 @@ The review contract's JSON is checked-in policy, not workflow state. The decisio
 contract and `tests/` are audit/evaluation material, not another runtime itinerary;
 read them when a binding, audit, or evaluation needs them.
 
+## Epoch close
+
+After an invalidated review epoch closes and before any successor mutation, keep
+an entry for each item below in the existing
+[attempt history](recurrence.md#progress-before-another-iteration). The linked
+guides own these rules; the list adds no stage or report and keeps them checkable
+after compaction. A missing entry earns no credit: recover it from its owners or
+redo the step.
+
+- Each admitted defect's supported mechanism and the other instances found by
+  searching for its pattern ([causal compilation](#compile-the-first-loss-of-guarantee)).
+- The previous successor's predicted versus observed result, the count of
+  invalidated epochs, and each fired trigger with its response
+  ([recurrence](recurrence.md#progress-before-another-iteration)).
+- The shared Glaze–Metanoetic activation and any required independent
+  reconstruction ([architecture](#architecture-compilation)).
+- The deciding evidence for each admitted law: a property, with its generator
+  where the domain is open, or a decisive source argument
+  ([proof acceptance](#proof-acceptance)).
+
+Complete the successor's entry, including its change in deciding sites
+([initial construction](#initial-construction)), before its first review request.
+
 ## Section links
 
 <a id="source-binding"></a>
