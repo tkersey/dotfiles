@@ -66,6 +66,13 @@ root's [automatic construction reconsideration](SKILL.md#mission). Reuse inquiry
 across witnesses only when the same supported causal mechanism covers them; account
 for each new witness and reopen the explanation when it adds a causal distinction.
 A shared reviewer, file, owner, or law alone does not establish a common cause.
+When the supported mechanism may recur in other in-scope code, identify its
+generating pattern, such as a second reader of one fact, a loop that enforces a
+rule on its first match, or a walk that applies its own bound. Search the changed
+code and in-scope callees for other instances, stating the search and its bound.
+Cover instances that share the defect's law and supported mechanism in the
+response; route others through Review Fold as self-discovered candidates. Sibling
+tests sample this search; they do not replace it.
 Reconsideration belongs to response selection, not a separate pass or a demand to
 redesign. Acceptance establishes a supported
 disagreement, not the causal explanation. Investigate the implementation, model,
@@ -87,6 +94,12 @@ During the existing diff/proof inspection, compare actual changes to that basis,
 including test expectations, check selection, compatibility, and completion claims.
 Correct rejection in prose does not excuse an unsupported change. This adds no
 packet, review lane, or separate pass; reuse an adequate source argument or observation.
+
+When accepted authority adopts a correction, fold it into the law it refines and
+state it as an observable law, such as an equality with a reference semantics, an
+invariant, or a required observation. Unless the accepted source fixes it, a
+restriction on the implementation is a means for the assignment, not a requirement
+([source binding](SKILL.md#source-binding)).
 
 Establish the affected domain from the source, not only the reported path or supplied
 records. Before realizing a selected candidate, choose a source-supported

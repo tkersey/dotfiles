@@ -65,6 +65,21 @@ source-required judgments, not exact whole-program inference by default. Optiona
 safe behavior excluded by approximation must be disclosed; no required distinction
 may be erased. Do not invent these transformations for candidates that do not use them.
 
+When construction relies on agreement between execution paths, establish the
+source-required relation over the same logical inputs, scope, relevant state, and
+observations. A reference path is an oracle only where the source requires its
+behavior; preserve permitted differences or use the required refinement relation.
+Reuse adequate native proof. For unresolved agreement, retain a direct comparison
+that exercises the implicated paths and generalize it to the supported mechanism.
+When using generated comparisons, use the dispatch owner to target cases in the
+actual optimized domain, and derive required-valid and boundary cases independently
+from the accepted source.
+Check rejected cases against their required fallback or rejection behavior.
+Establish actual path execution and sensitivity to the disputed distinction under
+[generator and observer adequacy](../../universalist/references/domain-algebra/property-test-derivation.md#generator-observer-and-shrinker-adequacy),
+reusing applicable evidence. A changed dispatch domain must preserve required
+capability; its own predicate does not establish that preservation.
+
 Use the strongest adequate native evidence for the affected seam: closed types
 and their construction/operation surface, compiler IR, schemas, exports, build or
 route registries, reachability, or generated producer/codec inventories. Bind the
@@ -168,7 +183,9 @@ serialization, and composition. Where compatibility is reversible, prove its
 round trips modulo the declared equivalence.
 
 After realization, inspect current correctness-bearing factors and retire those
-subsumed by the selected construction. A retained factor must carry a distinct
+subsumed by the selected construction, including compensators that earlier
+interventions in the [attempt history](../recurrence.md#progress-before-another-iteration)
+added. A retained factor must carry a distinct
 accepted obligation or a justified derived defense-in-depth/observation role.
 A source digest, guard count, or smaller diff is not evidence of adequacy.
 Preserve witness provenance when redundant tests collapse into a stronger proof;
