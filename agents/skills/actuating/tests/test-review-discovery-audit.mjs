@@ -162,6 +162,23 @@ test('partial inquiry keeps valid discoveries and missing evidence unresolved', 
   assert.deepEqual(result.residual.credited_clean_misses, []);
 });
 
+for (const fields of [['audit'], ['episode'], ['audit', 'episode']]) {
+  test(`omitted optional fields match explicit null: ${fields.join(', ')}`, () => {
+    const explicit = sample();
+    for (const field of fields) explicit[field] = null;
+    const omitted = structuredClone(explicit);
+    for (const field of fields) delete omitted[field];
+    assert.deepEqual(auditReviewDiscovery(omitted), auditReviewDiscovery(explicit));
+    withDirectory(directory => {
+      const path = resolve(directory, 'input.json');
+      writeFileSync(path, JSON.stringify(omitted));
+      const result = spawnSync(process.execPath, [command, path], {encoding: 'utf8'});
+      assert.equal(result.status, 0, result.stderr);
+      assert.deepEqual(JSON.parse(result.stdout), auditReviewDiscovery(explicit));
+    });
+  });
+}
+
 test('missing or unknown audit scope cannot establish an empty residual', () => {
   const input = sample();
   input.audit.scope = 'unknown';

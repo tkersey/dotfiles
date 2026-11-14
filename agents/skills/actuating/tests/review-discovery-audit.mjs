@@ -105,7 +105,7 @@ export function auditReviewDiscovery(input) {
   const identity = {id: text(subject.id, 'subject.id'), sha256: sha256(subject.sha256, 'subject.sha256'),
     goal_sha256: sha256(subject.goal_sha256, 'subject.goal_sha256'),
     evidence_ref: text(subject.evidence_ref, 'subject.evidence_ref')};
-  const audit = input.audit;
+  const audit = input.audit ?? null;
   let auditScope = 'unavailable', auditRef = null, audited = [];
   const applicability = new Map();
   if (audit !== null) {
@@ -206,7 +206,7 @@ export function auditReviewDiscovery(input) {
       audit_scope: auditScope, audit_ref: auditRef,
       audited_unreported_witnesses: ordered([...auditIds].filter(id => !seen.has(id))), credited_clean_misses
     },
-    review_cost: sumCosts(costs), episode: episode(input.episode, identity)};
+    review_cost: sumCosts(costs), episode: episode(input.episode ?? null, identity)};
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
