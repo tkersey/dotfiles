@@ -151,6 +151,18 @@ use the existing framing and systemic cases alongside the affected cases below.
 | A local correction directly reuses a complete source-backed enforcing operation | Preserve the bounded correction; do not demand a systems model, global redesign, or enumeration of every possible alternative |
 | A same-context pass is described as an independent reconstruction | Distinguish reconsideration from demonstrated rationale isolation; do not require a worker merely to use First Principles |
 | Read-only inquiry or a frozen review epoch leaves an empirical premise unresolved | Return the conditional conclusion and proposed deciding observation, or the concrete limit if none is available; do not run effects or claim review credit |
+| A decision receives the same observations in permitted situations with disjoint acceptable outcomes | Expose the missing distinction before relying on the conclusion; revise the implicated basis, inference, or construction, or retain uncertainty. Scope any impossibility to the demonstrated information and permitted operations |
+| Two situations share the available observations and have different but overlapping sets of acceptable outcomes | Preserve a common adequate answer; do not require a unique result or distinctions the accepted contract does not need |
+| Several situations share the available observations; every pair has a common acceptable outcome, but the whole family has none | Check the answer against every compatible situation; pairwise overlap does not establish a common adequate answer |
+| A one-shot source must be fully validated before irreversible output, with exact later emission and no reread or external storage | Preserve the incumbent's necessary information retention; a safely replayable source is a distinct control where retention may become optional |
+
+For discovery observations, supply the accepted requirements and ordinary task
+sources without these diagnoses, expected answers, paired controls, or another
+worker's conclusions. Keep the authoritative contract available; withhold the
+evaluation key, not required facts. Observe the first conclusion and its effect
+on the proposed construction or dependent claim before corrective feedback.
+Check the paired valid cases separately, including an adequate incumbent. An
+accurate explanation that leaves the consequential decision wrong does not pass.
 
 Compare the current and revised skill at the same task checkpoint with matched
 model/effort, evidence access, receiver authority, and total budget. Freeze the
