@@ -152,6 +152,7 @@ export function assess(directory, program, goal, report, timeout = 5000) {
   const stable = before !== null && readRegular(candidate) === before;
   const observation = {
     candidate_sha256: before === null ? null : digest(before),
+    goal_sha256: digest(files['GOAL.md']),
     candidate_changed: before !== files['codec.mjs'],
     candidate_stable: stable,
     protected_changes: protectedChanges,

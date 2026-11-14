@@ -1,6 +1,6 @@
 # Offline auxiliary discovery comparison
 
-Use only when auditing or tuning the lenses. These fixtures do not enter ordinary
+Use only when auditing or tuning review discovery. These fixtures do not enter ordinary
 Actuating review, add a lane, or change review credit. They test discovery without
 a supplied allegation; Review Fold's admission fixtures test a different operation.
 
@@ -67,3 +67,131 @@ Confirm promising changes with existing matched-snapshot offline audits of real
 work, including omitted behavior, temporal failures, genuinely local defects, and
 adequate incumbents. Measure unnecessary production changes as well as missed
 failures. Add no runtime score, workflow store, or automatic acceptance classifier.
+
+## Credited-clean outcomes and sequential contribution
+
+Status: **executable evaluator controls; configured-review study not run**.
+An authentic, adequately scoped review can report no limitation and still miss a
+defect. Measure that sensitivity separately from execution admission, Review Fold's
+finding admission, and Actuating's review-credit decision. This comparison grants
+no production credit and changes no review inventory or convergence requirement.
+
+Choose immutable subjects, repetitions, review policy, audit selection, budget,
+and stopping rule before observing results. Include ordinary credited-clean
+outcomes without selecting only low-confidence or caveated reports. Use fresh
+subjects and independently established source-backed witnesses, adequate controls,
+and genuinely unresolved cases. A later fix is not its own oracle; a historical
+candidate with no later complaint is not a proved clean control. Historical known
+defects are a selected stress population, not a deployment prevalence estimate.
+
+Keep original executor reports and owner credit dispositions. Independently
+adjudicate finding-to-witness correspondence; do not match report wording, family
+names, confidence, or embeddings automatically. Retain unexpected supported
+findings and rejected allegations separately. A clean audit observes the actual
+candidate against the accepted obligations; agreement with the reviewer is not
+the ground truth. A bounded oracle establishes only its declared observations.
+Keep evaluator witnesses, original/repaired pairs, and later findings outside the
+reviewer's context. Report contamination rather than replacing that attempt.
+
+### Group the observations correctly
+
+One discovery sequence binds one frozen subject and one fixed evaluator witness
+interpretation. A new candidate or revised interpretation starts a separate
+comparison. Do not pool repairs into a descending novelty curve. Preserve prior
+evidence without forcing engineering families to remain fixed for a statistic.
+
+Represent the concurrent initial inventory as one batch. Later standards are
+ordered singleton batches. Calculate each batch's contribution beyond earlier
+batches; calculate a request's exclusive contribution against its batch siblings.
+Changing sibling completion order must not change those results. Preserve the
+original scope, focal file, and changeset-standard ordinal. A file standard never
+becomes another changeset confirmation.
+
+For each independently established witness, establish which original assignments
+it applies to; file focus does not imply responsibility for every unrelated witness.
+Retain which requests discovered it, which completed adequate applicable inquiries
+missed it, and which inquiries or applicability judgments remain unresolved.
+Repeated reports can corroborate a known violation without adding a new witness.
+Zero new witnesses therefore does not mean zero reported violations. Inquiry
+adequacy and clean credit are separate: a supported finding can prevent clean
+credit without making the review's other completed inquiry inadequate. An incomplete
+attempt can supply an admitted finding while its missing inquiry remains unknown;
+do not count the unobserved remainder as a completed miss or a clean zero.
+Preserve mistaken original credit decisions as process outcomes. The summary
+retains their attempts, costs, discoveries, and unresolved inquiry, reports
+`credit_issues`, and excludes conflicted records from `credited_clean`. Correcting
+the recorded disposition or dropping the attempt would change the measured process.
+
+Report later-standard yield conditional on the subjects that reached that ordinal.
+Those subjects survived earlier inquiry and are a selected population. Preserve
+attempt counts and source-level outcomes before pooling. Compare joint misses and
+cost as well as per-review averages; distinct contexts do not establish distinct
+blind spots. Do not selectively replace failures, incomplete attempts, or clean
+results that an independent audit overturns.
+
+### Executable summary
+
+Run from the repository root:
+
+```sh
+node --test agents/skills/actuating/tests/test-review-discovery-audit.mjs
+node agents/skills/actuating/tests/review-discovery-audit.mjs /path/to/audit-input.json
+```
+
+`review-discovery-audit.mjs` summarizes evaluator-adjudicated inputs; it does not
+read report prose, invoke reviewers, authenticate evidence, or decide review credit.
+Exit 0 means a valid descriptive summary, including when defects remain. Exit 2
+means invalid input. No output is a release recommendation or confidence bound.
+
+Input consists of an explicitly synthetic or observed evidence kind, the frozen
+subject identity, accepted Goal digest (`goal_sha256`) and source reference,
+ordered batches of original attempts, and an optional independent audit. Each
+attempt retains its original identity, subject identity and byte binding,
+scope/focus/lens, changeset-standard ordinal where applicable, execution,
+inquiry-adequacy and credit dispositions, report reference, independently admitted
+witness IDs and their evidence references, and measured or unknown costs. The
+audit binds the same subject, its evidence reference, declared scope, observed
+present witnesses, and their established assignment applicability. See the executable
+test inputs for the exact field names. Bind the accepted Goal as part of the
+subject identity: identical program bytes under different requirements are
+different subjects. Every attempt, audit, and episode must retain that identity;
+a later episode candidate can have different bytes under the same task authority.
+The codec assessor emits its accepted Goal digest at assessment time; the summary
+compares that originating digest with the subject's to reject accidental joins of
+identical code assessed under different Goals.
+References and matching hashes are caller-supplied bindings, not proof that the
+artifacts were observed or the judgments correct. Resolve that evidence before
+using a summary in an efficacy claim. Keep these inputs in existing evaluation
+evidence, never the accepted-witness corpus or a new production workflow store.
+
+Unknown or absent audit coverage cannot establish that no defect remains. Even a
+complete bounded audit cannot establish absence outside its domain. Costs retain
+unknown entries alongside measured subtotals; unknown is not zero. Summed review
+execution durations are not concurrent wall time. Whole-episode cost is inclusive
+and reported separately, never added to its constituent review costs.
+
+### Deciding controls and live evaluation
+
+The tests reuse [the existing codec case](construction-comparison.md#executable-codec-development-case)
+and its actual independent `assess()` observations. Five explicitly synthetic
+credited-clean records must still expose the original codec's residual violation
+and contradict a complete claim in the bounded domain. Actually repaired bytes
+must pass those observations; an overrestrictive repair must fail preservation;
+the original bytes under the coalesced Goal must remain adequate. The executable
+controls also distinguish repeated findings from discovery, held inquiry from
+misses, mistaken credit from valid clean observations, and missing or stale evidence
+from a successful audit. Contradictory aggregate assessment flags are invalid input;
+they cannot manufacture either a pass or a failed completion.
+
+These controls validate the evaluator, not a model's sensitivity. For live work,
+retain observed reports and exact execution bindings instead of substituting these
+synthetic records. Keep native/default standard comparisons native and uncustomized;
+a hosted custom reviewer is a different experimental procedure. Use the existing
+isolation and resource rules, and assess promising changes on untouched task
+families before claiming improvement.
+
+For complete implementation/review/repair outcomes, continue with
+[whole-episode assessment](construction-comparison.md#whole-episode-review-assessment).
+The distinction between undiscovered failure mass and total failure follows
+[Li et al., section 2](https://arxiv.org/html/2611.15835v1#S2). This evaluator reports
+bounded observations; it does not implement that paper's statistical stopping rule.
