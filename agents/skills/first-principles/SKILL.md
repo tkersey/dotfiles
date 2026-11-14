@@ -31,6 +31,16 @@ coherent argument for a weaker property does not establish the required one.
 Minimize unsupported commitments, not the number of listed premises or
 independent sources of evidence.
 
+Before relying on a conclusion whose sufficiency is uncertain, work backward
+from the required outcome: what must be known, distinguished, or controlled for
+it to follow? Seek a source-permitted case where the proposed guarantee holds
+but that outcome fails. For a decision based on observations, can the available
+information merge cases with no common source-permitted answer? Use the missing
+distinction to revise the basis, inference, or construction, or keep the claim
+conditional. Missing information limits the implicated decision; it does not
+establish global impossibility. Reuse a decisive argument from the receiving
+workflow rather than add a separate pass.
+
 Compare adequate constructions under the receiving task's criteria; do not claim
 global minimality without support. Preserve an adequate incumbent or material
 underdetermination rather than manufacture a change or uniquely necessary answer.
