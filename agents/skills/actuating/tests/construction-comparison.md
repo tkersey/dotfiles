@@ -130,6 +130,77 @@ A tie or insufficient power is inconclusive, not validation. Preserve the origin
 historical comparison question and distinguish source-contract consistency,
 observable decision changes, artifact generalization, and incremental skill benefit.
 
+## Whole-episode review assessment
+
+Status: **executable evaluator controls; full configured episodes not replayed**.
+Use this endpoint when evaluating whether the complete review/repair procedure
+delivers correct results. Keep first-candidate scoring above and
+[frozen-subject discovery](auxiliary-discovery.md#credited-clean-outcomes-and-sequential-contribution)
+separate: repeated reviews of one patch measure reviewer discovery, while one
+complete task episode measures the behavior of the workflow that selects and
+repairs its candidates.
+
+Freeze the policy revision, model/version and effective effort, tools, required
+review inventory, starting context, memory, resource bounds, and accepted endpoint.
+Sample or preselect tasks and repository snapshots under a declared population;
+pair policy comparisons on those same tasks. Independent evaluators establish
+source-backed obligations, withheld continuations, required-valid controls, and
+oracle limitations before model outcomes. The existing codec case is disclosed
+calibration material, not a representative sample or an untouched holdout.
+
+Allow ordinary adaptation inside an episode: implementation, findings, repairs,
+verification, recovery, and closeout remain part of the fixed procedure under
+evaluation. Keep evaluator outcomes and cross-episode lessons outside subsequent
+implementation contexts. A changed policy, injected lesson, revised oracle, or
+different starting memory is a new experimental condition. If learning across
+tasks is the intended intervention, include that learning horizon in the trial;
+do not silently treat its dependent tasks as independent episodes.
+
+Preserve every episode and its original terminal claim, including incomplete
+work, timeouts, known recurring failures, and unsupported completion. Freeze the
+delivered candidate and entire subject before withheld evaluation. Bind the final
+assessment to that candidate, even when it differs from the earlier reviewed head.
+Do not repair the scored artifact after seeing its withheld result. Audit scope
+and source authority remain fixed; unavailable assessment is unknown, not success.
+
+| Outcome | Required evidence and denominator |
+|---|---|
+| Completion contradicted | Original complete claim and an independent counterexample on the delivered subject. Count recurring and novel failures alike; report per attempted episode and per claimed completion. |
+| Successful completion | Source-required behavior, preservation, progress, and required validation at the accepted endpoint. A bounded artifact pass alone cannot establish all of these. |
+| First-successor generalization | Freeze and assess the first successor before later repair; keep its result separate from eventual closeout. |
+| Required-valid preservation | Withheld valid inputs, continuations, and progress remain available. Rejecting required work cannot earn correctness. |
+| Discovery | Distinct supported witnesses and shared misses within each frozen review subject; do not pool changing heads into one novelty sequence. |
+| Incomplete or unknown | Retain the attempt and actual cost without relabeling it as a defect, a clean result, or a successful episode. |
+| Total work | Inclusive implementation, investigation, reviews, adjudication, recovery, verification, and coordination. Report review subtotals separately, not added again. |
+
+For the codec calibration, `review-discovery-audit.mjs` accepts an optional episode
+containing the original `complete` or `incomplete` claim, actual final candidate
+SHA-256, independent assessment reference and unmodified `assess()` result, and
+measured or unknown inclusive cost. It reports bounded artifact outcome and whether
+that observation contradicts the complete claim. An unavailable or unstable
+assessment cannot establish a clean completion. A passing observation means only
+that this bounded oracle supplied no contradiction; the evaluator still judges
+effect authority, required validation, other obligations, and completion honesty.
+The assessor records the accepted Goal digest as well as the candidate digest;
+the Goal must match the task authority and the code must match the delivered
+candidate. Equal code bytes do not transfer an assessment between different
+requirements.
+
+Prefer correct completed tasks at the same accepted quality bar before lower
+cost. An always-incomplete workflow must not win by avoiding false completion;
+an always-clean reviewer must not win by suppressing discovery. Inspect per-task
+results and shared failure mechanisms before aggregate rates. Use the preselected
+stopping rule and retain unsuccessful runs in all relevant denominators. A small
+pilot can establish feasibility; it cannot establish sensitivity on real work,
+a quantified remaining-defect probability, or incremental policy efficacy.
+
+The evaluator controls execute the existing original, repaired, restrictive, and
+changed-authority codec cases. They establish that the measurement distinguishes
+those outcomes, not that any model produced the recorded synthetic reviews or
+completed the full procedure. Any later live comparison retains the existing
+review gates and receipt requirements; alternate schedules are separate offline
+experiments and require their own accepted scope before production adoption.
+
 ## Evidence-to-action comparison
 
 This is a separate, **authored, not model-replayed** development experiment. It
