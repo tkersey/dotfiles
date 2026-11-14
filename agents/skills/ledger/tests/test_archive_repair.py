@@ -58,6 +58,7 @@ class ArchiveRepairTests(unittest.TestCase):
         self.slot.unlink()
         result = self.repair()
         self.assertEqual(result['preparation']['outcome'], 'prepared')
+        self.assertEqual(result['source_coverage'], 'not_checked')
         self.assertEqual(self.slot.read_bytes(), self.original)
         self.assertEqual(self.archived_slot.read_bytes(), self.original)
         self.assertEqual(bindings, {p.name: p.read_bytes() for p in (self.store / '.ledger/.bindings').glob('*.jsonl')})
@@ -101,24 +102,33 @@ class ArchiveRepairTests(unittest.TestCase):
         self.assertEqual(before, {str(path.relative_to(self.root)): path.read_bytes()
                                  for path in self.root.rglob('*') if path.is_file()})
 
-    def test_direct_repair_of_empty_workspace_requires_and_accepts_quiescence(self):
+    def test_direct_repair_of_empty_workspace_establishes_native_coordination(self):
         workspace = self.root / 'workspace'
         workspace.mkdir()
         self.ctx.register_root(self.store, self.context['store_id'], workspace)
         binding = {path.name: path.read_bytes() for path in (self.store / '.ledger/.bindings').glob('*.jsonl')}
         self.slot.unlink()
         command = custody.owner_command(workspace, self.definition, binary=self.binary, mode='--repair-archive')
-        refused = subprocess.run(command, capture_output=True, timeout=15)
-        self.assertEqual(refused.returncode, 3, refused.stdout + refused.stderr)
-        self.assertEqual(json.loads(refused.stdout)['preparation']['error_code'], 'PreparationRequiresQuiescence')
-        self.assertFalse(self.slot.exists())
-        restored = subprocess.run(command + ['--confirm-no-legacy-writers'], capture_output=True, timeout=15)
+        restored = subprocess.run(command, capture_output=True, timeout=15)
         self.assertEqual(restored.returncode, 0, restored.stdout + restored.stderr)
-        self.assertEqual(json.loads(restored.stdout)['store_id'], self.context['store_id'])
+        result = json.loads(restored.stdout)
+        self.assertEqual(result['store_id'], self.context['store_id'])
+        self.assertEqual(result['source_coverage'], 'checked')
+        self.assertTrue(result['source_coordination_mutated'])
+        self.assertEqual(result['source_coordination_scope'], 'selected-owner-advisory-locks')
+        self.assertTrue(result['storage_mutated'])
         self.assertEqual(self.slot.read_bytes(), self.original)
         self.assertEqual(self.archived_slot.read_bytes(), self.original)
         self.assertEqual(binding, {path.name: path.read_bytes() for path in (self.store / '.ledger/.bindings').glob('*.jsonl')})
-        self.assertFalse((workspace / '.ledger').exists())
+        event_guard = workspace / '.ledger/review-fold/counterexamples/events.jsonl.cas.lock.advisory'
+        self.assertTrue(event_guard.is_file())
+        self.assertEqual(event_guard.read_bytes(), b'')
+        for name in binding:
+            binding_guard = workspace / '.ledger/.bindings' / (name + '.cas.lock.advisory')
+            self.assertTrue(binding_guard.is_file())
+            self.assertEqual(binding_guard.read_bytes(), b'')
+            self.assertFalse((workspace / '.ledger/.bindings' / name).exists())
+        self.assertFalse(event_guard.with_name('events.jsonl').exists())
 
     def test_present_corruption_is_not_replaced(self):
         self.slot.write_bytes(b'bad\n')
@@ -193,10 +203,14 @@ class ArchiveRepairTests(unittest.TestCase):
         local.write_bytes(self.original + b'new local history\n')
         self.context['workspace_root'] = str(self.root / 'workspace')
         self.slot.unlink()
+        before = {str(path.relative_to(self.root)): path.read_bytes()
+                  for path in self.root.rglob('*') if path.is_file()}
         with self.assertRaises(custody.MigrationError) as caught:
             self.repair()
-        self.assertEqual(caught.exception.preparation['error_code'], 'StoreSlotWithoutBinding')
-        self.assertFalse(caught.exception.preparation['storage_mutated'])
+        self.assertEqual(caught.exception.value['source_failure']['error_code'], 'StoreSlotWithoutBinding')
+        self.assertFalse(caught.exception.value['storage_mutated'])
+        self.assertEqual(before, {str(path.relative_to(self.root)): path.read_bytes()
+                                 for path in self.root.rglob('*') if path.is_file()})
         self.assertFalse(self.slot.exists())
         self.assertEqual(local.read_bytes(), self.original + b'new local history\n')
 

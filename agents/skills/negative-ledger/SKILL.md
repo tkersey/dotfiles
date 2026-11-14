@@ -1,6 +1,6 @@
 ---
 name: negative-ledger
-description: "Recall prior attempts, or check relevant failure evidence before selecting or retrying a route. Use for failures, no-effect attempts, regressions, reverts, or abandoned strategies that can change future routing, and for negative-evidence lifecycle changes or admission to memory. Skip ordinary successful closeout and transient errors without a durable failed hypothesis."
+description: "Check prior failures before retries; assess durable failures, reverts, and pivots. Use for no-effect attempts, regressions, or abandoned strategies that can change future routing, and for negative-evidence lifecycle changes or admission to memory. Skip ordinary successful closeout and transient errors without a durable failed hypothesis."
 metadata:
   version: "8.4.0"
 ---

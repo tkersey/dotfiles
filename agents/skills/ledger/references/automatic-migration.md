@@ -17,7 +17,8 @@ and exact restoration. Follow [owner access](canonical-custody.md#owner-access)
 first: healthy reads do not select preparation. Run this preparation when an
 owner read returns `OwnerPreparationRequired`, when exact archive repair returns
 `ArchiveRepairRequiresArchiveEvidence` and the same workspace can supply a
-matching live source, or before the first authorized semantic write. Do not
+matching live source, when selected target custody needs native transaction
+recovery or writer waiting, or before the first authorized semantic write. Do not
 request confirmation, an approval token, or separate
 migration authorization; permission to capture new semantic records does not gate
 preparation needed for a read. The installed `migration.json` is the owner's
@@ -34,12 +35,22 @@ ledger context --catalog-root "$ledger_home" --workspace "<workspace-root>" \
 For a bound-slot restoration after archive evidence is unavailable, also pass
 `--store-id "<verified-context.store_id>"` with that same workspace; a changed
 association must fail rather than redirect restoration to another store.
+If direct-ID ensure returns `OwnerPreparationRequiresWorkspace`, retain that ID
+and select the actual associated workspace whose history must be examined. Do
+not treat the uninspected history as empty or invent a replacement association.
+Explicitly initialized isolated custody with no cataloged workspace associations
+remains available by ID; it makes no live-source coverage claim.
 
-Reuse the returned `native_args` for the original operation. The native host command keeps an
-existing store's identity, adopts valid registrations, and initializes a private
-managed root only when evidence establishes a genuinely new owner. It discovers
-finite source contexts from the catalog, workspace and existing archive manifests,
-then invokes native `prepare`. Preparation copies only the selected history and
+Reuse the returned `native_args` for the original operation. A healthy present
+managed owner is admitted from its own identity, binding, integrity, and recovery
+state, with `source_coverage: not_checked`; disposable worktrees cannot revoke
+that readiness. Busy selected custody is retried within the native wait bound;
+supported interrupted target transactions use native recovery before reinspection.
+Neither condition alone triggers sibling discovery. Malformed or unsupported
+recovery state remains blocked. The native host keeps the existing identity and adopts valid
+registrations. For a missing owner, it discovers finite source contexts from the
+workspace and existing archive manifests, retains one pending target identity,
+and invokes native `prepare`. Preparation copies only the selected history and
 required native metadata into one bounded workspace; it creates no archive.
 It selects a single covering history through native bindings and complete-record
 prefixes, including the corresponding archived epoch after a supported replacement. Existing managed
@@ -54,30 +65,49 @@ conflicting metadata and foreign contents remain explicit blockers. Existing
 markers are never replaced. Read-only selection does not finish initialization.
 
 Participating current writers use native recovery, event/binding and journal
-locks. The native engine validates protected history before publication. Empty
-source roots without the required coordination need actual writer quiescence;
-only then add `--confirm-no-legacy-writers` to `--ensure-owner`. This includes first
-owner initialization and healthy owners whose supplied worktrees contain no local
-history. The genuinely new-owner route rejects missing coordination before allocating custody.
-Ordinary context lookup and direct managed projection do not assert source-family
-coverage and retain their existing routes. A successful preparation protects its
-source observation and publication only; it does not fence a legacy writer after
-those locks are released. The native host command never
-infers quiescence from a missing process, infers abandoned ownership from lock
-age, or reclaims a legacy lease. Unknown damage, pending recovery, unavailable worktree
-coverage, divergent histories, or a local extension beyond an existing managed
-log remain explicit reconciliation failures. Sources are preserved. Failure never
-switches capture back to a repo-local store. Updated callers use managed selectors;
-old callers must also be upgraded before they can resume new local writes.
+locks. For a verified absent selected owner in an accessible source, the host
+establishes the actual native advisory resources and acquires shared custody
+before accepting its empty snapshot. It retains that custody through preparation.
+This may create coordination directories and lock files, reported separately as
+`source_coordination_mutated`; source payloads remain untouched. A surviving
+binding, selected payload, pending transaction, unavailable root, or other unknown
+state cannot be reclassified as an empty source to gain this route.
+
+Existing history without qualified coordination still requires actual writer
+quiescence before adding `--confirm-no-legacy-writers`. Missing sidecars do not
+prove an active writer, and a process listing does not prove quiescence. Native
+guards exclude participating writers; they cannot fence unsupported older writers
+that ignore them. A successful preparation protects its source observation and
+publication only, not subsequent legacy writes. Updated callers use managed
+selectors; affected old callers must be stopped or upgraded for a cutover.
+
+Select strict historical reconciliation when the owner's intended decision needs
+it, rather than making every independent capture depend on worktree topology:
+
+```bash
+ledger context --catalog-root "$ledger_home" --workspace "<workspace-root>" \
+  --store-id "<context.store_id>" --reconcile-owner \
+  --definition "$definition" --owner-manifest "$owner_manifest"
+```
+
+Successful reconciliation or missing-owner preparation with a workspace reports
+`source_coverage: checked` for that observed source family. Healthy selected-owner
+access and direct-ID archive repair report `not_checked`. Unknown damage,
+unresolved recovery, unavailable worktrees,
+divergent histories, and an uncovered extension still block that operation.
+Missing owner initialization requires the same source evidence; an unavailable
+sibling is never assumed empty. Preserve `source_failure` with its exact path
+when returned and resolve that condition before retrying the same selection.
+Sources are preserved. Failure never switches capture to a repo-local store.
 
 Read-only owner selection is the normal first read, even when maintenance is
 allowed. An explicit user prohibition on file/custody maintenance or an enforced
 non-writable environment prevents escalating that read to preparation or repair.
 An analysis route or a false/omitted corpus-capture flag alone does not prevent
 needed preparation. Automatic preparation grants no new semantic
-capture, source mutation, provisioning, publication, or permission changes.
+capture, source-payload mutation, provisioning, publication, or permission changes.
 Ordinary ensure still only resolves or adopts a registration. Ledger
-1.7.0 or newer within major version 1 is required by the owner-access adapter. General
+1.8.0 or newer within major version 1 is required by the owner-access adapter. General
 permission errors do not authorize unrelated permission changes. Native
 publication, the subsequent owner operation, catalog association and maintenance
 have separate outcomes; later failure never authorizes another publication.
@@ -219,11 +249,13 @@ claim. If the verified identity exists only in an old Git registration, ordinary
 Retry the owner read after restoration. An explicit no-maintenance constraint
 forbids both adoption and repair.
 
-A separately selected repair may include a live workspace. When that workspace
-lacks qualified writer coordination, actually quiesce its writers before adding
+A separately selected repair may include a live workspace. Ledger 1.8.0 can
+establish native coordination for an absent selected owner there using the same
+empty-source route as preparation. Existing history without qualified writer
+coordination still requires actual quiescence before adding
 `--confirm-no-legacy-writers`; never infer quiescence from an absent process.
-An intact owner returns normally without scanning archives. Ordinary ensure and
-read-only context lookup never restore records.
+An intact owner returns normally without scanning archives. Plain `context --ensure`
+and read-only context lookup never restore records.
 
 This route handles only native `StoreBindingWithoutSlot` for one declared static
 event slot, with no pending transactions. It verifies retained archive manifests
@@ -278,10 +310,11 @@ including `test_archive_repair.py` and `test_owner_upgrade.py`, plus the Ledger 
 suite. Native tests must pass; mocked native results are not custody evidence.
 The Learnings native compatibility test covers the earlier local recovery
 protocol and its archived definitions alongside new imports and captures.
-Test that a native append preserves the witnessed source snapshot, that the
-prescribed owner read projects known records with an unavailable historical
-worktree, and that a fresh invocation retrieves the same record under its original
-semantic scope after all checkouts are deleted. Keep strict preparation tests for
-writes and absent owners; read success is not source coverage. Existing recovered roots
+Test that first capture from empty sources needs no quiescence assertion, that
+native append preserves source payloads, and that a healthy owner remains writable
+after adding or removing a worktree. A fresh invocation must retrieve the same
+record under its original semantic scope after all checkouts are deleted. Keep
+strict reconciliation and missing-owner tests for unknown history, divergence,
+actual writer contention, and identity changes; readiness is not source coverage. Existing recovered roots
 can be cataloged by their unchanged ID/root without running migration. Never
 migrate a live recovered store merely to exercise these changes.

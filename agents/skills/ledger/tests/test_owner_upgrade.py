@@ -42,8 +42,11 @@ class OwnerUpgradeTests(unittest.TestCase):
     def ensure(self, **kwargs):
         return custody.owner_context(self.repo, self.definition, maintain=True, binary=self.binary, **kwargs)
 
+    def reconcile(self, **kwargs):
+        return custody.owner_context(self.repo, self.definition, reconcile=True, binary=self.binary, **kwargs)
+
     def command(self, *flags):
-        mode = '--read-only' if '--read-only' in flags else '--ensure-owner'
+        mode = next((flag for flag in flags if flag in ('--read-only', '--reconcile-owner')), '--ensure-owner')
         return custody.owner_command(self.repo, self.definition, binary=self.binary, mode=mode)
 
     def assert_read_selects(self, context):
@@ -56,30 +59,43 @@ class OwnerUpgradeTests(unittest.TestCase):
         self.assertTrue(selected['owner_health']['healthy'])
         return selected
 
-    def test_fresh_install_initializes_managed_custody_and_captures(self):
-        before = self.tree_bytes(self.root)
-        with self.assertRaisesRegex(custody.MigrationError, 'PreparationRequiresQuiescence'):
-            self.ensure()
-        self.assertEqual(self.tree_bytes(self.root), before)
-        self.assertFalse((self.root / 'home').exists())
-        context = self.ensure(confirm_no_writers=True)
-        self.assertIn('--store-root', context['native_args'])
-        self.assertFalse((self.repo / '.ledger').exists())
-        self.assertTrue(self.capture(context['native_args'])['valid'])
-        self.assertEqual(self.ensure(confirm_no_writers=True)['store_id'], context['store_id'])
+    def assert_write_selects(self, context):
+        selected = self.ensure()
+        self.assertEqual(selected['store_id'], context['store_id'])
+        self.assertEqual(selected['native_args'], context['native_args'])
+        self.assertFalse(selected['storage_mutated'])
+        self.assertFalse(selected['authority_granted'])
+        self.assertEqual(selected['source_coverage'], 'not_checked')
+        self.assertTrue(selected['owner_health']['healthy'])
+        return selected
 
-    def test_healthy_read_ignores_empty_workspace_but_write_preparation_requires_coordination(self):
+    def test_fresh_install_initializes_managed_custody_and_captures(self):
+        context = self.ensure()
+        self.assertIn('--store-root', context['native_args'])
+        self.assertEqual(context['source_coverage'], 'checked')
+        self.assertTrue(context['source_coordination_mutated'])
+        self.assertTrue(context['storage_mutated'])
+        self.assertFalse((self.repo / self.slot).exists())
+        captured = self.capture(context['native_args'])
+        self.assertTrue(captured['valid'])
+        self.assertEqual(captured['effects'][0]['result'], 'appended')
+        retried = self.capture(context['native_args'])
+        self.assertEqual(retried['effects'][0]['result'], 'idempotent')
+        self.assertEqual(len((Path(context['store_root']) / self.slot).read_bytes().splitlines()), 1)
+        before = self.tree_bytes(self.root)
+        self.assert_write_selects(context)
+        self.assertEqual(self.tree_bytes(self.root), before)
+
+    def test_healthy_read_and_write_selection_ignore_empty_workspace(self):
         context = self.ctx.resolve(self.repo, initialize=True)
         self.capture(context['native_args'])
         before = self.tree_bytes(self.root)
         selected = self.assert_read_selects(context)
         self.assertEqual(self.tree_bytes(self.root), before)
-        with self.assertRaisesRegex(custody.MigrationError, 'PreparationRequiresQuiescence'):
-            self.ensure()
+        self.assert_write_selects(context)
         self.assertEqual(self.tree_bytes(self.root), before)
         self.assertEqual(self.ctx.resolve(self.repo)['store_id'], context['store_id'])
         self.assertEqual(self.ctx.ensure(self.repo)['store_id'], context['store_id'])
-        self.assertEqual(self.ensure(confirm_no_writers=True)['store_id'], context['store_id'])
         projected = subprocess.run([self.binary, 'project', '--definition', str(self.definition),
             *selected['native_args'], '--projection', 'basis',
             '--param', 'repository=' + json.loads(self.packet.read_text())['record']['repository_id'],
@@ -107,18 +123,26 @@ class OwnerUpgradeTests(unittest.TestCase):
         self.assertFalse((self.repo / self.slot).exists())
         self.assertEqual(self.tree_bytes(self.root), before)
 
-    def test_empty_sibling_requires_quiescence_for_preparation_only(self):
+    def test_empty_sibling_does_not_block_writes_and_reconciles_with_native_guards(self):
         context, _ = self.binding_family()
         empty = self.root / 'empty-sibling'
         subprocess.run(['git', '-C', str(self.repo), 'worktree', 'add', '--detach', str(empty)],
                        check=True, capture_output=True)
         before = self.tree_bytes(self.root)
         self.assert_read_selects(context)
-        with self.assertRaisesRegex(custody.MigrationError, 'PreparationRequiresQuiescence'):
-            self.ensure()
+        self.assert_write_selects(context)
         self.assertEqual(self.tree_bytes(self.root), before)
-        self.assertEqual(self.ensure(confirm_no_writers=True)['store_id'], context['store_id'])
-        self.assertEqual(self.tree_bytes(self.root), before)
+        reconciled = self.reconcile()
+        self.assertEqual(reconciled['store_id'], context['store_id'])
+        self.assertEqual(reconciled['source_coverage'], 'checked')
+        self.assertTrue(reconciled['source_coordination_mutated'])
+        self.assertTrue(reconciled['storage_mutated'])
+        self.assertFalse((empty / self.slot).exists())
+        after = self.tree_bytes(self.root)
+        repeated = self.reconcile()
+        self.assertEqual(repeated['source_coverage'], 'checked')
+        self.assertFalse(repeated['storage_mutated'])
+        self.assertEqual(self.tree_bytes(self.root), after)
 
     def test_oversized_unrelated_payload_is_neither_copied_nor_archived(self):
         self.capture(['--repo', str(self.repo)])
@@ -203,10 +227,32 @@ class OwnerUpgradeTests(unittest.TestCase):
         registered = self.ctx.resolve(self.repo, initialize=True)
         self.capture(['--repo', str(self.repo)])
         original = (self.repo / self.slot).read_bytes()
+        before = self.tree_bytes(self.root)
+        with self.assertRaisesRegex(custody.MigrationError, 'OwnerPreparationRequiresWorkspace') as blocked:
+            custody.owner_context(None, self.definition, store_id=registered['store_id'],
+                                  maintain=True, binary=self.binary)
+        self.assertFalse(blocked.exception.value['storage_mutated'])
+        self.assertNotEqual(blocked.exception.value.get('source_coverage'), 'checked')
+        self.assertEqual(self.tree_bytes(self.root), before)
         context = self.ensure()
         self.assertEqual(context['store_id'], registered['store_id'])
         self.assertEqual((Path(context['store_root']) / self.slot).read_bytes(), original)
         self.assertTrue(self.capture(context['native_args'])['valid'])
+
+    def test_explicit_isolated_store_initializes_owner_without_workspace(self):
+        registered = self.ctx.resolve(initialize=True)
+        context = custody.owner_context(None, self.definition, store_id=registered['store_id'],
+                                        maintain=True, binary=self.binary)
+        self.assertEqual(context['store_id'], registered['store_id'])
+        self.assertEqual(context['native_args'], registered['native_args'])
+        self.assertEqual(context['source_coverage'], 'not_checked')
+        self.assertIsNone(context['workspace_root'])
+        self.assertTrue(self.capture(context['native_args'])['valid'])
+        selected = custody.owner_context(None, self.definition, store_id=registered['store_id'],
+                                         read_only=True, binary=self.binary)
+        self.assertTrue(selected['owner_health']['healthy'])
+        self.assertEqual(selected['native_args'], context['native_args'])
+        self.assertFalse(selected['storage_mutated'])
 
     def binding_fixture(self, local_request='first'):
         owner = self.root / 'fixture-owner'
@@ -253,15 +299,16 @@ class OwnerUpgradeTests(unittest.TestCase):
         self.append_binding_event(other, 'second', 2)
         before = self.tree_bytes(self.root)
         self.assert_read_selects(context)
-        with self.subTest(mode='ensure-owner'):
-            with self.assertRaises(custody.MigrationError) as raised:
-                self.ensure(confirm_no_writers=True)
-            self.assertEqual(raised.exception.value['preparation']['outcome'], 'reconciliation-required')
+        self.assert_write_selects(context)
+        with self.assertRaises(custody.MigrationError) as raised:
+            self.reconcile(confirm_no_writers=True)
+        self.assertEqual(raised.exception.value['preparation']['outcome'], 'reconciliation-required')
+        self.assertNotEqual(raised.exception.value.get('source_coverage'), 'checked')
         self.assertEqual(self.tree_bytes(self.root), before)
         self.assertEqual(self.ctx.resolve(self.repo)['store_id'], context['store_id'])
         self.assertFalse((Path(context['store_root']) / 'legacy-archive').exists())
 
-    def test_healthy_owner_rejects_sibling_binding_and_payload_divergence(self):
+    def test_reconciliation_rejects_sibling_binding_and_payload_divergence(self):
         context, other = self.binding_family()
         for value in (1, 9):
             with self.subTest(value=value):
@@ -269,8 +316,9 @@ class OwnerUpgradeTests(unittest.TestCase):
                 self.append_binding_event(other, 'independent', value)
                 before = self.tree_bytes(self.root)
                 self.assert_read_selects(context)
+                self.assert_write_selects(context)
                 with self.assertRaisesRegex(custody.MigrationError, 'PreparationDivergentHistory'):
-                    self.ensure(confirm_no_writers=True)
+                    self.reconcile(confirm_no_writers=True)
                 self.assertEqual(self.tree_bytes(self.root), before)
         self.assertEqual(self.ctx.resolve(self.repo)['store_id'], context['store_id'])
 
@@ -284,22 +332,116 @@ class OwnerUpgradeTests(unittest.TestCase):
             capture_output=True, timeout=15)
         self.assertEqual(projected.returncode, 0, projected.stdout + projected.stderr)
         self.assertEqual(json.loads(projected.stdout), [{'kind': 'one', 'value': 1}])
+        writable = self.assert_write_selects(context)
         with self.assertRaisesRegex(custody.MigrationError, 'UnavailableWorktree'):
-            self.ensure()
+            self.reconcile()
         self.assertEqual(self.tree_bytes(self.root), before)
         self.assertEqual(self.ctx.resolve(self.repo)['store_id'], context['store_id'])
         direct = custody.owner_context(None, self.definition, store_id=context['store_id'],
-                                       read_only=True, binary=self.binary)
+                                       maintain=True, binary=self.binary)
         self.assertEqual(direct['store_root'], context['store_root'])
+        self.assertEqual(direct['native_args'], writable['native_args'])
+        self.assertEqual(direct['source_coverage'], writable['source_coverage'])
+        self.assertFalse(direct['storage_mutated'])
 
-    def test_healthy_owner_write_preparation_rejects_pending_sibling_publication(self):
+    def assert_selected_owner_waits_for_lock(self, relative_lock):
+        context, other = self.binding_family()
+        shutil.rmtree(other)
+        control = Path(context['store_root']) / '.ledger'
+        with custody.native_lock(control / relative_lock):
+            before = self.tree_bytes(self.root)
+            process = subprocess.Popen(self.command('--ensure-owner'), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            self.addCleanup(lambda: process.communicate(timeout=15))
+            self.addCleanup(lambda: process.kill() if process.poll() is None else None)
+            self.assertTrue(select.select([process.stderr], [], [], 10)[0])
+            self.assertIn(b'Waiting for active Ledger writer', process.stderr.readline())
+            self.assertIsNone(process.poll())
+        out, err = process.communicate(timeout=15)
+        self.assertEqual(process.returncode, 0, out + err)
+        selected = json.loads(out)
+        self.assertEqual(selected['native_args'], context['native_args'])
+        self.assertEqual(selected['source_coverage'], 'not_checked')
+        self.assertTrue(selected['owner_health']['healthy'])
+        self.assertFalse(selected['storage_mutated'])
+        self.assertEqual(self.tree_bytes(self.root), before)
+
+    def test_selected_owner_waits_for_event_lock_without_sibling_discovery(self):
+        self.assert_selected_owner_waits_for_lock('example/events.jsonl.cas.lock.advisory')
+
+    def test_selected_owner_waits_for_preparation_lock_without_sibling_discovery(self):
+        self.assert_selected_owner_waits_for_lock('.preparation.cas.lock.advisory')
+
+    def assert_selected_owner_recovers_journal(self, context, journal):
+        store = Path(context['store_root'])
+        original = (store / self.slot).read_bytes()
+        bindings = self.tree_bytes(store / '.ledger/.bindings')
+        definitions = self.tree_bytes(store / '.ledger/.definitions')
+        source = self.tree_bytes(self.repo / '.ledger')
+        before_read = self.tree_bytes(self.root)
+        with self.assertRaisesRegex(custody.MigrationError, 'TransactionRecoveryRequired'):
+            custody.owner_context(self.repo, self.definition, read_only=True, binary=self.binary)
+        self.assertEqual(self.tree_bytes(self.root), before_read)
+        self.assertTrue(journal.exists())
+        selected = self.ensure()
+        self.assertEqual(selected['native_args'], context['native_args'])
+        self.assertEqual(selected['source_coverage'], 'not_checked')
+        self.assertTrue(selected['owner_health']['healthy'])
+        self.assertTrue(selected['storage_mutated'])
+        self.assertFalse(journal.exists())
+        self.assertEqual((store / self.slot).read_bytes(), original)
+        self.assertEqual(self.tree_bytes(store / '.ledger/.bindings'), bindings)
+        self.assertEqual(self.tree_bytes(store / '.ledger/.definitions'), definitions)
+        self.assertEqual(self.tree_bytes(self.repo / '.ledger'), source)
+        self.assertFalse(self.ensure()['storage_mutated'])
+
+    def test_selected_owner_recovers_empty_current_journal_without_sources(self):
+        context, other = self.binding_family()
+        shutil.rmtree(other)
+        control = Path(context['store_root']) / '.ledger'
+        self.assertFalse((control / '.preparation.json').exists())
+        journal = control / '.transactions/dtx-1-00000000000000000000000000000006'
+        journal.mkdir()
+        self.assert_selected_owner_recovers_journal(context, journal)
+
+    def test_selected_owner_recovers_committed_native_journal_without_marker_or_sources(self):
+        context, other = self.binding_family()
+        shutil.rmtree(other)
+        control = Path(context['store_root']) / '.ledger'
+        self.assertFalse((control / '.preparation.json').exists())
+        journals = list((control / '.transactions').glob('dtx-*/transaction.json'))
+        self.assertEqual(len(journals), 1)
+        record = json.loads(journals[0].read_bytes())
+        self.assertEqual(record['journal_format'], 'current')
+        self.assertEqual(record['state'], 'committed')
+        journal = journals[0].parent
+        (journal / 'commit.json').unlink()
+        self.assert_selected_owner_recovers_journal(context, journal)
+
+    def test_malformed_selected_journal_remains_blocked_without_mutating_reads(self):
+        context, other = self.binding_family()
+        shutil.rmtree(other)
+        journal = Path(context['store_root']) / '.ledger/.transactions/dtx-1-00000000000000000000000000000006'
+        journal.mkdir()
+        (journal / 'transaction.json').write_text('{')
+        before = self.tree_bytes(self.root)
+        for repo in (self.repo, None):
+            for maintain in (False, True):
+                with self.subTest(workspace=repo, maintain=maintain):
+                    with self.assertRaisesRegex(custody.MigrationError, 'TransactionCorrupt') as failed:
+                        custody.owner_context(repo, self.definition, store_id=context['store_id'],
+                                              maintain=maintain, binary=self.binary)
+                    self.assertFalse(failed.exception.value['storage_mutated'])
+                    self.assertEqual(self.tree_bytes(self.root), before)
+
+    def test_reconciliation_rejects_pending_sibling_publication(self):
         context, other = self.binding_family()
         pending = other / '.ledger/.transactions/dtx-unresolved'
         pending.mkdir(parents=True)
         before = self.tree_bytes(self.root)
         self.assert_read_selects(context)
+        self.assert_write_selects(context)
         with self.assertRaisesRegex(custody.MigrationError, 'TransactionRecoveryRequired'):
-            self.ensure()
+            self.reconcile()
         self.assertEqual(self.tree_bytes(self.root), before)
         self.assertEqual(self.ctx.resolve(self.repo)['store_id'], context['store_id'])
 
@@ -315,19 +457,51 @@ class OwnerUpgradeTests(unittest.TestCase):
         self.assertEqual(self.tree_bytes(self.root), before)
         self.assertFalse((Path(context['store_root']) / self.slot).exists())
 
-    def test_healthy_owner_write_preparation_requires_coordination_for_copied_sibling(self):
+    def test_healthy_owner_rejects_pending_managed_publication_for_all_selectors(self):
+        context = self.ensure()
+        self.capture(context['native_args'])
+        pending = Path(context['store_root']) / '.ledger/.transactions/dtx-unresolved'
+        pending.mkdir(parents=True)
+        before = self.tree_bytes(self.root)
+        directories = {str(path.relative_to(self.root)) for path in self.root.rglob('*') if path.is_dir()}
+        guard = Path(context['store_root']) / '.ledger/.preparation.cas.lock.advisory'
+        self.assertFalse(guard.exists())
+        expected = dict(before)
+        for repo in (self.repo, None):
+            for maintain in (False, True):
+                with self.subTest(workspace=repo, maintain=maintain):
+                    create_guard = maintain and not guard.exists()
+                    error = 'TransactionCorrupt' if maintain else 'TransactionRecoveryRequired'
+                    with self.assertRaisesRegex(custody.MigrationError, error) as blocked:
+                        custody.owner_context(repo, self.definition, store_id=context['store_id'],
+                                              maintain=maintain, binary=self.binary)
+                    if maintain:
+                        self.assertTrue(guard.is_file())
+                        self.assertEqual(guard.read_bytes(), b'')
+                        self.assertIs(blocked.exception.value['storage_mutated'], True if create_guard else None)
+                        expected[str(guard.relative_to(self.root))] = b''
+                    else:
+                        self.assertFalse(blocked.exception.value['storage_mutated'])
+                    self.assertEqual(self.tree_bytes(self.root), expected)
+                    self.assertEqual({str(path.relative_to(self.root)) for path in self.root.rglob('*') if path.is_dir()},
+                                     directories)
+                    self.assertTrue(pending.is_dir())
+                    self.assertEqual(list(pending.iterdir()), [])
+
+    def test_reconciliation_requires_coordination_for_copied_nonempty_sibling(self):
         context, other = self.binding_family()
         for path in (other / '.ledger').rglob('*.cas.lock.advisory'):
             path.unlink()
         before = self.tree_bytes(self.root)
         self.assert_read_selects(context)
+        self.assert_write_selects(context)
         with self.assertRaisesRegex(custody.MigrationError, 'PreparationRequiresQuiescence'):
-            self.ensure()
+            self.reconcile()
         self.assertEqual(self.tree_bytes(self.root), before)
-        self.assertEqual(self.ensure(confirm_no_writers=True)['store_id'], context['store_id'])
+        self.assertEqual(self.reconcile(confirm_no_writers=True)['store_id'], context['store_id'])
         self.assertEqual(self.tree_bytes(self.root), before)
 
-    def test_managed_workspace_still_checks_longer_sibling_history(self):
+    def test_managed_workspace_reconciliation_still_checks_longer_sibling_history(self):
         subprocess.run(['git', '-C', str(self.repo), 'init', '-q'], check=True)
         subprocess.run(['git', '-C', str(self.repo), '-c', 'user.name=Fixture',
             '-c', 'user.email=fixture@example.invalid', 'commit', '--allow-empty', '-qm', 'fixture'], check=True)
@@ -348,8 +522,9 @@ class OwnerUpgradeTests(unittest.TestCase):
         context = self.ctx.register_root(self.repo, store_id, self.repo)
         before = self.tree_bytes(self.root)
         self.assert_read_selects(context)
+        self.assert_write_selects(context)
         with self.assertRaises(custody.MigrationError) as raised:
-            self.ensure()
+            self.reconcile()
         self.assertEqual(raised.exception.value['preparation']['outcome'], 'reconciliation-required')
         self.assertEqual(self.tree_bytes(self.root), before)
 
@@ -366,9 +541,9 @@ class OwnerUpgradeTests(unittest.TestCase):
         archive.mkdir(parents=True)
         (archive / 'manifest.json').write_text('not valid JSON')
         before = self.tree_bytes(self.root)
-        for read_only in (True, False):
-            observed = custody.owner_context(self.repo, self.definition, read_only=read_only,
-                                            maintain=not read_only, binary=self.binary)
+        for mode in ('--read-only', '--ensure-owner', '--reconcile-owner'):
+            observed = custody.invoke(custody.owner_command(self.repo, self.definition,
+                                                           binary=self.binary, mode=mode))
             self.assertEqual(observed['store_id'], context['store_id'])
             self.assertEqual(self.tree_bytes(self.root), before)
 
@@ -376,8 +551,9 @@ class OwnerUpgradeTests(unittest.TestCase):
         context = self.binding_fixture(local_request='second')
         before = self.tree_bytes(self.root)
         self.assert_read_selects(context)
+        self.assert_write_selects(context)
         with self.assertRaisesRegex(custody.MigrationError, 'PreparationDivergentHistory'):
-            self.ensure()
+            self.reconcile()
         self.assertEqual(self.tree_bytes(self.root), before)
         self.assertEqual(self.ctx.resolve(self.repo)['store_id'], context['store_id'])
         self.assertEqual(self.tree_bytes(self.root), before)
@@ -390,6 +566,10 @@ class OwnerUpgradeTests(unittest.TestCase):
         self.assertEqual(self.tree_bytes(self.root), before)
         self.assertEqual(self.ensure()['store_id'], context['store_id'])
         self.assertEqual(self.tree_bytes(self.root), before)
+        reconciled = self.reconcile()
+        self.assertEqual(reconciled['source_coverage'], 'checked')
+        self.assertEqual(reconciled['store_id'], context['store_id'])
+        self.assertEqual(self.tree_bytes(self.root), before)
         projected = subprocess.run([self.binary, 'project', '--definition', str(self.definition),
             *context['native_args'], '--projection', 'all', '--payload-only', '--format', 'json'],
             capture_output=True, timeout=15)
@@ -401,8 +581,9 @@ class OwnerUpgradeTests(unittest.TestCase):
         (self.repo / self.slot).unlink()
         before = self.tree_bytes(self.root)
         self.assert_read_selects(context)
+        self.assert_write_selects(context)
         with self.assertRaises(custody.MigrationError):
-            self.ensure()
+            self.reconcile()
         self.assertEqual(self.tree_bytes(self.root), before)
 
     def test_missing_local_definition_is_not_covered(self):
@@ -410,8 +591,9 @@ class OwnerUpgradeTests(unittest.TestCase):
         shutil.rmtree(self.repo / '.ledger/.definitions')
         before = self.tree_bytes(self.root)
         self.assert_read_selects(context)
+        self.assert_write_selects(context)
         with self.assertRaises(custody.MigrationError):
-            self.ensure()
+            self.reconcile()
         self.assertEqual(self.tree_bytes(self.root), before)
 
     def test_missing_registered_owner_rejects_declared_retired_history(self):
@@ -430,11 +612,11 @@ class OwnerUpgradeTests(unittest.TestCase):
     def test_missing_registered_owner_remains_missing_until_first_capture(self):
         registered = self.ctx.resolve(self.repo, initialize=True)
         self.definition = SKILLS / 'learnings/definitions/ledger/learnings-protocol.json'
-        before = self.tree_bytes(self.root)
-        with self.assertRaisesRegex(custody.MigrationError, 'PreparationRequiresQuiescence'):
-            self.ensure()
-        self.assertEqual(self.tree_bytes(self.root), before)
-        self.assertEqual(self.ensure(confirm_no_writers=True)['store_id'], registered['store_id'])
+        prepared = self.ensure()
+        self.assertEqual(prepared['store_id'], registered['store_id'])
+        self.assertEqual(prepared['source_coverage'], 'checked')
+        self.assertTrue(prepared['source_coordination_mutated'])
+        self.assertTrue(prepared['storage_mutated'])
         with self.assertRaisesRegex(custody.MigrationError, 'OwnerPreparationRequired'):
             custody.owner_context(None, self.definition, store_id=registered['store_id'],
                                   read_only=True, binary=self.binary)
@@ -579,10 +761,9 @@ class OwnerUpgradeTests(unittest.TestCase):
         (archive / 'manifest.json').write_text(json.dumps({'schema': 'ledger-legacy-archive/v1', 'sources': snapshot}))
         (store / self.slot).unlink()
         shutil.rmtree(store / '.ledger/.bindings')
-        with self.assertRaisesRegex(custody.MigrationError, 'PreparationRequiresQuiescence'):
-            self.ensure()
-        context = self.ensure(confirm_no_writers=True)
+        context = self.ensure()
         self.assertEqual(context['store_id'], registered['store_id'])
+        self.assertEqual(context['source_coverage'], 'checked')
         self.assertEqual((store / self.slot).read_bytes(), original)
 
     def test_missing_archived_selected_evidence_is_not_an_empty_owner(self):
@@ -655,11 +836,26 @@ class OwnerUpgradeTests(unittest.TestCase):
         with self.assertRaisesRegex(custody.MigrationError, 'OwnerPreparationRequired'):
             custody.owner_context(self.repo, self.definition, read_only=True, binary=self.binary)
         self.assertFalse((Path(registered['store_root']) / self.slot).exists())
-        with self.assertRaisesRegex(custody.MigrationError, 'PreparationRequiresQuiescence'):
-            self.ensure()
-        context = self.ensure(confirm_no_writers=True)
+        context = self.ensure()
         self.assertEqual(context['store_id'], registered['store_id'])
+        self.assertEqual(context['source_coverage'], 'checked')
+        self.assertTrue(context['source_coordination_mutated'])
         self.assertEqual((Path(context['store_root']) / self.slot).read_bytes(), (other / self.slot).read_bytes())
+
+    def test_unavailable_sibling_blocks_initialization_and_preserves_unknown_history(self):
+        subprocess.run(['git', '-C', str(self.repo), 'init', '-q'], check=True)
+        subprocess.run(['git', '-C', str(self.repo), '-c', 'user.name=Fixture',
+            '-c', 'user.email=fixture@example.invalid', 'commit', '--allow-empty', '-qm', 'fixture'], check=True)
+        other = self.root / 'other'
+        subprocess.run(['git', '-C', str(self.repo), 'worktree', 'add', '--detach', str(other)],
+                       check=True, capture_output=True)
+        self.capture(['--repo', str(other)])
+        other.rename(self.root / 'unavailable')
+        before = self.tree_bytes(self.root)
+        with self.assertRaisesRegex(custody.MigrationError, 'UnavailableWorktree'):
+            self.ensure()
+        self.assertEqual(self.tree_bytes(self.root), before)
+        self.assertFalse((self.root / 'home').exists())
 
     def test_missing_local_bound_history_does_not_start_an_empty_owner(self):
         registered = self.ctx.resolve(self.repo, initialize=True)
@@ -741,7 +937,7 @@ class OwnerUpgradeTests(unittest.TestCase):
             self.assertEqual(result.returncode, 3, result.stdout + result.stderr)
             value = json.loads(result.stdout)
             self.assertEqual(value['error_code'], 'AccessDenied')
-            self.assertIn(value['preparation']['outcome'], ('prepared', 'covered'))
+            self.assertEqual(value['preparation']['outcome'], 'prepared' if attempt == 0 else 'covered')
             self.assertEqual(value['storage_mutated'], True if attempt == 0 else None)
             identity = (value['store_id'], value['store_root'])
             if selected is None:

@@ -55,7 +55,9 @@ implicit initialization or lookup fallback.
 Before an opted-in owner's projection or capture, follow
 [owner access](canonical-custody.md#owner-access): read an intact present owner
 with `--read-only --definition --owner-manifest`; select preparation only for its
-typed missing-owner condition or before a semantic write. Identity lookup below
+typed missing-owner condition, and use `--ensure-owner` before a semantic write.
+An intact managed owner is admitted without a worktree scan; `--reconcile-owner`
+selects the stronger source-coverage operation when needed. Identity lookup below
 does not establish owner health, preparation, or historical coverage. Explicit
 no-maintenance constraints prevent preparation and repair, not healthy reads.
 
