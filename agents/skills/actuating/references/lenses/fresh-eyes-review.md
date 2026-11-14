@@ -9,13 +9,21 @@ subject. Shared authoritative facts are necessary; incumbent or sibling conclusi
 are hypotheses, not substitutes for this investigation.
 
 Trace a representative required scenario end to end, then attack a materially
-different required case or failure path when supported by the domain. What must
-actually happen, and where does the candidate ensure it? Look for omitted behavior,
-erased distinctions, integration gaps, unhandled recovery, and required progress
-or ordering that can fail while every internal state remains valid. Neither
-rejecting legitimate work nor leaving it permanently pending satisfies the outcome.
-Ground liveness claims in the actual scheduler/environment assumptions, not an
-arbitrary wait or imagined unfair execution.
+different required case or failure path when supported by the domain. Work backward
+from the required outcome: what must be known, distinguished, or controlled for it
+to follow, and where does the candidate supply it? Seek a source-permitted case
+where the candidate's guarantee holds but that outcome fails. For a consequential
+decision, can its available observations merge cases with no common source-permitted
+answer? Account for interactions, pending effects, observation age, and actual
+authority when they change that answer. Inspect existing paths and protocol
+guarantees that may supply the distinction or make one response adequate for all
+compatible cases before reporting a defect.
+
+Look for omitted behavior, erased distinctions, integration gaps, unhandled
+recovery, and required progress or ordering that can fail while every internal
+state remains valid. Neither rejecting legitimate work nor leaving it permanently
+pending satisfies the outcome. Ground liveness claims in the actual
+scheduler/environment assumptions, not an arbitrary wait or imagined unfair execution.
 
 Then challenge inherited constraints. Is a burden created by the representation,
 owner, API, language, runtime, or process rather than the Goal? Is a workaround
