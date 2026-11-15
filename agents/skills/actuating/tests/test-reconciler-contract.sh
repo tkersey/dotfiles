@@ -363,7 +363,7 @@ assert(challenger.success_signals.includes('every current applicable admitted li
 assert(challenger.success_signals.includes('canonical Glaze then Metanoetic instructions share one context; encouragement does not change admissibility or proof'));
 assert(challenger.failure_signals.includes('Glaze adds a trigger, separate stage, report, review, or acceptance authority'));
 // Canonical byte preservation and wrapper boundaries; not model-efficacy evidence.
-for (const [name, digest] of Object.entries({"glaze": "eef7f7f41fd14f255bf3f36f9ff143e45f6db416af87e835cddfdadf41edd808", "metanoetic": "ade816044394c7dda348b3f0ba920354865197344042988fa6d43710f0b21a6a"})) {
+for (const [name, digest] of Object.entries({"glaze": "e42397e803730c7b0362340c26813f4a1e7cb9be3571b626f6ece1845b8bfa27", "metanoetic": "ade816044394c7dda348b3f0ba920354865197344042988fa6d43710f0b21a6a"})) {
   const source = text(`../${name}/SKILL.md`);
   const boundary = source.indexOf('\n---\n');
   assert(boundary >= 0, `${name}: missing frontmatter boundary`);
