@@ -79,7 +79,7 @@ input = "/model gpt-6.1-terra --reasoning=medium --speed=standard"
 label = "terra"
 
 [tui.presets.5]
-input = "Reload $actuating, $universalist, $metanoetic, $tune, $glaze, $cas and ~/.codex/AGENTS.md. Remember to use $tune liberally."
+input = "Reload $actuating, $universalist, $metanoetic, $tune, $cybernating, $glaze, $cas and ~/.codex/AGENTS.md. Remember to use $tune liberally."
 label = "reload"
 
 [tui.presets.6]
