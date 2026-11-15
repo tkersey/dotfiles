@@ -1,4 +1,4 @@
-# Universalist 18.0.5
+# Universalist 18.0.6
 
 Universalist uses algebraic and categorical knowledge to **recognize mathematical
 structure, formulate problems, and derive solutions**. A supported correspondence
@@ -170,10 +170,12 @@ historical receipts and audit fixtures retain their original attribution.
 
 `references/efficacy-evaluation.md` separates routing, artifact correctness,
 workflow authority, prompt dependence, and incremental reference contribution.
-The routing corpus now has 30 routing cases, 22 artifact cases, and nine workflow
-cases. The unchanged representation corpus adds 16 artifact cases and retains its
-17.8.0 authoring baseline; it is not evidence that 18.0.0 has been evaluated.
-All 61 existing cases across those corpora remain present, with activation scenarios
+The routing corpus has 30 routing cases, 41 artifact cases, and nine workflow
+cases. The representation corpus has 18 artifact cases: its original 16 retain
+the 17.8.0 authoring baseline, and two construction/interpretation cases are added
+in 18.0.6. Bind additions and any replay to their actual source revision; the
+historical version field does not attribute all cases or results to that version.
+Earlier expansions preserved 61 existing cases, with activation scenarios
 updated to distinguish mechanical realization from unresolved semantic reasoning.
 Twelve new cases cover unprompted synthesis, fixed-interface algorithms, semantic
 oracles, unlisted constructions, false friends, negative controls, and both callers.

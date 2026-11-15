@@ -605,3 +605,46 @@ The pre-run oracle was `test-continuation-construction.mjs`, SHA-256
 `e2c834ba1b653fa49dfa607cc17e7b39fd2bba648497f172ed93d800e4a2c43c`.
 This observes one construction under the existing guidance. No matched instruction
 ablation, repeated model comparison, or end-to-end latency measurement was run.
+
+## Interpretation of admitted commands
+
+Status: **authored comparison; no matched efficacy study executed**. Use this
+case when evaluating the construction-to-execution guidance. It is a synthetic task, not a reported defect
+or a new production gate. Supply the accepted task and selected subject source;
+withhold the diagnosis, expected repair, controls, and evaluator from the task
+agent. Freeze its first completed candidate or unfinished attempt before feedback.
+
+### Accepted task
+
+A local command carries `Write(target, value)` with admission evidence applicable
+to that target and value. Execution must write exactly that value to the named
+target, preserve all other targets, and report success only after that effect.
+Different targets remain valid when their commands and admission agree. Switching
+an ambient selection between admission and execution is permitted and must not
+redirect a previously admitted command. Relevant authority conditions are stable
+for this task; do not infer that arbitrary historical authorization remains valid.
+
+### Deciding observations and controls
+
+The faulty handler writes to the ambient selection while its log and success
+result repeat the admitted command. Command formation and a grader reading the
+log both pass. Observe the actual affected state, including its target and value;
+the returned shape alone cannot decide the obligation.
+
+| Contrast | Required consequence |
+|---|---|
+| Command names A; selection switches to B before execution | Repair the interpretation at its actual owner so the effect remains bound to A; another validity flag or repeated prompt does not establish the effect |
+| Command and admission name B; selection names A | Preserve valid writes to B; freezing execution to A or rejecting all switches loses required behavior |
+| Same command under a changed target-resolution implementation | Re-establish the affected correspondence; unchanged syntax and formation checks do not preserve the prior handler argument |
+| Only unrelated diagnostics change, or a refactor has an adequate preservation argument | Reuse applicable evidence without whole-system requalification |
+| A different internal representation preserves the same target, value, and required effects | Accept the adequate native construction without requiring the original syntax or an interpreter framework |
+| A constant no-op or blanket refusal avoids wrong-target writes | Reject the repair because the required successful writes remain unimplemented |
+
+Keep the baseline and revised guidance, task facts, tools, evidence access, and
+resource limits comparable in an efficacy comparison. The first construction,
+selected owner, actual effect, valid counterparts, proof applicability, and claim
+strength decide the result. A corrected grader alone does not repair execution;
+agreement between checks sharing the same mistaken observation is insufficient.
+Retain all attempts and distinguish structural validation, bounded transfer, and
+comparative efficacy. Existing review and completion requirements remain with
+their owners; this evaluation supplies no production review credit.

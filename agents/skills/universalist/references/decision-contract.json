@@ -4,7 +4,7 @@
     "skill": {
       "name": "universalist",
       "kind": "mixed",
-      "source_fingerprint": "universalist-generative-derivation-v18.0-v8"
+      "source_fingerprint": "universalist-generative-derivation-v18.0-v9"
     },
     "triggers": [
       {
@@ -374,7 +374,8 @@
           "stronger equality inferences have adequate determination; lifting and distinguishability claims use the relevant endpoint correspondence",
           "derived obligations retain their actual sufficient hypotheses without requiring a separate evidence packet",
           "an unregistered retained construction uses derived:<name> and the same proof obligations without fabricating a card",
-          "focused theoretical inquiry may precede ordinary comparison; acceptance compares available native candidates, including their unmet requirements"
+          "focused theoretical inquiry may precede ordinary comparison; acceptance compares available native candidates, including their unmet requirements",
+          "admitted syntax connects primitive and composition justification, evidence erasure, and actual execution; required successful behavior and the claimed transformation relation are preserved"
         ],
         "failure_signals": [
           "decorative terminology",
@@ -388,7 +389,8 @@
           "an arbitrary interpreter is assumed to preserve universal properties or reflect equality without the corresponding argument",
           "global operation names hide an empty source hom-set or erased required endpoint index",
           "full faithfulness or literal representation equality is required for an intentionally lossy observation without a stronger claim",
-          "a missing registry card blocks task-relevant inquiry or excuses unsupported acceptance"
+          "a missing registry card blocks task-relevant inquiry or excuses unsupported acceptance",
+          "formation checks, an erasure equation alone, or a shared broad contract substitute for semantic soundness or required behavioral preservation"
         ],
         "rationale": "Inquiry is question-led; retained advanced mechanics remain claim-bound."
       },

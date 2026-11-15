@@ -14,6 +14,7 @@
 
 ## Semantic world
 
+- Required judgment and bound inputs/context:
 - Effects / denotations:
 - Observations:
 - Invariants:
@@ -24,25 +25,34 @@
 - Function/module:
 - Owner:
 - Bypass policy:
+- Relevant semantic assumptions and invalidators:
 
 ## Laws
 
 ### Soundness
 
 ```text
-accepted syntax denotes valid observed semantics
+primitive interpretations and composition establish the required judgment
+justified interpretation agrees with interpretation after evidence erasure
 ```
 
-### Adequacy
+### Required coverage
 
 ```text
-required semantic distinctions are representable or observable
+required successful behavior and observable distinctions remain representable
+```
+
+### Execution correspondence
+
+```text
+the semantic argument applies to the actual implementation
 ```
 
 ### Preservation
 
 ```text
-syntax transformation preserves declared observations
+the transformation establishes the required contract, observational equivalence,
+or permitted refinement
 ```
 
 ## Representation change (only when material)
@@ -58,6 +68,7 @@ Reuse these facts in the receiving workflow rather than issuing another report.
 ## Falsifier
 
 - Accepted syntax with invalid semantics:
+- Admitted description with a different actual effect:
 - Needed semantic behavior not expressible in syntax:
 
 ## Status

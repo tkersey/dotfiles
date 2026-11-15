@@ -177,6 +177,9 @@ universal claim; carried witnesses and direction for transport; determination
 before cancellation; endpoint correspondence for lifting or distinguishability.
 Keep any derived obligation with the hypotheses that discharge it, and revisit
 only affected derivations when those hypotheses change.
+For admitted syntax, include its judgment, primitive/composition justification,
+evidence-erasure agreement, actual interpreter correspondence, required successful
+constructions, and the transformation relation within that same argument.
 ## Obstruction / reopening condition:
 
 ## Why this construction:
