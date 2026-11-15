@@ -61,6 +61,10 @@ available. Structural checks cannot establish live activation or efficacy.
 | Completed evaluation meets an accepted 95% success floor with measured case failures | Keep those failures in the evidence and investigate useful opportunities; do not invent a 100% acceptance requirement or erase the failures |
 | All evaluated tasks fail | Report zero successes and undefined successful-task metrics, not zero cost or latency per success |
 | Several edits jointly improve results | Attribute to the tested bundle; use selective follow-up contrasts only if a finer causal claim is needed |
+| Several locally sound repairs leave the enclosing task incomplete | Reconcile applicable obligations and supported relationships before the next repair; test the required composition rather than assuming each local repair was wrong |
+| Similar symptoms have independent causes, or one example is locally incorrect | Preserve separate remedies or the sufficient local correction; do not require an umbrella cause, fewer edits, or a broader restriction |
+| An encompassing candidate fixes some members while another remains unresolved | Retain member-level evidence and residual obligations; improved aggregate coverage does not discharge an untested or failing member |
+| A relevant optional question remains after all required work is complete | Preserve its unresolved status without inventing a completion gate or extending the bounded task |
 | Text-only change fails because a tool's runtime is dominant | Report the non-text bottleneck; investigate within authority, do not silently rewrite the runtime or force stronger prose |
 | Grader is wrong | Preserve old results, correct it only under accepted authority, and re-evaluate baseline and candidate under the same corrected criterion |
 | Candidate improves development cases but regresses untouched confirmation | Do not adopt; if feedback informs revision, those cases become development evidence and fresh confirmation is needed |
@@ -121,6 +125,16 @@ below are case designs, not executed results or a required suite:
 | A viable candidate, remaining resources, required confirmation cost, and another informative contrast are available | Allocate resources to a justified completion path; distinguish a satisfied bounded target from unfinished or open-ended work |
 | Confirmation and candidate-selection history survive under separate source identities | Interpret promotion under the full accepted policy; preserve the difference between empirical corpus qualification and population claims |
 | A summary preserves its immediate conclusion but a later completion decision depends on omitted evidence | Recover the missing premise or limit the later claim, while continuing independent authorized work |
+| Related findings arrive separately; a shared-path case is discoverable, a report is duplicated, another cause is independent, and one member lacks deciding evidence | Observe whether the target reconstructs and uses the applicable problem, predicts supported sibling coverage, preserves the independent repair and unresolved member, and completes when warranted |
+
+For a problem-tracking question, distinguish the investigator's experiment history
+from the examined target's own working state. Compare source versions with the
+same evidence access; separately vary dispersed versus faithfully consolidated
+reports when presentation is a live alternative explanation. Consolidation must
+preserve the facts available at each arrival, including identities and uncertainty,
+without supplying the intended grouping or repair. Exercise a relevant later
+transition and a valid local or separate repair; do not grade by repair count,
+preferred architecture, or issue-map format.
 
 Observe disposition validity, supported claim strength, acquired deciding evidence,
 unnecessary work, total investigation cost, completion, and the retained target's

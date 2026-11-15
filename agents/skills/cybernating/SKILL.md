@@ -134,8 +134,11 @@ justified decision, not a fixed order in which every thought must occur.
    tested contribution, and mechanism. Reuse adequate investigation rather than
    performing a ceremonial fresh audit after an unchanged result.
 2. **Select a discriminating change or observation.** Use the competing
-   predictions and next useful contrast. Repair delivery before rewriting text that
-   never arrived. Consider clarification, deletion, deconfliction, placement,
+   predictions and next useful contrast. When related findings or repeated repairs
+   affect the decision, [reconcile the current problem](references/source-investigation.md#relate-findings-before-selecting-a-repair)
+   and select against its supported relationships and residual obligations, not
+   only the newest witness. Repair delivery before rewriting text that never
+   arrived. Consider clarification, deletion, deconfliction, placement,
    examples, or a coherent reconstruction rather than only adding rules. Inspect
    the actual latency bottleneck. A bundled intervention is allowed, but its gain
    belongs to the bundle until component contrasts support finer attribution.
@@ -177,8 +180,9 @@ and comparable resource exposure; shared contention is not a candidate effect.
 
 Keep the accepted goal, original/best/current candidate identities, loaded sources,
 case/grader/runtime versions, measurements and uncertainty, selection and confirmation
-exposure, accepted/rejected changes, remaining hypotheses, and required checks in
-the existing task record.
+exposure, accepted/rejected changes, active problems and supported relationships,
+resolved and residual coverage, remaining hypotheses, and required checks in the
+existing task record.
 Carry these through compaction, delegation, and resumption. No new ledger, global
 telemetry service, schema, dashboard, or mandatory per-round report is required.
 
