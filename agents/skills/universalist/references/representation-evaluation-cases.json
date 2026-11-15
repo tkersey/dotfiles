@@ -1,7 +1,7 @@
 {
   "schema": "universalist-representation-evaluation/v1",
   "skill_version": "17.8.0",
-  "purpose": "Audit-only artifact discriminators for eliminator-first representation and algebra-derived design; not a new routing policy or executable test runner.",
+  "purpose": "Audit-only artifact discriminators for eliminator-first representation, algebra-derived design, and construction/interpretation correspondence; not a new routing policy or executable test runner.",
   "status": "authored_not_model_replayed",
   "evaluation": "Present scenarios and required behavior to the agent; reserve expected artifacts, falsifiers, and evidence criteria for evaluation. Accept any admissible implementation satisfying the same requirements.",
   "artifact_cases": [
@@ -276,6 +276,42 @@
       "evidence_required": [
         "An unchanged adequate-artifact control plus a near-miss with no live proposal; score retained behavior and avoided obligations, not algebra vocabulary.",
         "Preserve the pre-existing trigger, comparison, and authority rules."
+      ]
+    },
+    {
+      "id": "admitted-command-changed-interpretation",
+      "scenario": "An admitted local Write(target=A,value=v) command is immutable and its admission remains applicable. The original handler writes to the named target; a revision instead uses an ambient selected target, which may switch to B before execution. Formation checks and logs still describe A. A separate variant changes only unrelated diagnostic formatting.",
+      "required_behavior": [
+        "Write the admitted value to the named target and leave other targets unchanged, including after a permitted selection switch.",
+        "Preserve valid writes naming B and any required success; reuse evidence unaffected by unrelated diagnostics or a justified semantics-preserving refactor."
+      ],
+      "expected_artifact": [
+        "Connect the constructor judgment to the actual handler effect and repair the target binding through its owner, or establish an equally adequate native correspondence.",
+        "Re-establish only the interpretation obligations whose semantic assumptions changed; inspect affected state rather than crediting the plan or its repeated log."
+      ],
+      "falsifier": "An unchanged admitted command redirects its effect after a selection switch, or the proposed repair freezes every command to A, rejects all writes, or invalidates unrelated evidence by byte change alone.",
+      "required_valid_counterpart": "A command admitted for B writes to B even when the ambient selection is A; an adequately justified equivalent representation remains acceptable.",
+      "evidence_required": [
+        "An argument or deciding observation binding the admitted command to the actual affected target and value, with the relevant runtime assumptions.",
+        "Separate construction soundness, execution correspondence, and the observation used to assess them; erasure agreement alone does not prove the judgment."
+      ]
+    },
+    {
+      "id": "contract-preservation-versus-required-behavior",
+      "scenario": "Two finite commands start at 0. One adds 1 and the other adds 2. Both inhabit a command family whose postcondition permits either result. A proposed optimization replaces the first with the second; the accepted optimization task requires preservation of the original returned value. A paired implementation task expressly permits either result.",
+      "required_behavior": [
+        "Preserve the original value for the optimization task, along with any other declared observations.",
+        "Allow either result under the paired task whose accepted contract explicitly permits that choice."
+      ],
+      "expected_artifact": [
+        "Distinguish preservation of the indexed contract from the observational equivalence required for the optimization.",
+        "Select the task-required equality, observation relation, or permitted refinement without imposing exact behavior preservation on the paired weaker task."
+      ],
+      "falsifier": "A Cmd(P,Q)-to-Cmd(P,Q) signature is accepted as sufficient optimization proof despite the changed result, or exact value preservation is imposed on the task that permits either result.",
+      "required_valid_counterpart": "Replacing the first command with a differently represented command that still returns 1 can satisfy the optimization contract; either 1 or 2 remains valid for the paired implementation task.",
+      "evidence_required": [
+        "Source-grounded preservation relation and a result observation that distinguishes 1 from 2 when required.",
+        "Soundness of the contract judgment kept separate from the stronger behavioral-replacement claim."
       ]
     }
   ]

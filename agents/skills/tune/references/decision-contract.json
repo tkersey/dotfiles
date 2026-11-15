@@ -4,7 +4,7 @@
     "skill": {
       "name": "tune",
       "kind": "mixed",
-      "source_fingerprint": "unified-create-edit-evidence-tune-v15-specialization-costs"
+      "source_fingerprint": "unified-create-edit-evidence-tune-v16-interpretation-probes"
     },
     "triggers": [
       {

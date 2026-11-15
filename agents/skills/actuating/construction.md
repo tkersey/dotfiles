@@ -78,8 +78,12 @@ every source-required valid operation remains an obligation.
 
 Develop the implementation and its argument together. Establish primitive meaning
 and why permitted composition gives the required result, including exceptional
-outcomes and subsequent behavior. Hard or repetitive proof may justify changing
-the representation, algorithm, or decomposition. Preserve authoritative facts,
+outcomes and subsequent behavior. For admitted plans, commands, or checked
+representations, establish that erasure, compilation, and actual handlers realize
+the meaning justified by their construction rules. A changed interpretation can
+invalidate that correspondence while leaving the syntax unchanged; re-establish
+affected dependencies and reuse unaffected evidence. Hard or repetitive proof may
+justify changing the representation, algorithm, or decomposition. Preserve authoritative facts,
 derived observations, distinct history, and independent evidence in their actual
 roles even when production meanings are shared. Complete the affected producers,
 consumers, migrations, and retirements; a partial slice remains work in progress.
@@ -149,8 +153,11 @@ use an [executable behavioral model](references/counterexample-guided-normalizat
 if it supplies deciding evidence that adequate native evidence does not already
 provide. Keep modeling optional and within existing proof selection.
 
-When transfer from a model or abstraction to the implementation remains unresolved,
+When transfer from a model, certified syntax, or abstraction to execution remains
+unresolved,
 use [claim-directed correspondence](../universalist/references/claim-appropriate-proof.md#claim-directed-correspondence).
+For construction rules and interpreters, use the
+[syntax-specific argument](../universalist/references/syntax-semantics-pivot.md#from-construction-rules-to-interpretation).
 Reuse adequate native evidence.
 
 When a construction or its deciding evidence uses a projection, normalization,

@@ -1,6 +1,9 @@
 # Syntax / Semantics Certificate
 
 A Syntax/Semantics Certificate records an explicit syntax, its semantic world, and the interpreter/laws connecting them.
+Use it only when the receiving workflow needs an explicit certificate; reuse an
+existing argument carrying these facts. See the
+[construction argument](syntax-semantics-pivot.md#from-construction-rules-to-interpretation).
 
 ```text
 Syntax/Semantics Certificate
@@ -15,6 +18,7 @@ Syntax world:
   totality requirements:
 
 Semantic world:
+  required judgment and bound inputs/context:
   effects:
   observations:
   invariants:
@@ -24,18 +28,24 @@ Interpreter / handler / compiler / renderer:
   function/module:
   owner:
   totality boundary:
+  relevant semantic assumptions and invalidators:
 
 Soundness law:
-  accepted syntax denotes valid semantics:
+  primitive and composition justification:
+  justified interpretation agrees with interpretation after evidence erasure:
 
-Adequacy law:
-  required semantic distinctions are representable or observable:
+Required coverage:
+  required successful behavior and observable distinctions:
+
+Execution correspondence:
+  connection from the semantic argument to the actual implementation:
 
 Preservation law:
-  syntax transformation preserves declared observations:
+  required contract, observational equivalence, or permitted refinement:
 
 Falsifier:
   accepted syntax with invalid semantics:
+  admitted description with a different actual effect:
   needed semantic behavior not expressible in syntax:
 
 Status:

@@ -148,7 +148,72 @@ emit a duplicate certificate or a new durable record.
 
 ## Soundness / adequacy / preservation
 
-- **Soundness**: every accepted syntax term denotes valid semantic behavior.
-- **Adequacy**: required semantic distinctions are representable or observable.
-- **Preservation**: syntax transformations preserve declared observations.
-- **Falsifier**: accepted syntax with invalid semantics, or needed semantics not expressible in syntax.
+- **Soundness**: admitted constructions establish the semantic judgment derived
+  from accepted requirements.
+- **Required coverage**: syntax expresses required successful behavior and retains
+  distinctions needed by permitted observations and continuations.
+- **Execution correspondence**: the judgment applies to the actual interpreter
+  or runtime under the stated assumptions.
+- **Preservation**: transformations establish the contract, observational
+  equivalence, or permitted refinement the task requires.
+- **Falsifier**: an admitted construction violates its judgment, its execution
+  differs in a required observation, or required behavior cannot be constructed.
+
+### From construction rules to interpretation
+
+When admission is intended to establish a behavioral guarantee, state the judgment
+over its actual inputs, context, effects, and outcomes. Justify each primitive's
+interpretation and how composition carries the established premise into the next
+operation. Formation checks and a function's type do not alone establish its
+intended meaning. Include permitted failure; required success or progress needs
+its own argument. Restricting syntax to rejection or no-ops cannot satisfy a task
+that requires useful successful behavior.
+
+For justified syntax `C`, erasure `E : C -> S`, ordinary interpretation `J`, and
+interpretation into specified meanings `J_hat`, require evidence erasure `U` to
+agree with program erasure:
+
+```text
+U o J_hat = J o E
+```
+
+The specified meanings must express the required judgment and `J_hat` must supply
+valid evidence. The equation binds that evidence to the interpreted program; an
+unjustified `valid = true` field can satisfy erasure agreement without proving
+soundness. Separately establish the implementation connection through
+[claim-directed correspondence](claim-appropriate-proof.md#claim-directed-correspondence).
+Use an adequate direct native argument without introducing a second interpreter
+or requiring this notation in ordinary code.
+
+For finite well-founded syntax presented by an initial `F`-algebra, let `D_R`
+carry meanings with valid evidence of the judgment. A semantic algebra
+`alpha : F(D) -> D`, a justified algebra `beta : F(D_R) -> D_R`, and a
+map `m : D_R -> D` forgetting justification give the local-to-global argument:
+
+```text
+m o beta = alpha o F(m)
+therefore m o fold(beta) = fold(alpha)
+```
+
+Constructing `beta` discharges the local obligations; initiality extends them to
+the generated syntax. Input-, state-, or permission-dependent judgments need the
+appropriate indexed construction. Binding, effects, partial primitives, host
+bypasses, and possible divergence require their actual laws and coverage; the
+finite pure fold argument does not establish them automatically.
+
+### Transformations and changed interpreters
+
+Preserving a judgment need not preserve the program's observable behavior. Under
+the contract "starting at 0, return 1 or 2," both `Add(1)` and `Add(2)` qualify,
+but replacing one with the other changes the returned value. Establish the
+relation required by the transformation, with its observations and direction;
+allow a weaker refinement when the accepted task permits it. Reuse
+[transport across interpretations](claim-appropriate-proof.md#transport-across-interpretations).
+
+A guarantee depends on the construction rules, judgment, and relevant primitive
+interpretations. Unchanged syntax can acquire a different meaning after a handler,
+compiler, renderer, or evaluator change. Re-establish the affected correspondence
+or transport it through a justified preservation relation. Reuse unaffected
+evidence and semantically preserving implementations; a changed byte alone does
+not invalidate every claim. Apply the existing [reclassification rule](../reclassification.md)
+within the receiving workflow, without another certificate or review pass.

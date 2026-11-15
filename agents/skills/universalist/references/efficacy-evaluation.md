@@ -15,8 +15,10 @@ trials. Do not combine materially different versions into one efficacy rate.
 
 Bind actual loaded files, not only a version string. Before replay,
 `routing-evaluation-cases.json.skill_fingerprint` must match `decision-contract.json`.
-The unchanged representation corpus's `skill_version: 17.8.0` records its authoring
-baseline, not a later replay result. Historical receipts and measurements remain
+The representation corpus's `skill_version: 17.8.0` retains its original authoring
+baseline, not a later replay result. Bind its two construction/interpretation
+additions to their actual source revision rather than that historical field.
+Historical receipts and measurements remain
 attributed to their original sources. Record missing or truncated effective skill
 metadata separately from a behavioral failure after successful loading.
 
@@ -146,9 +148,10 @@ skill efficacy.
 
 ## Focused representation and algebra ablations
 
-`representation-evaluation-cases.json` retains eight eliminator-first and eight
-algebra-derived cases. It is an evaluator corpus, not a test runner or runtime
-instruction. The common-path eliminator and algebra questions belong in both B
+`representation-evaluation-cases.json` retains eight eliminator-first, eight
+algebra-derived, and two construction/interpretation cases. It is an evaluator
+corpus, not a test runner or runtime instruction. The common-path eliminator and
+algebra questions belong in both B
 and C. Remove only the targeted reference guidance for a focused contrast, keeping
 other source, evidence, tools, model, budgets, and receiving workflow fixed.
 
@@ -167,6 +170,16 @@ independent oracle. A reference model is optional and valuable only through its
 connection to the required semantics and discriminating evidence. Retain existing
 caller-contract/information-hiding guidance while isolating ADD changes; hold the
 receiving workflow version fixed or report its contribution separately.
+
+For construction/interpretation cases, distinguish the admitted judgment from
+the actual handler's effect and from the evaluator's observation. Hold syntax
+fixed while changing a relevant interpretation, and pair that case with an
+irrelevant implementation change whose evidence remains applicable. Preserve
+required successful constructions and admissible alternate representations.
+Separately test a shared postcondition whose satisfying programs have different
+required observations. Observe the chosen repair owner and preservation argument,
+not use of the new vocabulary or equation. These are authored cases; their
+presence does not establish executed transfer or incremental model efficacy.
 
 ## Workflow and decision-sufficiency ablations
 

@@ -152,6 +152,9 @@ only its elimination. Remove materialization only when inspection, sharing,
 persistence, authorization, identity, replay, and rewriting are absent or preserved.
 Native data, folds, and loops remain valid outcomes. Church-style callbacks alone
 prove neither parametricity, initiality, confidentiality, nor a performance gain.
+When admitted syntax is meant to establish a behavioral judgment, use
+[construction and interpretation](references/syntax-semantics-pivot.md#from-construction-rules-to-interpretation)
+to connect its rules to the actual handlers and required successful behavior.
 
 For interfaces, compare complete caller contracts through a representative use and
 source-supported change: knowledge, choices, sequencing, synchronization, and cleanup

@@ -286,6 +286,28 @@ correctness first, then useful discoveries, completion, unnecessary surface, and
 cost. The protocol is authored guidance, not executed efficacy evidence, an extra
 review, or a new prerequisite for ordinary coding.
 
+## Construction and interpretation transfer
+
+Use these authored cases when adapting syntax-semantics knowledge into a target
+skill. Supply the task and raw command, handler, and effect evidence to the target;
+keep expected diagnoses and this table out of its input. These cases specify
+behavior to observe, not an executed comparison or a new runtime gate.
+
+| Case | Expected behavior |
+|---|---|
+| The target already has a native rule binding admitted commands to actual effects and refreshing only affected assumptions | Preserve or reuse it; mathematical exposition alone does not justify another rule or skill |
+| The target discusses checked constructors but leaves their actual interpretation implicit at the deciding point | Sharpen that conditional native rule and its existing correspondence route, with a relevant positive case and valid counterpart; preserve authority and stopping conditions |
+| A valid command names A, its handler affects B, and the success log names A | Locate the interpretation mismatch and the observation needed to decide it; a new validity flag or a more emphatic prompt does not change the handler's effect |
+| The command remains fixed while its target-resolution semantics change; a paired case changes only irrelevant diagnostics | Re-establish the affected correspondence in the first case and retain applicable evidence in the second |
+| Two implementations satisfy "return 1 or 2," but replacement must preserve the original returned value | Distinguish contract preservation from the required observable equivalence; also accept a change when the task explicitly permits either result |
+| An instruction contains the commuting equation, or a package passes structural validation | Establish neither model efficacy nor semantic soundness from those facts; assess the resulting decisions and the actual construction argument separately |
+
+Observe the selected owner, repaired dependency, preserved valid behavior,
+evidence reuse, actual task outcome, and claim strength. Admit adequate native
+solutions without the terminology, a new IR, or a formalization. Use matched
+source versions and tasks for an efficacy comparison; a successful transfer case
+alone supplies only bounded behavioral evidence.
+
 ## Evidence and no-change cases
 
 **Rejected challenger:** Rejecting an already-known inadmissible option does not
