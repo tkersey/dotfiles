@@ -42,6 +42,43 @@ When delivery or source provenance is unavailable, mark that link unverified
 rather than inventing a source attribution. Obtain existing artifacts before
 asking the user to recreate them.
 
+## Relate findings before selecting a repair
+
+When several findings, recurring repairs, or a locally successful change leave
+the enclosing task unresolved, reconstruct the smallest current problem that
+can change the next decision. Derive applicable obligations from accepted task
+sources, not just the reports at hand. Retain each finding's deciding evidence,
+subject and scope, valid counterpart, and unresolved status; keep protected
+successes in view. Reuse existing working context and adequate analysis.
+
+Separate observations and requirements from proposed causes and repairs. Ask
+which facts must hold together, for which operation and at which event, and
+whether local guarantees can all hold while that relationship fails. Distinguish
+a shared generating mechanism, interaction among otherwise adequate parts,
+loss of a deciding distinction, and independent issues. Grouping remains
+revisable; shared wording, file location, or symptom does not establish one cause.
+
+When selecting an intervention, use the supported relationship to generate a
+repair at its owning decision or representation, including removing repeated
+interpretation or preserving a necessary distinction across transitions. Compare
+sufficient local repairs when they remain live alternatives. Select for coverage
+and preserved valid behavior, not the number of edits or issue labels. A coherent
+repair may have several parts; independent causes may need separate remedies.
+
+Reconcile this view when new evidence changes the decision. A successful member
+or new candidate does not discharge untested or residual obligations; close each
+only on applicable evidence or a justified change of applicability. Keep optional
+questions separate from required completion work. Stop expanding when another
+layer would not change the repair or next observation. Relatedness does not
+enlarge task scope or authority.
+
+When the weakness concerns the examined agent's own problem tracking, locate how
+that target retrieves, retains, and uses the current problem before its next
+action. The investigator's complete record does not establish that capability.
+When an authorized behavioral comparison is needed, exercise the target across
+relevant report arrivals and later decisions, using its existing working context
+rather than requiring a new issue store.
+
 ## Localize a textual contribution
 
 Compare source and effective-text differences across successful and failing
@@ -66,6 +103,7 @@ Choose the smallest contrast that changes the next decision:
 | Which region matters? | Reduce coherent blocks while preserving the executable scaffold. If both halves or neither half reproduce the behavior, test retained factors or combinations instead of assuming monotonic bisection. |
 | Wording, position, or authority? | Change one declared dimension while preserving the others; relocation is not a neutral rewrite. |
 | Does the evidence's representation obstruct its use? | Compare prose with aligned records containing the same facts, provenance, contradictions, and uncertainty needed for the decision. Preserve task and instruction authority. Adding a missing fact or supplying the conclusion tests a different claim. |
+| Does the target construct and use the current problem itself? | Give it access to the same original obligations and observations; inspect what it retrieves, retains, repairs, and leaves unresolved as findings arrive. Separate a target-source change from supplying an investigator-authored problem map; do not credit assisted execution as independent synthesis. |
 | Is guidance missing? | Test a minimal explicit condition against the unchanged baseline; check whether existing guidance already supplies it before adding another rule. |
 | Are instructions redundant or interacting? | Test the smallest evidence-motivated combination, such as both present, each removed, and both removed. |
 

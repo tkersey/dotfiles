@@ -42,6 +42,8 @@ available. Structural checks cannot establish live activation or efficacy.
 | No delivery provenance is available | Mark attribution unverified and seek existing artifacts; do not invent a loaded span or ask the user to recreate available evidence |
 | A non-textual cause explains the observation | Follow the evidence within scope; do not force a prompt fix or launch an unrequested runtime redesign |
 | Investigation has answered the question and no edit is warranted | Finish analysis with the supported finding; do not run campaign confirmation or seek a latency improvement merely to finish |
+| A proposal-only investigation selects a substantive change to a skill's reasoning | Load applicable authoring guidance before selection; preserve the no-edit boundary and valid near misses |
+| Source mapping answers the question without selecting an intervention | Finish without loading unrelated authoring procedures |
 
 ## Campaign behavior
 
@@ -53,12 +55,16 @@ available. Structural checks cannot establish live activation or efficacy.
 | A passage is associated with a success and removing it changes nothing once | Neither causal credit nor irrelevance is established; choose a discriminating contrast when it matters |
 | Candidate correct on more tasks but slower | Keep hard guards and the existing objective; report the tradeoff and retain the incumbent absent an accepted exchange, while testing useful alternatives |
 | Candidate is faster with a possible accuracy loss hidden by a small sample | Do not infer non-inferiority from an insignificant difference; obtain justified evidence or leave it inconclusive |
-| Success rate is unchanged, completion latency reliably improves, and all guards pass | Qualify and adopt under the declared comparison; inspect the new bottleneck rather than stopping at the first gain |
+| Success rate is unchanged, completion latency reliably improves, and all guards pass | Qualify and adopt under the declared comparison; close a completed bounded task, otherwise inspect the next bottleneck |
 | Shorter prompt or fewer model calls, with no completed-task timing | No latency claim; run the actual endpoint or report the measurement gap |
 | Hard tasks time out quickly, making average latency look better | Retain timeouts and denominators; faster failure is not success; unfinished required qualification blocks completion |
 | Completed evaluation meets an accepted 95% success floor with measured case failures | Keep those failures in the evidence and investigate useful opportunities; do not invent a 100% acceptance requirement or erase the failures |
 | All evaluated tasks fail | Report zero successes and undefined successful-task metrics, not zero cost or latency per success |
 | Several edits jointly improve results | Attribute to the tested bundle; use selective follow-up contrasts only if a finer causal claim is needed |
+| Several locally sound repairs leave the enclosing task incomplete | Reconcile applicable obligations and supported relationships before the next repair; test the required composition rather than assuming each local repair was wrong |
+| Similar symptoms have independent causes, or one example is locally incorrect | Preserve separate remedies or the sufficient local correction; do not require an umbrella cause, fewer edits, or a broader restriction |
+| An encompassing candidate fixes some members while another remains unresolved | Retain member-level evidence and residual obligations; improved aggregate coverage does not discharge an untested or failing member |
+| A relevant optional question remains after all required work is complete | Preserve its unresolved status without inventing a completion gate or extending the bounded task |
 | Text-only change fails because a tool's runtime is dominant | Report the non-text bottleneck; investigate within authority, do not silently rewrite the runtime or force stronger prose |
 | Grader is wrong | Preserve old results, correct it only under accepted authority, and re-evaluate baseline and candidate under the same corrected criterion |
 | Candidate improves development cases but regresses untouched confirmation | Do not adopt; if feedback informs revision, those cases become development evidence and fresh confirmation is needed |
@@ -67,7 +73,13 @@ available. Structural checks cannot establish live activation or efficacy.
 | Source, loaded reference, model, or grader changes during a batch | Separate observations and refresh affected comparisons; old results are not exact-candidate proof |
 | Two qualified local wins regress when combined | Keep original-baseline comparison and reject/revise the combination |
 | A clean investigative assessment arrives after five rounds | No clean-streak credit; require executed quality/latency evidence and closure under the actual objective |
-| Further supported candidates remain after the first win | Continue without asking the user to restart or manufacturing an arbitrary round limit |
+| An unfinished explicit objective or open-ended campaign has further supported candidates after the first win | Continue without asking the user to restart or manufacturing an arbitrary round limit |
+| The first candidate satisfies the explicit target and all required confirmation and checks; another improvement is possible | Close the completed bounded task; a remaining opportunity does not extend its accepted scope |
+| Forty executions remain, final confirmation of a viable candidate requires forty, and an optional contrast would spend twenty | Preserve the completion path by confirming the viable candidate rather than consuming its required resources on optional exploration |
+| The current candidate already fails a required guard and the budget cannot fund both repair and confirmation | Do not waste the budget confirming an ineligible candidate or weaken checks; pursue useful authorized repair and report any remaining qualification gap |
+| Distinct candidates each receive fresh confirmation and the eventual winner passes only an unadjusted per-comparison test | Apply the campaign's accepted selection policy; fresh samples do not establish a campaign-wide error guarantee |
+| A fixed-corpus preservation gate and its timing rule pass, but population equivalence is unproved | Qualify within the accepted corpus scope; do not invent either a population guarantee or an extra requirement for one |
+| Equal observed quality and improved latency fail the separately accepted population non-inferiority bound | Keep the candidate inconclusive for adoption; do not infer equivalence or invent a loss margin |
 | No supported next experiment remains; final confirmation and all checks pass | Report bounded-frontier or no-change closure as appropriate, not a global optimum |
 | Explicit target is still missed when budget runs out | Retain useful gains and report partial/blocked status; the budget stop is not task completion |
 | Shared trial history disappears during compaction | Recover source/evidence identities and rejected hypotheses from existing records; do not treat unknown history as a fresh baseline |
@@ -88,3 +100,52 @@ static inspection separately from executed model trials. When running a live
 comparison, retain full source versions, matched tasks, configured model/effort,
 raw outcomes and timings, and the adopted/rejected decision; do not score success
 by the presence of cybernating or doctrine words in the output.
+
+## Complete investigative episodes
+
+When evaluating this controller's efficacy, exercise the investigation from its
+initial evidence through the disposition and required completion work. Compare
+fixed controller versions under the same accepted task, starting evidence access,
+tools, model policy, budget, and evaluator; let their downstream choices differ.
+Test explicit invocation separately from discovery among neighboring descriptions.
+The target's improved score alone cannot establish that the investigator improved.
+
+Use raw task artifacts and available observations to expose the deciding
+distinction. Do not give the investigator the intended diagnosis, expected next
+action, or adjudication key. Admit different evidence-sufficient paths. Examples
+below are case designs, not executed results or a required suite:
+
+| Initial evidence and available contrast | Consequence to observe |
+|---|---|
+| Authored source contains a new instruction; the failed run's effective request and reference identities are retrievable | Inspect delivery before assigning a wording cause; permit no-change closure when the requested attribution is resolved |
+| The same summary reports two passing checks; a task record may show full coverage, a retrievable missing obligation, or unavailable coverage | Retrieve deciding evidence when available, complete when warranted, or state the exact limitation |
+| Individual removals of two instructions preserve behavior; their combined removal has a different recorded outcome | Investigate the interaction without declaring either instruction irrelevant or requiring a single culprit |
+| A candidate's new output form receives a higher grader score; underlying artifacts and old calibration examples are available | Check the credited improvement against the task outcome; old calibration alone may miss the new grader error |
+| A faster candidate has successful routine cases and an available recovery or refusal case | Exercise the implicated obligation; distinguish useful simplification from deleting required behavior |
+| A viable candidate, remaining resources, required confirmation cost, and another informative contrast are available | Allocate resources to a justified completion path; distinguish a satisfied bounded target from unfinished or open-ended work |
+| Confirmation and candidate-selection history survive under separate source identities | Interpret promotion under the full accepted policy; preserve the difference between empirical corpus qualification and population claims |
+| A summary preserves its immediate conclusion but a later completion decision depends on omitted evidence | Recover the missing premise or limit the later claim, while continuing independent authorized work |
+| Related findings arrive separately; a shared-path case is discoverable, a report is duplicated, another cause is independent, and one member lacks deciding evidence | Observe whether the target reconstructs and uses the applicable problem, predicts supported sibling coverage, preserves the independent repair and unresolved member, and completes when warranted |
+
+For a problem-tracking question, distinguish the investigator's experiment history
+from the examined target's own working state. Compare source versions with the
+same evidence access; separately vary dispersed versus faithfully consolidated
+reports when presentation is a live alternative explanation. Consolidation must
+preserve the facts available at each arrival, including identities and uncertainty,
+without supplying the intended grouping or repair. Exercise a relevant later
+transition and a valid local or separate repair; do not grade by repair count,
+preferred architecture, or issue-map format.
+
+Observe disposition validity, supported claim strength, acquired deciding evidence,
+unnecessary work, total investigation cost, completion, and the retained target's
+native quality/resource result separately. Score unjustified refusal as well as
+unsupported adoption; do not invent a weighted utility or require one scripted
+tool sequence. Preserve task and episode denominators and independent sampling
+units rather than pooling repeated runs into apparent task diversity.
+
+Ground adjudication in established environment facts, accepted obligations, and
+controlled contrasts. An author's preferred explanation is not causal ground
+truth. Simulated runners can test decisions and resource accounting; they do not
+qualify native prompt performance. Freeze controller versions for each compared
+episode, including when cybernating itself is the target. Retain raw records and
+report bounded observations separately from comparative efficacy or generalization.

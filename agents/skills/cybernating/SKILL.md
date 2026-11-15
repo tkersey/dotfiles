@@ -45,9 +45,12 @@ task and evaluation contract own correctness. Reuse Tune's methods without start
 a second optimizer. The root edits skill packages; Ship owns requested PR effects.
 
 Read [source investigation](references/source-investigation.md) before interpreting
-evaluation evidence. Before skill-package mutation, read
-[Tune authoring](../tune/authoring.md) and its applicable references. For optimization
-measurements, use [Tune performance](../tune/performance.md) and its agent guide.
+evaluation evidence. Read [Tune authoring](../tune/authoring.md) and its applicable
+references before any skill-package mutation, and before selecting or proposing a
+substantive skill-package intervention even when edits are not requested. Pure
+source explanation or a supported no-change finding need not load authoring guidance.
+For optimization measurements, use [Tune performance](../tune/performance.md) and
+its agent guide.
 Load [evaluation discipline](references/evaluation.md) when designing or interpreting
 behavioral comparisons, timing claims, or confirmation, including an authorized
 analysis experiment. Pure inspection need not load campaign measurement guidance.
@@ -131,8 +134,11 @@ justified decision, not a fixed order in which every thought must occur.
    tested contribution, and mechanism. Reuse adequate investigation rather than
    performing a ceremonial fresh audit after an unchanged result.
 2. **Select a discriminating change or observation.** Use the competing
-   predictions and next useful contrast. Repair delivery before rewriting text that
-   never arrived. Consider clarification, deletion, deconfliction, placement,
+   predictions and next useful contrast. When related findings or repeated repairs
+   affect the decision, [reconcile the current problem](references/source-investigation.md#relate-findings-before-selecting-a-repair)
+   and select against its supported relationships and residual obligations, not
+   only the newest witness. Repair delivery before rewriting text that never
+   arrived. Consider clarification, deletion, deconfliction, placement,
    examples, or a coherent reconstruction rather than only adding rules. Inspect
    the actual latency bottleneck. A bundled intervention is allowed, but its gain
    belongs to the bundle until component contrasts support finer attribution.
@@ -173,23 +179,36 @@ and comparable resource exposure; shared contention is not a candidate effect.
 ## Continue from evidence, not ceremony
 
 Keep the accepted goal, original/best/current candidate identities, loaded sources,
-case/grader/runtime versions, measurements and uncertainty, accepted/rejected
-changes, remaining hypotheses, and required checks in the existing task record.
+case/grader/runtime versions, measurements and uncertainty, selection and confirmation
+exposure, accepted/rejected changes, active problems and supported relationships,
+resolved and residual coverage, remaining hypotheses, and required checks in the
+existing task record.
 Carry these through compaction, delegation, and resumption. No new ledger, global
 telemetry service, schema, dashboard, or mandatory per-round report is required.
 
-Do not stop after the first gain, a completed edit, or an investigation report.
-Continue while an actionable, in-scope accuracy or latency opportunity or required
-check remains. Do not endlessly repeat the same experiment: when results stop
-separating hypotheses, change the contrast, inspect delivery/measurement, or
-reconsider the mechanism. No fixed round count or clean streak establishes success.
-User budgets remain hard limits, not permission to report unfinished work complete.
-
 Preserve explicit acceptance targets. Stop successfully when the requested goals
-and required checks are satisfied. For an open-ended optimization request, close
-only at a stated evidence-bounded frontier: relevant success/failure and latency
-mechanisms were investigated, promising supported candidates were resolved, the
-best retained result passed fresh confirmation, and no currently justified next
+and required checks are satisfied; another possible improvement does not extend
+a completed bounded task. While an explicit objective remains unfinished, or the
+request is open-ended, continue while an actionable, in-scope accuracy or latency
+opportunity or required check remains. A first gain, completed edit, or investigation
+report does not by itself finish that work.
+
+Before optional exploration, account for the remaining resources needed for
+already-required checks and fresh confirmation. When a viable candidate can satisfy
+the accepted objective, preserve that completion path rather than spend its required
+resources on another discretionary contrast. A candidate that cannot meet a required
+guard or target may need repair instead of confirmation. Use the accepted budget
+and checks; invent neither a reserve percentage nor weaker verification.
+
+Do not endlessly repeat the same experiment: when results stop separating
+hypotheses, change the contrast, inspect delivery/measurement, or reconsider the
+mechanism. No fixed round count or clean streak establishes success. User budgets
+remain hard limits, not permission to report unfinished work complete.
+
+For an open-ended optimization request, close only at a stated evidence-bounded
+frontier: relevant success/failure and latency mechanisms were investigated,
+promising supported candidates were resolved, the best retained result passed
+fresh confirmation, and no currently justified next
 experiment remains within scope and budget. This is not a global optimum.
 Unmet targets, unresolved adoption tradeoffs, missing evidence, or exhausted budget
 leave the dependent objective incomplete even when a useful gain is retained.
