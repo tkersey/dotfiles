@@ -1,6 +1,6 @@
 {
   "schema": "universalist-routing-evaluation/v1",
-  "skill_fingerprint": "universalist-generative-derivation-v18.0-v7",
+  "skill_fingerprint": "universalist-generative-derivation-v18.0-v8",
   "purpose": "Evaluate task-grounded discovery separately from acceptance and model efficacy. Present only scenario/requirements to the agent; keep expected outcomes and discriminators evaluator-only. Skip means no new invocation, route, record, or receipt.",
   "expectations": {
     "skip": "No unresolved task-relevant semantic question remains; reuse adequate derivations silently.",
@@ -515,6 +515,56 @@
         "declaring the cited categorical framework unsound from an inadequately interpreted checker"
       ],
       "claim_check": "Use a terminating computation and false postcondition to refute the claimed implication. Identify the missing correspondence rather than treating rule satisfaction as operational adequacy."
+    },
+    {
+      "id": "interaction-composition-preserves-reply-dependencies",
+      "scenario": "A protocol first offers a request with two possible replies, then must choose one of two follow-up requests from that reply. Each follow-up has one reply. The proposed implementation chooses both requests before either reply and accepts replies through one phase-tagged input union. Accepted behavior requires the follow-up choice to depend on the first reply and each reply to belong to the currently offered request instance. In a paired control, the follow-up is fixed before the first reply and the existing ordinary handler already meets the contract. Simplify the protocol representation without changing either contract.",
+      "must_preserve": [
+        "Both required first-reply/follow-up branches, including a policy that chooses different follow-ups for the two first replies.",
+        "Current request identity and required freshness or consumption checks; a reply from a prior instance remains distinguishable even when phase and payload match.",
+        "Valid current replies, declared failure/cancellation/recovery behavior, and the adequate fixed-follow-up control.",
+        "An ordinary continuation, phase-owned handler, or tagged state machine when sufficient; shared prior context need not be artificially forbidden."
+      ],
+      "must_reject": [
+        "Treating a pair of requests selected before their replies as if its second selection can inspect the first reply.",
+        "Conflating a tagged reply to either exposed interface with a paired reply to both interfaces.",
+        "Claiming a phase-dependent reply type alone excludes stale request instances or establishes external authorization and atomicity.",
+        "Requiring a monad, materialized policy enumeration, a generic polynomial runtime, or a new architecture route."
+      ],
+      "claim_check": "For the finite structural account p=y^2 and q=2y, paired composition has two positions, while p composed with q has four policies and two directions per policy: p tensor q=2y^2 and p composed with q=4y^2. The tagged-input product instead has three directions per position. Inspect the actual dependency and request-instance ownership in the proposed native representation; finite cardinalities alone do not establish implementation preservation. Endofunctor composition needs no monad structure."
+    },
+    {
+      "id": "temporal-adapter-requires-coherent-command-lifts",
+      "scenario": "A command adapter has a forward object map and backward command maps. The supplied source and target categories each have one object: source commands compose by addition modulo 4 and target commands by addition modulo 2. The adapter lifts target 0 to source 0 and target 1 to source 1. All individual lifts are well typed and identity is preserved. The proposal claims exact preservation of command histories under regrouping. Required source observations distinguish all four source commands. Separately assess a control where only parity is an explicitly accepted observation and a control with an exact lawful lift.",
+      "must_preserve": [
+        "The valid underlying one-step interface adapter while distinguishing it from the stronger temporal-preservation claim.",
+        "Forward objects and backward command variance, identity, destination compatibility, and sequential lifting at the reached source object.",
+        "The accepted exact source-command distinctions; retain a separately justified parity-only observation contract only in its explicit weaker control.",
+        "A lawful exact lift, such as target 0 to source 0 and target 1 to source 2, as a positive algebraic control without inventing its application semantics."
+      ],
+      "must_reject": [
+        "Inferring a retrofunctor or comonad morphism from a natural transformation, an ordinary functor, or passing one-step cases alone.",
+        "Claiming exact preservation when lifting target 1 composed with 1 gives source 0 but composing the two source lifts gives source 2.",
+        "Silently quotienting the source to parity, or demanding exact source-command equality when the explicitly accepted control requires only a congruent parity observation.",
+        "Declaring the entire adapter unusable solely because its unrequired stronger morphism claim fails."
+      ],
+      "claim_check": "Check r_s(compose_target(a,b)) = compose_source(r_s(a),r_reached(b)) at the correctly reached object, plus identity and destination laws. Enumerate the finite command pairs: the proposed lift fails at (1,1), while the exact-lift control passes. A parity observation supports only the explicitly scoped quotient/refinement argument and does not turn the original exact lift into a strict morphism. In this one-object example destination compatibility is trivial, not evidence that it can be omitted generally."
+    },
+    {
+      "id": "polynomial-theorem-counterexample-preserves-supported-clauses",
+      "scenario": "An interface transformation groups source positions along a map f and is proposed to commute with paired-interface composition. Its justification is a supplied theorem stating both that reindexing has left and right adjoints and that the paired tensor preserves op-cartesian maps. The supplied definitions make the direction set of f_!p at b the product of p[a] over f(a)=b, and paired composition multiplies direction sets. Assess the optimization and the scope of the theorem claim, without changing the definitions or introducing a framework. The finite instance is p=2y, q=y^2, and f:2->1.",
+      "must_preserve": [
+        "The independently supported reindexing adjoint triple and ordinary grouped-interface construction.",
+        "The distinction between a counterexample to the tensor-preservation clause and a refutation of every surrounding theorem or construction.",
+        "The actual direction-set definitions and finite instance, including all valid choices preserved by grouping."
+      ],
+      "must_reject": [
+        "Accepting the commuting optimization solely because a cited theorem asserts it.",
+        "Identifying direction sets with different cardinalities or dropping independent direction choices to make the equation pass.",
+        "Treating failure of one preservation clause as global impossibility, a new runtime gate, or a reason to discard supported weaker structure.",
+        "Claiming model efficacy or a current-edition correction merely from checking the supplied finite example."
+      ],
+      "claim_check": "Compute f_!p=y, so (f_!p) tensor q=y^2; but p tensor q=2y^2 and f_!(p tensor q)=y^4. The claimed comparison is therefore not an isomorphism. Alternatively, exhibit the missing factorization of a lens 2y^2->y that chooses a different direction at each source position through 2y^2->y^2. Scope rejection to preservation of op-cartesian maps by this tensor and the optimization relying on it; keep the established adjoints."
     }
   ],
   "status": "authored_not_model_replayed",

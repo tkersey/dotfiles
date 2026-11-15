@@ -472,11 +472,37 @@ Do not identify three different categories: the encoded small category has
 shapes and positions; the co-Kleisli category has arrows `W<A> -> B`; the
 Eilenberg–Moore category has lawful structures `A -> W<A>` and their preserving
 maps. Nor does the object-level correspondence identify ordinary functors with
-comonad morphisms. A container map has a forward shape map `t : S -> S'` but
-backward position maps `Position'(t(s)) -> Position(s)`, subject to the directed
-laws; these are opcleavage-like, not arbitrary functors. Specify the actual
-transport and variance before claiming preservation. This complements, rather
-than replaces, the continuous-map distinction above.
+comonad morphisms. A container map has a forward shape map but backward position
+maps. Specify the actual transport and variance before claiming preservation.
+This complements the continuous-map distinction above.
+
+### Backward lift laws
+
+For a directed-container morphism (a retrofunctor between the encoded categories),
+let `t : S -> S'` map shapes and `lift_s : Position'(t(s)) -> Position(s)` lift
+arrows backward. For `a : Position'(t(s))` and
+`b : Position'(subshape'(t(s),a))`, with
+`u = subshape(s,lift_s(a))`, require:
+
+```text
+t(subshape(s,lift_s(a))) = subshape'(t(s),a)
+lift_s(root'(t(s))) = root(s)
+lift_s(compose'_(t(s))(a,b)) = compose_s(lift_s(a),lift_u(b))
+```
+
+The first law types the second lift; a one-step adapter does not establish the
+identity or composition laws. Consider one-object categories with source arrows
+`Z/4` and target arrows `Z/2`, both composed by modular addition. The backward map
+`lift(0)=0, lift(1)=1` has the right type and preserves identity, but lifting
+`1+1 mod 2` gives `0`, while composing its lifts gives `2 mod 4`. It is an ordinary
+container map, not a directed-container morphism. Parity observations may admit a
+weaker behavioral claim if all required effects and costs respect that quotient;
+they do not prove the strict equation on the original arrows.
+
+Apply these laws when claiming preservation of this temporal structure, not as
+extra requirements on every useful adapter. Source: Niu and Spivak,
+*Polynomial Functors*, July 17, 2024 draft, Definition 7.55, pp. 256–258;
+see [sources](../sources.md).
 
 ### Bounded approximation
 

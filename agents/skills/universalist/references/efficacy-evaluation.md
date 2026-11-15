@@ -136,6 +136,14 @@ implementation that should survive the inquiry. Missing a registry entry cannot
 reject an otherwise supported construction, and an unlisted construction cannot
 escape its required failure or resource observations.
 
+For the interaction cases, distinguish a fixed choice from a reply-dependent
+policy, an instance-bound continuation from a shared phase tag, and a typed
+one-step adapter from a composition-preserving lift. Preserve an adequate native
+implementation and explicitly weaker observation claims. For a supplied theorem,
+localize a counterexample to the clause it refutes; retain independently supported
+clauses. These are authored calibration cases, not fresh confirmation or measured
+skill efficacy.
+
 ## Focused representation and algebra ablations
 
 `representation-evaluation-cases.json` retains eight eliminator-first and eight

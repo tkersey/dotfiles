@@ -387,6 +387,7 @@ JS
 node "$skill_root/tests/test-instruction-routing.mjs"
 node "$skill_root/tests/test-construction-core.mjs"
 node --test "$skill_root/tests/test-dependency-construction.mjs"
+node --test "$skill_root/tests/test-continuation-construction.mjs"
 node "$skill_root/tests/test-review-credit.mjs"
 sh "$skill_root/tests/test-construction-cycle-scenarios.sh"
 sh "$skill_root/tests/test-post-elimination-scenarios.sh"

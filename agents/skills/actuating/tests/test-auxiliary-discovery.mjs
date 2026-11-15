@@ -129,6 +129,37 @@ add('subject-16','control','invariant-ace',
   'Atomicity and persistence of reservation are unknown; do not invent either duplicate execution or a proof of safety.',
   {unavailable_evidence:['store.reserve implementation and atomicity contract']});
 
+const continuationGoal = 'issue(callback) returns an opaque token for that callback. Multiple calls may be outstanding and replies may arrive in any order. deliver(token,value) must invoke exactly the callback registered by that active token, passing value unchanged, consume the token, and return true. Completed or unknown tokens return false without invoking callbacks. Callbacks are synchronous, total, and do not reenter issue or deliver. There are no other operations or effects.';
+const continuationSource = bound => `const pending = new Map();
+${bound ? '' : 'const ordered = [];'}
+function issue(continueWith) {
+  const token = Object.freeze({});
+  pending.set(token, continueWith);
+  ${bound ? '' : 'ordered.push(continueWith);'}
+  return token;
+}
+function deliver(token, value) {
+  if (!pending.has(token)) return false;
+  const continueWith = ${bound ? 'pending.get(token)' : 'ordered.shift()'};
+  pending.delete(token);
+  continueWith(value);
+  return true;
+}`;
+const continuationProbe = `(() => {
+  const events = [];
+  const a = issue(value => events.push(['a',value]));
+  const b = issue(value => events.push(['b',value]));
+  return {accepted:[deliver(b,20),deliver(a,10),deliver(b,30)],events};
+})()`;
+add('subject-17','continuation','fresh-eyes',continuationGoal,
+  continuationSource(true),continuationProbe,
+  {accepted:[true,true,false],events:[['b',20],['a',10]]}, 'no-finding',
+  'Each authenticated reply resumes its originating callback; the ordinary native map satisfies the contract.');
+add('subject-18','continuation','fresh-eyes',continuationGoal,
+  continuationSource(false),continuationProbe,
+  {accepted:[true,true,false],events:[['a',20],['b',10]]}, 'findings',
+  'Both replies are accepted and both callbacks run, but dispatch follows creation order instead of the originating operation token.');
+
 const task = 'Review the supplied current subject using the assigned review instructions. Discover supported in-scope findings independently, cite decisive source or evidence, and keep material uncertainty explicit. No allegation is supplied. Do not edit or infer unseen requirements.';
 const exported = c => ({task,...c.input});
 const key = () => cases.map(({id,pair,lens,verdict,basis}) => ({id,pair,primary_lens:lens,expected:verdict,basis}));
@@ -163,7 +194,7 @@ if (args.length === 1 && args[0] === '--list') {
     assert.deepEqual(JSON.parse(actual),c.observation,c.id);
     probes++;
   }
-  const pairs = ['judgment','affordance','preservation','ownership','outcome','justification'];
+  const pairs = ['judgment','affordance','preservation','ownership','outcome','justification','continuation'];
   for (const pair of pairs) {
     const [a,b,...rest] = cases.filter(c => c.pair === pair);
     assert(a && b && !rest.length,pair);
