@@ -11,6 +11,9 @@ methods; this is not another evaluation platform.
 Before a comparison, freeze the question, source intervention, baseline,
 protected outcomes, important case strata, evaluator/version, competing predictions,
 sampling/decision policy, and result-dependent next action in the existing record.
+Bind the claim to the intended case distribution or explicitly to the tested corpus.
+Keep diagnostic case weighting and repeated attempts distinct from deployment
+weighting and independent task coverage when they affect that claim.
 For adoption or timing claims, also bind the relevant objective and accepted
 error/latency bounds. Do not manufacture tolerances from observed noise. Compare
 paired outcomes and actual magnitudes, not only a headline average. If an adoption
@@ -102,9 +105,14 @@ spread and uncertainty, and relevant medians/tails. Do not assert stable p95/p99
 statistical non-inferiority from a few runs. A no-significant-difference result is
 not evidence of equivalence. Resolve material uncertainty with the next justified
 sample or return inconclusive; do not manufacture precision or retry until pass.
-Repeated selection on the same cases increases selection bias. Use a declared
-sequential rule or fresh confirmation after exploration rather than repeatedly
-peeking and stopping at the first favorable result.
+Repeated selection can bias the retained result even when each candidate receives
+fresh cases. Scope the preselected decision policy to candidate selection,
+result-dependent looks, and promotion attempts across the campaign; fresh confirmation
+prevents tuning exposure but does not reset that history. Use evidence appropriate
+to the stated claim, such as one reserved final confirmation after exploration or
+a suitable sequential and multiple-comparison policy. An accepted empirical gate
+remains usable within its declared scope; do not promote its result into a stronger
+statistical claim.
 
 Interleave or randomize comparison order where practical. Separate cold and warm
 cache conditions when relevant and inspect actual cache observations. Prefix
@@ -118,6 +126,16 @@ Without a stated exchange rate, do not invent a combined score or buy speed with
 accuracy loss. A candidate that improves accuracy but costs latency is an explicit
 tradeoff, not automatic adoption. Preserve promising non-dominated results without
 turning the campaign into a mandatory population-search framework.
+
+For example, an accepted gate may require no observed regressions on eighty
+specified native cases and a latency reduction under the agreed timing rule.
+If both variants preserve the same case outcomes, protected checks pass, and the
+timing rule passes, the candidate can qualify under that gate; exact equality of
+population quality is not established. Under a different contract requiring a
+population non-inferiority bound, those same outcomes must satisfy that bound
+instead. Keep permitted degradation, evidence uncertainty, and claim domain
+distinct. Do not invent a loss margin or require a stronger guarantee than the
+accepted task.
 
 ## Confirmation and continuation
 
