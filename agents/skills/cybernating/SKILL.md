@@ -3,8 +3,9 @@ name: cybernating
 description: >-
   Investigate textual sources behind agent, prompt, and skill evaluation successes,
   failures, regressions, or mixed results; iteratively improve accuracy and latency
-  when asked. Use for interpreting those results or revising their textual sources,
-  not ordinary code review or a specified mechanical text edit.
+  or the evaluation methods for those systems when asked. Use for interpreting
+  those results or revising their textual sources, not ordinary code review or a
+  specified mechanical text edit.
 ---
 
 # cybernating
@@ -134,7 +135,13 @@ justified decision, not a fixed order in which every thought must occur.
    tested contribution, and mechanism. Reuse adequate investigation rather than
    performing a ceremonial fresh audit after an unchanged result.
 2. **Select a discriminating change or observation.** Use the competing
-   predictions and next useful contrast. When related findings or repeated repairs
+   predictions and next useful contrast. Treat the evaluation method as an eligible
+   target of improvement within this same loop. Seek task-grounded counterexamples
+   to accepted and rejected judgments, including apparently sound ones, when doing
+   so can change the investigation or selection decision. Use
+   [evaluator improvement](references/evaluation.md#improve-the-evaluation-method)
+   to compare supported corrections under the accepted task, authority, and budget.
+   When related findings or repeated repairs
    affect the decision, [reconcile the current problem](references/source-investigation.md#relate-findings-before-selecting-a-repair)
    and select against its supported relationships and residual obligations, not
    only the newest witness. Repair delivery before rewriting text that never
@@ -144,8 +151,8 @@ justified decision, not a fixed order in which every thought must occur.
    belongs to the bundle until component contrasts support finer attribution.
    A non-textual cause may require inspection or an authorized separate repair;
    it does not justify an unrequested harness redesign.
-3. **Realize the candidate.** Change the owning prompt or skill source, not only
-   a captured request. Preserve required obligations, discovery semantics,
+3. **Realize the candidate.** Change the owning prompt, skill, or authorized
+   evaluation source. Preserve required obligations, discovery semantics,
    references, instruction authority, and successful behaviors. Run applicable
    package, build, lint, and test checks, then verify the rendered/loaded candidate.
    Keep baseline and candidate distinct; do not overwrite the best qualified state.

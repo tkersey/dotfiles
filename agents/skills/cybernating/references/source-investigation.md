@@ -25,6 +25,13 @@ Use successful as well as failing cases; aggregate scores alone cannot localize
 a contribution. Find the first consequential divergence for a failure and the
 successful behavior whose source contribution is being claimed for a pass.
 
+Where it could change the investigation or selection decision, seek task-grounded
+counterexamples to accepted and rejected evaluator judgments, including apparently
+sound ones. Relate their failures through the same current-problem investigation
+below. The evaluation method may be the useful intervention; use
+[evaluator improvement](evaluation.md#improve-the-evaluation-method) when comparing
+or correcting it, under the selected route's authority.
+
 Inspect the relevant agent/system/developer prompts, AGENTS.md instructions,
 skill discovery descriptions, loaded SKILL.md bodies and references, examples,
 tool descriptions, templates, and supplied context. Keep evaluator/rubric text

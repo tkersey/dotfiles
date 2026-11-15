@@ -29,7 +29,8 @@ delivery. Unknown delivery limits source attribution; it also blocks a promotion
 claim that depends on that delivery.
 
 Hold relevant external conditions fixed: case, starting history/state, model
-settings, tools, runtime, and grader. Do not freeze downstream actions or history
+settings, tools, runtime, and grader, except the declared intervention. Do not
+freeze downstream actions or history
 that the intervention is meant to change. Verify candidate delivery on each
 compared condition. Preserve exact source snapshots or diffs and all completed
 attempts, errors, exclusions, and interruptions; do not overwrite failed variants
@@ -40,10 +41,10 @@ final-output quality from recovered execution defects and missing observations.
 
 Prefer deterministic checks of required artifacts/state when possible. A model
 judge is fallible: calibrate against known cases, blind candidate labels and
-randomize presentation when useful, and preserve the rubric. Investigate grader
-errors separately. An authorized evaluator correction establishes a new comparison
-with baseline and candidates re-evaluated; it cannot rescue a candidate by changing
-its criteria alone. Do not let the candidate's self-description determine success.
+randomize presentation when useful. Freeze each condition's evaluator and rubric;
+declare any evaluator or rubric difference as the intervention.
+Distinguish measurement errors from target errors. Do not let the candidate's
+self-description determine success.
 
 Keep development examples, known regression controls, and untouched confirmation
 cases distinct. Do not feed confirmation answers or hidden grader material into
@@ -51,6 +52,46 @@ candidate authoring or the evaluated agent. If an author sees or uses a confirma
 failure to revise the candidate, retire its held-out status for that successor.
 Label-only tasks, plausible explanations, and correct initial actions cannot
 qualify a claim about native execution and its downstream consequences.
+
+## Improve the evaluation method
+
+Use the same investigation loop to improve the evaluation method when this can
+change the investigation or selection decision. Seek counterexamples to accepted
+and rejected judgments, including judgments that currently appear sound; a
+reported grader error is not a prerequisite. Reuse adequate evidence and stop
+when the question is resolved or another challenge would not change the next
+decision. A passing check alone does not require an audit.
+
+Trace related failures to their measurement mechanism: omitted evidence, a proxy,
+rubric interpretation, aggregation, case selection, or an observation boundary.
+Preserve valid accepted and rejected counterparts, including unfamiliar valid
+solutions. Compare supported corrections by fidelity to the accepted task and
+the relevant resource objective, not by whether a preferred system candidate wins.
+Distinguish correcting the task's measurement from changing its requirements,
+thresholds, or verification policy; use existing authority for corrections and
+do not silently change the accepted contract.
+
+Give the evaluator revision its own identity. Compare its judgments against
+unchanged task evidence with independently supported outcomes where available;
+check the implicated false acceptances, false rejections, and protected controls.
+A higher score, calibration agreement, or another judge's agreement alone does
+not establish improvement. Apply development and confirmation exposure rules to
+evaluator authoring too; a case used to repair the method is development evidence
+for its successor. Unsupported distinctions remain unresolved.
+
+Re-evaluate the original baseline and compared candidates under the same corrected
+method. Revisit affected prior promotions, rejections, and conclusions whose
+support depended on the faulty measurement. Preserve original observations and
+judgments under their old identities. Reuse sufficient raw artifacts; rerun when
+the corrected question needs missing observations or when changed feedback affects
+execution. Reassessment does not require repeating unaffected work.
+
+Separate improved measurement, changed selection, and improved system behavior.
+Regrading unchanged artifacts can reverse a decision without changing the system.
+A claim of better system behavior still needs a valid comparison under the
+supported common method. Better measurement alone does not complete an unfinished
+system-behavior objective; retain its remaining work within the accepted scope
+and budget.
 
 ## Evidence transformations
 
