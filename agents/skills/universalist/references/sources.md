@@ -27,6 +27,7 @@ Stable references:
 - Ehrig et al., *Fundamentals of Algebraic Graph Transformation*.
 - Spivak/Wisnesky functorial data migration work and Schultz/Wisnesky, “Algebraic Data Integration.”
 - Fong and Spivak, *An Invitation to Applied Category Theory* / *Seven Sketches in Compositionality*.
+- Nelson Niu and David I. Spivak, [*Polynomial Functors: A Mathematical Theory of Interaction*](https://toposinstitute.github.io/poly/poly-book.pdf), July 17, 2024 draft: interaction products §§3.10 and 6.1; state machines Definition 4.18 and Example 6.67; retrofunctors Definition 7.55, pp. 256–258. Page and theorem references here name that draft, not a later edition. Software ownership and continuation examples are engineering applications. The routing evaluation corpus independently tests the final tensor/op-cartesian clause of Theorem 5.73 on pp. 165–166; its counterexample does not invalidate the preceding adjoint triple.
 - Reynolds, “Definitional Interpreters for Higher-Order Programming Languages.”
 - Danvy and Nielsen, “Defunctionalization at Work.”
 - Power and Robinson, “Premonoidal Categories and Notions of Computation.”

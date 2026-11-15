@@ -13,7 +13,7 @@ node agents/skills/actuating/tests/test-auxiliary-discovery.mjs --key
 
 The ordinary test executes the checked-in synthetic probes and checks export
 isolation. It does not run a model or decide the semantic truth of model findings.
-The evaluator key includes six matched pairs and controls for independent oracles,
+The evaluator key includes seven matched pairs and controls for independent oracles,
 source-level structural obligations, legitimate guards, and missing authority.
 Its `primary_lens` is an expected contribution, not an exclusive assignment.
 `evidence-gap` is an evaluation expectation, not a new runtime review status.
@@ -41,6 +41,14 @@ new independent witnesses beyond the other lenses, and downstream adjudication
 cost separately. Track all original reports, not only the admitted corpus. Neither
 low acceptance nor high raw finding count establishes improvement. Duplicates can
 corroborate a defect but do not create independent witnesses or coverage.
+
+The continuation pair (`subject-17`, `subject-18`) exercises callback ownership
+under out-of-order delivery. Both implementations admit the same replies and run
+both callbacks, so acceptance counts and progress alone do not decide correctness.
+One uses an adequate native map; the other detaches callback selection from the
+reply's operation identity. Keep this explanation, the paired subject, and the
+executable observation out of reviewer inputs. Use independent tasks for transfer
+claims; these disclosed cases are calibration material.
 
 ## Native format and incomplete-evidence regression
 

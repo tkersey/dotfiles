@@ -543,3 +543,65 @@ node --test agents/skills/actuating/tests/test-dependency-construction.mjs
 The checked-in regression retains the frozen oracle's cases and completion method,
 input-preservation checks, and predecessor sensitivity. These are now disclosed
 calibration cases, not untouched holdouts or a new production delivery gate.
+
+## Continuation construction
+
+Status: **one bounded first-successor observation completed**. This case tests a
+live relationship that the synchronous dependency case does not exercise. The
+faulty control and oracle are authored synthetic calibration material; the checked-in
+successor was produced in the bounded observation below. This is not evidence of
+incremental or general skill efficacy.
+
+### Accepted task
+
+Implement `createDispatcher()` returning `start(key, callback, {multiShot = false})`,
+`deliver(token, value)`, and `cancel(token)`. Keys are strings and callbacks are
+functions. `start` returns an opaque token for that operation. Different keys may
+remain active concurrently; starting the same key replaces the previous operation
+and revokes its token. An accepted delivery invokes exactly the callback belonging
+to that token, passes the value unchanged, and returns `true`. Single-shot delivery
+consumes the operation; a multi-shot operation accepts repeated deliveries,
+including equal values, until replaced or cancelled. Cancelling an active token
+returns `true` and revokes that operation only. Completed, cancelled, replaced,
+foreign, or unknown tokens return `false` without invoking callbacks or affecting
+another operation. Replies may arrive in any order. Callbacks are synchronous,
+do not throw, and do not reenter the dispatcher. All effects are confined to the
+supplied callbacks.
+
+### Deciding observations
+
+```sh
+node --test agents/skills/actuating/tests/test-continuation-construction.mjs
+```
+
+The ten disclosed scenarios cover ordinary and reversed delivery, equal payloads,
+replacement, stale cancellation, owner-local cancellation, multi-shot reuse,
+replacement after multi-shot use, a foreign token, and mixed delivery modes.
+Observe callback identity, order, and values as well as acceptance returns.
+The faulty control authenticates each token but dispatches callbacks in creation
+order: every acceptance return matches the reference, while three scenarios resume
+the wrong owner. Both one-shot computations can finish with valid values. Rejecting
+all replies or making every operation single-shot also fails required behavior.
+
+The reference binds each token to its operation and each key to its current
+operation, removing the separately ordered continuation queue. Accept equivalent
+native constructions; no categorical runtime or extra scheduler is required.
+For an actual construction comparison, supply only this accepted task and the
+selected candidate source in an isolated subject. Keep this explanation, the tests,
+the reference, and other controls out of the agent's input. Freeze and assess its
+first successor before supplying a diagnosis; retain all attempts and compare
+protected outcomes and total task cost under the existing protocol. Once used for
+authoring, these cases cannot qualify a broader transfer claim; use independently
+selected tasks and continuations for that claim.
+
+### Bounded observation
+
+On November 15, 2026, a fresh-context subagent received the accepted task, the faulty
+source, and Actuating's construction guidance without the oracle, reference, or
+paired subjects. Its first successor passed all ten previously frozen scenarios
+and is stored in `fixtures/continuation-dispatcher.mjs`, SHA-256
+`006db2ae51b2a6b5d715a3902a22f350ee34abdf9322fcdaf7e8d67e0a37803b`.
+The pre-run oracle was `test-continuation-construction.mjs`, SHA-256
+`e2c834ba1b653fa49dfa607cc17e7b39fd2bba648497f172ed93d800e4a2c43c`.
+This observes one construction under the existing guidance. No matched instruction
+ablation, repeated model comparison, or end-to-end latency measurement was run.

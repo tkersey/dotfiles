@@ -213,6 +213,34 @@ First seam examples:
 - one stream processor state update;
 - one domain lifecycle with external observations.
 
+### State-dependent replies
+
+When the exposed interface determines the meaningful replies, retain that
+dependency instead of assuming one undifferentiated input set:
+
+```text
+expose : State -> InterfacePosition
+advance : (s : State, reply : Reply(expose(s))) -> State
+```
+
+For `p(y) = sum_i y^E_i`, this is the data of `State -> p(State)`: choose the
+position exposed by each state and a successor for each reply at that position.
+A terminal position can have no replies. Keep the fixed-input model above when
+it already expresses the contract; indexed notation alone proves no ownership.
+
+Two pending requests can expose the same phase and reply shape yet require
+different continuations. Preserve the operation identity or other deciding
+relation through the actual reply owner. Exercise reversed delivery, replacement,
+and cancellation alongside valid current delivery. A phase tag alone cannot reject
+a stale invocation; a blanket consume-once rule cannot preserve required multi-shot
+delivery. Native handles, callbacks, or owner-managed transitions may suffice.
+Parsing, freshness, authority, and aliasing still need their actual enforcement.
+
+For a claimed temporal adapter between directed containers, also check the
+[backward lift laws](mechanics/comonads-as-spaces.md#backward-lift-laws).
+Source: Niu and Spivak, *Polynomial Functors*, July 17, 2024 draft, Definition 4.18
+and Example 6.67; the software cases are engineering applications.
+
 ### Worked discriminator: current equality is not behavioral equality
 
 Suppose `NotSent` and `SentConfirmationUnknown` both display `pending`, but the

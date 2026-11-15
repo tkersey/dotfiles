@@ -26,8 +26,33 @@ Once the base/index world is known, separately decide how descriptions indexed b
 | combine over every witness `a tensor b -> c` | Day convolution | canonical colimit-preserving lift of base composition |
 | base composition is partial, relational, or multi-witnessed | promonoidal convolution | admissibility, provenance, and partiality of decompositions |
 | recursively insert operations into typed slots | substitution / plethysm | operadic recursive assembly |
-| later computation structure depends on an earlier result | endofunctor composition / monadic sequencing | value-dependent control structure |
+| later computation structure depends on an earlier result | endofunctor composition; monadic sequencing when unit and multiplication laws are supplied | value-dependent control structure without inferring a monad from composition alone |
 | descriptions are not meaningfully indexed | ordinary product/coproduct/interface | avoid decorative convolution |
+
+### Polynomial reply protocols
+
+For `p(y) = sum_i y^E_i` and `q(y) = sum_j y^F_j`, distinguish the reply
+contract before choosing a product. Positions are exposed alternatives; directions
+are replies admitted at that position. In this polynomial setting:
+
+| Construction | Positions | Replies at a position |
+| --- | --- | --- |
+| Cartesian product `p × q` | `(i,j)` | tagged reply in `E_i + F_j` |
+| Dirichlet tensor `p ⊗ q` | `(i,j)` | paired reply in `E_i × F_j` |
+| Substitution `p ◁ q` | `(i,k)` with `k : E_i -> J` | `(e,f)` with `e : E_i` and `f : F_k(e)` |
+
+With `p = y²` and `q = 2y`, tensor gives `2y²` but substitution gives `4y²`:
+the former chooses one of two fixed second positions; the latter supplies any
+Boolean-to-Boolean policy, including copy and negate. Establish which choice may
+depend on which reply, and when it must be committed. A permitted observation or
+deferral can supply the distinction; a later reply cannot justify an earlier
+irrevocable choice. Lower an adequate policy to an ordinary branch or continuation.
+
+These are interface descriptions, not scheduler or execution guarantees. For live
+state and reply ownership, use
+[behavioral coalgebras](effects-and-coalgebras.md#state-dependent-replies).
+Source: Niu and Spivak, *Polynomial Functors*, July 17, 2024 draft, §§3.10 and 6.1;
+see [sources](sources.md) for the version and claim boundary.
 
 ## Stage 3 — Context-action / contextual-morphism selector
 
