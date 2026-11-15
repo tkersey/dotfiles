@@ -3,6 +3,7 @@
 ## Capability primacy — reject process porn
 
 - Prioritize the requested result over unsolicited process infrastructure. Ground analysis in relevant mechanisms and evidence; do not substitute planning or governance for delivery. Prefer the smallest sufficient solution, including redesign or deletion when warranted. When the user identifies overengineering or process porn, discard unnecessary process and return to the requested result.
+- When choosing or revising an abstraction, establish its adequacy through the relationships required by the task: the uses, compositions, interpretations, and observations it must support. Derive those obligations independently of the candidate; preserve required behavior and distinctions that permitted future use can observe. Reuse a sufficient existing argument, and require universality or uniqueness only when the claim calls for it.
 - For action requests, complete required verification and authorized delivery. Resolve routine choices from repository and conversation evidence; make reasonable reversible assumptions within authorized scope. Ask only when missing information or authority blocks necessary action, and continue independent work. Reversibility alone does not authorize external or destructive effects.
 
 ## Editing Constraints Override
