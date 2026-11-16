@@ -116,8 +116,12 @@ full workflow. Each selected auxiliary lens is projected to its
 semantic body before `## Native output (Actuating only)`; its original and projected
 content digests are recorded. Actuating continues reading the complete source file;
 Elenctic reads only the frozen questions at the same relative reference paths.
-Missing sources, ambiguous section boundaries, or changing capture inputs fail
-explicitly; never silently drop a required concern.
+Capture requires the shared admission, selected lens sources, and Elenctic's
+entry, campaign, worker, merge-policy and prior-thread contracts and policy helper.
+A missing source needed for adjudication, ambiguous section boundary, or changing capture input
+fails before publishing a snapshot. Preparation, transport and delivery sources
+are checked when their dependent operation is selected; their absence does not
+prevent available prior-thread adjudication.
 
 Use the snapshot's `elenctic/` as the skill root for this campaign's semantic
 contracts and renderer. Applicable user/repository requirements retain their own
@@ -131,6 +135,35 @@ worker/replacement delivery, report admission, and final reconciliation:
 uv run --no-project python <installed-elenctic>/scripts/freeze_policy.py verify \
   --root <policy-root> --policy-id <bound-policy-id>
 ```
+
+Plain `verify` authenticates the recorded v1 bytes and inventory, including historical
+snapshots; it does not certify readiness for a current operation. The installed
+verifier must retain that v1 compatibility across upgrades. New manifest formats
+must not silently reinterpret old identities or impose today's dependency minimum
+on them. Use the installed verifier to authenticate a snapshot before executing
+anything from it; do not bootstrap trust by running its unverified copy.
+
+After installed verification succeeds, use the authenticated snapshot's
+`elenctic/scripts/freeze_policy.py verify` with the same root/identity and the
+applicable stage. Its dependency rules belong to the frozen policy; a later
+installed helper must not impose a different readiness minimum on that campaign.
+
+| Before | Additional arguments | Required sources beyond identity |
+|---|---|---|
+| Prior-thread adjudication and final finding reconciliation | `--stage adjudication` | The common contracts required at capture. |
+| Preparation, seed creation, worker/replacement delivery and report admission | `--stage workers --execution-mode <bound-mode>` | Common contracts, Campaign Brief, campaign-state helper, and only the selected `fork` or `subagents` reference. Skip this stage when no files are selected. |
+| Finding numbering or selected output synthesis | `--stage delivery --workflow <bound-workflow>` | Resolution/numbering reference; construction also needs its own reference. |
+| HTML generation | Delivery arguments plus `--html` | HTML contract, renderer and template. Text-only delivery omits this option. |
+
+Use the campaign's actual recorded mode and workflow; the helper supplies no
+defaults. A successful stage check reports its `ready_for` scope and establishes
+bound source availability, not semantic adequacy, native transport capability or
+synthesis-helper availability. Delivery checks do not re-adjudicate historical
+evidence. Keep installed Glaze, Metanoetic and full Actuating dependencies in
+their selected synthesis routes. Missing inputs limit only dependent work:
+continue available adjudication, review or text delivery, and report the actual
+gap without modifying the frozen bundle. Historical campaigns retain their frozen
+contracts; plain identity verification does not upgrade their readiness claims.
 
 Pass the frozen worker-contract path, bound policy ID, `merge_policy`, and
 `execution_mode` in every assignment.
@@ -173,7 +206,8 @@ inputs, not retroactive seed contents.
 ## Prepare and freeze shared context
 
 With nonempty selection and authority to launch, resolve the selected route before
-deep preparation. For `fork`, use [native-forks.md](native-forks.md): a missing
+deep preparation. First verify worker-stage readiness for the bound execution mode.
+For `fork`, use [native-forks.md](native-forks.md): a missing
 `fork_thread` wrapper alone does not establish missing native capability; inspect
 Codex's actual app-server route. Require coordinator and explicit-seed forks retaining
 the full prepared history, direct IDs/parent provenance, full assignment delivery,
@@ -245,7 +279,8 @@ Elenctic campaign <campaign-id>, assignment <assignment-id>, context <context-id
 execution_mode <fork|subagents>, seed <actual-seed-id-or-null>,
 policy <policy-id> at <policy-root>, merge_policy <pragmatic|pedantic>.
 You are the assigned file reviewer, not the coordinator. Verify this frozen policy
-against its bound ID, then read and follow
+against its bound ID using the installed verifier, then its authenticated frozen
+verifier with --stage workers --execution-mode <bound-mode>. Read and follow
 <policy-root>/elenctic/references/worker-review.md for repository <owner/name>,
 PR #<number>, target <path>, base tip <base-tip>, review merge base <merge-base>,
 and head <head>. Use only the bundled review, admission, merge-policy and semantic lens sources.

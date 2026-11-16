@@ -23,12 +23,10 @@ class BrowserTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.runtime = sync_playwright().start()
+        cls.addClassCleanup(cls.runtime.stop)
         executable = os.environ.get('ELENCTIC_CHROMIUM')
         cls.browser = cls.runtime.chromium.launch(executable_path=executable, headless=True, args=['--no-sandbox'])
-
-    @classmethod
-    def tearDownClass(cls):
-        cls.browser.close(); cls.runtime.stop()
+        cls.addClassCleanup(cls.browser.close)
 
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()

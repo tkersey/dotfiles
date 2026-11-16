@@ -23,6 +23,14 @@ adjudications and construction result, without requiring new comment drafts.
 Use the renderer from the frozen skill snapshot when available, otherwise the
 installed skill for an outcome that never obtained a policy snapshot:
 
+For a bound snapshot, run the campaign's delivery-stage verification with the
+recorded workflow and `--html` before rendering. Missing HTML sources limit this
+artifact, not source-backed findings or text delivery. Text-only delivery uses
+the same workflow's delivery check without `--html`; its numbering or synthesis
+references remain required. When no snapshot was captured, inspect the installed
+presentation sources directly without fabricating a policy identity or readiness
+receipt. Preserve an intact historical snapshot's original review interpretation.
+
 ```bash
 uv run --no-project python <skill-root>/scripts/report.py --input <private-report.json>
 ```

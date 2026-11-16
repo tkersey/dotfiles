@@ -1,5 +1,36 @@
 # Validation record and remaining qualification
 
+## 2026-11-16 policy dependencies and clean-outcome audits
+
+Policy capture now requires the common adjudication inputs. Explicit worker and
+delivery checks use the authenticated snapshot's dependency rules, preserving
+unused transport, text-only delivery and historical v1 identity verification.
+Browser test resources use class cleanup even when setup or browser closing fails.
+The existing comparison gains a clean-outcome audit; production review lanes and
+default preparation remain unchanged.
+
+| Check | Observed result | Evidence scope |
+|---|---|---|
+| Campaign, policy, report, resolution, construction, review-case, legacy-renderer and cleanup suites | 159 tests passed | Helper behavior, presentation invariants, fixture capture and simulated browser-resource lifecycle. |
+| Missing merge-policy negative control | Baseline captured and verified it; candidate rejected capture before destination creation | Required-input completeness, with old v1 identity still verifiable. |
+| Browser cleanup regression | 20 acquisition/failure subcases passed; baseline setup failed 12 | Cleanup after startup, launch, later setup and close failures; this is not real-browser qualification. |
+| Actual package capture and readiness | Adjudication, both execution routes and all three HTML workflows passed | Bound source availability, not transport capability or semantic adequacy. |
+| Fixture export/check | 14 review subjects and nine policy observations matched their probes | Seven defective/adequate pairs and policy discriminators; no model grading. |
+| Skill metadata, 68 relative references and whitespace | Passed | Package shape and reference availability. |
+
+Reproduce the targeted suites from `agents/skills/elenctic/tests`:
+
+```bash
+uv run --no-project python -B -m unittest \
+  test_campaign_state test_policy test_report test_resolution test_construction \
+  test_review_cases test_legacy_ergasterion_report test_browser_cleanup -q
+```
+
+Real-browser qualification was not rerun: the preceding audit could not launch
+Chromium because the environment denied a socket operation. The full native
+campaign, seeded three-arm comparison and new campaign-level audit remain unrun.
+No general discovery, false-blocker, latency or cost improvement is claimed.
+
 ## 2026-10-23 subagent execution mode
 
 The optional "with subagents" route retains one coordinator preparation and
@@ -87,7 +118,7 @@ browser rather than inferring it from DOM fixtures or from another URL scheme.
 
 ## Campaign regression scenarios to execute in a capable runtime
 
-Retain the 36 [campaign cases](behavioral-cases.md) and 28
+Retain the 37 [campaign cases](behavioral-cases.md) and 28
 [thread cases](prior-review-threads.md). Add the following concrete variants to
 those evaluations; give the reviewer source evidence, not expected conclusions.
 These are currently unrun scenarios, not extra production review lanes or gates.
@@ -299,6 +330,72 @@ do not grade by phrases, preferred abstractions, or verdict extraction. These
 published subjects are calibration material for anyone who has seen their keys.
 Confirm any promising result on unseen causal structures and real pinned changes
 before claiming a general benefit or changing production preparation policy.
+
+### Audit clean outcomes and consequential refutations
+
+Use the existing three-arm comparison to test credited-complete outcomes, including
+approvals with nonblocking findings, and material rejected or narrowed claims.
+Select the subject/episode sample before seeing outcomes and inspect every arm's
+result for that sample, retaining blocked, incomplete and unsuccessful controls.
+Preserve the first raw report and delivered context with `review_cases.py record`
+before evaluator adjudication. Do not add an audit pass to production campaigns.
+
+Audit the exact candidate, accepted authority, relevant discussion and observed
+source horizon against independent source evidence and evaluator-only probes.
+A clean label, an expected verdict or another reviewer disagreement is insufficient.
+Reuse the existing unchanged-adapter pair for tenant-local versus shared ownership,
+and the author-rebuttal pair for a source-true defense that may leave the deferred
+path unproved. Their adequate counterparts must remain acceptable. These published
+subjects calibrate the method; use unseen causal structures and pinned real changes
+for a claimed improvement. Do not reveal the probe, missing premise or expected
+defect in the initial assignment or preparation.
+
+When an observable report, tool result or source-bound decision already records a
+consequential refutation, preserve its claim, decisive premise, cited source and
+effect on the verdict in the existing evaluator notes, linked to the original run.
+For example, an isolation concern may be rejected on a cited tenant-local ownership
+path; audit whether that path actually excludes sharing in the candidate. Retain
+the strongest actual author response, including a response that defeats the finding.
+Collect observable conclusions and evidence, never private reasoning or exhaustive
+speculative-candidate logs. An omitted rejection record does not establish that the
+issue was never considered, and source availability does not prove it was examined.
+
+Classify a supported error at the earliest observable failed judgment; preserve
+additional downstream consequences without counting the same defect repeatedly:
+
+| Failure | Deciding evidence |
+|---|---|
+| Discovery | A supported material path or obligation was omitted from the observed investigation. |
+| Authority | The judgment invented a requirement or discarded an independently applicable obligation. |
+| Countercase | A material claim was rejected or narrowed using a defense that source evidence defeats. |
+| Merge policy | Established facts were retained but their mandatory/optional consequence was wrong under the bound policy. |
+| Reconciliation | Admissible worker evidence or complementary premises were lost or incorrectly combined. |
+| Completion | Credited completion coexisted with a demonstrated material gap or unfinished required work. |
+| Delivery | The report or handoff lost or changed the established evidence, scope, optionality or authority. |
+
+When available observations cannot distinguish discovery from mistaken rejection,
+record the supported missed outcome and leave the mechanism undetermined. Do not
+reconstruct a plausible internal history and report it as observed. Unexpected valid
+findings and counterexamples to the evaluator key require source adjudication;
+correcting measurement does not itself improve the reviewed system.
+
+A separate instrumented follow-up may ask for concise source-grounded bases for
+consequential refutations, using neutral instructions and the same allowed evidence.
+Label it as a changed evaluation condition, preserve the first run, and keep any
+later revelation of the expected defect separate. Such a follow-up can investigate
+a mechanism; it cannot establish what the original reviewer considered or replace
+an unsuccessful first result. No new production report fields or rejection log follow.
+
+For actual campaign comparisons, follow evidence through preparation, file workers,
+continuations, reconciliation and delivery. Record supported material discoveries,
+missed obligations, false blockers on adequate controls, acceptance of verified
+rebuttals, preservation of individual findings and honest completion. Measure
+observable work and elapsed cost by phase, including unsuccessful attempts and
+repeated investigation of shared premises; unavailable cost data stays unavailable.
+Determine whether additional preparation or per-file work contributes distinct
+witnesses or closes required paths. Isolated subject results cannot establish these
+full-episode properties. Simplify instructions or assignment structure only after
+matched, unseen observations support the change while preserving required behavior.
 
 ## 2026-10-17 pragmatic/pedantic adjudication revision
 
