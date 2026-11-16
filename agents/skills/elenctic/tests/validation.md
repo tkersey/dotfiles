@@ -1,5 +1,26 @@
 # Validation record and remaining qualification
 
+## 2026-11-16 optional auto approval
+
+Explicit `auto approve` enables coordinator-only approval publication after a
+completed Whole-PR APPROVE. New campaigns default to disabled. The mode retains
+ordinary review standards, scope and narrower caller/workflow authority, pins the
+reviewed commit, and verifies publication separately from the semantic verdict.
+
+| Check | Observed result | Evidence scope |
+|---|---|---|
+| Existing targeted suites listed below | 159 tests passed | Existing helper, report and resource-cleanup regression coverage; no new approval executor was added. |
+| Actual package capture and readiness | Identity and six readiness combinations passed | Adjudication, both execution routes and all three HTML workflows with the revised instructions. |
+| Skill metadata, entry/reference Markdown links and whitespace | Passed | 59 relative reference targets and the new approval-section anchor resolved. |
+| Source-contract review of the incremental change | No supported issue found | Explicit authority, coverage scope, epoch binding, recovery and existing no-comment publication limits. |
+| Fresh coordinator instruction walkthrough | Eight supplied-state groups interpreted correctly after recovery clarification | Default/explicit invocation, nonblocking findings, scoped coverage, workflow limits, resume, epoch races, uncertain effects, dismissal/supersession and account denial. |
+
+Cases 38–39 in [behavioral-cases.md](behavioral-cases.md) cover opt-in, compatible
+nonblocking findings, suppressed publication, epoch movement and recovery. Live
+GitHub approval submission was not exercised. The walkthrough establishes only
+actions selected from supplied runtime facts, not provider permissions or
+end-to-end campaign behavior.
+
 ## 2026-11-16 policy dependencies and clean-outcome audits
 
 Policy capture now requires the common adjudication inputs. Explicit worker and

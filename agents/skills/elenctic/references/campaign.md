@@ -87,8 +87,9 @@ epoch refresh, even with the same head and selected set:
 elenctic-campaign-v1:<owner/name>#<pr>@<head>:<selected-digest>:<coordinator-session>:<instance-id>
 ```
 
-Before another launch, admission, Viewed write, thread resolution, or final verdict,
-re-read the compact identity and require the same OPEN PR/base/head. On movement
+Before another launch, admission, Viewed write, thread resolution, approval
+submission, or final verdict, re-read the compact identity and require the same
+OPEN PR/base/head. On movement
 or closure: stop old-epoch launches/writes, mark unadmitted reports stale, preserve
 old findings/thread conclusions only as hypotheses for the new epoch, invalidate
 the brief/seed, and enumerate the new inventory. Continue only through an explicit
@@ -618,6 +619,48 @@ seed/workers, and reconcile separately admissible current evidence. Whole-PR app
 still requires complete current evidence for every excluded file; otherwise disclose
 all files were pre-Viewed and withhold that approval. Known blockers remain blockers.
 
+## Auto approve when requested
+
+Only the coordinator may use the caller-authorized `auto_approve` choice from
+SKILL.md. With it disabled, deliver the ordinary recommendation without submitting
+a review. With it enabled, submit only after normal finalization establishes
+Whole-PR APPROVE: `verdict: APPROVE` and `whole_pr_coverage: complete`, supported by
+the reconciled evidence, not merely copied identity fields. Nonblocking risks and
+concerns remain compatible with approval. Scoped APPROVE, BLOCKED, INCOMPLETE,
+interim/stop output, construction, and read-only/report-only requests submit nothing;
+report the reason when auto approval was requested. Do not silently expand selection
+or rerun complete work to qualify for publication.
+
+Before submission, recheck the same OPEN PR, base tip, head, host and authenticated
+viewer, and reconcile any newly observed decision-relevant discussion. An epoch
+change follows ordinary recovery; an unverifiable epoch prevents submission.
+Use the same bound `gh` account. Through GitHub's
+[create-review API](https://docs.github.com/en/rest/pulls/reviews#create-a-review-for-a-pull-request),
+POST to `repos/{owner}/{repo}/pulls/{number}/reviews` with `event: APPROVE` and
+`commit_id` explicitly set to the reviewed head. Omit the review body and inline
+comments. Do not rely on a moving default head, submit an existing pending review,
+post REQUEST_CHANGES/COMMENT, or merge. The opt-in authorizes this approval only.
+
+Retain the returned review ID/URL in the existing working set. Read the review back
+and require the expected PR, viewer, reviewed commit, `state: APPROVED` and an actual
+submission time; recheck the OPEN base/head epoch. Report a verified submission only
+after those observations agree. A head/base change during the request leaves any
+observed review attached to its original commit, not approval of the new epoch;
+stop old-epoch effects without dismissing or undoing the review.
+
+On resume or an ambiguous response, recover the exact attempted review before any
+retry. If its ID was lost, inspect the complete current review history for the bound
+viewer and commit. A matching submitted approval can establish the effect; a pending,
+dismissed, or superseded review cannot. Reuse an already verified current approval
+without duplicating it, reporting it as already present unless the attempted request
+is positively identified. Do not claim that a timed-out request created an older
+approval. A recovered approval later dismissed or superseded ends that submission
+attempt; report its current state and reconcile relevant new discussion, without
+automatic reapproval. If submission remains uncertain, report that limitation
+without another write. A definite denial, including self-review or missing permission,
+is an operational limitation, not a code blocker; do not switch accounts or weaken
+the review. Keep the semantic verdict and the observed publication outcome separate.
+
 ## Resume and recover
 
 Resume the identified campaign, not today's checkbox selection. Recheck its OPEN epoch,
@@ -689,6 +732,8 @@ policy and actual seed identities, execution and merge-policy choices, mode-spec
 context/delivery verification and mismatches, changed/selected/excluded
 counts, complete blocked/approved counts, incomplete/failed/stale/needs-input/running/
 queued counts, Viewed outcomes, aggregate causal blockers and both coverage scopes.
+When `auto approve` was requested, include its separately observed result and any
+review URL or limitation before the canonical identity and final decision.
 Do not reproduce worker reports or raw private history.
 
 Automatically generate the [interactive HTML report](html-report.md) from that same
