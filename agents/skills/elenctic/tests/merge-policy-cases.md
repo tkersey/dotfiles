@@ -100,5 +100,10 @@ revised bytes as a new subject. The published bank becomes calibration material
 after its key has been seen; confirm promising behavior on unseen causal structures
 before claiming that the mode improves real reviews.
 
+Apply the [clean-outcome audit](validation.md#audit-clean-outcomes-and-consequential-refutations)
+to the selected mode pairs, including approvals with concerns or risks. Distinguish
+a mistaken factual rebuttal from a wrong merge consequence; a policy label change
+does not establish changed source behavior or make an optional question mandatory.
+
 These assets add no production review pass, model judge, score, corpus, or new
 merge gate. Fixture probes and model evaluation are separate evidence.

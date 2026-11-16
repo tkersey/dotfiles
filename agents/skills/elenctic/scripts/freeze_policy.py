@@ -14,6 +14,34 @@ from typing import Any
 SCHEMA = "elenctic-policy/v1"
 OUTPUT_BOUNDARY = "\n## Native output (Actuating only)\n"
 ADMISSION_PATH = "review-fold/references/admission.md"
+REVIEW_MANIFEST_PATH = "actuating/references/review-contract.json"
+STAGE_PATHS = {
+    "adjudication": {
+        "elenctic/SKILL.md",
+        "elenctic/references/campaign.md",
+        "elenctic/references/worker-review.md",
+        "elenctic/references/merge-policy.md",
+        "elenctic/references/prior-review-threads.md",
+        "elenctic/scripts/freeze_policy.py",
+        ADMISSION_PATH,
+        REVIEW_MANIFEST_PATH,
+    },
+    "workers": {
+        "elenctic/references/campaign-brief.md",
+        "elenctic/scripts/campaign_state.py",
+    },
+    "delivery": {"elenctic/references/resolution.md"},
+    "html": {
+        "elenctic/references/html-report.md",
+        "elenctic/scripts/report.py",
+        "elenctic/assets/report.html",
+    },
+}
+EXECUTION_PATHS = {
+    "fork": "elenctic/references/native-forks.md",
+    "subagents": "elenctic/references/subagents.md",
+}
+WORKFLOWS = {"comments", "resolution", "construction"}
 
 
 def sha(data: bytes) -> str:
@@ -40,16 +68,38 @@ def runtime_paths(root: Path) -> list[str]:
     return sorted(set(paths))
 
 
+def require_paths(paths: set[str], stage: str, *, execution_mode: str | None = None,
+                  workflow: str | None = None, html: bool = False) -> None:
+    if stage not in {"adjudication", "workers", "delivery"}:
+        raise ValueError(f"unknown policy stage: {stage!r}")
+    if execution_mode is not None and stage != "workers":
+        raise ValueError("execution_mode applies only to worker readiness")
+    if (workflow is not None or html) and stage != "delivery":
+        raise ValueError("workflow and html apply only to delivery readiness")
+    required = set(STAGE_PATHS[stage])
+    if stage == "workers":
+        if execution_mode not in EXECUTION_PATHS:
+            raise ValueError("worker readiness requires the bound execution_mode")
+        required |= STAGE_PATHS["adjudication"] | {EXECUTION_PATHS[execution_mode]}
+    if stage == "delivery":
+        if workflow not in WORKFLOWS:
+            raise ValueError("delivery readiness requires the bound workflow")
+        if workflow == "construction":
+            required.add("elenctic/references/construction.md")
+        if html:
+            required |= STAGE_PATHS["html"]
+    missing = required - paths
+    if missing:
+        raise ValueError(f"policy not ready for {stage}; missing: {', '.join(sorted(missing))}")
+
+
 def capture(root: Path) -> tuple[dict[str, bytes], dict[str, Any]]:
     """Read and recheck one source set before publishing; no subject-repo discovery."""
-    manifest_path = "actuating/references/review-contract.json"
     inputs = {p: (root / p).read_bytes() for p in runtime_paths(root)}
-    required = {"elenctic/SKILL.md", "elenctic/references/worker-review.md", "elenctic/references/campaign.md"}
-    if not required.issubset(inputs):
-        raise ValueError("installed Elenctic contracts are incomplete")
     inputs[ADMISSION_PATH] = (root / ADMISSION_PATH).read_bytes()
-    inputs[manifest_path] = (root / manifest_path).read_bytes()
-    contract = json.loads(inputs[manifest_path])
+    inputs[REVIEW_MANIFEST_PATH] = (root / REVIEW_MANIFEST_PATH).read_bytes()
+    require_paths(set(inputs), "adjudication")
+    contract = json.loads(inputs[REVIEW_MANIFEST_PATH])
     lenses = [item for item in contract["required_lenses"] if item["role"] == "auxiliary"]
     if not lenses:
         raise ValueError("no auxiliary review questions in the installed contract")
@@ -113,7 +163,9 @@ def freeze(root: Path, destination: Path | None = None) -> tuple[Path, str]:
     return destination, manifest["policy_id"]
 
 
-def verify(root: Path, expected: str) -> dict[str, Any]:
+def verify(root: Path, expected: str, *, stage: str | None = None,
+           execution_mode: str | None = None, workflow: str | None = None,
+           html: bool = False) -> dict[str, Any]:
     """Validate against the externally bound identity, not merely a self-reported hash."""
     manifest_path = root / "policy.json"
     if manifest_path.is_symlink():
@@ -142,6 +194,10 @@ def verify(root: Path, expected: str) -> dict[str, Any]:
         raise ValueError("snapshot inventory differs from the bound policy")
     if any(lens["path"] not in paths for lens in manifest["lenses"]):
         raise ValueError("a required lens is absent from the snapshot")
+    if stage is not None:
+        require_paths(paths, stage, execution_mode=execution_mode, workflow=workflow, html=html)
+    elif execution_mode is not None or workflow is not None or html:
+        raise ValueError("readiness options require an explicit stage")
     return manifest
 
 
@@ -154,16 +210,30 @@ def main() -> None:
     check = commands.add_parser("verify")
     check.add_argument("--root", required=True, type=Path)
     check.add_argument("--policy-id", required=True)
+    check.add_argument("--stage", choices=("adjudication", "workers", "delivery"))
+    check.add_argument("--execution-mode", choices=tuple(EXECUTION_PATHS))
+    check.add_argument("--workflow", choices=sorted(WORKFLOWS))
+    check.add_argument("--html", action="store_true")
     args = parser.parse_args()
     try:
         if args.command == "create":
             root, policy_id = freeze(args.skills_root, args.output)
         else:
             root, policy_id = args.root.absolute(), args.policy_id
-            verify(root, policy_id)
+            verify(root, policy_id, stage=args.stage, execution_mode=args.execution_mode,
+                   workflow=args.workflow, html=args.html)
     except (OSError, ValueError, KeyError, TypeError) as error:
         parser.exit(2, f"elenctic policy: {error}\n")
-    print(json.dumps({"policy_root": str(root), "policy_id": policy_id, "verified": True}))
+    result = {"policy_root": str(root), "policy_id": policy_id, "verified": True}
+    if args.command == "create":
+        result["ready_for"] = {"stage": "adjudication"}
+    elif args.stage is not None:
+        result["ready_for"] = {"stage": args.stage}
+        if args.stage == "workers":
+            result["ready_for"]["execution_mode"] = args.execution_mode
+        if args.stage == "delivery":
+            result["ready_for"].update(workflow=args.workflow, html=args.html)
+    print(json.dumps(result))
 
 
 if __name__ == "__main__":

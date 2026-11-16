@@ -39,6 +39,8 @@ existing-thread links never erase a supported blocker or change worker coverage.
    from the checkout or inherited invocation. If a binding is missing or
    inconsistent, report the gap to the coordinator without launching work or
    inventing an identity.
+   Verify the frozen policy with the campaign's worker-stage check and assigned
+   execution mode; identity-only verification supplies no readiness claim.
 2. Read applicable repository instructions and existing requirements,
    compatibility obligations, and non-goals. Infer the changed behavior from
    evidence, not an invented specification. No Actuating Goal, proof packet,

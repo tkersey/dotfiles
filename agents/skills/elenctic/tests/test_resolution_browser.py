@@ -18,12 +18,10 @@ class BrowserCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.runtime = sync_playwright().start()
+        cls.addClassCleanup(cls.runtime.stop)
         cls.browser = cls.runtime.chromium.launch(executable_path=os.environ.get('ELENCTIC_CHROMIUM'),
                                                   headless=True, args=['--no-sandbox'])
-
-    @classmethod
-    def tearDownClass(cls):
-        cls.browser.close(); cls.runtime.stop()
+        cls.addClassCleanup(cls.browser.close)
 
 
 @unittest.skipUnless(sync_playwright, 'Playwright unavailable; browser checks unrun')
