@@ -63,7 +63,7 @@ notification_condition = "always"
 status_line_use_colors = true
 
 [tui.presets.1]
-input = "/model gpt-6-astra --reasoning=high --speed=standard"
+input = "/model gpt-6.2-astra --reasoning=high --speed=standard"
 label = "astra"
 
 [tui.presets.2]
@@ -71,7 +71,7 @@ input = "/model gpt-6-luna --reasoning=medium --speed=standard"
 label = "luna"
 
 [tui.presets.3]
-input = "/model gpt-6.1-sol --reasoning=high --speed=standard"
+input = "/model gpt-6.2-sol --reasoning=high --speed=standard"
 label = "sol"
 
 [tui.presets.4]
