@@ -161,7 +161,7 @@ vocabulary, counterexample discipline, and the native extension law.
 ## Storage-context ownership
 
 This skill alone owns physical storage-location and migration policy. Select
-`LEDGER_HOME` when nonempty; otherwise use `${CODEX_HOME:-$HOME/.codex}/ledger`.
+`LEDGER_HOME` when nonempty; otherwise use `$HOME/.agents/ledger`.
 Require an absolute selected location with no symlink components and pass it as
 `--catalog-root`. Do not create directories or follow a configured symlink merely
 to resolve a read-only context.
@@ -170,7 +170,7 @@ when no workspace is selected. Native Ledger has no Codex-specific default and
 does not read these variables to choose custody.
 
 ```bash
-ledger_home="${LEDGER_HOME:-${CODEX_HOME:-$HOME/.codex}/ledger}"
+ledger_home="${LEDGER_HOME:-$HOME/.agents/ledger}"
 ledger context --catalog-root "$ledger_home" --workspace "<absolute-workspace>"
 ```
 

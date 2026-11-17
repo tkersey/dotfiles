@@ -33,7 +33,8 @@ class AdapterContextTests(unittest.TestCase):
         self.repo = self.root / "workspace"
         self.repo.mkdir()
         subprocess.run(["git", "-C", str(self.repo), "init", "-q"], check=True)
-        env = patch.dict(os.environ, {"CODEX_HOME": str(self.root / "codex"), "LEDGER_HOME": ""})
+        env = patch.dict(os.environ, {"HOME": str(self.root / "user home"),
+                                     "CODEX_HOME": str(self.root / "codex"), "LEDGER_HOME": ""})
         env.start()
         self.addCleanup(env.stop)
         self.selected = context.resolve(self.repo, initialize=True, confirm_no_writers=True)

@@ -54,8 +54,10 @@ revision, and transaction resources. A JSONL export is not a custody backup.
 
 ## Adopt already-managed histories before initializing anything
 
-Use the same configured Ledger home as before: absolute `LEDGER_HOME`, otherwise
-`${CODEX_HOME:-$HOME/.codex}/ledger`. Changing that home selects another catalog.
+Select the Ledger home using the [skill's location policy](../SKILL.md#storage-context-ownership):
+nonempty absolute `LEDGER_HOME`, otherwise `$HOME/.agents/ledger`. Changing that
+home selects another catalog; it does not move existing histories. To keep using
+a catalog at the former default, set `LEDGER_HOME` to its exact existing absolute path.
 `--list-stores` reports cataloged identities and retained pending registrations
 separately. An empty result is not evidence that pre-upgrade histories are absent.
 Keep a pending ID/root and the original preparation error. A materialized pending
