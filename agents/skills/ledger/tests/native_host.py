@@ -31,7 +31,7 @@ UnregisteredContext = MigrationError
 
 
 def storage_home():
-    return Path(os.environ['LEDGER_HOME']) if os.environ.get('LEDGER_HOME') else Path(os.environ['CODEX_HOME']) / 'ledger'
+    return Path(os.environ['LEDGER_HOME']) if os.environ.get('LEDGER_HOME') else Path(os.environ['HOME']) / '.agents' / 'ledger'
 
 
 def command(repo=None, *, store_id=None, binary=None):

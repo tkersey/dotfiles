@@ -22,8 +22,10 @@ class LedgerContextTests(unittest.TestCase):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name).resolve()
-        self.home = self.root / "codex home"
-        self.env = patch.dict(os.environ, {"CODEX_HOME": str(self.home), "LEDGER_HOME": ""})
+        self.user_home = self.root / "user home"
+        self.home = self.user_home / ".agents"
+        self.env = patch.dict(os.environ, {"HOME": str(self.user_home),
+                                          "CODEX_HOME": str(self.root / "codex home"), "LEDGER_HOME": ""})
         self.env.start()
         self.addCleanup(self.env.stop)
         self.repo = self.root / "main repo"
@@ -174,8 +176,10 @@ class LedgerContextTests(unittest.TestCase):
         second = context.resolve(clone, initialize=True, confirm_no_writers=True)
         self.assertNotEqual(first["store_id"], second["store_id"])
 
-    def test_environment_change_never_implicitly_initializes_an_unknown_catalog(self):
+    def test_only_ledger_override_changes_catalog_namespace(self):
         first = context.resolve(self.repo, initialize=True, confirm_no_writers=True)
+        with patch.dict(os.environ, {"CODEX_HOME": str(self.root / "different")}):
+            self.assertEqual(context.resolve(self.other)["store_id"], first["store_id"])
         with patch.dict(os.environ, {"CODEX_HOME": str(self.root / "different"), "LEDGER_HOME": str(self.root / "override")}):
             with self.assertRaises(context.UnregisteredContext):
                 context.resolve(self.other)
@@ -219,7 +223,7 @@ class LedgerContextTests(unittest.TestCase):
         target.mkdir()
         link = self.root / "linked home"
         link.symlink_to(target, target_is_directory=True)
-        for settings in ({"LEDGER_HOME": str(link)}, {"CODEX_HOME": str(link), "LEDGER_HOME": ""}):
+        for settings in ({"LEDGER_HOME": str(link)}, {"HOME": str(link), "LEDGER_HOME": ""}):
             with self.subTest(settings=settings), patch.dict(os.environ, settings):
                 with self.assertRaisesRegex(context.ContextError, "Sym[Ll]ink|NotDir"):
                     context.resolve(self.repo, initialize=True, confirm_no_writers=True)
