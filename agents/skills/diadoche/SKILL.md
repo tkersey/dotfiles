@@ -29,9 +29,11 @@ seq version
 seq capabilities --format json
 ```
 
-Require Seq 1.x, `seq-observation-abi/v1`, and `seq-observation-result/v2`
-for local evidence. Require the selected source adapter; Claude transcripts need
-`claude-session-jsonl/v1`. Read supported native sources regardless of which
+Require Seq 1.6.0 or newer within major version 1, `seq-observation-abi/v1`,
+and `seq-observation-result/v2` for local evidence; earlier executables reject
+the `context-evidence` definition's `native_id` and `native_parent_id` fields.
+Require the selected source adapter; Claude transcripts need
+`claude-code-transcript-jsonl/v1`. Read supported native sources regardless of which
 agent is running this skill.
 
 For gist publication or retrieval, resolve the Ledger skill through the current
@@ -39,7 +41,7 @@ harness's catalog or the explicitly selected repository. Set `ledger_skill_root`
 to that package and complete its bootstrap once:
 
 ```bash
-"$ledger_skill_root/scripts/ensure-ledger" --min-version 1.8.0
+"$ledger_skill_root/scripts/ensure-ledger" --min-version 1.9.0
 ledger capabilities --format json
 ```
 

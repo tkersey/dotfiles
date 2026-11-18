@@ -128,17 +128,17 @@ scope. It is never a fallback for managed histories.
 
 ## Artifact exchange
 
-Gist operations require Ledger 1.8.0 or newer within major version 1. Bootstrap
+Gist operations require Ledger 1.9.0 or newer within major version 1. Bootstrap
 with that minimum once before the first native command for this path:
 
 ```bash
-"$ledger_skill_root/scripts/ensure-ledger" --min-version 1.8.0
+"$ledger_skill_root/scripts/ensure-ledger" --min-version 1.9.0
 ledger capabilities --format json
 ```
 
 Require `github-gist/v1` in `transports` and `ledger-gist/v1` in `result_schemas`.
 Reuse readiness for the unchanged executable and environment. A prior baseline
-check below 1.8.0 does not satisfy this operation. No passive definition, catalog,
+check below 1.9.0 does not satisfy this operation. No passive definition, catalog,
 local store, workspace, owner preparation, migration, or local capture is needed.
 Retaining the files in local custody is a separately selected operation.
 

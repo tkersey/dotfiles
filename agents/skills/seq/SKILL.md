@@ -50,14 +50,16 @@ Codex session, and bind that ID to a definition's exclusion parameter.
 
 ### Claude Code
 
-Require `claude-session-jsonl/v1` in `source_adapters`. Select a transcript with
-`--path <session.jsonl>` or a known session directory with `--root`; do not feed
+Require `claude-code-transcript-jsonl/v1` in `source_adapters`. Select a
+transcript with `--path <session.jsonl>` or a known session directory with
+`--root`; do not feed
 Claude transcripts to an executable that lacks the adapter. Resolve the actual
 configured source location; an encoded project directory name is not reliable
 repository identity. Explicit selection does not change the default Codex corpus.
 
 Preserve `native_id` and `native_parent_id` from source events for Claude's
-`uuid` and `parentUuid`. Read persisted branches in physical source order;
+`uuid` and physical `parentUuid`; these fields require Seq 1.6.0 or newer, and
+other adapters leave them null. Read persisted branches in physical source order;
 branch ancestry is not a worker edge and does not reconstruct the active model
 context. Compaction and summaries remain evidence of context changes, not a
 replacement for omitted history. Report unsupported record kinds and parser
@@ -128,7 +130,7 @@ an older result envelope as if it carried the current scope and health fields.
 
 Before reading Pi evidence, require `pi-session-jsonl/v1` in `source_adapters`.
 If it is absent, upgrade Seq; do not interpret Pi files with a Codex-only reader.
-Before reading Claude evidence, require `claude-session-jsonl/v1`.
+Before reading Claude evidence, require `claude-code-transcript-jsonl/v1`.
 For compressed history, require `jsonl.zst` in `source_encodings`; a clean result
 from an older executable does not prove it discovered compressed files.
 
