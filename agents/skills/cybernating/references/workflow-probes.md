@@ -157,3 +157,50 @@ truth. Simulated runners can test decisions and resource accounting; they do not
 qualify native prompt performance. Freeze controller versions for each compared
 episode, including when cybernating itself is the target. Retain raw records and
 report bounded observations separately from comparative efficacy or generalization.
+
+### Bounded codec investigation
+
+Status: **one fresh-context analysis completed on November 19, 2026**. This is a
+bounded investigator observation, not a comparison of controller versions. The
+[existing codec evaluator](../../actuating/tests/construction-comparison.md#repair-preservation-across-successors)
+supplies executable controls without a new runner or prose grader.
+
+The investigator received three synthetic records, each containing the accepted
+six-input Goal, two actual codec snapshots, the unchanged one-case smoke test,
+the offline null-loss allegation, and a terminal complete claim. Candidate order
+and a fixed controller/Goal were supplied facts. Resource cost was unknown.
+No diagnosis, expected disposition, evaluator, or other investigator output was
+provided. The selected controller was Cybernating at dotfiles
+`6329a2a842a9c3335a7ba6a43b3eaf9ac0edf423`, including its source-investigation and
+evaluation references; workflow-probe material was excluded from the assignment.
+
+| Record and exact source | Observed investigation disposition |
+|---|---|
+| North: `programs.repaired`, then the zero-losing successor in the linked trajectory test | Rejected the null-loss allegation against the first source; found zero becoming three in the final source and contradicted its completion claim |
+| South: `programs.placebo`, then `programs.repaired` | Confirmed the initial absence/null collision, retained the final repair, and preserved the other required inputs |
+| West: `programs.repaired`, then the existing `inherit`/`off` alternative-wire control | Accepted both implementations under the unchanged Goal; declined to infer improvement from a valid representation change |
+
+The investigator executed all six unchanged smoke tests: all passed. It derived
+and executed an independent contract check for every required input with inherited
+timeouts changing in both directions. It reported 6/6 to 5/6 input cases for
+North, 5/6 to 6/6 for South, and 6/6 to 6/6 for West. The parent independently
+confirmed the same outcomes with the existing twelve-observation artifact oracle.
+Snapshots and task inputs stayed unchanged. The investigator also distinguished
+the two different failures behind equal aggregate counts, identified duplicated
+candidate bytes, and treated unknown cost as unknown rather than zero.
+
+The bounded analysis completed; North's source repair remained outside its
+read-only authority. The investigator supported stronger task coverage without
+rewriting the correct smoke assertion, and selected no controller-text change
+because the available evidence did not localize an instruction defect. Regrading
+supplied evidence changed the supported judgments, not the frozen implementations
+or the historical verification actually performed.
+
+The agent inherited the session configuration, using Node v24.22.3; the exact
+runtime model version, effective effort, and token accounting were not exposed. One agent examined
+all three records, so neither records, duplicate snapshots, nor repeated timeout
+observations are independent model trials. No resource advantage, causal skill
+benefit, or population reliability was measured. Shared filesystem visibility was
+not technically restricted. These disclosed development cases support the recorded
+bounded dispositions; they do not establish comparative efficacy or justify another
+general instruction paragraph.

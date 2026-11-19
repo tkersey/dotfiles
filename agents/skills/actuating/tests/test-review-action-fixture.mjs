@@ -7,6 +7,7 @@ import {fileURLToPath} from 'node:url';
 import {spawnSync} from 'node:child_process';
 import test from 'node:test';
 import {programs, goals, reports, trialFiles, prepare, assess} from './review-action-fixture.mjs';
+import {encode as encodeEpisode} from './fixtures/episode-codec.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const fixture = resolve(here, 'review-action-fixture.mjs');
@@ -69,6 +70,68 @@ test('the first successor is observed against the original task, not the selecte
     assert.equal(result.artifact_pass, true);
     assert.equal(result.behavioral_judgment, 'not_automated');
   });
+});
+
+test('first-successor quality and final preservation can rank trajectories differently', () => {
+  const losesZero = `export function encode(value) {
+  return JSON.stringify(Object.hasOwn(value, 'timeout') ? {timeout: value.timeout === null ? null : value.timeout || 3} : {});
+}
+export function decode(bytes) {
+  return JSON.parse(bytes);
+}
+`;
+  const trajectories = [
+    [programs.repaired, losesZero],
+    [programs.placebo, programs.repaired]
+  ];
+  const outcomes = trajectories.map(candidates => withTrial('original', 'distinct', 'plain', directory => {
+    const baseline = assess(directory, 'original', 'distinct', 'plain');
+    const successors = candidates.map(source => {
+      writeFileSync(resolve(directory, 'codec.mjs'), source);
+      const result = assess(directory, 'original', 'distinct', 'plain');
+      assert.equal(result.goal_sha256, baseline.goal_sha256);
+      assert.equal(result.candidate_sha256, createHash('sha256').update(source).digest('hex'));
+      assert.equal(result.execution, 'complete');
+      assert.equal(result.candidate_stable, true);
+      assert.deepEqual(result.protected_changes, []);
+      assert.equal(result.behavioral_judgment, 'not_automated');
+      return result;
+    });
+    assert.notEqual(successors[0].candidate_sha256, successors[1].candidate_sha256);
+    return {baseline, successors};
+  }));
+  assert.deepEqual(outcomes.map(({successors}) => successors.map(result => result.artifact_pass)),
+    [[true, false], [false, true]]);
+  const {baseline, successors: [first, final]} = outcomes[0];
+  const failures = result => result.observations.filter(item => !item.pass);
+  assert.equal(failures(baseline).length, 2);
+  assert.equal(failures(final).length, 2);
+  assert(failures(baseline).every(item => item.input.timeout === null));
+  assert(failures(final).every(item => item.input.timeout === 0 && item.actual === 3));
+  assert(final.observations.filter(item => item.input.timeout === null).every(item => item.pass));
+  assert.equal(first.artifact_pass, true);
+});
+
+test('the observed continuation adds compact encoding while retaining every original obligation', () => {
+  const source = readFileSync(resolve(here, 'fixtures/episode-codec.mjs'), 'utf8');
+  assert.equal(createHash('sha256').update(source).digest('hex'),
+    'e909932c2fa27551a27a8bba191be51b5c693cdad4bcc17785c506547daa3440');
+  withTrial('original', 'distinct', 'plain', directory => {
+    writeFileSync(resolve(directory, 'codec.mjs'), programs.repaired);
+    const first = assess(directory, 'original', 'distinct', 'plain');
+    writeFileSync(resolve(directory, 'codec.mjs'), source);
+    const final = assess(directory, 'original', 'distinct', 'plain');
+    assert.equal(first.artifact_pass, true);
+    assert.equal(final.artifact_pass, true);
+    assert.equal(final.goal_sha256, first.goal_sha256);
+    assert.notEqual(final.candidate_sha256, first.candidate_sha256);
+    assert.deepEqual(final.observations, first.observations);
+  });
+  for (const value of [{}, {timeout: null}, ...[0, 1, 2, 3].map(timeout => ({timeout}))]) {
+    const bytes = encodeEpisode(value);
+    assert.equal(typeof bytes, 'string');
+    assert.equal(bytes.length, 1);
+  }
 });
 
 test('removing required-valid null inputs does not count as repair', () => {
