@@ -22,22 +22,31 @@ const withTrial = (program, goal, report, run) => {
   }
 };
 
+const failedInputs = {
+  original: {distinct: [null], coalesced: []},
+  repaired: {distinct: [], coalesced: []},
+  nullAndOneLoss: {distinct: [null, 1], coalesced: [1]},
+  zeroLoss: {distinct: [0], coalesced: [0]},
+  placebo: {distinct: [null], coalesced: []},
+  unrelated: {distinct: [null], coalesced: []},
+  restrictive: {distinct: [null], coalesced: [null]}
+};
+
 for (const goal of Object.keys(goals)) {
   for (const program of Object.keys(programs)) {
     test(`${program}/${goal}: independent continuation observations`, () => {
       withTrial(program, goal, 'plain', directory => {
         const result = assess(directory, program, goal, 'plain');
-        const expected = program !== 'restrictive' && (program === 'repaired' || goal === 'coalesced');
+        const failures = failedInputs[program][goal];
         assert.equal(result.execution, 'complete');
-        assert.equal(result.artifact_pass, expected);
+        assert.equal(result.artifact_pass, failures.length === 0);
         assert.equal(result.candidate_changed, false);
         assert.equal(result.candidate_stable, true);
         assert.deepEqual(result.protected_changes, []);
         assert.equal(result.observations.length, 12);
         assert.equal(result.behavioral_judgment, 'not_automated');
-        for (const observation of result.observations) {
-          if (observation.input.timeout === 0) assert.equal(observation.actual, 0);
-        }
+        assert.deepEqual(result.observations.filter(item => !item.pass).map(({input, inherited}) => ({input, inherited})),
+          failures.flatMap(timeout => [7, 11].map(inherited => ({input: {timeout}, inherited}))));
       });
     });
   }
@@ -73,15 +82,8 @@ test('the first successor is observed against the original task, not the selecte
 });
 
 test('first-successor quality and final preservation can rank trajectories differently', () => {
-  const losesZero = `export function encode(value) {
-  return JSON.stringify(Object.hasOwn(value, 'timeout') ? {timeout: value.timeout === null ? null : value.timeout || 3} : {});
-}
-export function decode(bytes) {
-  return JSON.parse(bytes);
-}
-`;
   const trajectories = [
-    [programs.repaired, losesZero],
+    [programs.repaired, programs.zeroLoss],
     [programs.placebo, programs.repaired]
   ];
   const outcomes = trajectories.map(candidates => withTrial('original', 'distinct', 'plain', directory => {
@@ -110,6 +112,31 @@ export function decode(bytes) {
   assert(failures(final).every(item => item.input.timeout === 0 && item.actual === 3));
   assert(final.observations.filter(item => item.input.timeout === null).every(item => item.pass));
   assert.equal(first.artifact_pass, true);
+});
+
+test('aggregate gains distinguish a qualified checkpoint from loss of a required success', () => {
+  withTrial('nullAndOneLoss', 'distinct', 'none', directory => {
+    const baseline = assess(directory, 'nullAndOneLoss', 'distinct', 'none');
+    const checkpoints = [programs.repaired, programs.zeroLoss].map(source => {
+      writeFileSync(resolve(directory, 'codec.mjs'), source);
+      const result = assess(directory, 'nullAndOneLoss', 'distinct', 'none');
+      assert.equal(result.goal_sha256, baseline.goal_sha256);
+      assert.equal(result.candidate_sha256, createHash('sha256').update(source).digest('hex'));
+      assert.equal(result.execution, 'complete');
+      assert.equal(result.candidate_stable, true);
+      assert.deepEqual(result.protected_changes, []);
+      assert.equal(result.behavioral_judgment, 'not_automated');
+      return result;
+    });
+    const passed = result => result.observations.filter(item => item.pass).length;
+    assert.equal(passed(baseline), 8);
+    assert.deepEqual(checkpoints.map(passed), [12, 10]);
+    assert.deepEqual(checkpoints.map(result => result.artifact_pass), [true, false]);
+    assert(baseline.observations.filter(item => item.input.timeout === 0).every(item => item.pass));
+    assert(checkpoints[1].observations.filter(item => [null, 1].includes(item.input.timeout)).every(item => item.pass));
+    assert(checkpoints[1].observations.filter(item => !item.pass)
+      .every(item => item.input.timeout === 0 && item.actual === 3));
+  });
 });
 
 test('the observed continuation adds compact encoding while retaining every original obligation', () => {

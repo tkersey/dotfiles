@@ -22,6 +22,15 @@ export function decode(bytes) {
   return JSON.parse(bytes);
 }
 `,
+  nullAndOneLoss: original.replace('return value.timeout === null ? {} : {timeout: value.timeout};',
+    'return value.timeout === null ? {} : {timeout: value.timeout === 1 ? 3 : value.timeout};'),
+  zeroLoss: `export function encode(value) {
+  return JSON.stringify(Object.hasOwn(value, 'timeout') ? {timeout: value.timeout === null ? null : value.timeout || 3} : {});
+}
+export function decode(bytes) {
+  return JSON.parse(bytes);
+}
+`,
   placebo: original.replace('const value = JSON.parse(bytes);', 'const canonical = JSON.parse(bytes);')
     .replace('return value.timeout === null ? {} : {timeout: value.timeout};',
       'return canonical.timeout === null ? {} : {timeout: canonical.timeout};'),

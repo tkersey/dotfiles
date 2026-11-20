@@ -28,7 +28,7 @@ const names = ['standard','soundness-skeptic','footgun-finder','invariant-ace','
 assert.equal(c.schema, 'actuating-review-contract/v23');
 assert.equal(c.contract_id, 'actuating-review-contract-v32');
 assert.equal(d.contract_version, 'SKDC-v1');
-assert.equal(d.skill.source_fingerprint, 'actuating-construction-core-v37');
+assert.equal(d.skill.source_fingerprint, 'actuating-construction-core-v38');
 assert(c.candidate_acceptance.common_obligations.includes(
   'required discriminator execution completed successfully against the exact candidate'));
 assert(!c.candidate_acceptance.common_obligations.some(s => s.includes('explicit limitation')));
@@ -388,6 +388,7 @@ node "$skill_root/tests/test-instruction-routing.mjs"
 node "$skill_root/tests/test-construction-core.mjs"
 node --test "$skill_root/tests/test-dependency-construction.mjs"
 node --test "$skill_root/tests/test-continuation-construction.mjs"
+node --test "$skill_root/tests/test-review-action-fixture.mjs"
 node "$skill_root/tests/test-review-credit.mjs"
 sh "$skill_root/tests/test-construction-cycle-scenarios.sh"
 sh "$skill_root/tests/test-post-elimination-scenarios.sh"

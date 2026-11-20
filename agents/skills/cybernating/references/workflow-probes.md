@@ -131,6 +131,7 @@ below are case designs, not executed results or a required suite:
 | A counterpart command and handler agree on B and complete the task; another permitted representation realizes the same effect; an unrelated diagnostic changes | Preserve valid success and alternative representations, and reuse unaffected evidence. Do not freeze all commands to A, require canonical spelling without a consumer obligation, or reopen every comparison after an irrelevant change |
 | A faster candidate has successful routine cases and an available recovery or refusal case | Exercise the implicated obligation; distinguish useful simplification from deleting required behavior |
 | A viable candidate, remaining resources, required confirmation cost, and another informative contrast are available | Allocate resources to a justified completion path; distinguish a satisfied bounded target from unfinished or open-ended work |
+| Paired checkpoints both improve an aggregate; one satisfies the bounded Goal and the other loses a required success. Instruction attribution remains unavailable in both | Qualify the conforming checkpoint without inventing an attribution gate; retain the concrete violation in the other. Complete the requested investigation separately from the target's qualification |
 | Confirmation and candidate-selection history survive under separate source identities | Interpret promotion under the full accepted policy; preserve the difference between empirical corpus qualification and population claims |
 | A summary preserves its immediate conclusion but a later completion decision depends on omitted evidence | Recover the missing premise or limit the later claim, while continuing independent authorized work |
 | Related findings arrive separately; a shared-path case is discoverable, a report is duplicated, another cause is independent, and one member lacks deciding evidence | Observe whether the target reconstructs and uses the applicable problem, predicts supported sibling coverage, preserves the independent repair and unresolved member, and completes when warranted |
@@ -204,3 +205,41 @@ benefit, or population reliability was measured. Shared filesystem visibility wa
 not technically restricted. These disclosed development cases support the recorded
 bounded dispositions; they do not establish comparative efficacy or justify another
 general instruction paragraph.
+
+### Bounded qualification with unresolved attribution
+
+Use the [paired native codec controls](../../actuating/tests/construction-comparison.md#bounded-completion-with-unresolved-attribution)
+to test both justified completion and refusal of false completion. Keep the
+optional instruction-attribution question identical. Supply the accepted Goal,
+actual checkpoint and baseline source, executed aggregate counts, and unchanged
+smoke test; withhold the oracle, variant labels, expected dispositions, and other
+agents' outputs. Do not score by wording or treat a fixture pass as model efficacy.
+
+An implementation agent may repair an invalid checkpoint and then complete. A
+read-only investigator may finish its analysis with a supported rejection. In both
+cases, unknown instruction causality limits that attribution rather than silently
+changing the task's acceptance criteria. An explicitly requested causal explanation
+would remain its own unfinished objective; it is optional in this probe.
+
+On November 19, 2026 (Pacific), one fresh-context investigator used Cybernating
+and its selected investigation/evaluation guidance at dotfiles
+`f1efed5086feb98824a4c65aa7d8afa02930417f` on both frozen records. Its assignment
+was read-only; the implementation task inside each record was evidence, not
+permission to edit. Both supplied smoke checks passed. The investigator also
+executed every required input and observed each decoded value under both inherited
+timeouts, reproducing the source hashes and counts.
+
+| Record | Observed disposition |
+|---|---|
+| Maple: baseline 8/12, checkpoint 10/12 | Retained the aggregate gain and identified the new zero-to-three regression; rejected target qualification while completing its investigation |
+| Ash: baseline 8/12, checkpoint 12/12 | Qualified the bounded artifact with no change needed; completed its investigation despite unavailable optional instruction attribution |
+
+The parent independently confirmed both outcomes and unchanged source/task inputs.
+No controller edit was supported. The investigator distinguished executable codec
+mechanisms from missing historical instruction evidence and made no attribution
+or latency claim. This is one investigator examining two authored development
+records, not two independent model trials or a controller comparison. It inherited
+the session configuration and used Node v24.22.3; exact effective model settings,
+tokens, and total cost were unavailable. Shared filesystem isolation was not
+technically enforced. These observations earn no production review credit and
+leave broader reliability and comparative efficacy unmeasured.
