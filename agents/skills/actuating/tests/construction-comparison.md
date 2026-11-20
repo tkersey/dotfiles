@@ -333,6 +333,66 @@ helper imports, extra side effects, and altered inputs require inspection rather
 blind trust in an artifact-pass flag. Never assess inside an open production review
 epoch or confer production review credit on these development runs.
 
+### Repair preservation across successors
+
+Status: **executed evaluator controls and one bounded construction continuation**.
+The controls in `test-review-action-fixture.mjs` assess each frozen successor with
+the same original preparation arguments. They preserve the accepted Goal identity,
+bind the actual candidate bytes, and leave behavioral judgment to the evaluator.
+
+| Authored trajectory | First successor | Final successor | Deciding obligation |
+|---|---|---|---|
+| Repair, then regress | 12/12 observations pass | 10/12 pass | Null remains repaired, but a truthiness fallback maps required zero to three |
+| Ineffective edit, then repair | 10/12 pass | 12/12 pass | The initial absence/null collision is removed without losing valid inputs |
+
+First-successor and final-artifact rankings reverse. The original codec and the
+first trajectory's final codec both pass 10/12, but fail different obligations;
+the aggregate count cannot establish preservation. These are authored artifact
+trajectories, not observed controller runs or evidence of policy superiority.
+Keep the existing valid alternative-representation and restrictive controls.
+
+On November 19, 2026, one fresh-context implementation agent received the prepared
+`original/distinct/plain` subject and construction guidance from dotfiles
+`6329a2a842a9c3335a7ba6a43b3eaf9ac0edf423`. Its assignment was local construction
+and checks, without a production review campaign. It received no evaluator,
+reference implementation, trajectory, or expected outcome. Its first completed
+candidate was frozen before assessment and before the next request; it exactly
+matches `programs.repaired`, SHA-256
+`821f1c4085409c6f483d3fc9a961f84197828d2858908e4f9790f4cb01b05895`.
+
+The same agent then received a new local request: preserve every original Goal
+obligation and additionally encode every required input in exactly one character,
+with wire spelling still free. This adds an explicit requirement; it does not
+retroactively change first-repair acceptance. The final source is retained verbatim
+in `fixtures/episode-codec.mjs`, SHA-256
+`e909932c2fa27551a27a8bba191be51b5c693cdad4bcc17785c506547daa3440`.
+
+| Frozen subject | Original observations | One-character encodings |
+|---|---|---|
+| Original implementation | 10/12 pass | 0/6; not an original requirement |
+| First completed repair | 12/12 pass | 0/6; not yet requested |
+| Completed continuation | 12/12 pass | 6/6 pass |
+
+Both successor assessments used the unchanged original Goal and protected inputs.
+The agent retained its six original test cases and assertions, adding the length
+assertion for the continuation. Its original defect-sensitive check failed on
+explicit null; the added length check failed on all six preceding JSON encodings.
+Each delivered stage passed its seven local tests, including the supplied smoke
+test. The parent independently ran the existing artifact oracle and the final
+encoding-length check. The checked-in regression replays those artifact checks,
+not the model run or its entire review procedure.
+
+The agent inherited the session configuration; the exact runtime model version,
+effective reasoning effort, and token accounting were not exposed. Node was v24.22.3. This
+was one agent across two successive assignments, with no ablation, repetitions,
+compaction intervention, or end-to-end resource comparison. Fresh initial context
+and restricted reading were instructed; shared filesystem isolation was not
+technically enforced. Both requested stages completed, and both frozen outcomes
+are retained. No general efficacy or full configured review-episode claim follows.
+The [bounded Cybernating investigation](../../cybernating/references/workflow-probes.md#bounded-codec-investigation)
+separately exercises interpretation of the authored trajectories. These observations
+exposed no decision failure warranting another construction instruction.
+
 ## Premise-guided Actuating integration
 
 Status: **authored, not model-replayed**. This separate comparison tests the two
