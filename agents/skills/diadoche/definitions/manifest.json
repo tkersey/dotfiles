@@ -1,0 +1,16 @@
+{
+  "schema": "skill-definition-set/v1",
+  "skill": "diadoche",
+  "seq": [
+    {
+      "id": "diadoche/context-evidence",
+      "path": "seq/context-evidence.json"
+    }
+  ],
+  "ledger": [
+    {
+      "id": "diadoche/context-bundle",
+      "path": "ledger/context-bundle.json"
+    }
+  ]
+}

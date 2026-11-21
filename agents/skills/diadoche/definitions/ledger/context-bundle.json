@@ -1,0 +1,104 @@
+{
+  "schema": "ledger-artifact-definition/v1",
+  "id": "diadoche/context-bundle",
+  "owner": "diadoche",
+  "requires": {
+    "abi": "ledger-artifact-abi/v1",
+    "operators": [
+      "all",
+      "any",
+      "bounded-array",
+      "bounded-string",
+      "enum",
+      "exact-object",
+      "keyed-unique",
+      "optional-field",
+      "reference-exists",
+      "scalar-type",
+      "unique"
+    ]
+  },
+  "parameters": {},
+  "inputs": {
+    "manifest": {"codec": "json", "required": true, "max_bytes": 262144},
+    "evidence": {"codec": "json", "required": true, "max_bytes": 2097152},
+    "supplied": {"codec": "json", "required": true, "max_bytes": 65536}
+  },
+  "canonicalization": {},
+  "shape": {
+    "documents": {
+      "manifest": {
+        "object": "open",
+        "fields": {
+          "format": {"enum": ["diadoche-context/v1"]},
+          "title": {"string": {"trimmed_min": 1, "max": 1024}},
+          "files": {
+            "array": {"min": 1, "max": 2},
+            "unique": true,
+            "items": {"enum": ["context.md", "evidence.jsonl"]},
+            "laws": [
+              ["any", {"path": "/files", "rules": [["enum", {"values": ["context.md"]}]]}]
+            ]
+          },
+          "sources": {
+            "array": {"max": 256},
+            "key": "/id",
+            "items": {
+              "object": "open",
+              "fields": {
+                "id": {"string": {"min": 1, "max": 128}},
+                "description": {"string": {"trimmed_min": 1, "max": 4096}}
+              }
+            }
+          }
+        }
+      },
+      "evidence": {
+        "array": {"max": 4096},
+        "key": "/id",
+        "items": {
+          "object": "open",
+          "fields": {
+            "id": {"string": {"min": 1, "max": 128}},
+            "source": {"string": {"min": 1, "max": 128}},
+            "kind": {"enum": ["message", "tool_call", "tool_result", "boundary"]},
+            "text": {"string": {"max": 262144}},
+            "excerpt": {"enum": [false, true]},
+            "role": {"optional": true, "scalar": "string"},
+            "tool": {"optional": true, "scalar": "string"},
+            "call_id": {"optional": true, "string": {"min": 1, "max": 256}},
+            "source_line": {"optional": true, "scalar": "integer"},
+            "native_id": {"optional": "nullable", "scalar": "string"},
+            "native_parent_id": {"optional": "nullable", "scalar": "string"},
+            "timestamp": {"optional": true, "scalar": "string"},
+            "redactions": {"optional": true, "array": {"max": 64}, "items": {"string": {"min": 1, "max": 1024}}}
+          }
+        }
+      },
+      "supplied": {
+        "object": "exact",
+        "fields": {
+          "files": {"array": {"max": 16}, "unique": true, "items": {"string": {"min": 1, "max": 255}}}
+        }
+      }
+    }
+  },
+  "constraints": {
+    "laws": [
+      ["reference-exists", {"input": "evidence", "path": "", "reference": "/source", "target_input": "manifest", "target": "/sources", "key": "/id"}],
+      ["reference-exists", {"input": "manifest", "path": "/files", "reference": "", "target_input": "supplied", "target": "/files", "key": ""}]
+    ]
+  },
+  "identity": {},
+  "storage": {"kind": "pure"},
+  "operations": {},
+  "projections": {},
+  "bounds": {
+    "max_input_bytes": 2424832,
+    "max_store_bytes": 2424832,
+    "max_records": 4096,
+    "max_output_bytes": 65536,
+    "max_diagnostics": 64,
+    "max_reducer_states": 1
+  }
+}
