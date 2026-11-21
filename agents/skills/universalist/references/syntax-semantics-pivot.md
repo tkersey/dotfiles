@@ -201,6 +201,32 @@ appropriate indexed construction. Binding, effects, partial primitives, host
 bypasses, and possible divergence require their actual laws and coverage; the
 finite pure fold argument does not establish them automatically.
 
+### Resource requirements before interpretation
+
+When a reusable construction must support several lawful resource interpretations,
+infer the relations among its input, capture, result, and operation uses before
+selecting one assignment. A valid assignment witnesses one interpretation; it
+does not characterize the whole lawful family. Retain supported alternatives at
+the reusable boundary and select a concrete interpretation where a consumer needs
+one.
+
+Follow actual execution composition. Both branches of a conditional need
+justification, but mutually exclusive uses are not sequential double consumption.
+Separately, alternative satisfying assignments must not become one strengthened
+assignment that requires them all. Reusable code taking a fresh single-use input
+on each call differs from replaying a closure that consumes the same capture.
+Check inferred requirements against the allowances their actual owners provide;
+inferring a need for duplication does not grant permission to duplicate.
+
+Propagate relevant constraints before hiding internal variables in a local
+summary; preserve correlations among visible parameters, including those induced
+by captures or dependencies. Claim a complete or principal characterization for
+the stated program and resource model only when the representation, constraint
+language, resource algebra, and solving assumptions justify it. If a lawful
+alternative cannot be expressed, retain the distinction or state the limitation
+rather than infer impossibility. Reuse an adequate native summary without
+requiring a general inference framework.
+
 ### Transformations and changed interpreters
 
 Preserving a judgment need not preserve the program's observable behavior. Under
