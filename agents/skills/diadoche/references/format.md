@@ -5,6 +5,10 @@ Sections: [Files and identity](#files-and-identity), [Context](#context),
 
 ## Files and identity
 
+[`context-bundle.json`](../definitions/ledger/context-bundle.json) encodes the
+structural rules below; `scripts/check-bundle` applies it. Citations inside
+`context.md` prose remain the author's and reader's check.
+
 Use `context.md` and, when useful, `evidence.jsonl`. Keep each file at most
 256 KiB and the complete publication at most 1 MiB. The native transport rejects
 larger inputs; do not split a sensitive raw transcript into files to bypass the
@@ -27,7 +31,9 @@ sources:
 ```
 
 Require `format`, `title`, `files`, and `sources`. List exactly the files prepared
-for this bundle; omit `evidence.jsonl` when unused. Give each source a unique
+for this bundle; omit `evidence.jsonl` when unused. Publish no other files. A
+receiver ignores supplied files the list does not declare, and the check accepts
+them, but every declared file must be supplied. Give each source a unique
 bundle-local `id` and a description of its scope. Adapter, originating agent,
 model, timestamps, Seq version, definition digest, and observation corpus digest
 are optional provenance. Use open strings for producer identity, not a fixed
@@ -102,9 +108,9 @@ claim as reported with unavailable support and omit the citation.
 
 ## Ledger transport request
 
-Author this shape with the harness's file tools, using the exact prepared bytes
-as JSON strings. Escape JSON through the host's serializer; do not interpolate
-the file contents into a shell command.
+Build this shape from the exact prepared bytes with `jaq --rawfile`, as shown
+in the skill's Publish section, so each file is escaped as a JSON string; do not
+interpolate file contents into a shell command.
 
 ```json
 {

@@ -1,0 +1,2 @@
+{"id":"e1","source":"s1","kind":"message","role":"user","source_line":12,"native_id":"m-12","native_parent_id":null,"text":"Retry only failures classified as transient.","excerpt":false}
+{"id":"e2","source":"s1","kind":"tool_result","tool":"Bash","call_id":"c1","source_line":28,"text":"The transient-failure case passed; the authorization case failed.","excerpt":true,"redactions":["unrelated output omitted"]}

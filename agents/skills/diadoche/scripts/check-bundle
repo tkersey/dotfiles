@@ -1,0 +1,71 @@
+#!/usr/bin/env bash
+# Check a Diadoche context bundle against definitions/ledger/context-bundle.json.
+#
+# Usage: check-bundle <bundle.json | bundle-directory>
+#
+# bundle.json is a Ledger gist request or a ledger-gist/v1 result: any JSON
+# object whose "files" maps file names to {"content": "..."}. A directory is
+# read as the bundle's regular, non-symlink files at its top level.
+#
+# Prints the ledger-validation-result/v1 JSON. Exits 0 only when valid.
+# Bundle-local citations inside context.md prose are not checked here.
+set -euo pipefail
+
+if [ $# -ne 1 ]; then
+  echo "usage: check-bundle <bundle.json | bundle-directory>" >&2
+  exit 2
+fi
+src=$1
+# Seq and Ledger reject definition paths with symlink components; installed
+# skills are often symlinks, so resolve the physical package root.
+root=$(cd -P "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)
+definition="$root/definitions/ledger/context-bundle.json"
+work=$(mktemp -d)
+trap 'rm -rf "$work"' EXIT
+
+if [ -d "$src" ]; then
+  printf '{}' > "$work/files.json"
+  for path in "$src"/* "$src"/.[!.]*; do
+    [ -f "$path" ] && [ ! -L "$path" ] || continue
+    jaq --arg name "${path##*/}" --rawfile content "$path" \
+      '.[$name] = $content' "$work/files.json" > "$work/next.json"
+    mv "$work/next.json" "$work/files.json"
+  done
+else
+  jaq -e '.files | type == "object"' "$src" > /dev/null \
+    || { echo "check-bundle: $src has no files map" >&2; exit 2; }
+  jaq '.files | map_values(.content)' "$src" > "$work/files.json"
+fi
+
+# Front matter: lines between an opening '---' on line 1 and the next '---'.
+# Missing or unparsable front matter becomes null, which the definition rejects.
+jaq -r '.["context.md"] // ""' "$work/files.json" \
+  | awk 'NR == 1 { if ($0 != "---") exit; inside = 1; next }
+         inside && $0 == "---" { exit }
+         inside' > "$work/front-matter.yaml"
+if [ -s "$work/front-matter.yaml" ] \
+  && jaq --from yaml . "$work/front-matter.yaml" > "$work/manifest.json" 2> /dev/null \
+  && [ -s "$work/manifest.json" ]; then
+  :
+else
+  echo null > "$work/manifest.json"
+fi
+
+# Evidence is read only when declared. Unparsable JSONL becomes null.
+if jaq -e '(.files // []) | index("evidence.jsonl") != null' "$work/manifest.json" > /dev/null 2>&1 \
+  && jaq -e 'has("evidence.jsonl")' "$work/files.json" > /dev/null; then
+  jaq -r '.["evidence.jsonl"]' "$work/files.json" \
+    | { jaq -s . 2> /dev/null || echo null; } > "$work/evidence.json"
+else
+  echo '[]' > "$work/evidence.json"
+fi
+
+jaq '{files: keys}' "$work/files.json" > "$work/supplied.json"
+
+ledger validate --definition "$definition" \
+  --input manifest="$work/manifest.json" \
+  --input evidence="$work/evidence.json" \
+  --input supplied="$work/supplied.json" \
+  --format json > "$work/result.json" || true
+cat "$work/result.json"
+jaq -e '.valid == true' "$work/result.json" > /dev/null
