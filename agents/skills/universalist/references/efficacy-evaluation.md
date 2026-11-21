@@ -16,8 +16,9 @@ trials. Do not combine materially different versions into one efficacy rate.
 Bind actual loaded files, not only a version string. Before replay,
 `routing-evaluation-cases.json.skill_fingerprint` must match `decision-contract.json`.
 The representation corpus's `skill_version: 17.8.0` retains its original authoring
-baseline, not a later replay result. Bind its two construction/interpretation
-additions to their actual source revision rather than that historical field.
+baseline, not a later replay result. Bind later construction/interpretation and
+resource-inference additions to their actual source revision rather than that
+historical field.
 Historical receipts and measurements remain
 attributed to their original sources. Record missing or truncated effective skill
 metadata separately from a behavioral failure after successful loading.
@@ -149,10 +150,10 @@ skill efficacy.
 ## Focused representation and algebra ablations
 
 `representation-evaluation-cases.json` retains eight eliminator-first, eight
-algebra-derived, and two construction/interpretation cases. It is an evaluator
-corpus, not a test runner or runtime instruction. The common-path eliminator and
-algebra questions belong in both B
-and C. Remove only the targeted reference guidance for a focused contrast, keeping
+algebra-derived, two construction/interpretation, and two resource-inference cases.
+It is an evaluator corpus, not a test runner or runtime instruction. The common-path
+eliminator and algebra questions belong in both B and C. Remove only the targeted
+reference guidance for a focused contrast, keeping
 other source, evidence, tools, model, budgets, and receiving workflow fixed.
 
 For eliminator-first cases, check reconstruction, inspection, authorization,
@@ -180,6 +181,11 @@ Separately test a shared postcondition whose satisfying programs have different
 required observations. Observe the chosen repair owner and preservation argument,
 not use of the new vocabulary or equation. These are authored cases; their
 presence does not establish executed transfer or incremental model efficacy.
+
+For resource-inference cases, distinguish exclusive execution from cumulative
+use, alternative assignments from a single selected witness, and requirements
+from owner allowances. Preserve capture correlations and valid assignments when
+summarizing; finite-model coverage does not establish arbitrary-host completeness.
 
 ## Workflow and decision-sufficiency ablations
 

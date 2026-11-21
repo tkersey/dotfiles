@@ -313,6 +313,42 @@
         "Source-grounded preservation relation and a result observation that distinguishes 1 from 2 when required.",
         "Soundness of the contract judgment kept separate from the stronger behavioral-replacement claim."
       ]
+    },
+    {
+      "id": "resource-uses-distinguish-choice-and-sequence",
+      "scenario": "A finite command language has Consume(t), Seq(a,b), and If(p,a,b). The predicate p is pure, terminates, and does not use t; exactly one branch executes. Token t is supplied by an owner whose accepted contract permits exactly one consumption per run. A proposed classifier counts source occurrences to infer resource requirements.",
+      "required_behavior": [
+        "Admit Consume(t) and If(p,Consume(t),Consume(t)) for either predicate result while requiring each branch to be valid.",
+        "Reject Seq(Consume(t),Consume(t)) under the supplied token contract; an inferred duplication requirement cannot change the owner's allowance."
+      ],
+      "expected_artifact": [
+        "Derive usage requirements from execution composition, preserving exclusive choice separately from cumulative execution; a native summary or direct argument is sufficient.",
+        "Keep requirement inference separate from checking the actual resource allowance, without treating branch justification as permission to execute both branches."
+      ],
+      "falsifier": "Two textual occurrences reject the valid conditional, the sequential case is admitted by upgrading t's allowance, or only one possible branch is justified.",
+      "required_valid_counterpart": "Both predicate outcomes consume t once; a source-authorized duplicable counterpart may support the sequential use without weakening the single-use token's contract.",
+      "evidence_required": [
+        "Consumption observations for both branches and sequential execution, or a composition argument covering these constructors.",
+        "Separate authored cases, bounded execution evidence, and general soundness or completeness claims."
+      ]
+    },
+    {
+      "id": "resource-summary-retains-capture-correlation",
+      "scenario": "A function consumes an input token supplied afresh on each call. A different closure captures one token and consumes that capture on each invocation. In a finite interface model, bit r permits repeated invocation of this closure and bit c permits repeated consumption of its capture; both permissions come from their respective owners. The source permits exactly the pairs (r,c) = (0,0), (0,1), and (1,1). A proposed summary independently records each bit's possible values and another proposal chooses only (1,1).",
+      "required_behavior": [
+        "Permit repeated calls to the first function with distinct fresh single-use tokens without requiring those individual tokens to be reusable.",
+        "Preserve all three permitted closure/capture assignments and exclude (1,0); do not turn a valid selected assignment into a complete interface characterization."
+      ],
+      "expected_artifact": [
+        "Retain the relation r implies c, an explicit set of permitted pairs, or another adequate native representation; check a selected assignment against the owners' actual allowances.",
+        "Preserve correlations when hiding internal constraints. If the available summary language can express only independent per-bit sets, report its inadequacy for the complete family or label an explicitly accepted restriction; do not claim the omitted valid cases are impossible."
+      ],
+      "falsifier": "Independent projections admit (1,0), requiring (1,1) rejects valid single-invocation closures, or a reuse requirement is mistaken for an owner grant.",
+      "required_valid_counterpart": "A closure invoked once can consume a single-use capture; a closure whose capture actually permits repeated consumption can be invoked repeatedly when its own owner permits it. An already-adequate relational summary needs no replacement framework.",
+      "evidence_required": [
+        "All four assignments in the declared finite model, the distinct fresh-input and captured-input cases, and the source-defined permission interpretation.",
+        "A boundary argument preserving relevant capture dependencies; exhaustive evidence for this model does not prove completeness for arbitrary host callbacks or resource algebras."
+      ]
     }
   ]
 }
