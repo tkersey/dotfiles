@@ -54,3 +54,12 @@ class IndependentChainTests(unittest.TestCase):
                  self.note('C', 'ledger-projection'), self.note('U', 'ledger-retraction', 'A'),
                  self.note('V', 'ledger-retraction', 'B')]
         self.assertEqual(self.report(notes)['memory_guidance']['state'], 'mixed')
+
+    def test_single_withdrawal_keeps_independent_admission_active(self):
+        notes = [self.note('A', 'ledger-projection'), self.note('B', 'ledger-status-transition'),
+                 self.note('U', 'ledger-retraction', 'A')]
+        row = self.report(notes)
+        self.assertEqual(row['status'], 'admitted')
+        self.assertEqual(row['memory_guidance']['state'], 'mixed')
+        self.assertEqual(row['memory_guidance']['live_admission_note_ids'], ['B'])
+        self.assertEqual(row['memory_guidance']['chains'][0]['state'], 'withdrawn')

@@ -437,10 +437,23 @@ def matches_negative_predecessor(
         if not isinstance(scope, dict) or scope.get("kind") != "repo" or scope.get("repo") != repository:
             return False
     source_refs = current_export.get("source_refs")
+    note_refs = note.get("source_refs")
+    prior_predecessor = previous.get("previous_projection_fingerprint")
+    canonical_relationship = {
+        "kind": "negative-ledger-canonical-relationship",
+        "ref": f"projection:{prior_predecessor}",
+        "summary": "Canonical projection predecessor; not a memory-note identity.",
+    }
+    normalized_refs = (
+        isinstance(prior_predecessor, str)
+        and re.fullmatch(r"[a-f0-9]{64}", prior_predecessor)
+        and isinstance(source_refs, list)
+        and note_refs == [*source_refs, canonical_relationship]
+    )
     if (
         not isinstance(source_refs, list)
         or not source_refs
-        or note.get("source_refs") != source_refs
+        or (note_refs != source_refs and not normalized_refs)
         or any(not isinstance(ref, dict) or ref.get("kind") != "negative-ledger" for ref in source_refs)
         or previous.get("ledger_path") != current.get("ledger_path")
         or current.get("ledger_path") != ".ledger/negative-ledger/events.jsonl"
@@ -790,7 +803,11 @@ def source_report(
                         note, expected = None, None
                     else:
                         note, expected = sorted(tips, key=lambda pair: pair[0]["id"])[0]
-                        if len(tips) > 1:
+                        admitted_ids = {candidate["id"] for candidate, _ in exact_candidates
+                                        if candidate.get("id") not in guidance_updates and candidate.get("id")}
+                        admitted_ids.update(candidate["id"] for candidate in predecessor_candidates
+                                            if candidate.get("id"))
+                        if len(tips) > 1 or admitted_ids - set(roots):
                             independent_tips = sorted(tips, key=lambda pair: pair[0]["id"])
                 else:
                     note, expected = max(exact_candidates, key=lambda pair: (
@@ -839,9 +856,11 @@ def source_report(
             roots = {root_of(pair) for pair in independent_tips}
             admissions = {candidate["id"] for candidate, _ in exact_candidates
                           if candidate.get("id") not in guidance_updates and candidate.get("id")}
+            admissions.update(candidate["id"] for candidate in predecessor_candidates if candidate.get("id"))
             all_withdrawn = all(chain["state"] == "withdrawn" for chain in chains) and admissions <= roots
             row["memory_guidance"] = {"state": "withdrawn" if all_withdrawn else "mixed",
-                                      "chains": chains, "compiled_effect": "unverified"}
+                                      "chains": chains, "live_admission_note_ids": sorted(admissions - roots),
+                                      "compiled_effect": "unverified"}
             if not all(chain["source_snapshot_current"] for chain in chains) and not export_error:
                 row["status"] = "needs-source-review"
         if conflicting_updates:
