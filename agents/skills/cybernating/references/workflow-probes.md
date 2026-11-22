@@ -247,3 +247,118 @@ the session configuration and used Node v24.22.3; exact effective model settings
 tokens, and total cost were unavailable. Shared filesystem isolation was not
 technically enforced. These observations earn no production review credit and
 leave broader reliability and comparative efficacy unmeasured.
+
+
+### Matched codec handoffs
+
+Use this development fixture when a live summary or continuation proposal needs
+an executed downstream comparison. It reuses the
+[codec task and oracle](../../actuating/tests/construction-comparison.md#executable-codec-development-case)
+without changing their meaning. The operation prepares and assesses subjects;
+it neither generates summaries nor invokes a model. Its regression tests qualify
+fixture behavior, not prompt efficacy or a production review campaign.
+
+Capture one actual source checkpoint and the current/proposed handoff files.
+Keep both summary producers' source evidence, accepted task, access and relevant
+conditions matched. Do not remove required facts from the control or supply the
+intended repair to the candidate. An authored summary pair is a presentation
+contrast, not an observation of a deployed summarizer.
+
+From the dotfiles checkout, with an existing evaluator-owned temporary directory:
+
+```sh
+node --test agents/skills/cybernating/tests/test-codec-handoff-fixture.mjs
+node agents/skills/cybernating/tests/codec-handoff-fixture.mjs prepare \
+  /tmp/handoff-trial/subjects original distinct plain \
+  /tmp/handoff-trial/checkpoint.mjs \
+  /tmp/handoff-trial/current.md /tmp/handoff-trial/proposed.md \
+  > /tmp/handoff-trial/preparation.json
+```
+
+The original program, Goal and report selectors belong to the evaluator. Preserve
+those original choices even if the captured checkpoint is a later successor.
+The two new subjects, a and b, receive identical Goal, task, smoke test, optional
+allegation, fixed CHECKPOINT.mjs and common RESUME.md. Each editable codec.mjs
+starts with that same checkpoint. Only HANDOFF.md differs, copied byte-for-byte
+from its supplied file. Existing destinations and symlinked inputs are rejected.
+The preparation record binds the actual checkpoint, summaries, subjects, original
+selectors and fixture source; keep it outside both subjects in existing experiment
+evidence. It is not an authentication mechanism or an execution receipt.
+
+Give each resumed agent only its subject, the same selected skill environment,
+and the instruction to continue from RESUME.md. Keep sibling subjects, preparation
+records, oracle code and expected outcomes outside its accessible sandbox. Retain
+actual loading and isolation limitations when the runner cannot establish them.
+The helper's sibling directories do not provide this isolation. Let each agent
+retrieve available task evidence and make its own changes; preserve both valid
+no-change and repair outcomes. Use fresh attempts according to the existing
+sampling policy, not retries until both arms pass.
+
+Freeze both actual successors and their ordinary outputs before assessment:
+
+```sh
+node agents/skills/cybernating/tests/codec-handoff-fixture.mjs assess \
+  /tmp/handoff-trial/preparation.json
+```
+
+The assessor captures both successor identities before running either child,
+checks fixed inputs before and after execution, and stops further execution on
+integrity loss. Unassessed arms remain explicit. It retains each original oracle
+result and distinguishes an invalid comparison from a valid comparison containing
+an artifact defect. Exit 0 means an intact comparison with both bounded artifacts
+passing; exit 1 means an intact, observed artifact failure; exit 2 means invalid
+binding/integrity or unavailable execution. None establishes that an agent made a
+justified completion claim. Behavioral judgment remains not_automated: inspect the
+actual diff, validation, claims and permitted effects against the original task.
+
+Use the defective, repaired and valid alternative-representation controls. Equal
+aggregate counts can conceal different failed obligations. For a later composition
+contrast, the already documented one-character-encoding continuation supplies an
+additional accepted requirement; keep that change and its additional checks
+explicit rather than silently altering the original oracle.
+
+For cost claims, record summary production, source retrieval, reconstruction,
+continuation, checks and coordination under the existing endpoint. Summary byte
+counts describe the intervention; they do not establish latency or quality.
+Compare evaluator changes separately on frozen artifacts and reassess both arms
+under a justified common evaluator. The original codec oracle already observes
+the disclosed null/absence and zero distinctions.
+
+The original assessor executes candidate JavaScript and is not a hostile-code
+sandbox. Use the existing isolated evaluation runtime, no credentials or network,
+only disposable authorized subjects, and no concurrent edits during assessment.
+Review self-contained source before execution where isolation is unavailable;
+report the resulting limitation. Hashes and subject checks do not establish model
+loading, source honesty, historical provenance or filesystem confinement.
+
+On November 21, 2026 (Pacific), two fresh-context continuation agents each received
+one prepared subject. Both began from the same captured zero-loss checkpoint with
+the original/distinct/plain selectors. The two authored handoffs contained the
+same task and source access, an explicitly unverified null allegation, and no
+validation result or intended repair. The agents were instructed to use only their
+assigned subject. They did not receive the evaluator, sibling, preparation record,
+parent history or expected outcome as context.
+
+| Arm | Handoff bytes | Observed continuation | Frozen artifact |
+|---|---:|---|---|
+| a | 650 | Rejected the null allegation, reproduced the zero-to-three defect, then repaired it | 12/12 oracle observations passed |
+| b | 308 | Rejected the null allegation, reproduced the zero-to-three defect, then repaired it | 12/12 oracle observations passed |
+
+Both agents added task-local round-trip tests and reported 6 passes/1 failure before
+the repair and 7 passes/0 failures afterward. Both made the same one-line codec
+repair and claimed completion only for the declared finite domain. The parent
+inspected the self-contained source and tests before executing the original oracle
+through the pair assessor. The comparison was valid, all fixed inputs were intact,
+and both successors had SHA-256
+`e44a578c262d5920ef6db640dc1310344cda9b182e26e460466cb156af086a13`.
+The checkpoint had SHA-256
+`740917f7e97fb745acecdb16117a6e5972ceae70e966bd3d96a6032e1cec5fb0`.
+
+This single authored presentation contrast exercised actual downstream repairs; it
+did not compare deployed summarizers or establish comparative prompt efficacy.
+Both agents inherited the session's model configuration; its exact effective
+version, token accounting and total cost were unavailable. The oracle used Node
+v24.22.3. Shared filesystem isolation was instructional, not technically enforced;
+the agents reported no outside access. The helper does not attest instruction
+loading, access history or isolation. No latency, causal-attribution or production
+review credit is claimed.

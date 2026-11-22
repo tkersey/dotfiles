@@ -125,6 +125,12 @@ probes can diagnose a distinction but do not qualify native execution or prove
 compaction safe. These are empirical preservation tests, not a formal theorem
 about prompts, and require no new store, review lane, or evaluator platform.
 
+For a concrete codec handoff or resumption comparison, use the
+[matched handoff fixture](workflow-probes.md#matched-codec-handoffs). It prepares
+equal-source subjects from one checkpoint and assesses their actual successors
+with the existing oracle. Supply the actual summaries being compared; the fixture
+does not generate them, invoke a model, or decide completion from an artifact pass.
+
 ## Joint accuracy and latency
 
 Track each required criterion, success/failure/timeout counts, task denominator,
