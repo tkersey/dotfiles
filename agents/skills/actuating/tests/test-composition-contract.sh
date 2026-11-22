@@ -34,14 +34,14 @@ assert(skill.includes('[review-closeout.md](review-closeout.md)'), 'review guide
 for (const [name, digest] of Object.entries(protectedSections))
   assert.equal(sha256(section(protectedSources[name] ?? skill,name)),digest,`protected Actuating section: ${name}`);
 // Preserve the lens bytes at d3f24e515059f6517cf238084ef084a55fff2242, except
-// for the authorized Fresh Eyes doctrine transfer and invariant-lens
-// preservation update. All other review instructions remain unchanged.
+// for the authorized Fresh Eyes doctrine transfer, introduced-obligation
+// guidance, and invariant-lens preservation update. Other lenses are unchanged.
 const lensBlobs = {
   'soundness-review.md':'404d8a90ce66cd056de57b1171518e5a1b169975',
   'footgun-review.md':'1a8c3a133077a9d8e36a234687464564ad5f4180',
   'invariant-review.md':'ddaab9e8e523f32e423a2d1feac1d15c907b63f1',
   'complexity-review.md':'aa213ce128a1a5d6efecd15b4e4d42349cb1c320',
-  'fresh-eyes-review.md':'1ca00e6aca832f6a917d106e9440f31c797f342e'
+  'fresh-eyes-review.md':'676c0906586dfb8698af0d1990d2f01149483cf1'
 };
 for (const [name, digest] of Object.entries(lensBlobs)) {
   const bytes = Buffer.from(text(`references/lenses/${name}`));
