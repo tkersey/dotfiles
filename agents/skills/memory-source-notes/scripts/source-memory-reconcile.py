@@ -22,8 +22,10 @@ from negative_ledger_memory_note import (
     ALLOWED_KINDS as NEGATIVE_NOTE_KINDS,
     AdapterError,
     resolve_custody,
+    admission_projection as negative_admission,
 )
 from memory_source_layout import instruction_status
+from source_memory_note import learning_admission, validated_update
 
 SOURCES = ("learnings", "synesthesia", "negative-ledger")
 LEDGER_ABI = "ledger-artifact-abi/v1"
@@ -605,6 +607,56 @@ def load_synesthesia_adapter(path: Path) -> Any:
     return module
 
 
+def reconcile_guidance_graph(rows: list[dict[str, Any]], updates: dict[str, dict[str, Any]]) -> None:
+    """Resolve explicit note relationships across canonical record boundaries."""
+    successors: dict[str, set[str]] = {}
+    neighbors: dict[str, set[str]] = {}
+    for update_id, update in updates.items():
+        prior_id = update["payload"]["memory_update"]["prior_note_id"]
+        successors.setdefault(prior_id, set()).add(update_id)
+        neighbors.setdefault(prior_id, set()).add(update_id)
+        neighbors.setdefault(update_id, set()).add(prior_id)
+
+    conflicts: dict[str, list[str]] = {}
+    for parent, children in successors.items():
+        if len(children) < 2 or parent in conflicts:
+            continue
+        component: set[str] = set()
+        pending = [parent]
+        while pending:
+            current = pending.pop()
+            if current in component:
+                continue
+            component.add(current)
+            pending.extend(neighbors.get(current, set()) - component)
+        conflict_ids = sorted(component & updates.keys())
+        for note_id in component:
+            conflicts[note_id] = conflict_ids
+
+    for row in rows:
+        note_id = row["note_id"]
+        existing_ids = row.get("memory_guidance", {}).get("update_note_ids", [])
+        conflict_ids = conflicts.get(note_id)
+        if conflict_ids is None:
+            conflict_ids = next((conflicts[value] for value in existing_ids if value in conflicts), None)
+        if conflict_ids is not None:
+            row["status"] = "incomplete-projection"
+            row["export_error"] = "branching memory guidance updates require source review"
+            row["memory_guidance"] = {"state": "unresolved", "update_note_ids": conflict_ids,
+                                      "compiled_effect": "unverified"}
+            continue
+        children = successors.get(note_id, set())
+        if len(children) == 1:
+            update_id = next(iter(children))
+            update = updates[update_id]
+            row["memory_guidance"] = {
+                "operation": update["operation"],
+                "state": "withdrawn" if update["operation"] == "retract" else "superseded",
+                "update_note_id": update_id,
+                "compiled_effect": "unverified",
+            }
+
+
 def source_report(
     source: str,
     records: list[dict[str, Any]],
@@ -638,6 +690,9 @@ def source_report(
         for note in notes
         if isinstance(note.get("fingerprint"), str)
     }
+    note_inventory = {note["id"]: note for note in notes if isinstance(note.get("id"), str)}
+    guidance_updates: dict[str, dict[str, Any]] = {}
+    update_source_current: dict[str, bool] = {}
 
     resolver = None
     if source == "synesthesia" and records:
@@ -667,6 +722,7 @@ def source_report(
             else:
                 raw, export_error = native_export(ledger, source, record_id, cwd=cwd, native_args=native_args)
         expected = None
+        conflicting_updates = []
         scoped_candidates = [candidate for candidate in candidates if candidate.get("id") in scoped_ids]
         note = scoped_candidates[0] if scoped_candidates else None
         if source == "synesthesia":
@@ -681,19 +737,48 @@ def source_report(
         elif raw is not None:
             current_export = parse_json(raw, f"{source} {record_id} native export")
             predecessor_candidates = []
+            exact_candidates = []
             for candidate in candidates:
                 kind = candidate.get("kind")
                 if not isinstance(kind, str):
                     continue
-                candidate_expected = writer_fingerprint(source, kind, raw)
-                if candidate.get("fingerprint") == candidate_expected:
-                    note, expected = candidate, candidate_expected
+                exported = [raw]
+                if source == "learnings" and kind == "learning-admission":
+                    exported.append(learning_admission(raw))
+                if source == "negative-ledger" and kind in {"ledger-projection", "ledger-status-transition"}:
+                    exported.append(negative_admission(raw))
+                updated = validated_update(source, raw, candidate, note_inventory, repository_identity)
+                if kind in {"learning-supersession", "learning-withdrawal", "ledger-supersession", "ledger-retraction"}:
+                    exported = [updated[0]] if updated is not None else []
+                for export in exported:
+                    candidate_expected = writer_fingerprint(source, kind, export)
+                    if candidate.get("fingerprint") != candidate_expected:
+                        continue
+                    exact_candidates.append((candidate, candidate_expected))
                     if isinstance(candidate.get("id"), str):
-                        exact_export_ids.add(candidate["id"])
+                        if updated is None or updated[1]:
+                            exact_export_ids.add(candidate["id"])
+                        if updated is not None:
+                            guidance_updates[candidate["id"]] = candidate
+                            update_source_current[candidate["id"]] = updated[1]
                 if source == "negative-ledger" and matches_negative_predecessor(candidate, current_export, record_id):
                     predecessor_candidates.append(candidate)
                     if isinstance(candidate.get("id"), str):
                         predecessor_export_ids.add(candidate["id"])
+            if exact_candidates:
+                updates = [pair for pair in exact_candidates if pair[0].get("id") in guidance_updates]
+                if updates:
+                    replaced = {pair[0]["payload"]["memory_update"]["prior_note_id"] for pair in updates}
+                    tips = [pair for pair in updates if pair[0]["id"] not in replaced]
+                    if len(tips) != 1:
+                        export_error = "multiple unresolved memory guidance updates; source review required"
+                        conflicting_updates = [pair[0]["id"] for pair in updates]
+                        note, expected = None, None
+                    else:
+                        note, expected = tips[0]
+                else:
+                    note, expected = max(exact_candidates, key=lambda pair: (
+                        pair[0].get("captured_at", ""), pair[0].get("id", "")))
             if expected is None:
                 if predecessor_candidates:
                     note = predecessor_candidates[0]
@@ -710,18 +795,36 @@ def source_report(
                 compiled_corpus=compiled_corpus,
                 unreadable_phase2=unreadable_phase2,
             )
-        if note and note.get("id") in exact_export_ids:
+        if note and note.get("id") in guidance_updates:
+            row["scope_binding"] = "source-note-update"
+        elif note and note.get("id") in exact_export_ids:
             row["scope_binding"] = "canonical-export"
         elif note and note.get("id") in predecessor_export_ids:
             row["scope_binding"] = "canonical-predecessor"
         else:
             row["scope_binding"] = "declared-scope"
+        if note and note.get("id") in guidance_updates:
+            source_current = update_source_current[note["id"]]
+            row["memory_guidance"] = {
+                "operation": note["operation"],
+                "state": "withdrawn" if note["operation"] == "retract" else "replacement",
+                "prior_note_id": note["payload"]["memory_update"]["prior_note_id"],
+                "compiled_effect": "unverified",
+                "source_snapshot_current": source_current,
+            }
+            if not source_current and not export_error:
+                row["status"] = "needs-source-review"
+        if conflicting_updates:
+            row["memory_guidance"] = {"state": "unresolved", "update_note_ids": sorted(conflicting_updates),
+                                      "compiled_effect": "unverified"}
         rows.append(row)
+
+    reconcile_guidance_graph(rows, guidance_updates)
 
     # Old immutable snapshots retain their historical scope. Exact native export
     # bytes or the source's qualified predecessor link establish correspondence
     # without inventing a repository alias. Only exact current bytes are admitted.
-    source_bound_ids = exact_export_ids | predecessor_export_ids
+    source_bound_ids = exact_export_ids | predecessor_export_ids | set(guidance_updates)
     local_notes = [note for note in notes if note.get("id") in scoped_ids | source_bound_ids]
     foreign_notes = [note for note in foreign_notes if note.get("id") not in source_bound_ids]
     unresolved_notes = [note for note in unresolved_notes if note.get("id") not in source_bound_ids]

@@ -1,23 +1,61 @@
 ---
 name: learnings
-description: "Recall lessons; assess reusable fixes, regressions, footguns, and strategy pivots. Capture only observed evidence that changes a transferable decision; also use for lessons learned, learning correction, or memory admission and supersession. Delivery alone is not a trigger."
+description: "Recall consequential lessons; assess reusable fixes, regressions, footguns, and strategy pivots. Establish the supported claim, applicability, and useful destination before retaining evidence. Use for lessons learned, learning correction, or memory admission and supersession. Delivery alone is not a trigger."
 metadata:
-  version: "8.4.0"
+  version: "8.5.0"
 ---
 
 # Learnings
 
 ## Mission
 
-Maintain project-scoped, evidence-backed execution learnings in the personal
-store resolved by `$ledger`; selectively admit only high-value snapshots to the
-global Codex memory compiler. Worktrees share history, not artifact applicability.
+Turn consequential experience into supported future decisions with the least
+repeated reasoning. Establish what happened, what follows, and where the result
+belongs before choosing retention. When canonical evidence adds value, maintain
+project-scoped learnings through `$ledger` and selectively admit useful snapshots
+to the native memory compiler. Worktrees share history, not artifact applicability.
 
 Preserve what happened without overstating what follows. Capture the narrowest
 useful claim supported by evidence; wider technical guidance must earn its scope.
 Retrieval relevance is neither current applicability nor exclusion authority.
 
-Authority split:
+## Decision before retention
+
+Use task evidence to answer three questions; reuse adequate answers already
+established by the owning task rather than requiring a new packet:
+
+1. **Claim:** distinguish the observation, inferred cause, and reusable rule.
+   Keep the claim within the evidence, including uncertainty and untested scope.
+2. **Applicability:** identify the conditions that make the claim relevant here
+   and what current evidence establishes them. Similar wording or another
+   worktree's success is not enough.
+3. **Destination:** choose the existing owner that can preserve the useful
+   consequence with the least future checking and maintenance.
+
+| Useful consequence | Appropriate destination |
+|---|---|
+| An authorized construction can enforce the required behavior | The owning implementation, with preservation and boundary evidence. |
+| A reproducible regression needs continued detection | An existing test or check, with its actual detection scope. |
+| An enduring requirement or operating rule belongs to an established owner | That owner's policy or documentation. |
+| A preference, retrieval hint, or ordinary cross-task context is sufficient | Native memory through its supported owner; no canonical row is required. |
+| An experiment or conditional result still informs future choices | Canonical evidence when existing artifacts do not adequately preserve it. |
+| A witnessed failure can justify excluding a route | Negative Ledger under its own applicability and lifecycle rules. |
+| Existing artifacts already carry the useful result, or no transferable delta exists | No additional retention. |
+
+These are choices, not an ordered pipeline. One experiment may remain useful even
+after code absorbs its corrective lesson. Do not copy the same content into every
+destination or introduce another store. Selection grants no new mutation authority;
+an unimplemented proposal cannot replace a warning still needed today.
+
+A construction can retire a reminder only for the domain whose admission,
+permitted operations, and sanctioned paths actually enforce the required law while
+preserving required-valid behavior. A regression test detects its exercised cases;
+passing it alone does not establish that a failure family is unavailable. Reuse the
+owning task's adequate proof; no extra proof ceremony is required by this skill.
+
+## Canonical authority
+
+For selected canonical retention or custom memory-source admission:
 
 ```text
 definitions/ledger/learnings-protocol.json
@@ -36,7 +74,7 @@ memory_summary.md / MEMORY.md / skills/*
 `$ledger` alone owns storage location, registration, and migration policy.
 Do not infer custody from the current checkout or duplicate that policy here.
 Do not duplicate every learning into memory notes. For an accepted admission,
-load `$memory-source-notes` before invoking `run_memory_note_tool` in the same turn.
+load `$memory-source-notes` before invoking its validated adapter in the same turn.
 
 ## Trigger Cues
 
@@ -50,17 +88,20 @@ load `$memory-source-notes` before invoking `run_memory_note_tool` in the same t
 
 ## Selected guidance
 
-At a capture trigger, evaluate Capture Gate from task evidence first.
-If it fails and no recall or canonical operation was requested, retain `no-op`
-and return without loading store/admission manuals, resolving storage, or
-bootstrapping Ledger. Commit, PR creation, or handoff alone is not a trigger.
+At a trigger, apply Decision before retention and Capture Gate from task evidence.
+If no canonical write adds value and no canonical read or source-note lifecycle
+work is needed, retain `no-op` and return without loading store/admission manuals,
+resolving storage, or bootstrapping Ledger. Commit, PR creation, or handoff alone
+is not a trigger.
+Use an independently selected native-memory or implementation destination through
+its owner; the canonical `no-op` does not prevent that authorized work.
 
 | Selected operation | Read before the operation |
 |---|---|
 | Canonical browse, query, or recall | [store.md](store.md) and [recall.md](recall.md) |
 | Accepted capture or canonical supersession | [store.md](store.md) and [capture.md](capture.md) |
 | Authorized recovery of retired Learnings | [retired-import.md](retired-import.md); storage context remains owned by `$ledger`. |
-| Evaluate or perform memory admission, supersession, or withdrawal | [memory-admission.md](memory-admission.md); canonical operations also require store/capture guidance as applicable. |
+| Evaluate or perform custom source-note admission, supersession, or withdrawal | [memory-admission.md](memory-admission.md); canonical operations also require store/capture guidance as applicable. |
 | Generated digest | `$memory-source-notes`; no new canonical writer |
 
 Canonical writes and derived admission remain separate outcomes; admission
@@ -94,7 +135,8 @@ Capture only when at least one decision-shaping event occurred:
 5. useful or failed recalled learning;
 6. a correction to the scope or evidence of an existing learning.
 
-Require decision delta, transferability, and counterfactual cost. Prefer one
+Require decision delta, transferability, counterfactual cost, and value from
+canonical retention beyond the selected existing destination. Prefer one
 essential learning; append at most three per turn. Evaluate from task evidence
 before bootstrap or store inspection when no recall/canonical operation is needed.
 If the gate fails, retain `no-op` internally and continue the task.
@@ -108,12 +150,15 @@ At each material Learnings activation, retain exactly one internal outcome:
 ```text
 learning-disposition: appended id=lrn-...
 learning-disposition: duplicate-skip reason=<reason>
-learning-disposition: no-op reason=<capture gate not met>
+learning-disposition: no-op reason=<no canonical write selected>
 learning-disposition: blocked reason=<store selection, binding, or capture failure>
 ```
 
 Do not claim Learnings closeout without a disposition. Keep `no-op` and
 `duplicate-skip` internal unless asked; surface `blocked` when it affects delivery.
+`no-op` includes an adequate existing construction, check, policy, or native-memory
+destination, as well as a failed capture gate. It does not claim that no useful
+work occurred or that a selected noncanonical effect succeeded.
 
 ## Memory Digest
 

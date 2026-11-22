@@ -67,20 +67,32 @@ next_search_hint
 source_event_count
 ```
 
-If an active event lacks witness, applicability, narrow exclusion, reopening criteria, or a full projection fingerprint, it cannot support an active compiled exclusion.
+If an active event lacks witness, applicability, narrow exclusion, reopening
+criteria, or a full projection fingerprint, it cannot support a reminder of an
+active canonical exclusion.
 
 ## Operation and Status Semantics
 
 - `assert`: current projection;
 - `confirm`: additional evidence without duplicate compiled guidance;
-- `supersede`: a newer `NEG-*` or projection owns the route state;
-- `retract`: remove support unless another live canonical source remains;
+- `supersede`: replace the targeted admitted guidance with a newer supported
+  projection; canonical lifecycle remains source-owned;
+- `retract`: withdraw the targeted admission's support; assess remaining live
+  sources within their own scope, preserving canonical history and route status;
 - `reopen`: old exclusion becomes a current proof obligation;
 - `reject`: source event must not be promoted.
 
-Only `active` may compile to a narrow route constraint. `accepted_risk`, `stale`, `reopened`, and `superseded` preserve history or proof obligations but do not block. `need-evidence`, `capture_candidate`, and `unknown` do not compile as exclusions.
+Only `active` may support a reminder of a narrow canonical route constraint.
+`accepted_risk`, `stale`, `reopened`, and `superseded` preserve history or proof
+obligations but do not block. `need-evidence`, `capture_candidate`, and `unknown`
+do not compile as exclusions. Compiled reminders never enforce the runtime gate.
 
 Never edit/delete notes or the canonical ledger.
+
+Follow exact `MSN-*` relationships for managed updates, including their
+`payload.memory_update.reason` and `evidence_refs`. The retained canonical
+snapshot preserves provenance; its active status does not cancel an admission
+retraction. Canonical route status and current memory relevance are separate.
 
 ## Promotion Gate
 
@@ -97,8 +109,17 @@ notes and current canonical projections.
 
 V1 may additionally permit `MEMORY.md` task groups or proven repeated
 preflight procedures in `skills/*`. Do not create either under a v2 contract.
-Choose `none` for incomplete, non-recurrent, weak, retracted, or superseded
-material with no remaining routing value.
+Choose `none` for incomplete, weak, retracted, or superseded material with no
+remaining routing value. Recurrence alone neither proves scope nor determines
+utility; a single well-supported high-impact failure can merit a retrieval cue.
+
+When admitted evidence establishes that a construction prevents the failure in
+the relevant domain while preserving required behavior, prefer a useful locator
+to that owner over a redundant warning. Do not infer such a guarantee from a
+"fixed" label or a passing example. Retire the covered reminder through its
+source-owned correction; preserve guidance for still-applicable variants and
+useful experiment history. A change in memory relevance is not a canonical
+lifecycle transition.
 
 ## Current Verification Rule
 

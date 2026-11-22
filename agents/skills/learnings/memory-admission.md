@@ -2,12 +2,19 @@
 
 ## Memory Admission Gate
 
+This gate governs the custom Learnings source-note channel. Ordinary preferences,
+retrieval hints, and context can use the host's supported native-memory workflow
+directly when that is sufficient; do not bootstrap Ledger or manufacture a
+canonical row to make them eligible. That route does not permit hand-editing
+compiled memory or representing an unadmitted canonical claim as authoritative.
+
 A learning becomes a custom memory-source note only when all four checks pass:
 
 1. the canonical row exists and its ID is known;
 2. evidence is inspectable and embedded in a bounded snapshot;
 3. scope and future behavior are clear;
-4. Phase 2 consideration would plausibly reduce future steering, retries, or search.
+4. Phase 2 consideration would plausibly reduce future steering, retries, or search
+   beyond the useful consequence already carried by existing artifacts.
 
 At least one must also hold:
 
@@ -21,6 +28,13 @@ At least one must also hold:
 Do not admit every `do_more` row, raw chronology, weak `review_later` candidates,
 failed-hypothesis exclusions better owned by `negative-ledger`, operating
 corrections better handled as standing policy, or synesthetic mappings.
+
+When a construction now enforces a previously remembered rule, assess whether a
+small retrieval hint still helps. Retire the redundant reminder through its owner
+only for the supported domain; retain useful experiment evidence and guidance for
+unrepaired versions. A test's passing cases alone do not justify a claim that all
+old failures have become impossible. A source-note withdrawal removes admission
+support, not the truth of the historical observation.
 
 ## Technical generalization
 
@@ -60,28 +74,22 @@ deferred; do not manufacture rows or validation loops.
 
 ## Definition projection and admission
 
-After the source owner accepts admission, load `$memory-source-notes` and pass
-the deterministic projection from the same resolved custody as capture/recall:
+After the source owner accepts admission, load `$memory-source-notes` and use its
+validated adapter with the same resolved custody as capture/recall:
 
 ```bash
-ledger project \
-  --definition "$learnings_definition" \
-  --projection memory-note \
-  --store-root "<context.store_root>" --store-id "<context.store_id>" \
-  --param id=lrn-... \
-  --payload-only \
-  --format json |
-  run_memory_note_tool append \
-    --extension learnings \
-    --kind learning-admission \
-    --codex-home "<layout.codex_home>" \
-    --memory-version "<layout.memory_version>" \
-    --json -
+uv run \
+  "$memory_source_notes_root/scripts/source_memory_note.py" append \
+  --source learnings --operation admit \
+  --catalog-root "$ledger_home" --store-id "<context.store_id>" \
+  --id lrn-... \
+  --codex-home "<layout.codex_home>" --memory-version "<layout.memory_version>"
 ```
 
-Do not reconstruct the payload from prose, `recent`, or query output. Projection
-validates canonical custody and fails closed for a missing/incomplete row; it
-does not decide eligibility. Definition-relative source locators are interpreted
+Do not reconstruct the payload from prose, `recent`, or query output. The adapter
+obtains the canonical projection and retains canonical relationships as source
+provenance, not memory-note identities. It fails closed for invalid custody or a
+missing/incomplete row; it does not decide eligibility. Source locators are interpreted
 through `$ledger`, not as files in a retired checkout. Do not rewrite old
 provenance, fingerprints, or immutable notes during storage adoption.
 
@@ -112,9 +120,18 @@ establish failed delivery or compilation lag.
 
 ## Supersession and Withdrawal
 
-When a canonical learning is superseded or withdrawn from memory relevance,
-append the new canonical row, create a `learning-supersession` or
-`learning-withdrawal` note, reference the previous source-note ID when known,
-and let Phase 2 own compiled memory. Reconcile the corrected source and note
-identity through the supported reader; a correction note alone is not proof of
-downstream invalidation. Never edit/delete old notes or compiled memory.
+When the canonical claim changes, append its supported correction through
+capture/supersession. When only the reminder loses value, preserve the true
+canonical history; no new row or fabricated correction is required.
+
+Use the [managed reminder update](../memory-source-notes/SKILL.md#managed-reminder-updates)
+with `--source learnings`, the canonical `--id`, exact `--prior-note-id MSN-...`,
+and source-approved reason/evidence. `--operation supersede` emits
+`learning-supersession`; `--operation retract` emits `learning-withdrawal`.
+The prior note must be resolved, not merely referenced when convenient. If it
+cannot be identified, leave the update blocked rather than claim withdrawal.
+
+Preserve guidance for unrepaired versions when narrowing a reminder. Reconcile
+source and note identity through the supported reader; a correction note alone
+is not proof of downstream invalidation. Phase 2 owns compiled memory. Never
+edit/delete old notes or compiled memory.

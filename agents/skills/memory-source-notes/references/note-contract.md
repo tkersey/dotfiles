@@ -128,6 +128,78 @@ payload containing the replacement, confirmation, rejection, withdrawal, or reop
 
 Phase 2 updates compiled memory surgically. It never deletes source notes.
 
+## Managed reminder updates
+
+After the source owner accepts withdrawal, identify the exact prior immutable
+note and the evidence supporting the change:
+
+```bash
+uv run \
+  "$memory_source_notes_root/scripts/source_memory_note.py" append \
+  --source learnings --operation retract \
+  --catalog-root "$ledger_home" --store-id "<context.store_id>" \
+  --id lrn-... --prior-note-id MSN-... \
+  --reason "The admitted reminder is no longer needed in its covered scope" \
+  --evidence-ref "<inspectable source-approved evidence>"
+```
+
+Use `--source negative-ledger --id NEG-...` for that source. Use
+`--operation supersede` for a supported replacement. The adapter derives the
+logical kind, reads the prior note through the selected native layout, and
+validates its source identity and scope against the canonical projection.
+Supply additional `--evidence-ref` arguments when needed. Missing or conflicting
+prior identity blocks the update; do not substitute a canonical ID or guess a
+note ID. `inspect` previews the same validated envelope without writing.
+
+Retraction targets the same canonical record and exact admitted scope. A
+Learnings replacement with a different canonical ID must name the old record in
+its canonical `supersedes_id`; its scope may narrow within the same repository.
+Negative Ledger replacement through this adapter targets snapshots of the same
+`NEG-*` record. For replacement by another `NEG-*`, first perform the justified
+source-owned lifecycle change, then withdraw the old admission and separately
+evaluate admission of the replacement. Neither memory operation performs that
+canonical transition for the source owner.
+
+For a Negative Ledger note older than the current snapshot or its immediate
+predecessor, the adapter requires the selected managed store's exact repository
+identity and unchanged complete capture evidence, with consistent nondecreasing
+lifecycle counts. It does not reconstruct historical state from a label. Legacy
+repository labels lack that stable store binding; an older unmatched legacy
+snapshot stays blocked unless an exact supported custody witness is available.
+This limit prevents retiring another store's note merely because its `NEG-*`
+identifier and description match.
+
+The source owner must preserve guidance still needed outside the repaired
+domain. A partial repair is not grounds to withdraw an entire broad reminder;
+select a supported replacement or leave the still-needed guidance in place.
+No update command changes canonical history or an operational exclusion's
+lifecycle. A redundant reminder can be withdrawn while its experiment remains
+true and useful. Pin `--codex-home` and `--memory-version` when a selected layout
+is already known, as for other admissions.
+
+The writer appends an immutable note with a matching operation/kind and an exact
+`MSN-*` relationship. Persistence, reader visibility, and observed downstream
+consolidation remain separate facts. Do not claim compiled removal from a
+successful append or edit compiled memory to manufacture it.
+
+Reconciliation follows explicit note relationships across canonical IDs. Competing
+replacement branches remain unresolved with their update IDs preserved; timestamps
+and fingerprint suffixes do not decide which guidance is authoritative.
+
+The adapter derives these operation/kind pairs:
+
+| Source | Action | Kind | Operation |
+|---|---|---|---|
+| Learnings | Replace admitted guidance | `learning-supersession` | `supersede` |
+| Learnings | Withdraw admitted guidance | `learning-withdrawal` | `retract` |
+| Negative Ledger | Replace admitted guidance | `ledger-supersession` | `supersede` |
+| Negative Ledger | Withdraw admitted guidance | `ledger-retraction` | `retract` |
+
+Canonical `lrn-*` and `NEG-*` identities identify source evidence; only resolved
+`MSN-*` identities establish note relationships. Retraction changes admission
+support without changing canonical history or route state. A persisted update
+does not establish that Phase 2 has consolidated it.
+
 ## Canonical versus admission authority
 
 A note can be authoritative that Phase 2 must consider an event while remaining subordinate to its canonical domain source.

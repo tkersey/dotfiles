@@ -18,9 +18,13 @@ a gain. Repeat variable model outcomes when the claim needs it, not by a fixed
 skill-level round count.
 
 Judge task correctness, supported claim scope, repeated failed routes, incorrectly
-suppressed viable routes, unnecessary checks, tokens, and elapsed time. Record
+suppressed viable routes, destination adequacy, unnecessary reads/writes/checks,
+tokens, and elapsed time. Record
 observed decisions separately from expected ones. Static package checks or manual
 walkthroughs do not establish activation, outcome quality, or causal improvement.
+For the routing cue, compare unchanged skill descriptions with and without the
+`AGENTS.md` paragraph. Observe whether consultation precedes the consequential
+decision and preserves routine no-op behavior; more invocations alone are not a gain.
 
 ## L1: Preserve a narrow observation
 
@@ -89,13 +93,58 @@ no-op/duplicate behavior instead of paraphrasing the rule or bypassing idempoten
 ## L7: Preserve preferences and near misses
 
 Prompt A: "Remember my preference for concise delivery summaries."
-Expected: respect source authority and ordinary source/admission gates; do not
-invent an executable counterexample requirement for a preference.
+Expected: use the supported native-memory owner when sufficient; do not require
+a canonical learning, Ledger bootstrap, or executable counterexample for a
+preference. A custom source-note route retains its separate admission gate.
 
 Prompt B: "Fix this documentation typo. No reusable insight or failed route arose."
 Expected: no memory work merely to manufacture a receipt. Delivery alone does
 not activate Learnings or require a no-op evaluation. Do not bootstrap Ledger or
 activate Negative Ledger solely because an unrelated source was evaluated.
+
+## L8: Current construction can independently settle the decision
+
+Prompt: "The recall summary says this API needs a duplicate-admission warning.
+The current API and its permitted operations are attached. Decide what callers
+must do now."
+Fixture: the supplied current implementation admits a component once and carries
+an opaque projection thereafter; all sanctioned paths preserve its ownership,
+including the required valid reuse path. The history service is unavailable.
+No active exclusion is supplied or implicated by the proposed use.
+
+Expected: derive the current caller behavior from the implementation and its
+preservation argument. Do not block on historical recall or invent its missing
+evidence. If a still-useful memory locator is needed, point to the current owner;
+do not manufacture another warning or claim the old failure never happened.
+
+## L9: Detection and prevention have different scope
+
+Prompt: "We added a regression test. Can we forget the warning now?"
+Fixture A: one accessor test passes, but a second sanctioned producer still
+admits duplicate components. Fixture B: the proposed repair rejects all reuse,
+including reuse explicitly required by the task. Fixture C: the owning task has
+already established a construction that closes all sanctioned duplicate-admission
+paths and preserves required reuse in the stated domain.
+
+Expected: A supports tested detection, not family prevention; B fails preservation.
+Neither justifies retiring still-needed guidance. C supports retiring a redundant
+reminder within that domain without repeating adequate proof or extending the
+claim to unrepaired maintained versions. Source and memory changes retain their
+existing authority and lifecycle requirements.
+
+## L10: Preserve an experiment after its warning becomes redundant
+
+Prompt: "The new constructor prevents the stale configuration bug. The old
+experiment compares the memory and latency tradeoffs of two cache designs.
+What should we retain?"
+Fixture: the constructor's scoped guarantee and valid-path preservation are
+established; the comparison remains relevant to an upcoming design decision.
+An earlier memory admission repeats the stale-configuration warning.
+
+Expected: retain or link the comparison evidence where it remains useful;
+evaluate the redundant reminder separately, preserving any residual scope or
+useful retrieval hint. Do not declare the historical experiment false, capture
+a duplicate result, or claim a source-note withdrawal proves compiled removal.
 
 ## N1: Challenge the breadth of a prohibition
 

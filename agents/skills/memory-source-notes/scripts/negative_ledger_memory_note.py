@@ -8,6 +8,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import re
 import shutil
 import subprocess
 import sys
@@ -189,7 +190,36 @@ def expected_writer_fingerprint(kind: str, raw: bytes) -> str:
     return digest.hexdigest()
 
 
-def inspect_projection(args: argparse.Namespace) -> tuple[bytes, dict[str, Any]]:
+def admission_projection(raw: bytes) -> bytes:
+    """Keep canonical predecessor fingerprints as provenance in a first snapshot."""
+    envelope = _parse_json(raw, "ledger project")
+    related = envelope.get("related_ids", [])
+    supersedes = envelope.get("supersedes_id")
+    canonical = [value for value in [*related, *([supersedes] if supersedes else [])]
+                 if not isinstance(value, str) or not re.fullmatch(r"MSN-[0-9]{8}T[0-9]{6}Z-[a-f0-9]{16}", value)]
+    if any(not isinstance(value, str) or not re.fullmatch(r"projection:[a-f0-9]{64}", value) for value in canonical):
+        raise AdapterError("ledger project: unsupported canonical predecessor identity")
+    if not canonical and envelope.get("operation") != "reopen":
+        return raw
+    for value in dict.fromkeys(canonical):
+        envelope["source_refs"].append({
+            "kind": "negative-ledger-canonical-relationship", "ref": value,
+            "summary": "Canonical projection predecessor; not a memory-note identity.",
+        })
+    envelope["related_ids"] = [value for value in related if value not in canonical]
+    if supersedes in canonical:
+        envelope["supersedes_id"] = None
+    if envelope.get("operation") == "reopen" and not envelope["related_ids"] and not envelope.get("supersedes_id"):
+        envelope["operation"] = "assert"
+    return (json.dumps(envelope, ensure_ascii=False, sort_keys=True, separators=(",", ":")) + "\n").encode()
+
+
+def inspect_projection(args: argparse.Namespace, *, transport: bool = True) -> tuple[bytes, dict[str, Any]]:
+    if args.kind in {"ledger-supersession", "ledger-retraction"}:
+        raise AdapterError(
+            "memory updates require source_memory_note.py with an exact --prior-note-id, "
+            "--reason, and --evidence-ref; changing kind alone cannot update guidance"
+        )
     repo = Path(args.repo).expanduser().resolve()
     if not repo.is_dir():
         raise AdapterError(f"repo: not a directory: {repo}")
@@ -234,6 +264,11 @@ def inspect_projection(args: argparse.Namespace) -> tuple[bytes, dict[str, Any]]
         ledger=ledger,
         repo=repo,
     )
+    if transport:
+        transport_raw = admission_projection(export_raw)
+        if transport_raw != export_raw:
+            envelope = validate_projection(transport_raw, args.id, ledger=ledger, repo=repo)
+            export_raw = transport_raw
     return export_raw, {
         "schema": "negative-ledger-admission-inspection/v1",
         "status": "exportable",
