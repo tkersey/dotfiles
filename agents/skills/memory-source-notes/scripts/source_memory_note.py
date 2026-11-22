@@ -212,6 +212,21 @@ def validated_update(source: str, raw: bytes, note: dict[str, Any],
     current = negative._parse_json(raw, "canonical projection")
     if source_id(source, current) != source_id(source, frozen):
         return None
+    if frozen != current:
+        if source != "negative-ledger" or frozen.get("scope") != current.get("scope"):
+            return None
+        previous, latest = frozen.get("payload"), current.get("payload")
+        if not isinstance(previous, dict) or not isinstance(latest, dict):
+            return None
+        # A lifecycle successor may differ, but a reused local ID is not a
+        # cross-store identity. Require the current managed store and capture.
+        fingerprint = previous.get("projection_fingerprint")
+        linked_predecessor = (isinstance(fingerprint, str)
+            and re.fullmatch(r"[a-f0-9]{64}", fingerprint)
+            and fingerprint == latest.get("previous_projection_fingerprint")
+            and previous.get("repository_id") == latest.get("repository_id"))
+        if not linked_predecessor and not same_managed_capture(previous, latest, repository_identity):
+            return None
     return expected, frozen == current
 
 

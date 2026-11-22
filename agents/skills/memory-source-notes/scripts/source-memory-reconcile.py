@@ -723,6 +723,7 @@ def source_report(
                 raw, export_error = native_export(ledger, source, record_id, cwd=cwd, native_args=native_args)
         expected = None
         conflicting_updates = []
+        independent_tips = []
         scoped_candidates = [candidate for candidate in candidates if candidate.get("id") in scoped_ids]
         note = scoped_candidates[0] if scoped_candidates else None
         if source == "synesthesia":
@@ -770,12 +771,27 @@ def source_report(
                 if updates:
                     replaced = {pair[0]["payload"]["memory_update"]["prior_note_id"] for pair in updates}
                     tips = [pair for pair in updates if pair[0]["id"] not in replaced]
-                    if len(tips) != 1:
+                    # Different admissions can each have their own update chain.
+                    # Only forks within the same chain are competing updates.
+                    update_by_id = {pair[0]["id"]: pair for pair in updates}
+                    def root_of(pair):
+                        seen = set()
+                        current = pair[0]["id"]
+                        while current in update_by_id:
+                            if current in seen:
+                                return None
+                            seen.add(current)
+                            current = update_by_id[current][0]["payload"]["memory_update"]["prior_note_id"]
+                        return current
+                    roots = [root_of(pair) for pair in tips]
+                    if not tips or None in roots or len(set(roots)) != len(roots):
                         export_error = "multiple unresolved memory guidance updates; source review required"
                         conflicting_updates = [pair[0]["id"] for pair in updates]
                         note, expected = None, None
                     else:
-                        note, expected = tips[0]
+                        note, expected = sorted(tips, key=lambda pair: pair[0]["id"])[0]
+                        if len(tips) > 1:
+                            independent_tips = sorted(tips, key=lambda pair: pair[0]["id"])
                 else:
                     note, expected = max(exact_candidates, key=lambda pair: (
                         pair[0].get("captured_at", ""), pair[0].get("id", "")))
@@ -813,6 +829,20 @@ def source_report(
                 "source_snapshot_current": source_current,
             }
             if not source_current and not export_error:
+                row["status"] = "needs-source-review"
+        if independent_tips:
+            chains = [{"update_note_id": tip["id"], "prior_note_id": tip["payload"]["memory_update"]["prior_note_id"],
+                       "state": "withdrawn" if tip["operation"] == "retract" else "replacement",
+                       "source_snapshot_current": update_source_current[tip["id"]]}
+                      for tip, _ in independent_tips]
+            # Do not claim all guidance withdrawn when another admission remains.
+            roots = {root_of(pair) for pair in independent_tips}
+            admissions = {candidate["id"] for candidate, _ in exact_candidates
+                          if candidate.get("id") not in guidance_updates and candidate.get("id")}
+            all_withdrawn = all(chain["state"] == "withdrawn" for chain in chains) and admissions <= roots
+            row["memory_guidance"] = {"state": "withdrawn" if all_withdrawn else "mixed",
+                                      "chains": chains, "compiled_effect": "unverified"}
+            if not all(chain["source_snapshot_current"] for chain in chains) and not export_error:
                 row["status"] = "needs-source-review"
         if conflicting_updates:
             row["memory_guidance"] = {"state": "unresolved", "update_note_ids": sorted(conflicting_updates),
