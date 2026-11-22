@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {mkdtempSync, readFileSync, writeFileSync, readdirSync, rmSync, existsSync, symlinkSync} from 'node:fs';
+import {mkdtempSync, readFileSync, writeFileSync, readdirSync, rmSync, existsSync, symlinkSync, realpathSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
@@ -12,7 +12,7 @@ const cli = fileURLToPath(new URL('./codec-handoff-fixture.mjs', import.meta.url
 const passed = arm => arm.artifact_assessment.observations.filter(item => item.pass).length;
 
 function inputs(t, checkpoint = programs.repaired, report = 'none') {
-  const root = mkdtempSync(resolve(tmpdir(), 'codec-handoff-'));
+  const root = mkdtempSync(resolve(realpathSync(tmpdir()), 'codec-handoff-'));
   t.after(() => rmSync(root, {recursive: true, force: true}));
   const checkpointFile = resolve(root, 'checkpoint.mjs');
   const summaries = [resolve(root, 'left.md'), resolve(root, 'right.md')];
@@ -176,7 +176,7 @@ test('changes to the other subject evidence during execution are retained', t =>
 test('unavailable executions remain unavailable', t => {
   const record = preparePair(inputs(t));
   writeFileSync(resolve(record.arms[0].directory, 'codec.mjs'), 'while (true) {}');
-  const result = assessPair(record, {timeout: 100});
+  const result = assessPair(record, {timeout: 5000});
   assert.equal(result.arms[0].artifact_assessment.execution, 'unavailable');
   assert.equal(result.arms[0].artifact_assessment.artifact_pass, false);
   assert.equal(result.behavioral_judgment, 'not_automated');
