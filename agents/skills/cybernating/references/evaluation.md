@@ -188,6 +188,8 @@ matter only in combination or under harder conditions.
 
 During optimization, each accepted change becomes the working incumbent; preserve
 the original baseline.
+Check an edit's premises against the version it actually follows: an earlier
+change can alter the inputs, scope, or authority that made the edit applicable.
 Confirm the assembled candidate against that original as well as its predecessor:
 several local wins can interact. Restore the native entry and task rather than
 shipping a laboratory prompt that was never installed. Freeze the final source,

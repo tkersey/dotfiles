@@ -65,12 +65,26 @@ a shared generating mechanism, interaction among otherwise adequate parts,
 loss of a deciding distinction, and independent issues. Grouping remains
 revisable; shared wording, file location, or symptom does not establish one cause.
 
-When selecting an intervention, use the supported relationship to generate a
-repair at its owning decision or representation, including removing repeated
-interpretation or preserving a necessary distinction across transitions. Compare
-sufficient local repairs when they remain live alternatives. Select for coverage
-and preserved valid behavior, not the number of edits or issue labels. A coherent
-repair may have several parts; independent causes may need separate remedies.
+When selecting an intervention, use the supported relationship to locate its
+owning decision or representation. If information loss is a live explanation,
+look for task-grounded cases with the same available decision-relevant information
+but no common permitted decision. Account for feasible authorized retrieval within
+the accepted constraints; different histories or different sets of valid actions
+alone do not require different responses. Trace whether the deciding fact was
+never observed, erased, unavailable, unretrieved, misinterpreted, or lost in a
+later transformation. Failure to find such cases does not establish sufficiency.
+
+Derive a candidate that retains the deciding evidence and its applicable scope,
+preserves access to its source before the decision, or repairs how it is used.
+If the evaluator misses the relationship, locate its repair separately from any
+target repair; correcting measurement need not change the target's behavior.
+Preserve unsupported distinctions as uncertainty; wording cannot supply missing
+facts, tool capabilities, or authority. Include relevant continuations: a summary
+may support the current conclusion while omitting the cursor needed to act next.
+Compare sufficient local repairs, including removing repeated interpretation,
+when they remain live alternatives. Select for coverage and preserved valid
+behavior, not the number of edits or issue labels. A coherent repair may have
+several parts; independent causes may need separate remedies.
 
 Reconcile this view when new evidence changes the decision. A successful member
 or new candidate does not discharge untested or residual obligations; close each
