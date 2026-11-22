@@ -1,14 +1,12 @@
 # Negative Evidence Compaction
 
-If the same route failure family appears three or more times, compact to a family exclusion.
+Repeated observations can justify inspecting a shared mechanism; their count
+does not establish a family exclusion. Preserve the distinct observations and
+conditions needed to assess that inference.
 
-```yaml
-negative_compaction:
-  compacted_card_id:
-  hypothesis_family:
-  excluded_route_family:
-  evidence_refs: []
-  current_applicability:
-  reopening_test:
-  safest_next_frontier:
-```
+Use the existing [scope challenge](capture.md#exclusion-scope-challenge) before
+claiming broader suppression. Consolidate only when the supported scope and
+future decision benefit justify it, through the existing [lifecycle](lifecycle.md)
+with source links to retained evidence. Do not introduce a compaction card or
+mandatory recurrence threshold. An existing experiment, construction, or bounded
+record may already be sufficient.

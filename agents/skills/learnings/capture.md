@@ -2,6 +2,12 @@
 
 ## Write Workflow
 
+Enter only after [destination selection and Capture Gate](SKILL.md#decision-before-retention)
+justify canonical retention. A useful fix or a request to remember does not by
+itself require a new learning row. Preserve an experiment when its conditions,
+comparison, or result still inform future decisions; link adequate existing
+artifacts rather than copying their contents into another record.
+
 1. Resolve the intended personal store through [store guidance](store.md),
    including `$ledger`'s first-use owner preparation. Reuse its returned selector.
 2. Gather exact evidence, immutable artifact identity where relevant, and changed
@@ -44,7 +50,9 @@ Use existing record fields; do not add a parallel schema or evidence store:
 - `learning`: the conditional claim and the observation it preserves. State an
   inferred mechanism as an inference, not an observed fact.
 - `application`: prerequisites, current artifact facts to inspect, and when not
-  to apply the rule. An untested boundary is not a proved failure.
+  to apply the rule. Identify an owning construction or check when it now carries
+  the result, including its domain and any residual reminder still needed.
+  An untested boundary is not a proved failure.
 - `evidence`: inspectable source/artifact references, the actual check/result,
   executed boundary challenges, and material uncertainty or untested scope.
   Keep proposed checks distinct from executed evidence.
@@ -67,6 +75,12 @@ for relevant non-replacements. Preserve supporting evidence and revision reasons
 Leave unrelated rules alone. Admitted guidance changes follow
 [supersession or withdrawal](memory-admission.md#supersession-and-withdrawal);
 never edit old events or compiled memory.
+
+A repair in the current artifact need not make the historical observation false.
+Retain evidence that still informs older versions, comparisons, or unexplored
+conditions. When only a reminder has become redundant, use the admission lifecycle
+without inventing a contradictory canonical claim. A compact locator to the owning
+construction may remain useful even when repeating the old warning is not.
 
 No change is valid. Do not append a warning beside a rule needing correction,
 manufacture paraphrases to count reuses, or bypass idempotency to add another

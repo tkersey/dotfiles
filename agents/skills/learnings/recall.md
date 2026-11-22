@@ -23,8 +23,8 @@ full context. Shared history does not establish applicability to this worktree.
 
 ## Before consequential use
 
-Before a recalled learning materially changes the approach, inspect its complete
-canonical record, not just its score or summary:
+When a recalled claim supplies a material premise for the approach, inspect its
+complete canonical record, not just its score or summary:
 
 ```bash
 ledger project \
@@ -34,6 +34,13 @@ ledger project \
   --param id=lrn-... \
   --format json
 ```
+
+If current code, an authoritative requirement, or existing verification
+independently establishes the needed behavior, use that evidence directly.
+A historical hit can be a locator without becoming a premise; do not retrieve
+its full history solely to authorize a conclusion already established elsewhere.
+This shortcut cannot establish an unknown premise or bypass a relevant active
+Negative Ledger exclusion.
 
 Check evidence, application conditions, and material uncertainty against the
 current artifact. An unreconciled source may contain a later correction or
@@ -48,6 +55,11 @@ it unapplied. An inapplicable learning does not prohibit the route. If current
 witnessed evidence corrects the learning, evaluate the existing capture gate and
 supersession workflow. Keep routine use-time judgments internal; do not generate
 a receipt or append merely because a learning was recalled.
+
+When an adequate construction now enforces the old lesson, rely on its current
+boundary and preserve only useful retrieval guidance. Reassess an existing
+reminder through its owner when it has become redundant; do not erase historical
+evidence or infer that maintained versions outside that construction are repaired.
 
 ## Co-application
 

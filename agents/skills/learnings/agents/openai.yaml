@@ -2,5 +2,5 @@ policy:
   allow_implicit_invocation: true
 interface:
   display_name: "Learnings"
-  short_description: "Recall and capture reusable execution learnings"
-  default_prompt: "Use $learnings to recall relevant execution evidence or capture an observed change to a reusable decision, durable footgun, or prior learning, with memory admission only after source acceptance."
+  short_description: "Assess and preserve consequential experience"
+  default_prompt: "Use $learnings to establish what experience supports, check its applicability, and choose the destination that saves future reasoning before capturing or admitting evidence."

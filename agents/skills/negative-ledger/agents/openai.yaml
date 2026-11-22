@@ -2,5 +2,5 @@ policy:
   allow_implicit_invocation: true
 interface:
   display_name: "Negative Ledger"
-  short_description: "Check prior failures before retrying a route"
-  default_prompt: "Use $negative-ledger to discover relevant prior failures before selecting a resembling retry, then assess current applicability and the exact route gate; capture only durable evidence that changes future routing."
+  short_description: "Assess failed routes and preserve useful evidence"
+  default_prompt: "Use $negative-ledger to establish what this failure supports, check current applicability and any exact route gate, and choose where useful evidence belongs before creating a record."

@@ -1,13 +1,11 @@
 # Negative-Evidence Fresh-Eyes Pass
 
-Before handoff, reread every active exclusion and every reopened/stale candidate as if it might be overbroad, stale, or hiding a repeated dead end under a new name.
+Reconsider an exclusion when its scope, applicability, or failure mechanism could
+change the current decision. Use [route discovery and gating](route-gate.md) for
+a resembling retry and the [scope challenge](capture.md#exclusion-scope-challenge)
+for disputed breadth. Inspect the relevant records, not every historical entry.
 
-Ask:
-- Is this exclusion tied to a narrow witnessed hypothesis rather than a broad strategy family?
-- Does it still apply to the current artifact state?
-- Are we banning an entire approach because one implementation failed?
-- Is there a concrete reopening test?
-- Did the current run repeat a disconfirmed path with renamed variables, a different wrapper, or a weaker proof bar?
-- Is any `learnings` hit being treated as active without evidence-anchor and applicability checks?
-
-If the pass changes applicability, update active/stale/superseded/reopened/unknown status before handoff. If it finds no material delta, record `fresh_eyes_delta: none` in the handoff.
+Use [lifecycle](lifecycle.md) only when evidence supports a source-owned change.
+Inapplicability to the current artifact does not make a record stale everywhere.
+Routine handoff creates no sweep, transition, receipt, or capture requirement;
+an unchanged judgment needs no write.

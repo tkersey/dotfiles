@@ -2,7 +2,7 @@
 name: memory-source-notes
 description: "Transport source-approved Learnings, Negative Ledger, and Synesthesia admissions through validated adapters to the native memory-note CLI; inspect selected memory layouts, copy extension instructions, and reconcile canonical records with immutable notes and compiled note references. Use for source handoffs or explicit memory transport, repair, or reconciliation requests. Never decides source eligibility or edits compiled memory."
 metadata:
-  version: "2.2.0"
+  version: "2.3.0"
 ---
 
 # Memory Source Notes
@@ -217,11 +217,14 @@ uv run \
   --kind ledger-projection
 ```
 
-Use `ledger-status-transition`, `ledger-supersession`, or `ledger-retraction`
-only when the source owner classifies that event. The adapter runs
+Use `ledger-status-transition` only when the source owner classifies that event.
+Supersession and withdrawal use the [managed reminder update](#managed-reminder-updates)
+path below; an ordinary projection cannot become a retraction by changing its kind.
+The adapter runs
 definition-bound `ledger doctor`, obtains the authoritative `memory-note`
-projection, validates identity and projection completeness, preserves
-the deterministic export bytes, and invokes `memory-note` idempotently. It
+projection, validates identity and completeness, preserves canonical evidence,
+and normalizes predecessor IDs as source provenance before invoking `memory-note`
+idempotently. It
 rejects `need-evidence`, `capture_candidate`, `unknown`, and incomplete active
 projections.
 
@@ -236,6 +239,33 @@ uv run \
   --store-id "<context.store_id>" \
   --id NEG-...
 ```
+
+## Learnings validated adapter
+
+After `$learnings` selects custom admission, use the canonical source identity:
+
+```bash
+uv run \
+  "$memory_source_notes_root/scripts/source_memory_note.py" append \
+  --source learnings --operation admit \
+  --catalog-root "$ledger_home" --store-id "<context.store_id>" \
+  --id lrn-...
+```
+
+The adapter reads and validates the canonical projection. Canonical `lrn-*`
+relationships remain source provenance; they are never passed off as `MSN-*`
+note relationships. Use `inspect` instead of `append` to inspect without writing.
+An already-admitted predecessor requires the source-approved supersession route
+below when its guidance is being replaced. Ordinary native remember requests do
+not use this adapter or require a canonical learning.
+
+## Managed reminder updates
+
+Before replacing or withdrawing managed guidance, read the
+[update procedure and operation contract](references/note-contract.md#managed-reminder-updates).
+It owns exact prior-note resolution, source/scope checks, and immutable transport.
+The source owner decides eligibility; memory updates never change canonical
+history or operational exclusions. Use `inspect` for a read-only preview.
 
 ## Synesthesia current-state digest
 
@@ -305,19 +335,6 @@ The doctor reports:
 - `memory-note` availability and doctor output;
 - exact source-note IDs observed in the selected compiled artifacts;
 - the likely failing stage and next action.
-
-## General writer command
-
-For extensions without a dedicated adapter:
-
-```bash
-run_memory_note_tool append \
-  --extension <extension> \
-  --kind <kind> \
-  --codex-home "<layout.codex_home>" \
-  --memory-version "<layout.memory_version>" \
-  --json -
-```
 
 ## Proof lines
 
@@ -434,7 +451,7 @@ reason. The reconciler uses that input only to distinguish a real admission gap
 from an ineligible or unreviewed record.
 
 After an owning source explicitly accepts a candidate, use its documented
-adapter or exact native `memory-note` projection. Keep backfill bounded and
+validated adapter. Keep backfill bounded and
 auditable; never bulk-admit every source row.
 
 See [source-store-layout.md](references/source-store-layout.md) and

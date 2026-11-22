@@ -58,6 +58,24 @@ and reopening criteria. `need-evidence`, `capture_candidate`, `unknown`, and
 incomplete active projections are never admissible. Transport validity does not
 decide recurrence or future utility; `$negative-ledger` retains that gate.
 
+An ordinary admission preserves this canonical payload while moving
+`projection:<fingerprint>` predecessor relationships into source references.
+Canonical `status=reopened` can therefore be admitted with memory operation
+`assert` when no prior memory event exists. Replacing an existing admission uses
+the managed update path and its exact `MSN-*` relationship.
+
+## Managed guidance updates
+
+The managed update adapter preserves the canonical evidence snapshot and adds
+`payload.memory_update` containing the exact `prior_note_id`, source-approved
+`reason`, inspectable `evidence_refs`, and the original source-envelope fields
+needed to reconstruct the immutable snapshot. These are transport provenance for
+retiring or replacing admitted guidance; they introduce no canonical lifecycle
+state. The envelope's operation and `MSN-*` relationships own the note update.
+Read-only reconciliation reconstructs the adapter output before attributing an
+update and separately checks whether its source snapshot remains current.
+Compiled visibility remains a separate observation.
+
 ## Synesthesia mapping
 
 The canonical envelope owns authority, scope, source evidence, and prior-note relationships. The skill-facing payload owns only the reversible sensory mapping:

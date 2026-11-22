@@ -4,7 +4,7 @@ A Negative Evidence Ledger records witnessed disconfirmation and current applica
 
 ## Entry Validity
 
-An entry may affect routing only when all are true:
+An entry may support an active exclusion only when all are true:
 
 - narrow hypothesis;
 - named attempted change or decision;
@@ -16,7 +16,10 @@ An entry may affect routing only when all are true:
 - narrow exclusion rule;
 - explicit reopening criteria.
 
-If any condition is missing, use `capture_candidate`, `need-evidence`, `unknown`, or `stale`; do not block.
+If any condition is missing, do not block. Retain a candidate only when it adds
+future decision value, using the [capture workflow](capture.md). An existing
+experiment can support investigation without becoming an active exclusion.
+Missing evidence does not itself justify a lifecycle transition to `stale`.
 
 ## NER-v2 Record
 

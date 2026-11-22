@@ -6,6 +6,12 @@
 - When choosing or revising an abstraction, establish its adequacy through the relationships required by the task: the uses, compositions, interpretations, and observations it must support. Derive those obligations independently of the candidate; preserve required behavior and distinctions that permitted future use can observe. Reuse a sufficient existing argument, and require universality or uniqueness only when the claim calls for it.
 - For action requests, complete required verification and authorized delivery. Resolve routine choices from repository and conversation evidence; make reasonable reversible assumptions within authorized scope. Ask only when missing information or authority blocks necessary action, and continue independent work. Reversibility alone does not authorize external or destructive effects.
 
+## Reuse consequential experience
+
+- Use `$learnings` when prior experience could materially change a current decision, or when new evidence changes a reusable decision rule.
+- Use `$negative-ledger` before consequential retries of failed approaches, when a proposed route resembles a documented failure, or when durable failure evidence changes which future approaches remain justified.
+- Consult the selected skill to assess what the evidence establishes, whether it applies, and where the result belongs. Routine completion alone is not a trigger, and invocation does not require creating a record.
+
 ## Editing Constraints Override
 
 - Override generic guidance to stop on unexpected working-tree changes: treat them as concurrent edits and keep working.

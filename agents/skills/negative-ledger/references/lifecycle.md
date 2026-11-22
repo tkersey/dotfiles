@@ -6,6 +6,22 @@ a status-only event. For disputed breadth, narrowing or supersession, apply its
 [scope challenge](capture.md#exclusion-scope-challenge) first. Preserve an active
 exact applicable gate until a legal owner transition changes it.
 
+## Construction and continued relevance
+
+An adequate construction may remove the need to remember a warning in its
+covered domain. Establish the relevant invariant, enforced boundary, permitted
+operations, and preservation of required-valid behavior from inspectable
+implementation and verification. A repaired example or a passing test alone does
+not establish that the failure family is unavailable.
+
+Check the old record's scope before changing lifecycle. A new implementation
+does not make a true historical failure false, nor make an exclusion stale for
+maintained variants it still covers. If only a memory reminder has lost value,
+use [memory withdrawal](memory-admission.md) without inventing a canonical status
+change. If the exclusion itself is overbroad, retain the still-supported narrow
+case and use proof-bearing supersession. Reopening requires a real change to an
+existing criterion; a discovered error in the old claim is not such a change.
+
 ## Lifecycle Transitions
 
 Use append-only status events. Every transition requires JSON proof with reason

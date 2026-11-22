@@ -59,7 +59,7 @@
       }
      }
     },
-    "laws": [["field-equal",{"input":"note","left":"/payload/repository_id","right":"/scope/repo"}],["implies",{"input":"note","if":"/payload/status","equals":"active","rules":[["bounded-array",{"path":"/payload/applicability_conditions","min":1,"max":128}],["bounded-array",{"path":"/payload/reopening_criteria","min":1,"max":128}],["bounded-string",{"path":"/payload/exclusion_rule","trimmed_min":1,"max":1048576}]]}],["implies",{"input":"note","if":"/payload/status","equals":"reopened","then":"/operation","then_equals":"reopen"}],["implies",{"input":"note","if":"/operation","equals":"reopen","then":"/payload/status","then_equals":"reopened"}],["implies",{"input":"note","if":"/operation","equals":"reopen","rules":[["bounded-array",{"path":"/related_ids","min":1,"max":128}]]}]]
+    "laws": [["field-equal",{"input":"note","left":"/payload/repository_id","right":"/scope/repo"}],["implies",{"input":"note","if":"/payload/status","equals":"active","rules":[["bounded-array",{"path":"/payload/applicability_conditions","min":1,"max":128}],["bounded-array",{"path":"/payload/reopening_criteria","min":1,"max":128}],["bounded-string",{"path":"/payload/exclusion_rule","trimmed_min":1,"max":1048576}]]}],["implies",{"input":"note","if":"/operation","equals":"reopen","then":"/payload/status","then_equals":"reopened"}],["implies",{"input":"note","if":"/operation","equals":"reopen","rules":[["bounded-array",{"path":"/related_ids","min":1,"max":128}]]}]]
    }
   }
  },

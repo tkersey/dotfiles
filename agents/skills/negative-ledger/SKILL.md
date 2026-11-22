@@ -1,8 +1,8 @@
 ---
 name: negative-ledger
-description: "Check prior failures before retries; assess durable failures, reverts, and pivots. Use for no-effect attempts, regressions, or abandoned strategies that can change future routing, and for negative-evidence lifecycle changes or admission to memory. Skip ordinary successful closeout and transient errors without a durable failed hypothesis."
+description: "Check prior failures before consequential retries; assess what durable failures, reverts, and pivots establish and where useful evidence belongs. Use when a failed approach can change future routing, or for exclusion scope, lifecycle, and memory corrections. Skip ordinary successful closeout and transient errors without a durable failed hypothesis."
 metadata:
-  version: "8.4.0"
+  version: "8.5.0"
 ---
 
 # Negative Ledger
@@ -10,6 +10,39 @@ metadata:
 ## Mission
 
 Prune semantic search space without turning stale failures into permanent dogma.
+Establish the supported claim and its applicability, then choose where it can
+reduce future repeated reasoning. Invocation need not produce a record.
+
+## Evidence and destination
+
+Before optional capture, answer from available task evidence:
+
+1. **What does this establish?** Separate the observed outcome, inferred cause,
+   and proposed exclusion. A failed implementation or an inconclusive experiment
+   does not establish that the strategy cannot work.
+2. **What makes it applicable here?** Identify the material artifact, mechanism,
+   workload, and requirement conditions. Preserve uncertainty outside the tested
+   or justified domain. Existing exclusions still require the canonical gate.
+3. **Where will it save future reasoning?** Reuse an adequate construction,
+   regression check, standing policy, or native memory when it already serves the
+   needed decision. Retain an experiment with its existing owner when its setup,
+   result, and limits matter without supporting a ban. Select canonical negative
+   evidence when its scoped history or exclusion lifecycle adds decision value.
+
+Choose by the required future use, not a fixed storage hierarchy. Ordinary native
+memory needs no new `NEG-*` record; it cannot acquire operational exclusion
+authority. If another destination suffices, retain `no-op` without bootstrapping
+storage. Explicit canonical operations and applicable route checks still run.
+
+Within the task's implementation authority, prefer a construction that prevents
+the supported failure while preserving required-valid behavior when adequate.
+Bind that claim to the enforced boundary, permitted operations, and covered
+variants; a passing regression test alone establishes neither family prevention
+nor removal of all bypasses. Keep useful experiment history even when a warning
+becomes redundant. Construction work and reminder retirement remain subject to
+their existing owners; a repair proposal grants neither mutation nor a retry.
+
+## Canonical authority
 
 The structural boundary is the passive definition:
 
@@ -34,7 +67,7 @@ Ledger replays/projects the declared protocol without semantic authority.
 whether to compile a route constraint, routing trigger, or reusable memory skill.
 
 Never use memory notes as the operational route gate. For accepted admission,
-load `$memory-source-notes` before invoking `run_memory_note_tool` in the same turn.
+load `$memory-source-notes` before invoking its validated adapter in the same turn.
 
 ## Trigger Cues
 
@@ -62,8 +95,9 @@ Assess material candidates against the current artifact, then project the exact
 `route-gate` using established identities. A route-label miss is not absence of
 relevant evidence. A recalled learning may trigger the check, not block directly.
 After a material strategy pivot, regression-confirmed revert, or closeout leaving
-a failed route likely to recur, evaluate capture. A transient red test, syntax
-error, first incomplete implementation, or discarded typo is `no-op` unless it
+a failed route likely to recur, evaluate evidence and destination before capture.
+A transient red test, syntax error, first incomplete implementation, or discarded
+typo is `no-op` unless it
 exposes a durable failed hypothesis that changes future routing.
 
 Retain exactly one internal disposition for each material activation:
@@ -72,7 +106,7 @@ Retain exactly one internal disposition for each material activation:
 mapped       current ledger checked; no write required
 captured     witnessed negative evidence appended
 transitioned existing NEG record changed lifecycle state
-no-op        activation evaluated; evidence was not durable or route-shaping
+no-op        no new canonical record needed; another destination suffices or evidence does not qualify
 blocked      context/store unavailable or invalid, or an active applicable exclusion matched
 ```
 
@@ -100,9 +134,10 @@ lexical overlap is suggest-only.
 
 ## Selected guidance
 
-Evaluate from task evidence before resolving storage. A transient failure without
-a durable route-shaping hypothesis needs only this entrypoint: retain `no-op` and
-return. Do not read operation manuals merely because the skill activated.
+Evaluate evidence and destination before resolving storage unless a canonical
+operation or relevant route check is required. A transient failure or an adequate
+existing destination needs only this entrypoint: retain `no-op` and return.
+Do not read operation manuals merely because the skill activated.
 
 | Selected work | Required guidance before that decision or effect |
 |---|---|

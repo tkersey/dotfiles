@@ -24,27 +24,20 @@ Activate when any of these could change the next route:
 - a learning hit describes a failed hypothesis that may need promotion;
 - an artifact-state change may satisfy a recorded reopening criterion.
 
-The first action is normally read-only `route-candidates` discovery from component,
-invariant, and failure-mechanism terms. Assess the candidates, then use the exact
-`route-gate` with established scope/artifact identities. Do not capture merely
-because retrieval was activated.
+For a resembling retry or potentially applicable exclusion, begin with read-only
+`route-candidates` discovery from component, invariant, and failure-mechanism
+terms. Assess the candidates, then use the exact `route-gate` with established
+scope/artifact identities. For a newly observed failure, first assess its claim,
+applicability, and destination using the [entrypoint](../SKILL.md#evidence-and-destination).
+Do not resolve storage solely to produce a no-op receipt.
 
-## Capture gate
+## Capture and exclusion
 
-Capture only when the event has all of the following:
-
-- a narrow hypothesis or route;
-- a named attempted change or decision;
-- an inspectable witness;
-- a stated observed outcome and failure class;
-- structured source references to inspectable evidence;
-- a stable project scope and immutable artifact identity;
-- current artifact-state applicability;
-- an explicit supported scope and its identity;
-- a narrow exclusion rule and future-routing delta;
-- identified reopening criteria with explicit conditions.
-
-Otherwise retain `no-op`, `capture_candidate`, `need-evidence`, or `unknown` as appropriate. Do not create an active exclusion.
+Use the [capture workflow and scope challenge](capture.md). A retained experiment
+may affect a future investigation without supporting an exclusion. An adequate
+existing construction, test, policy, native memory, or experiment can make a new
+canonical record unnecessary. Preserve uncertain canonical candidates only when
+their retention adds decision value; incomplete evidence cannot become `active`.
 
 ## Do not activate solely for
 
@@ -62,22 +55,29 @@ Otherwise retain `no-op`, `capture_candidate`, `need-evidence`, or `unknown` as 
 mapped       read-only route check completed
 captured     new witnessed record appended
 transitioned existing record lifecycle changed
-no-op        cue evaluated but no durable negative evidence qualified
+no-op        no new canonical record needed; another destination suffices or evidence does not qualify
 blocked      operational gate unavailable/invalid or active exclusion matched
 ```
 
 ## Evaluation
 
-Review empirical decision episodes, not raw mention counts. A healthy week may have zero captures, but a week containing witnessed reverts, repeated routes, or regression-driven pivots should not have zero activations.
+Review empirical decision episodes, not raw mention counts. Compare useful
+selection before consequential decisions, unnecessary invocations, outcome
+quality, and total work. Zero captures can be correct when existing owners
+already retain what future decisions need.
 
 For each candidate episode, ask:
 
 1. Did `$negative-ledger` appear before the next route was selected?
-2. Did it discover current candidates, assess applicability, and project the exact
-   gate rather than rely on a label miss or immediately capture?
+2. When prior failure could constrain a proposed route, did it discover current
+   candidates, assess applicability, and project the exact gate rather than rely
+   on a label miss or immediately capture?
 3. Did transient failures remain `no-op`?
-4. Did a qualified event produce durable, narrow evidence?
+4. Did useful evidence reach an adequate existing or new destination with its
+   scope preserved and without redundant capture?
 5. Did blocking require an active, fully validated, witnessed, exact native-scope
    match with current applicability and authoritative lifecycle state?
 6. Did invalid reads remain distinct from empty results, and did independent
    memory failures remain separate from canonical validity?
+7. Did a supported construction remove redundant warnings only for the domain it
+   covers, while preserving historical evidence and exclusions valid elsewhere?

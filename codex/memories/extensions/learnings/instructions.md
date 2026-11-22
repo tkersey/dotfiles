@@ -62,18 +62,34 @@ Do not promote merely because a learning exists or has status `do_more`.
 
 - `assert`/`learning-admission`: consider current row for promotion;
 - `confirm`: strengthen an existing compiled rule without duplicating it;
-- `supersede`: update the compiled rule using the new canonical learning and remove stale guidance supported only by the old event;
-- `retract`/`learning-withdrawal`: remove support unless independent evidence remains;
+- `supersede`: replace the targeted admitted guidance using the source-approved
+  correction, preserving any still-supported scope;
+- `retract`/`learning-withdrawal`: withdraw the targeted admission's support;
+  assess remaining independent sources within their own scope;
 - `reject`: do not promote;
 - `reopen`: renewed evidence gathering, not automatic restoration.
 
 Never mutate or delete source notes or canonical learning records.
+
+Follow exact `MSN-*` relationships when interpreting managed updates. Read
+`payload.memory_update.reason` and `evidence_refs` for the source-approved
+change in memory relevance. Its retained canonical snapshot is historical
+support, not a new assertion that cancels the update. A changed canonical claim
+requires source-owned correction; retiring a reminder need not change that claim.
 
 ## Promotion Gate
 
 Require future decision delta, concrete evidence anchor, clear scope, and actionable default, trigger, failure shield, route, verification rule, or procedure.
 
 Prefer promotion when status is `codify_now`, the theme repeats, it expresses a stable user operating preference, it is a high-value failure shield/repo map/command/verification path, or it would save future steering/retries/search.
+
+Promote only the residual value beyond the owning construction, test, policy, or
+existing memory. If an adequately evidenced construction now carries the rule,
+prefer a useful locator over repeating the old warning; select `none` when even
+that would add no value. Preserve applicability to unrepaired versions and the
+scope of the actual guarantee. Passing tests establish their observed detection
+coverage, not universal prevention. Retiring a reminder does not falsify or delete
+the underlying experiment or canonical history.
 
 ## Artifact Targeting
 
@@ -91,7 +107,9 @@ retracted, already-codified, or insufficiently valuable material.
 
 ## Negative-Ledger Boundary
 
-A learning may seed a negative-ledger capture. It does not itself create an active route exclusion. Let the negative-ledger extension own compiled route constraints after a canonical `NEG-*` projection is admitted.
+A learning may seed a negative-ledger capture. It does not itself create an active
+route exclusion. Let the negative-ledger extension own reminders and retrieval
+routes for admitted `NEG-*` evidence; the canonical source owns runtime gating.
 
 ## Security and Hygiene
 

@@ -6,6 +6,12 @@ no write or retry permission. If a lifecycle correction is selected, read
 
 ## Capture Workflow
 
+First choose the destination using the
+[evidence and destination guidance](../SKILL.md#evidence-and-destination).
+A useful retained experiment need not become an exclusion or a duplicate
+canonical record. Preserve its observation and uncertainty with its existing
+owner; do not manufacture a failed hypothesis from missing or inconclusive data.
+
 Capture only a failure that changes future routing: witnessed no-effect attempt,
 local/global regression, unsound route, complexity disproportionate to value,
 revert with concrete rationale, repeated proof-wound pattern, or a strategy pivot
@@ -41,7 +47,9 @@ needed. Keep the selected definition unchanged for a keyed transport retry;
 native idempotency also binds the request to that definition closure.
 
 Inadequate witness evidence means `need-evidence` or `capture_candidate`, not an
-active exclusion. Active capture requires supported scope/identity, immutable
+active exclusion, if retaining a canonical candidate has decision value at all.
+Otherwise keep the existing experiment or task evidence without a new record.
+Active capture requires supported scope/identity, immutable
 artifact identity, structured source references, applicability conditions,
 a narrow exclusion, and identified reopening criteria. Select `need-evidence`
 when structure is incomplete; never assert `active` after Ledger rejects it.
