@@ -86,3 +86,20 @@
 	helper = !/opt/homebrew/bin/gh auth git-credential
 [credential "https://dev.azure.com"]
 	useHttpPath = true
+[safe]
+	directory = /Users/tk/Library/Application Support/GitHubActionsRunners/macos-protean/_work/protean/protean
+	directory = /Users/tk/Library/Application Support/GitHubActionsRunners/macos-protean/_work/protean/protean
+	directory = /Users/tk/actions-runners/protean-macos/_work/protean/protean
+	directory = /Users/tk/actions-runners/protean-macos/_work/protean/protean
+	directory = /Users/tk/actions-runners/protean-macos/_work/protean/protean
+	directory = /Users/tk/actions-runners/protean-macos/_work/protean/protean
+	directory = /Users/tk/actions-runners/protean-macos/_work/protean/protean
+	directory = /Users/tk/actions-runners/protean-macos/_work/protean/protean
+	directory = /Users/tk/actions-runners/protean-macos/_work/protean/protean
+	directory = /Users/tk/actions-runners/protean-macos/_work/protean/protean
+	directory = /Users/tk/actions-runners/protean-macos/_work/protean/protean
+	directory = /Users/tk/actions-runners/protean-macos/_work/protean/protean
+	directory = /Users/tk/actions-runners/protean-macos/_work/protean/protean
+	directory = /Users/tk/actions-runners/protean-macos/_work/protean/protean
+	directory = /Users/tk/actions-runners/protean-macos/_work/protean/protean
+	directory = /Users/tk/actions-runners/protean-macos/_work/protean/protean
