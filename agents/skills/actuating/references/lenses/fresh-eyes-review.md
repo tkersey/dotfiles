@@ -8,6 +8,14 @@ observations, compatibility, effects, and resource constraints of the exact boun
 subject. Shared authoritative facts are necessary; incumbent or sibling conclusions
 are hypotheses, not substitutes for this investigation.
 
+Inspect the ordinary implementation path and current semantic owner for the same
+task. Prioritize changes that create a parallel mechanism, independently writable
+truth, new coordination or recovery duties, or a broader interface or supported
+mode. Trace the concrete obligation imposed on callers, operators, or later
+changes and the accepted requirement it serves. Check what existing enforcement
+and host guarantees already supply; passing the new path's local tests does not
+establish that this integration remains adequate.
+
 Trace a representative required scenario end to end, then attack a materially
 different required case or failure path when supported by the domain. Work backward
 from the required outcome: what must be known, distinguished, or controlled for it
@@ -33,11 +41,29 @@ necessity claim? Retain checks for duplicate representations, missing sibling
 dimensions, incomplete migrations, and bypasses without adopting the incumbent's
 family list as the domain.
 
+Challenge stronger guarantees introduced by the candidate or by review itself.
+Established tolerance for stale data, bounded inconsistency, latency, or ephemeral
+state remains part of the accepted task. An imagined edge case does not establish
+a need for another lock, retry, fallback, or persistence layer. Conversely, missing
+requirements are an evidence gap, not permission to assume such tolerance.
+
+Distinguish new independent authority from derived caches, required trust-boundary
+checks, independent oracles, and migration paths with an established retirement
+condition. Necessary async work, new interfaces, and repairs of an inadequate owner
+remain admissible. Judge the obligations and their consequences, not novelty,
+line count, or departure from convention alone.
+
 A different admissible construction does not by itself falsify correctness.
 It may refute an actual necessity or impossibility claim only when that claim is
 identified and the alternative is justified under the same accepted constraints.
 Otherwise it is at most a grounded nonblocking opportunity, not a defect. Do not
 expand the Goal, reward novelty, or turn this review into successor selection.
+
+For a structural finding, identify the accepted ownership, compatibility, scope,
+or resource obligation violated and show the conflicting authority, added duty,
+or affected path in the candidate. Such evidence need not invent a runtime
+failure. Unjustified complexity without an established violation remains a
+grounded nonblocking opportunity; do not manufacture a defect to force reduction.
 
 For each finding, give the required outcome or actual challenged claim, independently
 reconstructed scenario, concrete mismatch or justified claim-refuting alternative,
@@ -47,6 +73,11 @@ evidence gap; do not reconstruct parent-only requirements from a digest.
 
 This search priority does not exclude other concrete in-scope defects. Do not
 implement repairs, invoke other skills, or select the successor.
+
+This applies Sean Goedecke's
+[blunder-avoidance argument](https://www.seangoedecke.com/to-code-well-avoid-blunders/)
+within the existing review: inspect introduced obligations without inventing new
+ones or adding another pass.
 
 ## Native output (Actuating only)
 
