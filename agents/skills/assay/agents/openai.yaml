@@ -1,0 +1,7 @@
+policy:
+  allow_implicit_invocation: true
+
+interface:
+  display_name: "Assay"
+  short_description: "Assess whether evidence warrants an engineering claim"
+  default_prompt: "Use $assay to assess whether this exact work satisfies its accepted purpose and identify the evidence that supports, refutes, or leaves the claim unresolved."
