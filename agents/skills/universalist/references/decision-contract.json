@@ -4,7 +4,7 @@
     "skill": {
       "name": "universalist",
       "kind": "mixed",
-      "source_fingerprint": "universalist-generative-derivation-v18.0-v10"
+      "source_fingerprint": "universalist-generative-derivation-v18.0-v11"
     },
     "triggers": [
       {
@@ -375,7 +375,8 @@
           "derived obligations retain their actual sufficient hypotheses without requiring a separate evidence packet",
           "an unregistered retained construction uses derived:<name> and the same proof obligations without fabricating a card",
           "focused theoretical inquiry may precede ordinary comparison; acceptance compares available native candidates, including their unmet requirements",
-          "admitted syntax connects primitive and composition justification, evidence erasure, and actual execution; required successful behavior and the claimed transformation relation are preserved"
+          "admitted syntax connects primitive and composition justification, evidence erasure, and actual execution; required successful behavior and the claimed transformation relation are preserved",
+          "compositional laws cover admitted environments and higher-order evaluation; required joint observations with shared context and observable distinctions among retained values, fresh effect occurrences, and replay are preserved"
         ],
         "failure_signals": [
           "decorative terminology",
@@ -390,7 +391,8 @@
           "global operation names hide an empty source hom-set or erased required endpoint index",
           "full faithfulness or literal representation equality is required for an intentionally lossy observation without a stronger claim",
           "a missing registry card blocks task-relevant inquiry or excuses unsupported acceptance",
-          "formation checks, an erasure equation alone, or a shared broad contract substitute for semantic soundness or required behavioral preservation"
+          "formation checks, an erasure equation alone, or a shared broad contract substitute for semantic soundness or required behavioral preservation",
+          "primitive laws or closed definable cases stand in for closure over a larger admitted domain, or marginal agreement erases a required contextual relationship"
         ],
         "rationale": "Inquiry is question-led; retained advanced mechanics remain claim-bound."
       },

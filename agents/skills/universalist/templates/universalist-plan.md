@@ -180,6 +180,10 @@ only affected derivations when those hypotheses change.
 For admitted syntax, include its judgment, primitive/composition justification,
 evidence-erasure agreement, actual interpreter correspondence, required successful
 constructions, and the transformation relation within that same argument.
+For compositional claims, cover admitted environments and evaluation, including
+higher-order application when present. State required joint observations with
+shared context and distinguish retained values, fresh effect occurrences, and
+replay where observable; retain the source's actual equivalence and resource bounds.
 ## Obstruction / reopening condition:
 
 ## Why this construction:
