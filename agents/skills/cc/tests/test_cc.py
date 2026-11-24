@@ -155,7 +155,8 @@ def launch_effort(tmp):
     binary.mkdir()
     stub = binary / "claude"
     stub.write_text('''#!/bin/bash
-printf 'environment=%s\\nlocks=%s\\n' "$CLAUDE_CODE_EFFORT_LEVEL" "$GIT_OPTIONAL_LOCKS"
+printf 'environment=%s\\nlocks=%s\\nbackground=%s\\n' "$CLAUDE_CODE_EFFORT_LEVEL" "$GIT_OPTIONAL_LOCKS" \\
+  "${CLAUDE_CODE_DISABLE_BACKGROUND_TASKS-unset}"
 while (($#)); do
   if [[ "$1" == "--effort" ]]; then printf 'flag=%s\\n' "$2"; fi
   shift
@@ -180,7 +181,7 @@ done
             run = subprocess.run(["bash", "-eu", "-c", script], env=env, capture_output=True, text=True)
             assert run.returncode == 0, run.stderr
             observed = dict(line.split("=", 1) for line in events.read_text().splitlines())
-            assert observed == {"environment": selected, "locks": "0", "flag": selected}, observed
+            assert observed == {"environment": selected, "locks": "0", "background": "1", "flag": selected}, observed
             checks += 1
 
 
@@ -422,6 +423,61 @@ def reference_boundary(tmp):
     assert git("rev-parse", "HEAD") == head and git("status", "--porcelain") == ""
 
 
+def hold_routes(tmp):
+    """Background wakes, summary-only holds, and persisted output are diagnosed for the caller."""
+    global checks
+    wake = [{"type": "system", "subtype": "init", "session_id": SID, "model": MODEL},
+            {"type": "result", "subtype": "success", "is_error": False, "session_id": SID,
+             "modelUsage": {MODEL: {}}, "permission_denials": [], "result": "The full review.",
+             "origin": {"kind": "task-notification", "producer": "session-task"}}]
+    supplemental = standard_events(command=f"git diff {BASE}..HEAD", result="Eight agents are running.")
+    del supplemental[1]
+    supplemental[1]["message"]["content"][0]["id"] = "diff-2"
+    supplemental[2]["message"]["content"][0]["tool_use_id"] = "diff-2"
+    for stream, prefix in [(standard_events() + wake, ""),
+                           (standard_events(), "follow-up 1: ")]:
+        report = readback(tmp, "standard", stream, followups=[] if prefix == "" else [supplemental + wake])
+        expect(report, prefix + "expected one init event and one terminal result, found 2 init events and 2 "
+               "results, 1 of them background-task wakes")
+        assert any("CLAUDE_CODE_DISABLE_BACKGROUND_TASKS=1" in p for p in report["problems"]), report
+        assert not any(p.startswith(prefix + "expected one terminal result") for p in report["problems"]), report
+    expect(readback(tmp, "standard", standard_events(), followups=[supplemental]))
+
+    remedy = f"recoverable inquiry gap: run a same-session --followup requesting a standalone foreground `git diff {BASE}`"
+    summary = [f"git diff {BASE}..HEAD --stat", f"git log --oneline {BASE}..HEAD | head -50",
+               "git show --stat HEAD~1 HEAD~2", "git show HEAD~1 -- native/main.zig",
+               f"B={BASE}; for f in a b; do git diff $B..HEAD -- $f; done"]
+    for command in summary:
+        report = readback(tmp, "standard", standard_events(command=command))
+        expect(report, "only summary, commit, or unrecognized Git reads were requested")
+        assert any(remedy in p for p in report["problems"]), report
+        assert report["other_git_reads"] == [{"tool_use_id": "diff-1", "command": command}], report
+    report = readback(tmp, "standard", standard_events(command="ls -la"))
+    expect(report, "no Git diff, show, or log read was requested")
+    assert any(remedy in p for p in report["problems"]) and report["other_git_reads"] == [], report
+    failed = standard_events(output="Exit code 128\nfatal: bad revision")
+    failed[3]["message"]["content"][0]["is_error"] = True
+    report = readback(tmp, "standard", failed)
+    expect(report, "every recognized read failed or lacks a unique later result")
+    assert any(remedy in p for p in report["problems"]), report
+    original = standard_events(command=summary[0])
+    report = readback(tmp, "standard", original, followups=[supplemental])
+    expect(report)
+    assert "other_git_reads" not in report and report["result"] == original[-1]["result"], report
+    assert [read.get("followup") for read in report["diff_reads"]] == [1], report
+
+    preview = f"<persisted-output>\nOutput too large (1.9MB). Full output saved to: /x/tool-results/b.txt\n\nPreview (first 2KB):\n{PATCH}"
+    for output, details in [(preview, None), (PATCH, {"stdout": "", "persistedOutputPath": "/x/b.txt"})]:
+        events = standard_events(output=output)
+        if details:
+            events[3]["tool_use_result"] = details
+        report = readback(tmp, "standard", events)
+        expect(report)
+        assert report["diff_reads"][0]["persisted_output"] is True, report
+    assert "persisted_output" not in readback(tmp, "standard", standard_events())["diff_reads"][0]
+    checks += 1
+
+
 def main():
     with tempfile.TemporaryDirectory() as raw:
         tmp = Path(raw)
@@ -590,6 +646,7 @@ def main():
         launch_effort(tmp)
         chain_checks(tmp)
         reference_boundary(tmp)
+        hold_routes(tmp)
 
     print(f"cc: {checks} readback and launch checks passed, including real Git and conflicting effort environments; no model was called")
 

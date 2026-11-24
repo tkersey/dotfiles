@@ -25,6 +25,10 @@ unknown. Patch markers alone never count. Optional same-session follow-up stream
 can supply a missing observation while retaining the original result and every
 supplemental result separately. Reference provenance, Git subject, recovery
 authorization, reassessment, and coverage remain with the caller.
+Without a successful read, other Git diff/show/log requests are listed as
+other_git_reads, and the hold names the same-session follow-up remedy. A read
+whose output was persisted (only a preview entered context) is marked
+persisted_output. Results that are background-task wakes are diagnosed as such.
 Native result text and permission denials are preserved without interpreting a
 verdict or deciding whether an optional denied call mattered. OUT receives the
 evidence and problems; exit 0 only when the required checks pass.
@@ -45,6 +49,7 @@ EXIT_CODE = re.compile(r"\A\s*Exit code(?:\s*:\s*|\s+)(\d+)(?:\s|$)", re.IGNOREC
 PATCH_TEXT = re.compile(r"^diff --git ", re.MULTILINE)
 SUMMARY_DIFF = re.compile(r"--(?:stat|shortstat|numstat|name-only|name-status)(?:=\S*)?")
 PATCH_OPTION = re.compile(r"-p|-u|--patch\S*|-U\S*|--unified\S*")
+GIT_READ = re.compile(r"(?<![\w-])git\s+(?:--no-pager\s+)?(?:diff|show|log)\b")
 COMPANION_GIT = {"rev-parse", "merge-base", "ls-files", "check-ignore"}
 FIND_ACTIONS = {"-exec", "-execdir", "-ok", "-okdir", "-delete", "-fprint", "-fprint0", "-fprintf",
                 "-fls", "-printf"}
@@ -91,7 +96,13 @@ def load_events(path: Path, problems: list[str], label="events") -> list[dict]:
 def common(events: list[dict], sid: str, model: str, problems: list[str]) -> dict:
     inits = [e for e in events if e.get("type") == "system" and e.get("subtype") == "init"]
     results = [e for e in events if e.get("type") == "result"]
-    if len(inits) != 1:
+    wakes = sum(isinstance(r.get("origin"), dict) and r["origin"].get("kind") == "task-notification"
+                for r in results)
+    if wakes:
+        problems.append(f"expected one init event and one terminal result, found {len(inits)} init events and "
+                        f"{len(results)} results, {wakes} of them background-task wakes (origin task-notification); "
+                        "bind CLAUDE_CODE_DISABLE_BACKGROUND_TASKS=1 on the launch or resume")
+    elif len(inits) != 1:
         problems.append(f"expected one init event, found {len(inits)}")
     if inits:
         init = inits[0]
@@ -102,7 +113,7 @@ def common(events: list[dict], sid: str, model: str, problems: list[str]) -> dic
     if not results:
         problems.append("no result event: not terminal")
         return {}
-    if len(results) != 1:
+    if len(results) != 1 and not wakes:
         problems.append(f"expected one terminal result, found {len(results)}")
     result = results[-1]
     if result.get("session_id") != sid:
@@ -324,11 +335,15 @@ def standard(events: list[dict], target: str, level: str, problems: list[str], f
         requests = [(source, i, p) for source, stream in enumerate(sessions)
                     for i, e in enumerate(stream) if e.get("type") == "assistant"
                     for p in parts_of(e) if p.get("type") == "tool_use"]
+        others = []
         for source, index, request in requests:
             inputs = request.get("input")
             command = inputs.get("command") if isinstance(inputs, dict) else None
             observation = diff_read(command, target) if request.get("name") == "Bash" and isinstance(command, str) else None
             if observation is None:
+                if request.get("name") == "Bash" and isinstance(command, str) and GIT_READ.search(command):
+                    others.append({"tool_use_id": request.get("id"), "command": command,
+                                   **({"followup": source} if source else {})})
                 continue
             shape, completion_bound, difference_exit = observation
             tool_id = request.get("id")
@@ -351,6 +366,10 @@ def standard(events: list[dict], target: str, level: str, problems: list[str], f
                 continue
             _, part, event = matches[0]
             read["ok"], read["reason"] = tool_result_status(part, event, difference_exit)
+            details = event.get("tool_use_result")
+            if ((isinstance(details, dict) and details.get("persistedOutputPath"))
+                    or text_of(part.get("content")).startswith("<persisted-output>")):
+                read["persisted_output"] = True
             if read["ok"] and not completion_bound:
                 if reference_observed(text_of(part.get("content")), reference):
                     read.update(reference_matched=True, reason="target diff precedes a semicolon; completion remains "
@@ -359,14 +378,25 @@ def standard(events: list[dict], target: str, level: str, problems: list[str], f
                     read.update(ok=False, unverified=True,
                                 reason="target diff precedes a semicolon; its completion status is unavailable")
         if not any(read["ok"] for read in evidence["diff_reads"]):
+            remedy = ("this is a recoverable inquiry gap: run a same-session --followup requesting a standalone "
+                      f"foreground `git diff {target}`")
             if any(read.get("unverified") for read in evidence["diff_reads"]):
                 problems.append(f"no successful correlated `git diff` read against {target}: the recognized read "
                                 "precedes a `;`, so its completion is unverified; supply an authenticated "
                                 "--reference-patch or recover "
                                 "with a same-session --followup")
+            elif evidence["diff_reads"]:
+                problems.append(f"no successful correlated `git diff` read against {target}: every recognized "
+                                f"read failed or lacks a unique later result (see diff_reads); {remedy}")
+            elif others:
+                problems.append(f"no successful correlated `git diff` read against {target}: only summary, "
+                                "commit, or unrecognized Git reads were requested (see other_git_reads); only direct "
+                                "patch reads and read-only `;`/`&&` chains around them establish the bound patch; "
+                                f"{remedy}")
             else:
-                problems.append(f"no successful correlated `git diff` read against {target}; only direct patch "
-                                "reads and read-only `;`/`&&` chains around them are recognized")
+                problems.append(f"no successful correlated `git diff` read against {target}: no Git diff, show, "
+                                f"or log read was requested; {remedy}")
+            evidence["other_git_reads"] = others
     return evidence
 
 

@@ -66,6 +66,13 @@ bypass policy. The recipe header establishes review level, not effective reasoni
 effort. See [effort precedence](https://code.claude.com/docs/en/env-vars#precedence)
 and [effort caps](https://code.claude.com/docs/en/settings-reference#maxeffortlevel).
 
+Also bind `CLAUDE_CODE_DISABLE_BACKGROUND_TASKS=1` on every launch and resume. A
+background task's completion wakes the session for another turn with its own init
+and result, so the stream has no single terminal result (observed: eight
+background subagents in a resumed follow-up produced nine). With the variable set,
+the Agent tool runs subagents in the foreground (in 2.1.331's bundled code it
+omits `run_in_background`; not yet observed live); native delegation is retained.
+
 ## Freeze the subject
 
 Resolve the repository and full base/head commit IDs before launch and keep them
@@ -82,6 +89,9 @@ frozen.
   substitute for a committed range.
 - Launch from the repository root and recheck HEAD and working-tree/index state
   at admission.
+- On a large range, expect a summary-only first pass: on 176 files and 46.9k added
+  lines the native result came from `--stat` and recent commits and said so. Budget
+  the same-session follow-up below as the route to the bound patch.
 
 ## Enforce read-only execution and launch
 
@@ -143,7 +153,7 @@ read_tools=(Read Grep Glob
 # Standard
 (cd "$repo" && GIT_OPTIONAL_LOCKS=0 GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=core.fsmonitor \
   GIT_CONFIG_VALUE_0=false CLAUDE_CODE_EFFORT_LEVEL="$selected_effort" \
-  claude -p --session-id "$sid" \
+  CLAUDE_CODE_DISABLE_BACKGROUND_TASKS=1 claude -p --session-id "$sid" \
   --model "$selected_model" --effort "$selected_effort" \
   --restricted --settings "$settings" --tools "Read,Grep,Glob,Bash,Agent" \
   --strict-mcp-config --mcp-config '{"mcpServers":{}}' \
@@ -155,7 +165,7 @@ read_tools=(Read Grep Glob
 # Custom: $prompt holds the exact instruction bytes
 (cd "$repo" && GIT_OPTIONAL_LOCKS=0 GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=core.fsmonitor \
   GIT_CONFIG_VALUE_0=false CLAUDE_CODE_EFFORT_LEVEL="$selected_effort" \
-  claude -p --session-id "$sid" \
+  CLAUDE_CODE_DISABLE_BACKGROUND_TASKS=1 claude -p --session-id "$sid" \
   --model "$selected_model" --effort "$selected_effort" \
   --restricted --settings "$settings" --tools "Read,Grep,Glob,Bash" \
   --strict-mcp-config --mcp-config '{"mcpServers":{}}' \
@@ -239,6 +249,13 @@ exits nonzero (hold) unless all of these hold:
   A longer final line, truncated patch, or patch markers alone cannot match.
   Otherwise retain the unverified compound observation and use the same-session
   follow-up below; do not replace the native recipe.
+  A hold without a successful read lists the reviewer's other Git diff/show/log
+  requests as `other_git_reads`. A hold for summary or commit reads alone is a
+  recoverable inquiry gap, not a standing limit on standard credit: recover with
+  the follow-up below (a reference patch matches only a semicolon-hidden read).
+  `persisted_output: true` marks a completed read whose output exceeded the inline
+  limit: the reviewer received a preview and a file path, not the patch, so the
+  read establishes completion but not patch coverage.
   Recipe text alone does not authenticate native command resolution;
   retain the host's actual `/review` invocation.
 - **Custom:** exactly one transcript `<config>/projects/*/$sid.jsonl` exists and
@@ -281,7 +298,7 @@ Confidence is not evidence.
 - Cancellation: terminate only the host-owned process, confirm it exited, and
   treat a late result as evidence, not credit.
 - **Incomplete inquiry follow-up** (caller-authorized): continue the same session
-  with `CLAUDE_CODE_EFFORT_LEVEL="$selected_effort" claude -p --resume "$sid"`
+  with the launch's environment bindings, `claude -p --resume "$sid"`
   plus the same model, effort, permission, tool and schema flags,
   `--output-format stream-json --verbose`, `</dev/null`. Name
   the concrete gap, exact paths and ranges; ask it to complete the observation and
@@ -293,9 +310,17 @@ Confidence is not evidence.
   result, the concrete gap and the bound subject in the follow-up prompt, as
   `$cas` does for delegated reviewers, and adjudicate the reply as supplemental
   review of that text, not a continuation of the reviewer's inquiry.
-  For an unverified compound diff that no authenticated reference establishes,
-  request a standalone foreground `git diff <base>..HEAD` and reassessment of
-  conclusions dependent on that read.
+  For a missing or unverified target read that no authenticated reference
+  establishes, the prompt holds the original result, the concrete gap (the reads
+  actually observed), and the bound range and head, then asks for: a standalone
+  foreground `git diff <base>..HEAD` (no pipe, redirect, chain, or background);
+  per-path `git diff <base>..HEAD -- <path>` reads, one direct command per call;
+  and reassessment that overturns earlier conclusions where warranted. Shell loops
+  and variables fall outside the allow rules: in the observed follow-up, subagents
+  whose loops were denied read whole added files with Read instead. Large output is
+  persisted, so the standalone read establishes completion while the per-path or
+  Read observations carry content; judge per-file coverage from them. That
+  follow-up withdrew four of nine findings and reported seven Important ones.
   Capture each resumed invocation in its own events file, retaining the actual
   resume invocation and unchanged Git subject; never concatenate terminal streams.
   Pass the original events plus the supplemental stream to standard readback:
