@@ -200,18 +200,11 @@ where the source requires its behavior. Keep witness inputs as named cases and
 preserve or re-establish sensitivity to each distinct violation. Retain separate
 checks when they supply independent evidence or observe different required behavior.
 
-For executable deciding evidence that supplies distinct coverage of a continuing
-source-backed obligation, retain that coverage in the repository-native
-verification used to qualify affected successors. Reuse adequate existing checks;
-connect a new or generalized check to that entry point rather than relying on a
-one-off command or remembered finding. Establish actual execution through the
-qualifying entry point and preserve source-backed
-[sensitivity](counterexamples.md#compile-the-first-loss-of-guarantee) and
-required-valid controls. A file's presence, import, or isolated pass does not prove
-that qualification executes it. Temporary investigative probes need not become
-standing checks when adequate native coverage or a decisive source argument
-already preserves the obligation. Retain distinct evidence, not every experiment;
-reuse the existing proof inventory without a new receipt, stage, or test quota.
+Retain distinct executable evidence for continuing source-backed obligations in
+the repository's existing verification path for affected successors. Confirm
+that it actually runs and preserves defect sensitivity and required-valid cases.
+Reuse adequate checks or decisive source arguments; temporary investigative
+probes need not become permanent tests.
 
 Before accepting validation for local completion or reviewability, inspect the
 base-to-candidate diff and actual check selection for deleted tests, weakened
