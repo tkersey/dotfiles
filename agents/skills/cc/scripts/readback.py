@@ -72,7 +72,10 @@ FORKED = "forked-command-"
 INVENTORY = {"standard": {"Read", "Grep", "Glob", "Bash", "Agent", "Task"},
              "custom": {"Read", "Grep", "Glob", "Bash", "StructuredOutput"}}
 DISTINCTIVE = 12
-LINE_PREFIX = re.compile(r"\s*\d+[\t→]|[^\s:]+:\d+[:-]")
+READ_PREFIX = re.compile(r"\s*\d+[\t→]")
+GREP_PREFIX = re.compile(r"(?=(:[0-9]+:|-[0-9]+-))")
+GIT_ESCAPE = re.compile(rb'\\([0-3][0-7]{2}|[abfnrtv\\"])')
+GIT_ESCAPES = dict(zip(b'abfnrtv\\"', b'\a\b\f\n\r\t\v\\"'))
 
 
 def text_of(content) -> str:
@@ -183,33 +186,96 @@ def launch_runtime(events: list[dict], kind: str, problems: list[str]) -> dict:
             "mcp_servers": init.get("mcp_servers"), "plugins": init.get("plugins")}
 
 
+def git_path(text: str) -> str:
+    """Decode Git's C-quoted pathname bytes without changing unquoted whitespace."""
+    if text.startswith('"') and text.endswith('"'):
+        raw = GIT_ESCAPE.sub(lambda m: bytes([int(m[1], 8) if len(m[1]) == 3 else GIT_ESCAPES[m[1][0]]]),
+                             text[1:-1].encode("utf-8"))
+        return raw.decode("utf-8", errors="surrogateescape")
+    return text
+
+
+def patch_files(reference: str) -> list[dict]:
+    """Keep sections distinct until their canonical a/b paths are resolved."""
+    files, current, in_hunk = [], None, False
+    for line in reference.split("\n"):
+        if line.startswith("diff --git "):
+            names = line[len("diff --git "):]
+            middle = len(names) // 2
+            old, new = git_path(names[:middle]), git_path(names[middle + 1:])
+            # Unchanged names have equally long rendered fields, even when quoted.
+            # Renames/copies resolve below; splitting on ' b/' loses valid names.
+            path = (old[2:] if names[middle:middle + 1] == " " and old.startswith("a/")
+                    and new == "b/" + old[2:] else None)
+            current = {"path": path, "lines": [], "aliases": {path} if path is not None else set(),
+                       "header": line}
+            files.append(current)
+            in_hunk = False
+        elif current is not None:
+            if line.startswith("@@"):
+                in_hunk = True
+            elif not in_hunk and line.startswith(("--- ", "+++ ")):
+                name = git_path(line[4:].split("\t", 1)[0])
+                prefix = "a/" if line.startswith("--- ") else "b/"
+                if name.startswith(prefix):
+                    current["path"] = name[2:]
+                    current["aliases"].add(name[2:])
+            elif not in_hunk and line.startswith(("rename from ", "rename to ", "copy from ", "copy to ")):
+                _, side, name = line.split(" ", 2)
+                name = git_path(name)
+                current["aliases"].add(name)
+                if side == "to":
+                    current["path"] = name
+            elif in_hunk and line[:1] in ("+", "-") and sum(not char.isspace() for char in line[1:]) >= DISTINCTIVE:
+                current["lines"].append(line[1:].rstrip())
+    return files
+
+
+def output_text(line: str, paths: set[str]) -> tuple[str, ...]:
+    """Remove one display prefix; ambiguous grep boundaries stay unnormalized."""
+    read = READ_PREFIX.match(line)
+    if read:
+        return line, line[read.end():]
+    candidates = [(match.start(), match.start() + len(match[1]))
+                  for match in GREP_PREFIX.finditer(line) if match.start()]
+    known = [(start, end) for start, end in candidates if git_path(line[:start]) in paths]
+    choices = known or candidates
+    return (line, line[choices[0][1]:]) if len(choices) == 1 else (line,)
+
+
 def delivery(reference: str, streams: list[list[dict]]) -> dict:
     """Count distinctive changed reference lines whose text appears in any tool result.
 
     Text presence is not attention or reasoning, and identical text elsewhere also
-    matches. Read line numbers, grep `path:line:` prefixes and diff markers are removed.
+    matches. Read line numbers, grep match/context prefixes and diff markers are removed.
     """
-    files, path, in_hunk = {}, None, False
-    for line in reference.splitlines():
-        if line.startswith("diff --git "):
-            path, in_hunk = line.rsplit(" b/", 1)[-1], False
-            files.setdefault(path, [])
-        elif path is not None and line.startswith("@@"):
-            in_hunk = True
-        elif in_hunk and line[:1] in "+-" and len(line[1:].strip()) >= DISTINCTIVE:
-            files[path].append(line[1:].rstrip())
+    sections = patch_files(reference)
+    files = {}
+    for section in sections:
+        if section["path"] is not None:
+            # Type changes can produce multiple sections for the same real file.
+            files.setdefault(section["path"], []).extend(section["lines"])
+    paths = {name for section in sections for name in section["aliases"]}
+    paths.update("./" + name for name in tuple(paths))
+    for stream in streams:
+        init = next((event for event in stream if event.get("type") == "system" and event.get("subtype") == "init"), {})
+        cwd = init.get("cwd")
+        if isinstance(cwd, str):
+            paths.update(cwd.rstrip("/") + "/" + name for section in sections for name in section["aliases"])
     seen = set()
     for event in (event for stream in streams for event in stream):
         for part in parts_of(event):
             if part.get("type") == "tool_result":
-                for line in text_of(part.get("content")).splitlines():
-                    for text in (line, LINE_PREFIX.sub("", line, count=1) if LINE_PREFIX.match(line) else line):
+                for line in text_of(part.get("content")).split("\n"):
+                    for text in output_text(line, paths):
                         seen.update((text.rstrip(), text[1:].rstrip() if text[:1] in "+- " else text.rstrip()))
     measured = [{"path": name, "lines": len(lines), "delivered": sum(line in seen for line in lines)}
                 for name, lines in files.items() if lines]
+    unparsed = [section["header"] for section in sections if section["path"] is None]
     return {"distinctive_min_chars": DISTINCTIVE, "lines": sum(f["lines"] for f in measured),
             "delivered": sum(f["delivered"] for f in measured), "files": measured,
-            "unmeasured": [name for name, lines in files.items() if not lines]}
+            "unmeasured": [name for name, lines in files.items() if not lines],
+            **({"unparsed_headers": unparsed} if unparsed else {})}
 
 
 def pieces(command: str) -> tuple[list[list[str]], list[str]] | None:
@@ -566,7 +632,7 @@ def main() -> None:
             problems.append(f"cannot read prompt: {exc}")
         report.update(custom(result, sid, prompt, problems))
     report.update(ok=not problems, problems=problems)
-    Path(out).write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    Path(out).write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8", errors="backslashreplace")
     if problems:
         sys.exit("hold: " + "; ".join(problems))
 

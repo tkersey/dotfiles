@@ -695,6 +695,158 @@ def delivery_report(tmp):
     assert held["delivery"]["delivered"] == 1, held
 
 
+def delivery_git_report(tmp):
+    repo = tmp / "delivery-subject"
+    repo.mkdir()
+    env = {**os.environ, "GIT_CONFIG_NOSYSTEM": "1", "GIT_CONFIG_GLOBAL": os.devnull}
+
+    def git(*args):
+        run = subprocess.run(["git", "-c", "core.hooksPath=" + os.devnull,
+                              "-c", "commit.gpgsign=false", "-c", "core.quotePath=true",
+                              "-c", "user.name=CC fixture", "-c", "user.email=cc-fixture@example.invalid", *args],
+                             cwd=repo, env=env, capture_output=True, text=True)
+        assert run.returncode == 0, run.stderr
+        return run.stdout
+
+    def write(name, content):
+        path = repo / name
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(content + "\n", encoding="utf-8")
+
+    removed, renamed, binary = "folder b/deleted café.txt", "folder b/renamed.txt", "folder b/blob.bin"
+    mode, empty = "mode-only.txt ", "empty.txt"
+    links = {"type-long.txt": "long-symbolic-link-target", "type-short.txt": "x"}
+    deleted_text = "deleted payload remains independently measurable"
+    git("init", "-q")
+    git("config", "diff.renames", "true")
+    git("config", "core.filemode", "true")
+    write(removed, deleted_text)
+    write(mode, "unchanged executable payload has no changed lines")
+    write("old rename.txt", "unchanged rename payload remains independently identifiable")
+    for name in links:
+        write(name, f"regular-file contents before {name} becomes a symlink")
+    (repo / binary).write_bytes(b"before\0binary\n")
+    git("add", ".")
+    git("commit", "-qm", "base")
+    target = git("rev-parse", "HEAD").strip()
+
+    separate = {"same.txt": "top-level payload is the only delivered file",
+                "folder b/same.txt": "nested payload must remain visibly undelivered"}
+    quoted = {"café.txt": "unicode filename retains its original identity",
+              "tab\tname.txt": "tabbed filename retains its original identity",
+              "back\\slash.txt": "backslash filename retains its original identity",
+              "trailing.txt ": "trailing-space filename retains its original identity"}
+    suffixes = {"grep suffix.txt": ["colon_suffix_must_remain_undelivered", "dash_suffix_must_remain_undelivered"]}
+    grep_files = {name: [f"before_context_{index} keeps payload:42:{suffixes['grep suffix.txt'][0]}",
+                         f"needle_match_{index} keeps payload-42-{suffixes['grep suffix.txt'][1]}",
+                         f"after_context_{index} keeps payload:71:tail"]
+                  for index, name in enumerate(("grep space.txt", "grep:17:field.txt", "grep-23-field.txt"))}
+    ambiguous = {"ambiguity.txt": "prefix:42:ambiguous suffix remains uncredited",
+                 "ambiguity.txt:1:prefix": "other ambiguity fixture remains undelivered"}
+    # The source texts have 11, 12, and 13 non-whitespace characters. Internal
+    # spaces and tabs must not turn an eleven-character line into a witness.
+    boundary = {"short.txt": "abcdefghijk", "short-padded.txt": " a b\tc d e f\tg h i j k ",
+                "twelve.txt": "abcdefghijkl", "twelve-padded.txt": " a b\tc d e f\tg h i j k l ",
+                "thirteen.txt": "abcdefghijklm"}
+    for name, content in {**separate, **quoted, **boundary, **ambiguous}.items():
+        write(name, content)
+    for name, lines in {**grep_files, **suffixes}.items():
+        write(name, "\n".join(lines))
+    invalid = os.fsdecode(b"invalid-\xff.txt")
+    quoted[invalid] = "invalid-byte filename retains its original identity"
+    with open(os.fsencode(repo) + b"/invalid-\xff.txt", "wb") as source:
+        source.write((quoted[invalid] + "\n").encode("utf-8"))
+    (repo / empty).touch()
+    (repo / mode).chmod(0o755)
+    for name, destination in links.items():
+        (repo / name).unlink()
+        (repo / name).symlink_to(destination)
+    (repo / removed).unlink()
+    (repo / "old rename.txt").rename(repo / renamed)
+    (repo / binary).write_bytes(b"after\0binary\n")
+    git("add", "-A")
+    git("commit", "-qm", "head")
+
+    def observe(label, reference_paths, supplied_paths, followups=(), prefixes=("a/", "b/")):
+        reference = tmp / f"delivery-{label}.patch"
+        reference.write_text(git("diff", f"--src-prefix={prefixes[0]}", f"--dst-prefix={prefixes[1]}",
+                                 target, "HEAD", "--", *reference_paths), encoding="utf-8")
+        args = ["diff", target, "HEAD", "--", *supplied_paths]
+        events = standard_events(target=target, command=shlex.join(["git", *args]), output=git(*args))
+        report = readback(tmp, "standard", events, target=target, reference_patch=reference,
+                          followups=followups, cwd=repo)
+        expect(report)
+        return report["delivery"]
+
+    def expected(files, unmeasured=()):
+        return {"distinctive_min_chars": 12, "lines": sum(total for total, _ in files.values()),
+                "delivered": sum(delivered for _, delivered in files.values()),
+                "files": {name: {"lines": total, "delivered": delivered}
+                          for name, (total, delivered) in files.items()}, "unmeasured": set(unmeasured)}
+
+    def compare(actual, wanted):
+        # A map makes Git's path ordering irrelevant, but must not hide duplicate
+        # entries: every source file has exactly one independent delivery row.
+        rows = actual["files"]
+        assert len(rows) == len({row["path"] for row in rows}), actual
+        normalized = {**actual, "files": {row["path"]: {k: v for k, v in row.items() if k != "path"}
+                                          for row in rows}, "unmeasured": set(actual["unmeasured"])}
+        assert normalized == wanted, (actual, wanted)
+
+    compare(observe("separate", separate, ["same.txt"]),
+            expected({name: (1, int(name == "same.txt")) for name in separate}))
+
+    metadata = [*quoted, removed, "old rename.txt", renamed, binary, mode, empty]
+    compare(observe("quoted-metadata", metadata, metadata),
+            expected({name: (1, 1) for name in [*quoted, removed]}, [renamed, binary, mode, empty]))
+    # A file-type change emits two Git sections for one canonical file. A short
+    # symlink target must not put that measured file into unmeasured as well.
+    compare(observe("type-changes", links, links),
+            expected({"type-long.txt": (2, 2), "type-short.txt": (1, 1)}))
+    quoted_args = ["grep", "-n", "--full-name", "-e", "filename retains", "--", *quoted]
+    quoted_followup = as_followup(standard_events(target=target, command=shlex.join(["git", *quoted_args]),
+                                                  output=git(*quoted_args)))
+    compare(observe("quoted-grep", quoted, ["same.txt"], [quoted_followup]),
+            expected({name: (1, 1) for name in quoted}))
+
+    # A real scoped diff supplies no grep-file content. The follow-up must account
+    # for both ':' match lines and '-' context lines, without eating text suffixes.
+    grep_args = ["grep", "-n", "-C1", "needle_match", "--", *grep_files]
+    followup = as_followup(standard_events(target=target, command=shlex.join(["git", *grep_args]),
+                                           output=git(*grep_args)))
+    grep_reference = {**grep_files, **suffixes}
+    compare(observe("grep-before", grep_reference, ["same.txt"]),
+            expected({name: (len(lines), 0) for name, lines in grep_reference.items()}))
+    compare(observe("grep-after", grep_reference, ["same.txt"], [followup]),
+            expected({name: (len(lines), len(lines) if name in grep_files else 0)
+                      for name, lines in grep_reference.items()}))
+    ambiguous_args = ["grep", "-n", "-e", "prefix", "--", "ambiguity.txt"]
+    ambiguous_followup = as_followup(standard_events(target=target,
+        command=shlex.join(["git", *ambiguous_args]), output=git(*ambiguous_args)))
+    compare(observe("ambiguous-grep", ambiguous, ["same.txt"], [ambiguous_followup]),
+            expected({name: (1, 0) for name in ambiguous}))
+
+    compare(observe("boundaries", boundary, boundary),
+            expected({name: (1, 1) for name in ("twelve.txt", "twelve-padded.txt", "thirteen.txt")},
+                     ["short.txt", "short-padded.txt"]))
+
+    # Caller capture flags must defeat Git's local prefix settings. Reviewer
+    # output still uses those settings and supplies the same changed-line text.
+    git("config", "diff.noprefix", "true")
+    assert git("diff", target, "HEAD", "--", "same.txt").startswith("diff --git same.txt same.txt\n")
+    compare(observe("no-prefix-config", separate, ["same.txt"]),
+            expected({name: (1, int(name == "same.txt")) for name in separate}))
+    git("config", "diff.noprefix", "false")
+    git("config", "diff.srcPrefix", "old/")
+    git("config", "diff.dstPrefix", "new/")
+    assert git("diff", target, "HEAD", "--", "same.txt").startswith("diff --git old/same.txt new/same.txt\n")
+    compare(observe("custom-prefix-config", separate, ["same.txt"]),
+            expected({name: (1, int(name == "same.txt")) for name in separate}))
+    unknown = observe("unknown-prefix", ["same.txt"], ["same.txt"], prefixes=("old/", "new/"))
+    header = (tmp / "delivery-unknown-prefix.patch").read_text(encoding="utf-8").split("\n", 1)[0]
+    compare(unknown, {**expected({}), "unparsed_headers": [header]})
+
+
 def main():
     with tempfile.TemporaryDirectory() as raw:
         tmp = Path(raw)
@@ -870,6 +1022,7 @@ def main():
         persisted_reads(tmp)
         runtime_evidence(tmp)
         delivery_report(tmp)
+        delivery_git_report(tmp)
 
     print(f"cc: {checks} readback and launch checks passed, including real Git and conflicting effort environments; no model was called")
 

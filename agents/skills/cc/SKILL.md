@@ -208,7 +208,9 @@ semicolon-hidden read count as patch delivery and adds the `delivery` report bel
 Reuse a complete reference patch captured by the caller's existing executor under
 an enforced read-only filesystem boundary covering the repository, Git directory,
 and common directory. While the subject is frozen, capture the complete stdout of
-`git diff "$base..HEAD" --` only if that command exits 0. Bind its actual invocation,
+`git diff --src-prefix=a/ --dst-prefix=b/ "$base..HEAD" --` only if that command
+exits 0. These prefixes keep path decoding independent of local Git prefix settings.
+Bind its actual invocation,
 successful exit, full base/head IDs, and effective boundary to this attempt in the
 existing Working Set; retain the unmodified UTF-8 bytes beside the attempt files.
 Do not substitute a partial, path-limited, stale, reformatted, or failed capture.
@@ -286,14 +288,19 @@ exits nonzero (hold) unless all of these hold:
   piped prompt, so this is the delivery evidence. `structured_output` is present.
 
 With a reference patch, `delivery` lists per file how many distinctive changed
-lines (at least 12 non-space characters) appear in any tool result of the original
-or follow-up streams, after removing Read line numbers, grep `path:line:`
-prefixes and diff markers; binary or short-line files are listed as `unmeasured`.
-Passing readback does not establish delivery (observed: real reviews that passed
-every check delivered 70–93% of distinctive changed lines and left up to three
-files untouched). `delivery` records text presence, not attention or reasoning, and
-identical text elsewhere also matches. It is evidence for the caller's coverage
-judgment and never a hold.
+lines (at least 12 non-whitespace characters) appear in any tool result of the
+original or follow-up streams. It decodes Git's quoted paths and preserves spaces,
+rename destinations, and deletion paths. Read line numbers, grep match/context
+prefixes, and diff markers are removed. Known reference paths (including rename
+sources and absolute paths under the stream's init directory) disambiguate grep
+prefixes; unresolved ambiguous prefixes remain unnormalized. Binary or short-line
+files are listed as `unmeasured`; sections whose paths cannot be resolved are
+retained under `unparsed_headers` and excluded from the counts. Treat those sections
+as an inquiry limitation. Passing readback does not establish delivery.
+`delivery` records text presence, not attention or reasoning, and identical text
+elsewhere also matches. It is evidence for the caller's coverage judgment and never
+a hold. Recompute recorded delivery measurements after changes to this parser;
+unchanged pass/hold outcomes do not validate the diagnostic's counts.
 
 Permission denials remain in the report for caller adjudication. An unresolved
 required read holds credit; a recovered, covered, or demonstrably unnecessary
