@@ -76,6 +76,17 @@ consult [resource-sensitive effects](../universalist/references/resource-sensiti
 Distinguish repairing execution from restricting admission or justified claims;
 every source-required valid operation remains an obligation.
 
+When the construction relies on a compositional law, cover its actual admitted
+environments, callbacks, application, and handlers. Preserve required joint
+observations with shared context; agreement of isolated results or marginal
+distributions can erase a deciding relationship. Distinguish a captured value,
+a fresh effect occurrence, and replay of an acquired response when those behaviors
+are observable. Use the existing proof selection and
+[laws in admitted contexts](../universalist/references/claim-appropriate-proof.md#laws-in-admitted-contexts)
+to settle missing closure or contextual preservation. Neither restricting away
+required-valid uses nor adding an unrequired probability or replay framework
+discharges the source obligation.
+
 Develop the implementation and its argument together. Establish primitive meaning
 and why permitted composition gives the required result, including exceptional
 outcomes and subsequent behavior. For admitted plans, commands, or checked

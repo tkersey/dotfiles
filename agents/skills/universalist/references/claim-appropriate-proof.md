@@ -46,6 +46,38 @@ finality, parametricity, equivalence, or uniqueness proof. Preserve the selected
 claim's existing proof profile; an ordinary encapsulation needs no invented
 universal construction, and a genuine universal claim still needs its witness.
 
+## Laws in admitted contexts
+
+Establish a compositional law over the values, environments, and operations its
+claim actually admits. For higher-order syntax, an induction includes application:
+evaluation must preserve the proposed relation for every function and argument
+admitted by that case. Lawful primitives, well-typed maps, or naturality alone do not establish
+this closure. A result for closed source-definable functions does not cover a
+larger semantic function space. If a smaller lawful domain suffices, justify its
+admission and closure under the required constructors, substitution, application,
+and handlers; retain every source-required valid use. An unsupported theorem may
+require correcting its domain or interpretation rather than changing sound code.
+
+When an observation retains shared input, state, evidence, or another result,
+preserve the required joint observation with that context. Equality under an
+isolated observation or marginal law need not support substitution there. For
+independent fair bits `U` and `V`, returning `U` and returning `V` have the same
+marginal law, but `(U,U)` has only diagonal outcomes while `(U,V)` has four.
+Derive which relationships the accepted observer can distinguish; do not impose
+joint equality on an intentionally marginal contract. Matching pairwise marginal
+laws also does not establish the full joint law for three or more values. Use a
+small exact contextual witness when it decides a live uncertainty, not a universal
+test quota.
+
+For effectful continuations, distinguish retaining an already acquired value,
+executing a future operation again, and replaying a recorded occurrence. Equal
+requests do not make distinct occurrences interchangeable when the contract
+observes them. Independence of fresh responses needs the declared host or effect
+model; new allocation or a copied random seed does not establish it. Preserve
+required effect counts, ordering, failure, cost, and replay behavior separately
+from a result-distribution claim. Reuse native operations and evidence; these
+distinctions require no general probability framework or new effect protocol.
+
 ## Premise-guided investigation
 
 When resolving uncertainty can change the construction or deciding proof, ask:

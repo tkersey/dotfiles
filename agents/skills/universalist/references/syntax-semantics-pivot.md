@@ -201,6 +201,12 @@ appropriate indexed construction. Binding, effects, partial primitives, host
 bypasses, and possible divergence require their actual laws and coverage; the
 finite pure fold argument does not establish them automatically.
 
+For higher-order syntax, include the actual admitted environments and application
+case in that argument. Require closure of the claimed relation under evaluation,
+and preserve required joint observations with shared context. Reuse
+[laws in admitted contexts](claim-appropriate-proof.md#laws-in-admitted-contexts);
+checking each primitive in isolation does not settle either obligation.
+
 ### Resource requirements before interpretation
 
 When a reusable construction must support several lawful resource interpretations,
