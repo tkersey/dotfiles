@@ -18,7 +18,7 @@ const policy = JSON.parse(text('references/review-contract.json'));
 const skill = text('SKILL.md');
 const protectedSections = {
   "Invalidated-batch supersession": "05369fc6e853f1c5f85011b6ac7aac81273460482c9091ed7a097a1178030cfd",
-  "Review-epoch immutability and evidence acquisition": "63023ac7b93b1d3271c9dbdcc352ca655505cf9fc4e3f3d8b63bf131995627ec",
+  "Review-epoch immutability and evidence acquisition": "e26f011354daafec3060b0d02650469ac5cf35e1fc4eee8f75db0546894fad3b",
   "Review and closure": "7c13facdb3d36c9df88190a5cfecac3cdab23299f6ec02e95348c56e391a3aaa",
   // Apply the same proof bar to initial construction; witnesses are conditional.
   "Realization and common proof obligations": "8f782e151a2c48cca2da1506830376ad597b689fde6985014f30c466f87be6e3"

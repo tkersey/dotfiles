@@ -19,9 +19,14 @@ Fold it and already-live required owner observations; do not launch another
 auxiliary wave on the invalidated head. A clean epoch closes after convergence.
 Outside an open review epoch, review is not a prerequisite for implementation.
 
-After closing an invalidated epoch, carry its outcome into the
-[progress assessment](recurrence.md#progress-before-another-iteration) before
-selecting a successor. Count the closed epoch once; its requests and clean
+After closing an invalidated epoch, resume the
+[source-required construction assignment](construction.md#construction-working-set)
+from the full admitted basis, preserving required-valid behavior, deciding evidence,
+and any prior remedy's predicted versus observed results. Recover missing
+decision-relevant context from existing owners. Use the
+[progress assessment](recurrence.md#progress-before-another-iteration) and
+[construction reconsideration](architecture.md) before selecting a successor.
+Count the closed epoch once; its requests and clean
 confirmations are not separate repair rounds. Reset review credit as required
 while preserving the history of unsuccessful approaches.
 
