@@ -141,10 +141,12 @@ ordinary disable flags. Hold if effective policy admits unbounded side effects,
 overrides the sandbox, adds unsandboxed exclusions, or cannot be established.
 Do not bypass it. See [settings precedence](https://code.claude.com/docs/en/settings)
 and [hook controls](https://code.claude.com/docs/en/settings-reference#disableallhooks).
-Require Claude Code 2.1.285 or newer, support for the flags and settings below,
-and a functioning sandbox; unavailability is a hold, never permission to run
-unsandboxed. Offline readback tests do not qualify the installed runtime's
-filesystem enforcement or native verifier delegation.
+Require Claude Code 2.1.287 or newer for
+[prompt-started forked-command stream evidence](https://code.claude.com/docs/en/headless#follow-subagent-messages).
+Verify support for the flags and settings below and a functioning sandbox;
+unavailability is a hold, never permission to run unsandboxed. Offline readback
+tests do not qualify the installed runtime's filesystem enforcement or native
+verifier delegation.
 
 ```bash
 sid=$(uuidgen | tr '[:upper:]' '[:lower:]')

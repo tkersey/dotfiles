@@ -160,37 +160,48 @@ printf 'environment=%s\\nlocks=%s\\nbackground=%s\\n' "$CLAUDE_CODE_EFFORT_LEVEL
   "${CLAUDE_CODE_DISABLE_BACKGROUND_TASKS-unset}"
 while (($#)); do
   if [[ "$1" == "--effort" ]]; then printf 'flag=%s\\n' "$2"; fi
+  if [[ "$1" == "--session-id" ]]; then printf 'session=%s\\n' "$2"; fi
   if [[ "$1" == "--resume" ]]; then printf 'resume=%s\\n' "$2"; fi
   shift
 done
+cat >"$stdin_capture"
 ''')
     stub.chmod(0o755)
     repo = tmp / "launch subject with spaces"
     repo.mkdir()
     prompt = tmp / "launch prompt with spaces"
     prompt.write_bytes(PROMPT)
+    followup = tmp / "launch followup prompt with spaces"
+    followup_bytes = b"Complete the missing target read and reassess the original findings.\n\n"
+    followup.write_bytes(followup_bytes)
+    fresh_sid = "aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee"
     settings = tmp / "launch-settings.json"
     settings.write_text("{}\n")
     resume = textwrap.dedent(next(block for block in blocks if "--resume" in block)).split("\n", 1)[1]
     assert resume.strip() == standard.strip().replace('--session-id "$sid"', '--resume "$sid"').replace(
         '"/review $level $base..HEAD" </dev/null >"$events" 2>"$diagnostics")',
         '<"$followup_prompt" >"$followup_events" 2>"$followup_diagnostics")'), resume
-    for kind, command in [("standard", standard), ("custom", custom), ("resume", resume)]:
+    for kind, command, prompt_bytes in [("standard", standard, b""), ("custom", custom, PROMPT),
+                                       ("resume", resume, followup_bytes)]:
         for selected, inherited in [("high", "low"), ("low", "max")]:
             events = tmp / f"launch-{kind}-{selected}.jsonl"
+            stdin_capture = tmp / f"launch {kind} {selected} stdin"
             env = {**os.environ, "PATH": str(binary) + os.pathsep + os.environ["PATH"],
                    "CLAUDE_CODE_EFFORT_LEVEL": inherited, "selected_effort": selected,
                    "repo": str(repo), "selected_model": MODEL, "level": "high", "base": BASE,
                    "settings": str(settings), "events": str(events),
                    "diagnostics": str(tmp / "launch-errors"), "prompt": str(prompt), "skill_dir": str(skill),
-                   "sid": SID, "followup_prompt": str(prompt), "followup_events": str(events),
+                   "stdin_capture": str(stdin_capture), "followup_prompt": str(followup), "followup_events": str(events),
                    "followup_diagnostics": str(tmp / "launch-errors")}
-            script = f"uuidgen() {{ printf '%s\\n' '{SID}'; }}\n" + setup + "\n" + command
+            session = f"sid={shlex.quote(SID)}\n" if kind == "resume" else ""
+            script = f"uuidgen() {{ printf '%s\\n' '{fresh_sid}'; }}\n" + setup + "\n" + session + command
             run = subprocess.run(["bash", "-eu", "-c", script], env=env, capture_output=True, text=True)
             assert run.returncode == 0, run.stderr
             observed = dict(line.split("=", 1) for line in events.read_text().splitlines())
             expected = {"environment": selected, "locks": "0", "background": "1", "flag": selected}
-            assert observed == {**expected, **({"resume": SID} if kind == "resume" else {})}, observed
+            assert observed == {**expected, **({"resume": SID} if kind == "resume" else {"session": fresh_sid})}, observed
+            delivered = stdin_capture.read_bytes()
+            assert delivered == prompt_bytes, (kind, delivered)
             checks += 1
 
 
