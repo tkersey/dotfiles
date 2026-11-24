@@ -200,6 +200,12 @@ where the source requires its behavior. Keep witness inputs as named cases and
 preserve or re-establish sensitivity to each distinct violation. Retain separate
 checks when they supply independent evidence or observe different required behavior.
 
+Retain distinct executable evidence for continuing source-backed obligations in
+the repository's existing verification path for affected successors. Confirm
+that it actually runs and preserves defect sensitivity and required-valid cases.
+Reuse adequate checks or decisive source arguments; temporary investigative
+probes need not become permanent tests.
+
 Before accepting validation for local completion or reviewability, inspect the
 base-to-candidate diff and actual check selection for deleted tests, weakened
 assertions, skipped checks, or reduced coverage, including changes made directly
