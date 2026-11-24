@@ -10,6 +10,12 @@ full selected model ID. TARGET is the target passed to /review (`<base>..HEAD`),
 or "-" when none was passed. Custom delivery is checked in the session transcript
 under $CLAUDE_CONFIG_DIR (default ~/.claude)/projects/*/SESSION_ID.jsonl.
 
+Each stream's first init must report Claude Code 2.1.287 or newer, tools within
+the launch inventory, permissionMode dontAsk, and no MCP servers; these and the
+loaded plugins are reported under runtime. The standard recipe must carry a
+forked-command- parent_tool_use_id, the runtime's marker of a prompt-started
+forked command; it does not name which command resolved.
+
 The standard read gate recognizes direct Bash `git diff` calls against TARGET
 and bounded `;`/`&&` chains, not arbitrary shell programs. Shell success proves
 only the final && group's completion; earlier semicolon groups remain unknown.
@@ -21,7 +27,10 @@ the reference was captured successfully under an enforced read-only boundary
 for the same frozen subject. A target read that precedes `;` counts as patch
 delivery only when its output contains the whole reference at line boundaries,
 allowing omission of one final newline. The target command's completion remains
-unknown. Patch markers alone never count. Optional same-session follow-up streams
+unknown. Patch markers alone never count. A reference also yields delivery: per
+file, how many distinctive changed lines appear in any tool result of the
+original or follow-up streams. It reports text presence, never a hold.
+Optional same-session follow-up streams
 can supply a missing observation while retaining the original result and every
 supplemental result separately. Reference provenance, Git subject, recovery
 authorization, reassessment, and coverage remain with the caller.
@@ -56,6 +65,14 @@ PATCH_OPTION = re.compile(r"-p|-u|--patch\S*|-U\S*|--unified\S*")
 COMPANION_GIT = {"rev-parse", "merge-base", "ls-files", "check-ignore"}
 FIND_ACTIONS = {"-exec", "-execdir", "-ok", "-okdir", "-delete", "-fprint", "-fprint0", "-fprintf",
                 "-fls", "-printf"}
+# Prompt-started forked-command messages reach stream-json from 2.1.287 (headless docs).
+MIN_VERSION = (2, 1, 287)
+FORKED = "forked-command-"
+# Launch inventories as init reports them; init names the Agent tool `Task`.
+INVENTORY = {"standard": {"Read", "Grep", "Glob", "Bash", "Agent", "Task"},
+             "custom": {"Read", "Grep", "Glob", "Bash", "StructuredOutput"}}
+DISTINCTIVE = 12
+LINE_PREFIX = re.compile(r"\s*\d+[\t→]|[^\s:]+:\d+[:-]")
 
 
 def text_of(content) -> str:
@@ -143,6 +160,56 @@ def common(events: list[dict], sid: str, model: str, problems: list[str]) -> dic
 def result_evidence(result: dict) -> dict:
     return {"result": result.get("result"), "permission_denials": result.get("permission_denials", []),
             **{key: result[key] for key in ("origin", "results") if key in result}}
+
+
+def launch_runtime(events: list[dict], kind: str, problems: list[str]) -> dict:
+    """Check the runtime-authored launch facts in the stream's first init."""
+    init = next((e for e in events if e.get("type") == "system" and e.get("subtype") == "init"), None)
+    if init is None:
+        return {}
+    version, tools = init.get("claude_code_version"), init.get("tools")
+    parsed = (tuple(map(int, version.split("."))) if isinstance(version, str)
+              and re.fullmatch(r"\d+\.\d+\.\d+", version) else None)
+    if parsed is None or parsed < MIN_VERSION:
+        problems.append(f"init claude_code_version {version!r} is not 2.1.287 or newer")
+    if (not isinstance(tools, list) or not all(isinstance(tool, str) for tool in tools)
+            or not set(tools) <= INVENTORY[kind]):
+        problems.append(f"init tools {tools!r} exceed the {kind} launch inventory")
+    if init.get("permissionMode") != "dontAsk":
+        problems.append(f"init permissionMode {init.get('permissionMode')!r} is not dontAsk")
+    if init.get("mcp_servers") != []:
+        problems.append(f"init mcp_servers {init.get('mcp_servers')!r} is not empty")
+    return {"claude_code_version": version, "tools": tools, "permission_mode": init.get("permissionMode"),
+            "mcp_servers": init.get("mcp_servers"), "plugins": init.get("plugins")}
+
+
+def delivery(reference: str, streams: list[list[dict]]) -> dict:
+    """Count distinctive changed reference lines whose text appears in any tool result.
+
+    Text presence is not attention or reasoning, and identical text elsewhere also
+    matches. Read line numbers, grep `path:line:` prefixes and diff markers are removed.
+    """
+    files, path, in_hunk = {}, None, False
+    for line in reference.splitlines():
+        if line.startswith("diff --git "):
+            path, in_hunk = line.rsplit(" b/", 1)[-1], False
+            files.setdefault(path, [])
+        elif path is not None and line.startswith("@@"):
+            in_hunk = True
+        elif in_hunk and line[:1] in "+-" and len(line[1:].strip()) >= DISTINCTIVE:
+            files[path].append(line[1:].rstrip())
+    seen = set()
+    for event in (event for stream in streams for event in stream):
+        for part in parts_of(event):
+            if part.get("type") == "tool_result":
+                for line in text_of(part.get("content")).splitlines():
+                    for text in (line, LINE_PREFIX.sub("", line, count=1) if LINE_PREFIX.match(line) else line):
+                        seen.update((text.rstrip(), text[1:].rstrip() if text[:1] in "+- " else text.rstrip()))
+    measured = [{"path": name, "lines": len(lines), "delivered": sum(line in seen for line in lines)}
+                for name, lines in files.items() if lines]
+    return {"distinctive_min_chars": DISTINCTIVE, "lines": sum(f["lines"] for f in measured),
+            "delivered": sum(f["delivered"] for f in measured), "files": measured,
+            "unmeasured": [name for name, lines in files.items() if not lines]}
 
 
 def pieces(command: str) -> tuple[list[list[str]], list[str]] | None:
@@ -329,13 +396,17 @@ def standard(events: list[dict], target: str, level: str, problems: list[str], f
              reference: str | None = None) -> dict:
     terminal = next((i for i, e in enumerate(events) if e.get("type") == "result"), len(events))
     session = events[:terminal]
-    recipe = next((text_of(e.get("message", {}).get("content")) for e in session
-                   if e.get("type") == "user" and isinstance(e.get("message"), dict)
-                   and "Review target:" in text_of(e["message"].get("content"))), None)
+    carrier = next((e for e in session if e.get("type") == "user" and isinstance(e.get("message"), dict)
+                    and "Review target:" in text_of(e["message"].get("content"))), None)
+    recipe = text_of(carrier["message"].get("content")) if carrier else None
     evidence = {"diff_reads": []}
     if recipe is None:
         problems.append("no expanded /review recipe in the session")
     else:
+        fork = carrier.get("parent_tool_use_id")
+        evidence["recipe_parent_tool_use_id"] = fork
+        if not (isinstance(fork, str) and fork.startswith(FORKED)):
+            problems.append(f"recipe parent_tool_use_id {fork!r} does not mark a prompt-started forked command")
         observed = LEVEL.search(recipe)
         observed_level = observed.group(1) if observed else None
         evidence.update(observed_level=observed_level, recipe_header=recipe.split("\n\n", 2)[:2])
@@ -412,6 +483,8 @@ def standard(events: list[dict], target: str, level: str, problems: list[str], f
                 problems.append(f"no successful correlated `git diff` read against {target}: "
                                 f"no recognized target diff request was found; {remedy}")
             evidence["other_bash_requests"] = others
+    if reference is not None:
+        evidence["delivery"] = delivery(reference, [events, *followups])
     return evidence
 
 
@@ -464,7 +537,8 @@ def main() -> None:
     problems: list[str] = []
     events = load_events(Path(events_path), problems)
     result = common(events, sid, model, problems)
-    report = {"kind": kind, "session_id": sid, "model": model, **result_evidence(result)}
+    report = {"kind": kind, "session_id": sid, "model": model,
+              "runtime": launch_runtime(events, kind, problems), **result_evidence(result)}
     if kind == "standard":
         if not isinstance(result.get("result"), str) or not result["result"].strip():
             problems.append("no nonempty native result text from a unique terminal result")
@@ -476,11 +550,13 @@ def main() -> None:
             issues = []
             stream = load_events(Path(path), issues, "follow-up events")
             supplemental = common(stream, sid, model, issues)
+            runtime = launch_runtime(stream, "standard", issues)
             if not isinstance(supplemental.get("result"), str) or not supplemental["result"].strip():
                 issues.append("no nonempty follow-up result text from a unique terminal result")
             problems.extend(f"follow-up {len(followups) + 1}: {issue}" for issue in issues)
             followups.append(stream)
-            report.setdefault("followups", []).append({"events": path, **result_evidence(supplemental)})
+            report.setdefault("followups", []).append({"events": path, "runtime": runtime,
+                                                       **result_evidence(supplemental)})
         report.update(standard(events, target, level, problems, followups, reference))
     else:
         try:

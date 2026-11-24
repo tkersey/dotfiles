@@ -219,20 +219,29 @@ const claudeCleanText = 'Reviewed the full bound changeset and its callers again
 const claudePatch = 'diff --git a/src/check.mjs b/src/check.mjs\n@@ -1 +1 @@\n-old\n+new';
 const claudeFollowupPrompt = `Read ${claudeTarget} with a standalone git diff, complete the missing source inquiry, and reassess the original review.`;
 // Exercise the actual helper on synthetic native-shaped events. This is not a live Claude run.
+// As observed live: init carries runtime facts, a prompt-started /review streams its
+// messages under a forked-command- parent without Bash metadata, and a resumed
+// follow-up runs in the main conversation with Bash metadata.
+const claudeRuntime = {claude_code_version:'2.1.331', tools:['Task', 'Bash', 'Glob', 'Grep', 'Read'],
+  permissionMode:'dontAsk', mcp_servers:[], plugins:[]};
+const claudeFork = 'forked-command-code-review';
+const claudeRuntimeEvidence = {claude_code_version:claudeRuntime.claude_code_version, tools:claudeRuntime.tools,
+  permission_mode:claudeRuntime.permissionMode, mcp_servers:claudeRuntime.mcp_servers, plugins:claudeRuntime.plugins};
 function claudeObservation({sid=claudeSession(5), level='high', result=claudeCleanText,
   diff='success', permissionDenials=[], followup=null, reference=false, observedPatch=claudePatch} = {}) {
   const dir = mkdtempSync(join(tmpdir(), 'actuating-claude-credit-'));
   try {
-    const events = [
-      {type:'system', subtype:'init', session_id:sid, model:claudeModel},
-      {type:'user', message:{content:[{type:'text', text:
+    const init = {type:'system', subtype:'init', session_id:sid, model:claudeModel, ...claudeRuntime};
+    const events = [init,
+      {type:'user', parent_tool_use_id:claudeFork, message:{content:[{type:'text', text:
         `Review target: \`${claudeTarget}\`\n\n\`${level} effort → 8 inline angles → ≤10 findings\`\n\n## Phase 1`}]}}
     ];
-    const request = (id, command=`git diff ${claudeTarget}`) => ({type:'assistant', message:{content:[{type:'tool_use',
-      id, name:'Bash', input:{command}}]}});
-    const response = (id, failed) => ({type:'user', message:{content:[{type:'tool_result',
-      tool_use_id:id, is_error:failed, content:failed ? 'Exit code 129\nerror: invalid option' :
-        observedPatch}]}});
+    const request = (id, command=`git diff ${claudeTarget}`, parent=claudeFork) => ({type:'assistant',
+      parent_tool_use_id:parent, message:{content:[{type:'tool_use', id, name:'Bash', input:{command}}]}});
+    const response = (id, failed, parent=claudeFork) => ({type:'user', parent_tool_use_id:parent,
+      ...(parent ? {} : {tool_use_result:{stdout:'', stderr:'', interrupted:false}}),
+      message:{content:[{type:'tool_result', tool_use_id:id, is_error:failed,
+        content:failed ? 'Exit code 129\nerror: invalid option' : observedPatch}]}});
     events.push(request('diff-1', diff === 'unverified-chain' ? `git diff ${claudeTarget}; git diff HEAD` : undefined));
     if (diff !== 'missing-result') events.push(response('diff-1', !['success', 'unverified-chain'].includes(diff)));
     if (diff === 'recovered') events.push(request('diff-2'), response('diff-2', false));
@@ -246,10 +255,9 @@ function claudeObservation({sid=claudeSession(5), level='high', result=claudeCle
       extra.push('--reference-patch', 'reference.patch');
     }
     if (followup) {
-      const supplemental = [
-        {type:'system', subtype:'init', session_id:sid, model:claudeModel},
-        {type:'user', message:{content:[{type:'text', text:claudeFollowupPrompt}]}},
-        request('followup-diff-1'), response('followup-diff-1', false),
+      const supplemental = [init,
+        {type:'user', parent_tool_use_id:null, message:{content:[{type:'text', text:claudeFollowupPrompt}]}},
+        request('followup-diff-1', undefined, null), response('followup-diff-1', false, null),
         {type:'result', subtype:'success', is_error:false, session_id:sid,
           modelUsage:{[claudeModel]:{}}, permission_denials:followup.permissionDenials ?? [], result:followup.result}
       ];
@@ -267,8 +275,8 @@ function claudeObservation({sid=claudeSession(5), level='high', result=claudeCle
     assert.equal(report.result, result);
     assert.deepEqual(report.permission_denials, permissionDenials);
     if (followup) {
-      assert.deepEqual(report.followups, [{events:'followup.jsonl', result:followup.result,
-        permission_denials:followup.permissionDenials ?? []}]);
+      assert.deepEqual(report.followups, [{events:'followup.jsonl', runtime:claudeRuntimeEvidence,
+        result:followup.result, permission_denials:followup.permissionDenials ?? []}]);
       assert.equal(report.diff_reads.find(read => read.followup === 1)?.ok, true);
     }
     if (diff === 'unverified-chain') {

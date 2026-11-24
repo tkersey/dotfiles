@@ -142,7 +142,8 @@ overrides the sandbox, adds unsandboxed exclusions, or cannot be established.
 Do not bypass it. See [settings precedence](https://code.claude.com/docs/en/settings)
 and [hook controls](https://code.claude.com/docs/en/settings-reference#disableallhooks).
 Require Claude Code 2.1.287 or newer for
-[prompt-started forked-command stream evidence](https://code.claude.com/docs/en/headless#follow-subagent-messages).
+[prompt-started forked-command stream evidence](https://code.claude.com/docs/en/headless#follow-subagent-messages);
+readback holds when the session's init reports an older or missing version.
 Verify support for the flags and settings below and a functioning sandbox;
 unavailability is a hold, never permission to run unsandboxed. Offline readback
 tests do not qualify the installed runtime's filesystem enforcement or native
@@ -202,7 +203,8 @@ uv run --no-project python -I "$skill_dir/scripts/readback.py" custom \
   "$events" "$sid" "$selected_model" "$prompt" "$readback_json"
 ```
 
-For a semicolon-hidden read, optionally append `--reference-patch "$reference_patch"`.
+Optionally append `--reference-patch "$reference_patch"`: it lets a
+semicolon-hidden read count as patch delivery and adds the `delivery` report below.
 Reuse a complete reference patch captured by the caller's existing executor under
 an enforced read-only filesystem boundary covering the repository, Git directory,
 and common directory. While the subject is frozen, capture the complete stdout of
@@ -226,10 +228,17 @@ the helper's target instead of `$base..HEAD`.
 exits nonzero (hold) unless all of these hold:
 
 - Init and result belong to `$sid` and the selected model; the run succeeded;
-  `modelUsage` names only that model (no fallback).
+  `modelUsage` names only that model (no fallback). Each stream's first init,
+  original or follow-up, reports Claude Code 2.1.287 or newer, only tools from the
+  launch inventory (init names the Agent tool `Task`), `permissionMode: dontAsk`,
+  and no MCP servers. These facts and the loaded plugins are retained under
+  `runtime`; plugins are evidence for the caller's managed-policy review, not a
+  check (observed: managed plugins load under `--restricted`, and a resume loaded
+  one the launch had not).
 - **Standard:** native result text is nonempty; the expanded recipe names the
   frozen target, its depth header names the bound level (observed: `medium` ran
-  the `high` recipe), and a
+  the `high` recipe), its message carries a `parent_tool_use_id` starting with
+  `forked-command-` (the runtime's marker of a prompt-started forked command), and a
   matching reviewer `git diff` has a correlated completed tool result establishing
   either target completion or delivery of the complete bound patch as described
   below.
@@ -265,15 +274,26 @@ exits nonzero (hold) unless all of these hold:
   received an inline preview. The flag neither establishes nor refutes completion,
   which comes from the tool result. Without `reference_matched: true`, an `ok`
   persisted read passes the gate as the target observation but does not establish
-  delivery of its content: judge that from later correlated reads (path-limited
-  diffs, or Read of the persisted file) and otherwise retain an inquiry limitation.
-  A preview may contain the complete reference patch while target completion
-  remains unknown.
-  Recipe text alone does not authenticate native command resolution;
-  retain the host's actual `/review` invocation.
+  delivery of its content: judge that from `delivery` or later correlated reads
+  (path-limited diffs, or Read of the persisted file) and otherwise retain an
+  inquiry limitation. A preview may contain the complete reference patch while
+  target completion remains unknown.
+  The forked-command marker shows that a prompt-started forked command produced
+  the recipe, not which command resolved; retain the host's actual `/review`
+  invocation.
 - **Custom:** exactly one transcript `<config>/projects/*/$sid.jsonl` exists and
   its first user message equals the prompt bytes; stream-json does not echo a
   piped prompt, so this is the delivery evidence. `structured_output` is present.
+
+With a reference patch, `delivery` lists per file how many distinctive changed
+lines (at least 12 non-space characters) appear in any tool result of the original
+or follow-up streams, after removing Read line numbers, grep `path:line:`
+prefixes and diff markers; binary or short-line files are listed as `unmeasured`.
+Passing readback does not establish delivery (observed: real reviews that passed
+every check delivered 70–93% of distinctive changed lines and left up to three
+files untouched). `delivery` records text presence, not attention or reasoning, and
+identical text elsewhere also matches. It is evidence for the caller's coverage
+judgment and never a hold.
 
 Permission denials remain in the report for caller adjudication. An unresolved
 required read holds credit; a recovered, covered, or demonstrably unnecessary
@@ -326,7 +346,9 @@ Confidence is not evidence.
 - **Incomplete inquiry follow-up** (caller-authorized): continue the same session
   with the resume below: the launch's environment bindings and flags, `--resume`
   in place of `--session-id`, and the follow-up prompt on stdin (a custom
-  follow-up keeps its own launch's tool and `--json-schema` flags). Name
+  follow-up keeps its own launch's tool and `--json-schema` flags). Run it with
+  the launch's `$sid` and `read_tools`; rerunning the setup's `sid=` line would
+  resume a session that does not exist. Name
   the concrete gap, exact paths and ranges; ask it to complete the observation and
   reassess, overturning conclusions when warranted. The response is supplemental
   evidence attributed separately, not a new verdict or an additional clean.

@@ -24,25 +24,48 @@ PATCH = "diff --git a/check.txt b/check.txt\n@@ -1 +1 @@\n-before\n+after\n"
 checks = 0
 
 
+FORK = "forked-command-code-review"
+
+
+def init_event(tools=("Task", "Bash", "Glob", "Grep", "Read")):
+    # Shaped like live 2.1.33x init events, which carry these runtime facts.
+    return {"type": "system", "subtype": "init", "session_id": SID, "model": MODEL,
+            "claude_code_version": "2.1.331", "tools": list(tools), "permissionMode": "dontAsk",
+            "mcp_servers": [], "plugins": [{"name": "managed-plugin", "path": "/managed/plugin"}]}
+
+
 def standard_events(level="high", target=BASE, command=None, output=PATCH, result="(none)"):
+    # A prompt-started /review streams its forked messages under a forked-command- parent,
+    # and its tool results carry no tool_use_result metadata (observed live).
     return [
-        {"type": "system", "subtype": "init", "session_id": SID, "model": MODEL},
-        {"type": "user", "message": {"content": [{"type": "text", "text":
+        init_event(),
+        {"type": "user", "parent_tool_use_id": FORK, "message": {"content": [{"type": "text", "text":
             f"Review target: `{target}`\n\n`{level} effort → 8 inline angles → ≤10 findings`\n\n## Phase 1"}]}},
-        {"type": "assistant", "message": {"content": [{"type": "tool_use", "id": "diff-1", "name": "Bash",
-            "input": {"command": command or f"git diff {target[:12]} HEAD"}}]}},
-        {"type": "user", "message": {"content": [{"type": "tool_result", "tool_use_id": "diff-1",
-            "is_error": False, "content": output}]}},
+        {"type": "assistant", "parent_tool_use_id": FORK, "message": {"content": [{"type": "tool_use",
+            "id": "diff-1", "name": "Bash", "input": {"command": command or f"git diff {target[:12]} HEAD"}}]}},
+        {"type": "user", "parent_tool_use_id": FORK, "message": {"content": [{"type": "tool_result",
+            "tool_use_id": "diff-1", "is_error": False, "content": output}]}},
         {"type": "result", "subtype": "success", "is_error": False, "session_id": SID,
          "modelUsage": {MODEL: {}}, "permission_denials": [], "result": result},
     ]
+
+
+def as_followup(events, tool_id="diff-2"):
+    """Reshape a /review fixture as a resumed main-conversation stream, as observed live."""
+    stream = copy.deepcopy(events)
+    del stream[1]
+    request, response = stream[1], stream[2]
+    request["parent_tool_use_id"] = response["parent_tool_use_id"] = None
+    request["message"]["content"][0]["id"] = response["message"]["content"][0]["tool_use_id"] = tool_id
+    response["tool_use_result"] = {"stdout": "", "stderr": "", "interrupted": False}
+    return stream
 
 
 def custom_events():
     output = {"findings": [], "overall_correctness": "patch is correct",
               "overall_explanation": "Inspected the whole changeset.", "overall_confidence_score": 0.8}
     return [
-        {"type": "system", "subtype": "init", "session_id": SID, "model": MODEL},
+        init_event(("Bash", "Glob", "Grep", "Read", "StructuredOutput")),
         {"type": "result", "subtype": "success", "is_error": False, "session_id": SID,
          "modelUsage": {MODEL: {}}, "permission_denials": [], "result": "", "structured_output": output},
     ]
@@ -195,7 +218,9 @@ cat >"$stdin_capture"
                    "followup_diagnostics": str(tmp / "launch-errors")}
             session = f"sid={shlex.quote(SID)}\n" if kind == "resume" else ""
             script = f"uuidgen() {{ printf '%s\\n' '{fresh_sid}'; }}\n" + setup + "\n" + session + command
-            run = subprocess.run(["bash", "-eu", "-c", script], env=env, capture_output=True, text=True)
+            # A closed stdin makes a lost redirect fail instead of blocking on a terminal.
+            run = subprocess.run(["bash", "-eu", "-c", script], env=env, capture_output=True, text=True,
+                                 stdin=subprocess.DEVNULL)
             assert run.returncode == 0, run.stderr
             observed = dict(line.split("=", 1) for line in events.read_text().splitlines())
             expected = {"environment": selected, "locks": "0", "background": "1", "flag": selected}
@@ -303,10 +328,7 @@ def chain_checks(tmp):
         rejected_flag = subprocess.run([sys.executable, "-I", str(SCRIPT), "standard", "events", SID, MODEL,
                                         target, "high", "out", *flags], capture_output=True, text=True)
         assert rejected_flag.returncode != 0 and "usage:" in rejected_flag.stderr
-    supplemental, _ = observation(f"git diff {target}")
-    del supplemental[1]
-    supplemental[1]["message"]["content"][0]["id"] = "diff-2"
-    supplemental[2]["message"]["content"][0]["tool_use_id"] = "diff-2"
+    supplemental = as_followup(observation(f"git diff {target}")[0])
     supplemental[-1]["result"] = "Completed the missing read and reassessed it: a.txt:1 has a defect."
     denied = [{"tool_name": "Bash", "tool_input": {"command": "npm test"}}]
     supplemental[-1]["permission_denials"] = denied
@@ -444,10 +466,7 @@ def reference_boundary(tmp):
 
 
 def inquiry_diagnostics(tmp):
-    supplemental = standard_events(command=f"git diff {BASE}..HEAD", result="Eight agents are running.")
-    del supplemental[1]
-    supplemental[1]["message"]["content"][0]["id"] = "diff-2"
-    supplemental[2]["message"]["content"][0]["tool_use_id"] = "diff-2"
+    supplemental = as_followup(standard_events(command=f"git diff {BASE}..HEAD", result="Eight agents are running."))
     expect(readback(tmp, "standard", standard_events(), followups=[supplemental]))
 
     requests = [f"git diff {BASE}..HEAD --stat", f"git log --oneline {BASE}..HEAD | head -50",
@@ -509,10 +528,7 @@ def terminal_evidence(tmp):
 
     original = standard_events(result="check.txt:1 — invalid inputs are accepted.")
     original[-1]["permission_denials"] = [{"tool_name": "Bash", "tool_input": {"command": "npm test"}}]
-    supplemental = copy.deepcopy(original)
-    del supplemental[1]
-    supplemental[1]["message"]["content"][0]["id"] = "diff-2"
-    supplemental[2]["message"]["content"][0]["tool_use_id"] = "diff-2"
+    supplemental = as_followup(original)
     wake = [{"type": "system", "subtype": "init", "session_id": SID, "model": MODEL},
             {"type": "result", "subtype": "success", "is_error": False, "session_id": SID,
              "modelUsage": {MODEL: {}}, "result": "The later task found a second issue.",
@@ -572,13 +588,16 @@ def persisted_reads(tmp):
     global checks
 
     preview = f"<persisted-output>\nOutput too large (1.9MB). Full output saved to: /x/tool-results/b.txt\n\nPreview (first 2KB):\n{PATCH}"
-    for output, details in [(preview, None), (PATCH, {"stdout": "", "persistedOutputPath": "/x/b.txt"})]:
-        events = standard_events(output=output)
-        if details:
-            events[3]["tool_use_result"] = details
-        report = readback(tmp, "standard", events)
-        expect(report)
-        assert report["diff_reads"][0]["persisted_output"] is True, report
+    # Forked /review results carry only the content wrapper; resumed main-conversation
+    # results also carry tool_use_result metadata.
+    report = readback(tmp, "standard", standard_events(output=preview))
+    expect(report)
+    assert report["diff_reads"][0]["persisted_output"] is True, report
+    followup = as_followup(standard_events())
+    followup[2]["tool_use_result"]["persistedOutputPath"] = "/x/b.txt"
+    report = readback(tmp, "standard", standard_events(command="ls -la"), followups=[followup])
+    expect(report)
+    assert report["diff_reads"][0]["persisted_output"] is True and report["diff_reads"][0]["followup"] == 1, report
     assert "persisted_output" not in readback(tmp, "standard", standard_events())["diff_reads"][0]
     checks += 1
     reference = tmp / "persisted-reference.patch"
@@ -590,10 +609,90 @@ def persisted_reads(tmp):
     assert read["persisted_output"] and read["reference_matched"] and read["completion_status"] == "unknown", report
     failed = standard_events(output=preview)
     failed[3]["message"]["content"][0]["is_error"] = True
-    failed[3]["tool_use_result"] = {"exitCode": 128, "persistedOutputPath": "/x/b.txt"}
     report = readback(tmp, "standard", failed)
     expect(report, "every recognized read failed or lacks a unique later result")
     assert report["diff_reads"][0]["persisted_output"] and not report["diff_reads"][0]["ok"], report
+    failed = as_followup(standard_events(output=preview))
+    failed[2]["tool_use_result"].update(exitCode=128, persistedOutputPath="/x/b.txt")
+    report = readback(tmp, "standard", standard_events(command="ls -la"), followups=[failed])
+    expect(report, "every recognized read failed or lacks a unique later result")
+    assert report["diff_reads"][0]["persisted_output"] and not report["diff_reads"][0]["ok"], report
+
+
+def runtime_evidence(tmp):
+    report = readback(tmp, "standard", standard_events())
+    expect(report)
+    assert report["runtime"] == {"claude_code_version": "2.1.331", "tools": ["Task", "Bash", "Glob", "Grep", "Read"],
+                                 "permission_mode": "dontAsk", "mcp_servers": [],
+                                 "plugins": [{"name": "managed-plugin", "path": "/managed/plugin"}]}, report
+    assert report["recipe_parent_tool_use_id"] == FORK, report
+    for key, value, error in [("claude_code_version", "2.1.286", "is not 2.1.287 or newer"),
+                              ("claude_code_version", "2.1.1000", None), ("claude_code_version", "3.0.0", None),
+                              ("claude_code_version", None, "is not 2.1.287 or newer"),
+                              ("claude_code_version", "2.1.x", "is not 2.1.287 or newer"),
+                              ("tools", ["Task", "Bash", "Read", "Write"], "exceed the standard launch inventory"),
+                              ("tools", ["Agent", "Bash", "Read"], None),
+                              ("tools", ["Bash", "mcp__x__y"], "exceed the standard launch inventory"),
+                              ("tools", "Bash", "exceed the standard launch inventory"),
+                              ("permissionMode", "default", "is not dontAsk"),
+                              ("mcp_servers", [{"name": "x"}], "is not empty"),
+                              ("mcp_servers", None, "is not empty")]:
+        events = standard_events()
+        events[0][key] = value
+        expect(readback(tmp, "standard", events), error)
+    custom = custom_events()
+    custom[0]["tools"].append("Task")
+    expect(readback(tmp, "custom", custom, transcript()), "exceed the custom launch inventory")
+    followup = as_followup(standard_events())
+    followup[0]["permissionMode"] = "bypassPermissions"
+    report = readback(tmp, "standard", standard_events(), followups=[followup])
+    expect(report, "follow-up 1: init permissionMode 'bypassPermissions' is not dontAsk")
+    assert report["followups"][0]["runtime"]["permission_mode"] == "bypassPermissions", report
+    gap = standard_events(command="ls -la")
+    gap[0]["claude_code_version"] = "2.1.200"
+    report = readback(tmp, "standard", gap)
+    assert "a --followup cannot clear" in report["problems"][-1], report
+
+    for fork, error in [(None, "None does not mark"), ("toolu_01", "'toolu_01' does not mark"),
+                        ("forked-command-review", None)]:
+        events = standard_events()
+        events[1]["parent_tool_use_id"] = fork
+        report = readback(tmp, "standard", events)
+        expect(report, error and "a prompt-started forked command")
+        assert report["recipe_parent_tool_use_id"] == fork, report
+        assert error is None or any(error in p for p in report["problems"]), report
+
+
+def delivery_report(tmp):
+    global checks
+    first = "function admit(request) { return request.valid; }"
+    second = "function retain(record, limit) { return record.size <= limit; }"
+    # In a hunk, `---` is a removed line starting with `--`, not a file header.
+    reference_text = (f"diff --git a/src/a.js b/src/a.js\n--- a/src/a.js\n+++ b/src/a.js\n@@ -1,3 +1,2 @@\n"
+                      f"-{first.replace('valid', 'ok')}\n--- removed comment with leading dashes\n+{first}\n x\n"
+                      f"diff --git a/src/b.js b/src/b.js\nnew file mode 100644\n--- /dev/null\n+++ b/src/b.js\n"
+                      f"@@ -0,0 +1,3 @@\n+{second}\n+}}\n+-- comment that starts with two dashes --\n"
+                      "diff --git a/img.png b/img.png\nBinary files a/img.png and b/img.png differ\n")
+    reference = tmp / "delivery-reference.patch"
+    reference.write_text(reference_text, encoding="utf-8")
+    events = standard_events(command=f"git diff {BASE}..HEAD -- src/a.js",
+                             output=f"diff --git a/src/a.js b/src/a.js\n@@ -1 +1 @@\n-{first.replace('valid', 'ok')}\n+{first}\n")
+    report = readback(tmp, "standard", events, reference_patch=reference)
+    expect(report)
+    assert report["delivery"] == {"distinctive_min_chars": 12, "lines": 5, "delivered": 2,
+        "files": [{"path": "src/a.js", "lines": 3, "delivered": 2}, {"path": "src/b.js", "lines": 2, "delivered": 0}],
+        "unmeasured": ["img.png"]}, report
+    # Read line numbers and grep prefixes are removed; follow-up streams count.
+    followup = as_followup(standard_events(output=f"7\t{second}\nsrc/b.js:3:-- comment that starts with two dashes --\n"))
+    followup[1]["message"]["content"][0].update(name="Read", input={"file_path": "/repo/src/b.js"})
+    report = readback(tmp, "standard", events, followups=[followup], reference_patch=reference)
+    assert report["delivery"]["delivered"] == 4 and report["delivery"]["files"][1]["delivered"] == 2, report
+    assert report["ok"] and "delivery" not in " ".join(report["problems"]), report
+    checks += 1
+    assert "delivery" not in readback(tmp, "standard", events)
+    held = readback(tmp, "standard", standard_events(command="ls -la", output=f"+{first}\n"), reference_patch=reference)
+    expect(held, "no successful correlated")
+    assert held["delivery"]["delivered"] == 1, held
 
 
 def main():
@@ -710,10 +809,12 @@ def main():
         background = standard_events()
         background[2]["message"]["content"][0]["input"]["run_in_background"] = True
         expect(readback(tmp, "standard", background), "no successful correlated")
+        # Bash metadata appears on main-conversation results, so exercise it in a follow-up.
         for details in [{"backgroundTaskId": "task-1"}, {"interrupted": True}, {"exitCode": 129}]:
-            events = standard_events()
-            events[3]["tool_use_result"] = details
-            expect(readback(tmp, "standard", events), "no successful correlated")
+            followup = as_followup(standard_events())
+            followup[2]["tool_use_result"].update(details)
+            expect(readback(tmp, "standard", standard_events(command="ls -la"), followups=[followup]),
+                   "no successful correlated")
 
         denial = [{"tool_name": "Bash", "tool_input": {"command": "npm test"}}]
         denied = standard_events()
@@ -767,6 +868,8 @@ def main():
         inquiry_diagnostics(tmp)
         terminal_evidence(tmp)
         persisted_reads(tmp)
+        runtime_evidence(tmp)
+        delivery_report(tmp)
 
     print(f"cc: {checks} readback and launch checks passed, including real Git and conflicting effort environments; no model was called")
 
