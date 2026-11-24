@@ -50,6 +50,12 @@ underdetermined
 
 Record an `entailment_basis` or `non_entailment_basis`.
 
+Trace any exception or changed contract to accepted source authority. The
+candidate's implementation or documentation cannot by itself authorize departure
+from an accepted obligation. Documentation that records an accepted decision
+remains usable when that authority is traceable; do not seek approval again for
+an already authorized change.
+
 ```text
 entailed + validated current, task-relevant falsifier
   -> accepted

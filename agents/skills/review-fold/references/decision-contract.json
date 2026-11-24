@@ -4,7 +4,7 @@
     "skill": {
       "name": "review-fold",
       "kind": "mixed",
-      "source_fingerprint": "review-fold-counterexample-corpus-v1-task-relative-handoff"
+      "source_fingerprint": "review-fold-counterexample-corpus-v1-source-authority"
     },
     "triggers": [
       {
@@ -152,13 +152,15 @@
           "strengthening becomes non-blocking follow-up",
           "preference is rejected",
           "new requirement requests Goal reopening",
-          "underdetermined requirement blocks pending authority"
+          "underdetermined requirement blocks pending authority",
+          "exceptions and changed contracts trace to accepted authority; documentation of an accepted decision remains usable without renewed approval"
         ],
         "failure_signals": [
           "reviewer consensus manufactures entailment",
           "optional strengthening blocks closure",
           "preference is treated as a bug",
-          "Goal scope is silently broadened"
+          "Goal scope is silently broadened",
+          "candidate implementation or documentation authorizes its own departure from an accepted obligation"
         ],
         "rationale": "Review evidence may falsify accepted semantics but does not own requirements."
       },
