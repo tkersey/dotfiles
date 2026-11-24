@@ -786,3 +786,105 @@ agreement between checks sharing the same mistaken observation is insufficient.
 Retain all attempts and distinguish structural validation, bounded transfer, and
 comparative efficacy. Existing review and completion requirements remain with
 their owners; this evaluation supplies no production review credit.
+
+## Native verification retention
+
+Status: **executed evaluator controls**. The added control in
+`test-review-action-fixture.mjs` uses the existing codec subjects, source-derived
+Goals, independent assessor, and compact alternative representation. It does not
+invoke a model or establish that an instruction causes better implementations.
+
+One unchanged `contract.test.mjs` checks the six required inputs under inherited
+timeouts 7 and 11. Run actual Node qualification with and without that file selected,
+keeping its bytes fixed across successive implementations. The smoke-only command
+passes even when the contract test is present beside it. Selecting both files
+exposes the corresponding source violation, rather than merely returning nonzero:
+the test checks named failed observations against the independent assessor.
+
+| Distinct-null subject | Smoke-only qualification | Contract selected | Independent observations |
+|---|---|---|---|
+| Original | Pass | Fail: explicit null | 10/12 |
+| Repaired | Pass | Pass | 12/12 |
+| Later zero-loss successor | Pass | Fail: zero | 10/12 |
+| Compact alternative | Pass | Pass | 12/12 |
+
+The same control also rejects the defect-preserving placebo and restrictive repair.
+A separate coalesced-null Goal accepts the original and placebo representations,
+while still rejecting lost zero and forbidden refusal of explicit null. Its oracle
+is fixed within that separate trajectory; no expected result changes to accommodate
+a candidate. Protected inputs and actual candidate bytes remain unchanged during
+assessment. These disclosed cases are calibration material, not fresh holdouts.
+
+The first control execution exposed a harness failure: an inherited
+`NODE_TEST_CONTEXT` caused the nested Node runner to skip the requested files and
+exit zero. The child now removes only that runner marker, and the control requires
+all thirteen native tests to execute before interpreting the exit status. The
+corrected fixture suite passes on Node v24.22.3. This is a test-harness correction,
+not evidence of instruction efficacy.
+
+For a skill comparison, bind the unchanged workflow at dotfiles
+`d2233a6ed4508283d143d1cff8ea7f698a8aff28` and the exact native-retention candidate.
+Use the same source, contemporaneous witness, qualification entry point, model,
+tools, authority, and endpoint. Let each agent derive and connect its own deciding
+evidence; do not give only the candidate a researcher-written oracle. Freeze its
+first completed successor before independent assessment and before a legitimate
+follow-up request. Assess both artifact preservation and whether actual native
+qualification still executes sensitive coverage on the affected successor.
+
+Keep assignment relocation and fresh-context interventions separate. Include
+adequate existing verification, a direct correction, a valid no-change case,
+distinct accepted policies, and adequate non-executable arguments so retention
+does not become a requirement to preserve every temporary probe. Count all attempts
+and inclusive work. A successful bounded continuation does not qualify the full
+review campaign or establish comparative accuracy or latency gains.
+
+### Bounded implementation comparison
+
+On November 23, 2026 (Pacific), two fresh no-history agents received identical
+`original/distinct/plain` subjects and local `actuating implement` requests.
+Each subject added a `verify.test.mjs` initially importing only the fixed smoke
+test, with `node --test verify.test.mjs` as qualification. Both agents could modify
+that entry point and add tests. Neither received the evaluator, expected repair,
+other subject, or feedback about its assessed result.
+
+The control used the unchanged snapshot above; the candidate differed only in
+the native-retention paragraph and corresponding existing decision-contract signals.
+At dispatch their `construction.md` SHA-256 values were, respectively:
+
+```text
+4969054fc585084e9db08964ccf412e8fc3a989623061d6cbdf34fd124612793
+ba8a9329d07c9a8480013eb9930ad1debef9949b8b46098dafb0992303aee365
+```
+
+Each first completed candidate was frozen before assessment and the next request.
+Both produced `programs.repaired` and six native cases in the qualification entry
+point. The follow-up required one-character encoding while retaining the original
+Goal, with wire spelling still free. Both retained their assertions and added
+the length condition. All fixed inputs remained unchanged.
+
+| Guidance | First repair: original observations | Continuation: original observations | One-character cases | Native qualification at each stage |
+|---|---|---|---|---|
+| Current | 12/12 | 12/12 | 6/6 | 6 tests pass |
+| Native-retention candidate | 12/12 | 12/12 | 6/6 | 6 tests pass |
+
+The parent independently assessed every frozen artifact. In isolated copies,
+each first verifier rejected the original and zero-loss implementations. For the
+final verifiers, decoder-only null-loss and zero-loss controls preserved all six
+one-character encodings and failed exactly the corresponding native case; the
+independent assessor observed only that semantic loss. The previous JSON codec
+preserved all original observations but failed all six new length assertions.
+Thus the length check did not mask the retained semantic sensitivity.
+
+The final codec SHA-256 values were
+`74620c835494b4067983cf0dc9e9541e07c0f870e379501b9cd622e62da48186`
+for the control and
+`49419197483afad3136c26bdb34327d71de58aa01342c8114b8ba28a9b7490b0`
+for the candidate. The two allowed wire spellings differ.
+
+This is one matched development pair with one continuation per agent, not a
+repeated efficacy or production-review study. Both inherited the same session
+configuration and used Node v24.22.3; exact runtime model settings, token totals,
+and comparable end-to-end latency were not exposed. Reading boundaries were
+instructed, not technically isolated. All four completed stages were retained.
+The observed result is a tie: bounded preservation succeeds under both sources;
+no comparative accuracy or latency improvement is established.

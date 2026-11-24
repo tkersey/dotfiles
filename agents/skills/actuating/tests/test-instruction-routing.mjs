@@ -25,7 +25,7 @@ const section = (source, heading) => {
 const coreHashes = {
   'Source binding': 'a08472adfb58b7540f832680acac69f92a87e7ee8e4086c9621134194aa4639d',
   'Initial construction': 'bfce3b391a7363048a99281d524b126fda301f1bda4c59f7c654954c77b68c58',
-  'Proof acceptance': 'a03b2761c773efe08e681d7a8c81cd2c77757644efa17de09e9f8d250ac4c233',
+  'Proof acceptance': '43d51716228a99a083766c979db898add595f45c3fa7fce7c6da8b4cb30e0413',
   'Comments in code': '9dfab826dd63fbdd4ac448cbf0d7c690edef00145282604d9f0737c39edc39bf',
   'Realization and common proof obligations': '8f782e151a2c48cca2da1506830376ad597b689fde6985014f30c466f87be6e3',
   'Construction Working Set': 'de9ee5fa5fb2cb205c5c970dfbcd2c98b76467166ac09b5f71510da986178e14',
