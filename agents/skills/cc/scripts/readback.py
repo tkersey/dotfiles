@@ -27,7 +27,8 @@ supplemental result separately. Reference provenance, Git subject, recovery
 authorization, reassessment, and coverage remain with the caller.
 Without a successful read, other Bash command requests are retained as
 other_bash_requests without inferring which programs they executed. The hold
-names the same-session follow-up remedy. persisted_output records output
+names the same-session follow-up remedy only when no other hold remains, since
+follow-ups add reads and clear nothing else. persisted_output records output
 transport independently of target completion and reference matching.
 Notification origins and terminal counts are diagnosed separately. Ambiguous
 multi-result streams retain their ordered result events under results, with no
@@ -391,13 +392,15 @@ def standard(events: list[dict], target: str, level: str, problems: list[str], f
                     read.update(ok=False, unverified=True,
                                 reason="target diff precedes a semicolon; its completion status is unavailable")
         if not any(read["ok"] for read in evidence["diff_reads"]):
-            remedy = ("resume the same session with the bound launch settings, complete a direct foreground "
+            # Follow-ups only add reads, so every hold recorded before this one survives them.
+            remedy = ("other holds remain that a --followup cannot clear; do not resume for this read alone, "
+                      "and apply the caller's existing recovery rules" if problems else
+                      "resume the same session with the bound launch settings, complete a direct foreground "
                       "target diff read and dependent reassessment, then pass the separate stream with --followup")
             if any(read.get("unverified") for read in evidence["diff_reads"]):
                 problems.append(f"no successful correlated `git diff` read against {target}: the recognized read "
-                                "precedes a `;`, so its completion is unverified; supply an authenticated "
-                                "--reference-patch or recover "
-                                "with a same-session --followup")
+                                "precedes a `;`, so its completion is unverified; "
+                                + ("" if problems else "supply an authenticated --reference-patch, or ") + remedy)
             elif evidence["diff_reads"]:
                 problems.append(f"no successful correlated `git diff` read against {target}: every recognized "
                                 f"read failed or lacks a unique later result (see diff_reads); {remedy}")

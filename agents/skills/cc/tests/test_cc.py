@@ -12,6 +12,7 @@ import shlex
 import subprocess
 import sys
 import tempfile
+import textwrap
 from pathlib import Path
 
 SCRIPT = Path(__file__).resolve().parent.parent / "scripts" / "readback.py"
@@ -159,6 +160,7 @@ printf 'environment=%s\\nlocks=%s\\nbackground=%s\\n' "$CLAUDE_CODE_EFFORT_LEVEL
   "${CLAUDE_CODE_DISABLE_BACKGROUND_TASKS-unset}"
 while (($#)); do
   if [[ "$1" == "--effort" ]]; then printf 'flag=%s\\n' "$2"; fi
+  if [[ "$1" == "--resume" ]]; then printf 'resume=%s\\n' "$2"; fi
   shift
 done
 ''')
@@ -169,19 +171,26 @@ done
     prompt.write_bytes(PROMPT)
     settings = tmp / "launch-settings.json"
     settings.write_text("{}\n")
-    for kind, command in [("standard", standard), ("custom", custom)]:
+    resume = textwrap.dedent(next(block for block in blocks if "--resume" in block)).split("\n", 1)[1]
+    assert resume.strip() == standard.strip().replace('--session-id "$sid"', '--resume "$sid"').replace(
+        '"/review $level $base..HEAD" </dev/null >"$events" 2>"$diagnostics")',
+        '<"$followup_prompt" >"$followup_events" 2>"$followup_diagnostics")'), resume
+    for kind, command in [("standard", standard), ("custom", custom), ("resume", resume)]:
         for selected, inherited in [("high", "low"), ("low", "max")]:
             events = tmp / f"launch-{kind}-{selected}.jsonl"
             env = {**os.environ, "PATH": str(binary) + os.pathsep + os.environ["PATH"],
                    "CLAUDE_CODE_EFFORT_LEVEL": inherited, "selected_effort": selected,
                    "repo": str(repo), "selected_model": MODEL, "level": "high", "base": BASE,
                    "settings": str(settings), "events": str(events),
-                   "diagnostics": str(tmp / "launch-errors"), "prompt": str(prompt), "skill_dir": str(skill)}
+                   "diagnostics": str(tmp / "launch-errors"), "prompt": str(prompt), "skill_dir": str(skill),
+                   "sid": SID, "followup_prompt": str(prompt), "followup_events": str(events),
+                   "followup_diagnostics": str(tmp / "launch-errors")}
             script = f"uuidgen() {{ printf '%s\\n' '{SID}'; }}\n" + setup + "\n" + command
             run = subprocess.run(["bash", "-eu", "-c", script], env=env, capture_output=True, text=True)
             assert run.returncode == 0, run.stderr
             observed = dict(line.split("=", 1) for line in events.read_text().splitlines())
-            assert observed == {"environment": selected, "locks": "0", "background": "1", "flag": selected}, observed
+            expected = {"environment": selected, "locks": "0", "background": "1", "flag": selected}
+            assert observed == {**expected, **({"resume": SID} if kind == "resume" else {})}, observed
             checks += 1
 
 
@@ -532,6 +541,20 @@ def terminal_evidence(tmp):
     recovered = readback(tmp, "standard", original + wake, followups=[supplemental])
     expect(recovered, "expected one terminal result, found 2")
     assert recovered["result"] is None and recovered["followups"][0]["result"] == supplemental[-1]["result"], recovered
+
+    # A follow-up only adds reads, so the read-gap hold names it only when nothing else holds.
+    hidden = f"git diff {BASE}..HEAD; git ls-files"
+    for events, extra in [(standard_events(command=f"git diff {BASE}..HEAD --stat") + wake, "terminal result"),
+                          (standard_events(level="low", command=hidden), "recipe ran at low effort")]:
+        report = readback(tmp, "standard", events)
+        expect(report, extra)
+        gap = next(p for p in report["problems"] if p.startswith("no successful correlated"))
+        assert "a --followup cannot clear" in gap and "resume the same session" not in gap, report
+        assert "--reference-patch" not in gap, report
+    report = readback(tmp, "standard", standard_events(command=hidden))
+    expect(report, "completion is unverified")
+    assert len(report["problems"]) == 1 and "--reference-patch" in report["problems"][0], report
+    assert "resume the same session with the bound launch settings" in report["problems"][0], report
 
 
 def persisted_reads(tmp):
