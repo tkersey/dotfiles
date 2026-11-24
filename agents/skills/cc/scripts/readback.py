@@ -25,10 +25,13 @@ unknown. Patch markers alone never count. Optional same-session follow-up stream
 can supply a missing observation while retaining the original result and every
 supplemental result separately. Reference provenance, Git subject, recovery
 authorization, reassessment, and coverage remain with the caller.
-Without a successful read, other Git diff/show/log requests are listed as
-other_git_reads, and the hold names the same-session follow-up remedy. A read
-whose output was persisted (only a preview entered context) is marked
-persisted_output. Results that are background-task wakes are diagnosed as such.
+Without a successful read, other Bash command requests are retained as
+other_bash_requests without inferring which programs they executed. The hold
+names the same-session follow-up remedy. persisted_output records output
+transport independently of target completion and reference matching.
+Notification origins and terminal counts are diagnosed separately. Ambiguous
+multi-result streams retain their ordered result events under results, with no
+singular result selected. Launch settings cannot repair a rejected prior stream.
 Native result text and permission denials are preserved without interpreting a
 verdict or deciding whether an optional denied call mattered. OUT receives the
 evidence and problems; exit 0 only when the required checks pass.
@@ -49,7 +52,6 @@ EXIT_CODE = re.compile(r"\A\s*Exit code(?:\s*:\s*|\s+)(\d+)(?:\s|$)", re.IGNOREC
 PATCH_TEXT = re.compile(r"^diff --git ", re.MULTILINE)
 SUMMARY_DIFF = re.compile(r"--(?:stat|shortstat|numstat|name-only|name-status)(?:=\S*)?")
 PATCH_OPTION = re.compile(r"-p|-u|--patch\S*|-U\S*|--unified\S*")
-GIT_READ = re.compile(r"(?<![\w-])git\s+(?:--no-pager\s+)?(?:diff|show|log)\b")
 COMPANION_GIT = {"rev-parse", "merge-base", "ls-files", "check-ignore"}
 FIND_ACTIONS = {"-exec", "-execdir", "-ok", "-okdir", "-delete", "-fprint", "-fprint0", "-fprintf",
                 "-fls", "-printf"}
@@ -96,13 +98,13 @@ def load_events(path: Path, problems: list[str], label="events") -> list[dict]:
 def common(events: list[dict], sid: str, model: str, problems: list[str]) -> dict:
     inits = [e for e in events if e.get("type") == "system" and e.get("subtype") == "init"]
     results = [e for e in events if e.get("type") == "result"]
-    wakes = sum(isinstance(r.get("origin"), dict) and r["origin"].get("kind") == "task-notification"
-                for r in results)
-    if wakes:
-        problems.append(f"expected one init event and one terminal result, found {len(inits)} init events and "
-                        f"{len(results)} results, {wakes} of them background-task wakes (origin task-notification); "
-                        "bind CLAUDE_CODE_DISABLE_BACKGROUND_TASKS=1 on the launch or resume")
-    elif len(inits) != 1:
+    origins = [r["origin"] for r in results
+               if isinstance(r.get("origin"), dict) and r["origin"].get("kind") == "task-notification"]
+    if origins:
+        problems.append("unexpected task-notification result origin: " + json.dumps(origins, ensure_ascii=False)
+                        + "; inspect the trigger before applying caller recovery; "
+                          "launch settings do not repair this stream")
+    if len(inits) != 1:
         problems.append(f"expected one init event, found {len(inits)}")
     if inits:
         init = inits[0]
@@ -113,22 +115,33 @@ def common(events: list[dict], sid: str, model: str, problems: list[str]) -> dic
     if not results:
         problems.append("no result event: not terminal")
         return {}
-    if len(results) != 1 and not wakes:
+    if len(results) != 1:
         problems.append(f"expected one terminal result, found {len(results)}")
-    result = results[-1]
-    if result.get("session_id") != sid:
-        problems.append(f"result session {result.get('session_id')} is not {sid}")
-    if result.get("subtype") != "success" or result.get("is_error", False) is not False:
-        problems.append(f"result is {result.get('subtype')} (is_error={result.get('is_error')})")
     if any(e.get("session_id", sid) != sid for e in events):
         problems.append("events mix sessions")
-    usage = result.get("modelUsage")
-    used = sorted(usage) if isinstance(usage, dict) else []
-    if used != [model]:
-        problems.append(f"models used {used}, expected only {model}")
-    if not isinstance(result.get("permission_denials", []), list):
-        problems.append("permission_denials is not an array")
-    return result
+    for index, result in enumerate(results, 1):
+        prefix = f"result {index}: " if len(results) > 1 else ""
+        if result.get("session_id") != sid:
+            problems.append(f"{prefix}result session {result.get('session_id')} is not {sid}")
+        if result.get("subtype") != "success" or result.get("is_error", False) is not False:
+            problems.append(f"{prefix}result is {result.get('subtype')} (is_error={result.get('is_error')})")
+        usage = result.get("modelUsage")
+        used = sorted(usage) if isinstance(usage, dict) else []
+        if used != [model]:
+            problems.append(f"{prefix}models used {used}, expected only {model}")
+        if not isinstance(result.get("permission_denials", []), list):
+            problems.append(f"{prefix}permission_denials is not an array")
+    if len(results) > 1:
+        return {"result": None, "results": results,
+                "permission_denials": [denial for result in results
+                                      if isinstance(result.get("permission_denials"), list)
+                                      for denial in result["permission_denials"]]}
+    return results[0]
+
+
+def result_evidence(result: dict) -> dict:
+    return {"result": result.get("result"), "permission_denials": result.get("permission_denials", []),
+            **{key: result[key] for key in ("origin", "results") if key in result}}
 
 
 def pieces(command: str) -> tuple[list[list[str]], list[str]] | None:
@@ -341,7 +354,7 @@ def standard(events: list[dict], target: str, level: str, problems: list[str], f
             command = inputs.get("command") if isinstance(inputs, dict) else None
             observation = diff_read(command, target) if request.get("name") == "Bash" and isinstance(command, str) else None
             if observation is None:
-                if request.get("name") == "Bash" and isinstance(command, str) and GIT_READ.search(command):
+                if request.get("name") == "Bash" and isinstance(command, str):
                     others.append({"tool_use_id": request.get("id"), "command": command,
                                    **({"followup": source} if source else {})})
                 continue
@@ -378,8 +391,8 @@ def standard(events: list[dict], target: str, level: str, problems: list[str], f
                     read.update(ok=False, unverified=True,
                                 reason="target diff precedes a semicolon; its completion status is unavailable")
         if not any(read["ok"] for read in evidence["diff_reads"]):
-            remedy = ("this is a recoverable inquiry gap: run a same-session --followup requesting a standalone "
-                      f"foreground `git diff {target}`")
+            remedy = ("resume the same session with the bound launch settings, complete a direct foreground "
+                      "target diff read and dependent reassessment, then pass the separate stream with --followup")
             if any(read.get("unverified") for read in evidence["diff_reads"]):
                 problems.append(f"no successful correlated `git diff` read against {target}: the recognized read "
                                 "precedes a `;`, so its completion is unverified; supply an authenticated "
@@ -389,14 +402,13 @@ def standard(events: list[dict], target: str, level: str, problems: list[str], f
                 problems.append(f"no successful correlated `git diff` read against {target}: every recognized "
                                 f"read failed or lacks a unique later result (see diff_reads); {remedy}")
             elif others:
-                problems.append(f"no successful correlated `git diff` read against {target}: only summary, "
-                                "commit, or unrecognized Git reads were requested (see other_git_reads); only direct "
-                                "patch reads and read-only `;`/`&&` chains around them establish the bound patch; "
+                problems.append(f"no successful correlated `git diff` read against {target}: "
+                                "other Bash requests did not establish a target patch read (see other_bash_requests); "
                                 f"{remedy}")
             else:
-                problems.append(f"no successful correlated `git diff` read against {target}: no Git diff, show, "
-                                f"or log read was requested; {remedy}")
-            evidence["other_git_reads"] = others
+                problems.append(f"no successful correlated `git diff` read against {target}: "
+                                f"no recognized target diff request was found; {remedy}")
+            evidence["other_bash_requests"] = others
     return evidence
 
 
@@ -428,7 +440,7 @@ def custom(result: dict, sid: str, prompt: bytes, problems: list[str]) -> dict:
             problems.append("first transcript message is not the exact prompt: delivery unverified")
     output = result.get("structured_output")
     if not isinstance(output, dict):
-        problems.append("no structured_output object")
+        problems.append("no structured_output object from a unique terminal result")
     evidence["structured_output"] = output
     return evidence
 
@@ -449,11 +461,10 @@ def main() -> None:
     problems: list[str] = []
     events = load_events(Path(events_path), problems)
     result = common(events, sid, model, problems)
-    report = {"kind": kind, "session_id": sid, "model": model, "result": result.get("result"),
-              "permission_denials": result.get("permission_denials", [])}
+    report = {"kind": kind, "session_id": sid, "model": model, **result_evidence(result)}
     if kind == "standard":
         if not isinstance(result.get("result"), str) or not result["result"].strip():
-            problems.append("no nonempty native result text")
+            problems.append("no nonempty native result text from a unique terminal result")
         reference = None
         if reference_path is not None:
             report["reference_patch"], reference = load_reference_patch(Path(reference_path), target, problems)
@@ -463,11 +474,10 @@ def main() -> None:
             stream = load_events(Path(path), issues, "follow-up events")
             supplemental = common(stream, sid, model, issues)
             if not isinstance(supplemental.get("result"), str) or not supplemental["result"].strip():
-                issues.append("no nonempty follow-up result text")
+                issues.append("no nonempty follow-up result text from a unique terminal result")
             problems.extend(f"follow-up {len(followups) + 1}: {issue}" for issue in issues)
             followups.append(stream)
-            report.setdefault("followups", []).append({"events": path, "result": supplemental.get("result"),
-                "permission_denials": supplemental.get("permission_denials", [])})
+            report.setdefault("followups", []).append({"events": path, **result_evidence(supplemental)})
         report.update(standard(events, target, level, problems, followups, reference))
     else:
         try:

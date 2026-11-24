@@ -66,12 +66,17 @@ bypass policy. The recipe header establishes review level, not effective reasoni
 effort. See [effort precedence](https://code.claude.com/docs/en/env-vars#precedence)
 and [effort caps](https://code.claude.com/docs/en/settings-reference#maxeffortlevel).
 
-Also bind `CLAUDE_CODE_DISABLE_BACKGROUND_TASKS=1` on every launch and resume. A
-background task's completion wakes the session for another turn with its own init
-and result, so the stream has no single terminal result (observed: eight
-background subagents in a resumed follow-up produced nine). With the variable set,
-the Agent tool runs subagents in the foreground (in 2.1.331's bundled code it
-omits `run_in_background`; not yet observed live); native delegation is retained.
+Also bind `CLAUDE_CODE_DISABLE_BACKGROUND_TASKS=1` on every launch and resume.
+The [environment reference](https://code.claude.com/docs/en/env-vars) and
+[subagent guidance](https://code.claude.com/docs/en/sub-agents) document disabling
+background shell and subagent runs and automatic backgrounding; Claude waits for
+subagents. This prevents new background work through those paths, not other
+notification sources or ambiguity already present in a captured stream.
+Native delegation with these exact launch and resume settings
+has not been confirmed live. To resolve that limit, exercise a real foreground
+Agent call and same-session resume on a disposable repository, observing required
+reads, terminal events, and the unchanged read-only boundary. Offline launch and
+readback checks do not establish those runtime properties.
 
 ## Freeze the subject
 
@@ -89,9 +94,9 @@ frozen.
   substitute for a committed range.
 - Launch from the repository root and recheck HEAD and working-tree/index state
   at admission.
-- On a large range, expect a summary-only first pass: on 176 files and 46.9k added
-  lines the native result came from `--stat` and recent commits and said so. Budget
-  the same-session follow-up below as the route to the bound patch.
+- A large range can receive a summary-only first pass (observed on 176 files and
+  46.9k added lines). Retain that inquiry limitation and allow for the same-session
+  follow-up below within the caller's existing recovery budget.
 
 ## Enforce read-only execution and launch
 
@@ -249,13 +254,14 @@ exits nonzero (hold) unless all of these hold:
   A longer final line, truncated patch, or patch markers alone cannot match.
   Otherwise retain the unverified compound observation and use the same-session
   follow-up below; do not replace the native recipe.
-  A hold without a successful read lists the reviewer's other Git diff/show/log
-  requests as `other_git_reads`. A hold for summary or commit reads alone is a
-  recoverable inquiry gap, not a standing limit on standard credit: recover with
-  the follow-up below (a reference patch matches only a semicolon-hidden read).
-  `persisted_output: true` marks a completed read whose output exceeded the inline
-  limit: the reviewer received a preview and a file path, not the patch, so the
-  read establishes completion but not patch coverage.
+  A hold without a successful read retains other observed Bash command requests
+  as `other_bash_requests`. These are requests, not successful reads; unsupported
+  syntax does not establish that no Git command ran. Recover a missing observation
+  with the follow-up below (a reference patch matches only a semicolon-hidden read).
+  `persisted_output: true` means tool output was saved outside the inline response.
+  It alone establishes neither target completion nor complete patch delivery.
+  Preserve independent completion and reference-match evidence: a preview may
+  contain the complete reference patch while target completion remains unknown.
   Recipe text alone does not authenticate native command resolution;
   retain the host's actual `/review` invocation.
 - **Custom:** exactly one transcript `<config>/projects/*/$sid.jsonl` exists and
@@ -270,10 +276,22 @@ verdict or complete inquiry. The caller also retains the host exit status,
 effective boundary, any reference capture's provenance, and rechecks the Git
 subject. Never select the latest session, a title match, or another review's file.
 
+Result cardinality and notification provenance are separate observations. A
+`task-notification` origin does not by itself identify a background-task cause or
+prove multiple results. Such a result does not authenticate the requested direct
+review's terminal response and remains held even with one init and one result.
+When a stream has multiple result events, the report holds, sets `result` to null,
+and retains every original event in order under `results`, including its status,
+provenance, and denials. The same rule applies within each `followups` entry. Do not
+select a favorable event as the terminal result. A later resume with background
+tasks disabled cannot repair that original stream; retain its hold and use the
+caller's existing recovery rules.
+
 ## Standard result: adjudicate the original text
 
-`result.result` is the native rendered result. Preserve it unchanged and pass it
-directly to the caller's existing finding and limitation adjudication. Ordinary
+For a single terminal result, the native event's `result` field is the rendered
+result. Preserve it unchanged and pass it directly to the caller's existing
+finding and limitation adjudication. Ordinary
 clean prose is valid evidence; no exact `(none)` sentinel, findings JSON, or second
 model call is required. The helper does not infer whether text is clean.
 
@@ -311,16 +329,21 @@ Confidence is not evidence.
   `$cas` does for delegated reviewers, and adjudicate the reply as supplemental
   review of that text, not a continuation of the reviewer's inquiry.
   For a missing or unverified target read that no authenticated reference
-  establishes, the prompt holds the original result, the concrete gap (the reads
-  actually observed), and the bound range and head, then asks for: a standalone
-  foreground `git diff <base>..HEAD` (no pipe, redirect, chain, or background);
-  per-path `git diff <base>..HEAD -- <path>` reads, one direct command per call;
-  and reassessment that overturns earlier conclusions where warranted. Shell loops
-  and variables fall outside the allow rules: in the observed follow-up, subagents
-  whose loops were denied read whole added files with Read instead. Large output is
-  persisted, so the standalone read establishes completion while the per-path or
-  Read observations carry content; judge per-file coverage from them. That
-  follow-up withdrew four of nine findings and reported seven Important ones.
+  establishes, include the original result, observed requests and results, missing
+  content, and bound range and head. Request direct foreground
+  `git diff <base>..HEAD -- <path>` reads, one command per call, without pipes,
+  redirects, chains, shell loops, variables, or background execution. A qualifying
+  path-limited read can supply the target observation; do not require another
+  oversized full-range diff when that observation and the required content are
+  already established. Path limits alone do not prove delivery: individual files
+  and diffs can overflow too. Acquire missing content with bounded Read ranges
+  from the source or persisted output, tracking actual delivered boundaries in
+  the existing working context. Continue from the last verified boundary, using
+  an overlapping smaller range when uncertain. Preserve base/head and path
+  identity, and recover deletion-side content where required. Read observations
+  supply content, not a substitute for the helper's target-diff observation.
+  Complete dependent reasoning and reassess the original findings and limitations;
+  obtaining a patch or changing a verdict alone does not establish adequate review.
   Capture each resumed invocation in its own events file, retaining the actual
   resume invocation and unchanged Git subject; never concatenate terminal streams.
   Pass the original events plus the supplemental stream to standard readback:
