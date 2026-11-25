@@ -165,6 +165,38 @@ cmp "$tmp/original-record.json" "$tmp/later-record.json"
   --arg id "$counterexample_id" \
   "$tmp/law-history.json" >/dev/null
 
+"$jaq_bin" '
+  .record.repository_id = "https://github.com/example/repository" |
+  .record.observed_fact += " An earlier scope label recorded the same repository."
+' "$valid" >"$tmp/alias-witness.json"
+"$ledger_bin" transact \
+  --definition "$definition" --operation capture \
+  --store-root "$store_root" --store-id "$store_id" \
+  --input "submission=$tmp/alias-witness.json" --format json >"$tmp/alias-capture.json"
+"$jaq_bin" -e '.valid == true and .effects[0].result == "appended"' \
+  "$tmp/alias-capture.json" >/dev/null
+"$ledger_bin" project \
+  --definition "$definition" --projection basis \
+  --store-root "$store_root" --store-id "$store_id" \
+  --param repository=example/repository --payload-only --format json \
+  >"$tmp/scoped-basis.json"
+"$jaq_bin" -e 'length == 2' "$tmp/scoped-basis.json" >/dev/null
+"$ledger_bin" project \
+  --definition "$definition" --projection custody-basis \
+  --store-root "$store_root" --store-id "$store_id" --payload-only --format json \
+  >"$tmp/custody-basis.json"
+"$jaq_bin" -e '
+  length == 3 and
+  ([.[].repository_id] | unique) ==
+    ["example/repository", "https://github.com/example/repository"]
+' "$tmp/custody-basis.json" >/dev/null
+"$ledger_bin" project \
+  --definition "$definition" --projection custody-law-history \
+  --store-root "$store_root" --store-id "$store_id" \
+  --param law=law.transition-admissibility --payload-only --format json \
+  >"$tmp/custody-law-history.json"
+"$jaq_bin" -e 'length == 3' "$tmp/custody-law-history.json" >/dev/null
+
 expect_invalid() {
   name=$1
   filter=$2

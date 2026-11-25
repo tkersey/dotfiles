@@ -98,21 +98,27 @@ permission to use a local store, invent empty history, or guess another selector
 
 ## Project before folding
 
-Project the repository basis before current classification:
+Project the repository basis before current classification. A selected store is
+the custody of one repository, but its records keep the scope labels they were
+captured under: older stores carry historical names or URL spellings next to the
+context's stable `repository_id`. Read the whole corpus with `custody-basis`,
+which needs no scope:
 
 ```bash
 ledger project \
   --definition "$counterexample_definition" \
-  --projection basis \
+  --projection custody-basis \
   --store-root "<context.store_root>" --store-id "<context.store_id>" \
-  --param "repository=<existing-semantic-repository-id>" \
   --format json
 ```
+
+`basis` filters to one exact `repository_id`, so it returns only that label's
+rows; use it only for a deliberately scoped question.
 
 Retain the native result and selected context; pass its rows as
 `relevant_prior_owner_evidence`. A supplied projection may be reused when its
 selector, semantic repository scope, definition, and source state remain
-applicable. Empty rows from the wrong scope do not establish an empty corpus.
+applicable. Empty `basis` rows for one scope do not establish an empty corpus.
 If projection cannot run, retain the actual failed operation or explicit access
 constraint in the existing missing-source fields. Merely declaring history
 incomplete does not substitute for this outcome. Re-check every row against the
@@ -126,7 +132,8 @@ that depend on complete historical evidence. Use `bind-existing` or
 `rebind-existing` only when the definition-bound doctor prescribes that exact
 operation after validating the complete store.
 
-Use `law-history` for a focused exact-law projection and `record` for one known
+Use `custody-law-history` for a focused exact-law projection across every scope
+label in the store, `law-history` for one exact scope, and `record` for one known
 `CEX-*` identity.
 
 ## Capture after folding

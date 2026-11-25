@@ -700,6 +700,32 @@
           "path": "/record"
         }
       ]
+    },
+    "custody-basis": {
+      "slot": "events",
+      "pipeline": [
+        {
+          "op": "export",
+          "path": "/record"
+        }
+      ]
+    },
+    "custody-law-history": {
+      "slot": "events",
+      "required_parameters": [
+        "law"
+      ],
+      "pipeline": [
+        {
+          "op": "filter",
+          "path": "/record/law_ref",
+          "param": "law"
+        },
+        {
+          "op": "export",
+          "path": "/record"
+        }
+      ]
     }
   },
   "bounds": {
