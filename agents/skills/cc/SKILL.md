@@ -74,8 +74,10 @@ The [environment reference](https://code.claude.com/docs/en/env-vars) and
 [subagent guidance](https://code.claude.com/docs/en/sub-agents) document disabling
 background shell and subagent runs and automatic backgrounding; Claude waits for
 subagents. This prevents new background work through those paths, not other
-notification sources or ambiguity already present in a captured stream. Native
-delegation under these exact settings has not yet been observed live.
+notification sources or ambiguity already present in a captured stream (observed
+on 2.1.332: under these settings a resumed follow-up's subagent ran in the
+foreground and the invocation ended with one result; `/review xhigh` reviewed
+inline without subagents).
 
 ## Freeze the subject
 
@@ -121,7 +123,8 @@ permitted Git subcommands without `-c` or `-C`, read-only filters in pipes, and 
 redirects, temporary files, builds, or tests); together these cut denied calls
 from 2.4 to 0.8 per review. Keep Claude's runtime state, including
 transcripts, and attempt files (`$settings`, `$prompt`, `$events`, `$diagnostics`,
-`$readback_json`, and any `$reference_patch`) outside those paths. Create these
+`$readback_json`, any `$reference_patch`, and each follow-up's `$followup_prompt`,
+`$followup_events` and `$followup_diagnostics`) outside those paths. Create these
 per-attempt settings with a JSON encoder:
 
 ```bash
@@ -241,12 +244,14 @@ exits nonzero (hold) unless all of these hold:
   frozen target, its depth header names the bound level (observed: `medium` ran
   the `high` recipe), its message carries a `parent_tool_use_id` starting with
   `forked-command-` (the runtime's marker of a prompt-started forked command), and a
-  matching reviewer `git diff` has a correlated completed tool result establishing
-  either target completion or delivery of the complete bound patch as described
-  below.
+  matching `git diff` requested in that forked thread after the recipe, or in a
+  follow-up, has a correlated completed tool result establishing either target
+  completion or delivery of the complete bound patch as described below.
   A command request alone, a failed read, or a result for another tool call is
-  insufficient. The helper recognizes direct patch reads, including ordinary
-  context options and explicit path limits. A successful per-file read does not
+  insufficient. A verifier subagent's read or one before the recipe stays in
+  `diff_reads` with its reason but does not reach the reviewer. The helper
+  recognizes direct patch reads, including ordinary context options and explicit
+  path limits. A successful per-file read does not
   establish complete changeset coverage; the caller judges that separately.
   It recognizes bounded `;`/`&&` chains without treating quoted or escaped
   operators as shell syntax. A successful compound result establishes a target
@@ -271,7 +276,8 @@ exits nonzero (hold) unless all of these hold:
   syntax does not establish that no Git command ran. Recover a missing observation
   with the follow-up below (a reference patch matches only a semicolon-hidden read)
   only when no other hold remains: follow-ups add reads and clear nothing else, so
-  the helper names that remedy only then.
+  the helper names that remedy only then. A bad `--reference-patch` argument is not
+  such a hold: fix it and rerun readback.
   `persisted_output: true` means the output was saved to a file and the reviewer
   received an inline preview. The flag neither establishes nor refutes completion,
   which comes from the tool result. Without `reference_matched: true`, an `ok`
@@ -289,15 +295,17 @@ exits nonzero (hold) unless all of these hold:
 
 With a reference patch, `delivery` lists per file how many distinctive changed
 lines (at least 12 non-whitespace characters) appear in any tool result of the
-original or follow-up streams. It decodes Git's quoted paths, including
-`diff.noprefix` headers, and preserves spaces, rename destinations, and deletion
-paths. Read line numbers, grep match/context prefixes with or without a path (the
-Grep tool omits it for a one-file search), and diff markers are removed. Known
+original or follow-up streams, each up to its first result. It decodes Git's
+quoted paths, including `diff.noprefix` headers, and preserves spaces, rename
+destinations, and deletion paths. Read line numbers, grep match/context prefixes
+with or without a path (the Grep tool omits it for a one-file search), and diff
+markers are removed. Known
 reference paths (including rename sources and absolute paths under the stream's
 init directory) disambiguate grep prefixes; unresolved ambiguous prefixes remain
 unnormalized. Binary or short-line files are listed as `unmeasured`; sections whose
-paths cannot be resolved, such as custom `diff.srcPrefix` output, are retained under
-`unparsed_headers` and excluded from the counts. Treat those sections as an inquiry
+paths cannot be resolved, such as differing custom `diff.srcPrefix` and
+`diff.dstPrefix` output (identical custom prefixes read as folders), are retained
+under `unparsed_headers` and excluded from the counts. Treat those sections as an inquiry
 limitation. Passing readback does not establish delivery (observed: 17 real reviews
 that passed every check delivered 70–93% of distinctive changed lines and left up
 to three files untouched). `delivery` records text presence, not attention or
@@ -312,10 +320,11 @@ verdict or complete inquiry. The caller also retains the host exit status,
 effective boundary, any reference capture's provenance, and rechecks the Git
 subject. Never select the latest session, a title match, or another review's file.
 
-Result cardinality and notification provenance are separate observations. A
-`task-notification` origin does not by itself identify a background-task cause or
-prove multiple results. Such a result does not authenticate the requested direct
-review's terminal response and remains held even with one init and one result.
+Result cardinality and notification provenance are separate observations. Only a
+result with no origin or a `human` origin authenticates the requested turn's
+terminal response; any other origin, including `task-notification`, holds even with
+one init and one result. A `task-notification` origin does not by itself identify a
+background-task cause or prove multiple results.
 When a stream has multiple result events, the report holds, sets `result` to null,
 and retains every original event in order under `results`, including its status,
 provenance, and denials. The same rule applies within each `followups` entry. Do not

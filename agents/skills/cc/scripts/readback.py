@@ -19,7 +19,8 @@ forked command; it does not name which command resolved.
 The standard read gate recognizes direct Bash `git diff` calls against TARGET
 and bounded `;`/`&&` chains, not arbitrary shell programs. Shell success proves
 only the final && group's completion; earlier semicolon groups remain unknown.
-A request needs a later completed tool_result with the same tool ID.
+A request needs a later completed tool_result with the same tool ID; in the
+original stream it must come from the forked /review thread after its recipe.
 
 With --reference-patch, the helper compares observed output with a complete UTF-8
 patch supplied by the caller; it never runs Git. The caller must establish that
@@ -29,17 +30,18 @@ delivery only when its output contains the whole reference at line boundaries,
 allowing omission of one final newline. The target command's completion remains
 unknown. Patch markers alone never count. A reference also yields delivery: per
 file, how many distinctive changed lines appear in any tool result of the
-original or follow-up streams. It reports text presence, never a hold.
-Optional same-session follow-up streams
-can supply a missing observation while retaining the original result and every
-supplemental result separately. Reference provenance, Git subject, recovery
+original or follow-up streams, each up to its first result. It reports text
+presence, never a hold. Optional same-session follow-up streams can supply a
+missing observation while retaining the original result and every supplemental
+result separately. Reference provenance, Git subject, recovery
 authorization, reassessment, and coverage remain with the caller.
 Without a successful read, other Bash command requests are retained as
 other_bash_requests without inferring which programs they executed. The hold
 names the same-session follow-up remedy only when no other hold remains, since
-follow-ups add reads and clear nothing else. persisted_output records output
-transport independently of target completion and reference matching.
-Notification origins and terminal counts are diagnosed separately. Ambiguous
+follow-ups add reads and clear nothing else; a bad --reference-patch argument is
+not such a hold. persisted_output records output transport independently of
+target completion and reference matching.
+Non-human result origins and terminal counts are diagnosed separately. Ambiguous
 multi-result streams retain their ordered result events under results, with no
 singular result selected. Launch settings cannot repair a rejected prior stream.
 Native result text and permission denials are preserved without interpreting a
@@ -121,10 +123,11 @@ def load_events(path: Path, problems: list[str], label="events") -> list[dict]:
 def common(events: list[dict], sid: str, model: str, problems: list[str]) -> dict:
     inits = [e for e in events if e.get("type") == "system" and e.get("subtype") == "init"]
     results = [e for e in events if e.get("type") == "result"]
-    origins = [r["origin"] for r in results
-               if isinstance(r.get("origin"), dict) and r["origin"].get("kind") == "task-notification"]
+    # Only an absent or human origin identifies the requested turn; the runtime has other kinds.
+    origins = [r["origin"] for r in results if r.get("origin") is not None
+               and not (isinstance(r["origin"], dict) and r["origin"].get("kind") == "human")]
     if origins:
-        problems.append("unexpected task-notification result origin: " + json.dumps(origins, ensure_ascii=False)
+        problems.append("unexpected non-human result origin: " + json.dumps(origins, ensure_ascii=False)
                         + "; inspect the trigger before applying caller recovery; "
                           "launch settings do not repair this stream")
     if len(inits) != 1:
@@ -191,8 +194,11 @@ def launch_runtime(events: list[dict], kind: str, problems: list[str]) -> dict:
 def git_path(text: str) -> str:
     """Decode Git's C-quoted pathname bytes without changing unquoted whitespace."""
     if text.startswith('"') and text.endswith('"'):
-        raw = GIT_ESCAPE.sub(lambda m: bytes([int(m[1], 8) if len(m[1]) == 3 else GIT_ESCAPES[m[1][0]]]),
-                             text[1:-1].encode("utf-8"))
+        try:
+            quoted = text[1:-1].encode("utf-8")
+        except UnicodeEncodeError:  # lone surrogates from tool output are not Git's quoting
+            return text
+        raw = GIT_ESCAPE.sub(lambda m: bytes([int(m[1], 8) if len(m[1]) == 3 else GIT_ESCAPES[m[1][0]]]), quoted)
         return raw.decode("utf-8", errors="surrogateescape")
     return text
 
@@ -207,7 +213,8 @@ def patch_files(reference: str) -> list[dict]:
             old, new = git_path(names[:middle]), git_path(names[middle + 1:])
             # Unchanged names have equally long rendered fields, even when quoted;
             # diff.noprefix renders them identically. Renames/copies resolve below;
-            # splitting on ' b/' loses valid names.
+            # splitting on ' b/' loses valid names, and ---/+++ lines cannot tell a
+            # noprefix a/ or b/ folder from a prefix.
             symmetric = names[middle:middle + 1] == " "
             path = (old[2:] if symmetric and old.startswith("a/") and new == "b/" + old[2:]
                     else old if symmetric and old == new else None)
@@ -218,12 +225,6 @@ def patch_files(reference: str) -> list[dict]:
         elif current is not None:
             if line.startswith("@@"):
                 in_hunk = True
-            elif not in_hunk and line.startswith(("--- ", "+++ ")):
-                name = git_path(line[4:].split("\t", 1)[0])
-                prefix = "a/" if line.startswith("--- ") else "b/"
-                if name.startswith(prefix):
-                    current["path"] = name[2:]
-                    current["aliases"].add(name[2:])
             elif not in_hunk and line.startswith(("rename from ", "rename to ", "copy from ", "copy to ")):
                 _, side, name = line.split(" ", 2)
                 name = git_path(name)
@@ -471,8 +472,12 @@ def standard(events: list[dict], target: str, level: str, problems: list[str], f
              reference: str | None = None) -> dict:
     terminal = next((i for i, e in enumerate(events) if e.get("type") == "result"), len(events))
     session = events[:terminal]
-    carrier = next((e for e in session if e.get("type") == "user" and isinstance(e.get("message"), dict)
-                    and "Review target:" in text_of(e["message"].get("content"))), None)
+    # Reads and delivery stop at each stream's first result, which is the response being judged.
+    sessions = [session] + [stream[:next((i for i, e in enumerate(stream) if e.get("type") == "result"), len(stream))]
+                            for stream in followups]
+    start = next((i for i, e in enumerate(session) if e.get("type") == "user" and isinstance(e.get("message"), dict)
+                  and "Review target:" in text_of(e["message"].get("content"))), None)
+    carrier = session[start] if start is not None else None
     recipe = text_of(carrier["message"].get("content")) if carrier else None
     evidence = {"diff_reads": []}
     if recipe is None:
@@ -490,8 +495,6 @@ def standard(events: list[dict], target: str, level: str, problems: list[str], f
         if target != "-" and f"Review target: `{target}`" not in recipe:
             problems.append(f"recipe target is not {target}")
     if target != "-":
-        sessions = [session] + [stream[:next((i for i, e in enumerate(stream) if e.get("type") == "result"), len(stream))]
-                                for stream in followups]
         requests = [(source, i, p) for source, stream in enumerate(sessions)
                     for i, e in enumerate(stream) if e.get("type") == "assistant"
                     for p in parts_of(e) if p.get("type") == "tool_use"]
@@ -513,6 +516,11 @@ def standard(events: list[dict], target: str, level: str, problems: list[str], f
             if source:
                 read["followup"] = source
             evidence["diff_reads"].append(read)
+            # A verifier subagent's or an earlier read does not reach the forked reviewer.
+            if source == 0 and (carrier is None or index <= start or sessions[0][index].get("parent_tool_use_id")
+                                != carrier.get("parent_tool_use_id")):
+                read["reason"] = "not requested by the forked /review thread after its recipe"
+                continue
             if inputs.get("run_in_background"):
                 read["reason"] = "background request does not establish completed diff observation"
                 continue
@@ -546,7 +554,8 @@ def standard(events: list[dict], target: str, level: str, problems: list[str], f
             if any(read.get("unverified") for read in evidence["diff_reads"]):
                 problems.append(f"no successful correlated `git diff` read against {target}: the recognized read "
                                 "precedes a `;`, so its completion is unverified; "
-                                + ("" if problems else "supply an authenticated --reference-patch, or ") + remedy)
+                                + ("" if problems or reference is not None
+                                   else "supply an authenticated --reference-patch, or ") + remedy)
             elif evidence["diff_reads"]:
                 problems.append(f"no successful correlated `git diff` read against {target}: every recognized "
                                 f"read failed or lacks a unique later result (see diff_reads); {remedy}")
@@ -559,7 +568,7 @@ def standard(events: list[dict], target: str, level: str, problems: list[str], f
                                 f"no recognized target diff request was found; {remedy}")
             evidence["other_bash_requests"] = others
     if reference is not None:
-        evidence["delivery"] = delivery(reference, [events, *followups])
+        evidence["delivery"] = delivery(reference, sessions)
     return evidence
 
 
@@ -617,9 +626,9 @@ def main() -> None:
     if kind == "standard":
         if not isinstance(result.get("result"), str) or not result["result"].strip():
             problems.append("no nonempty native result text from a unique terminal result")
-        reference = None
+        reference, argument = None, []
         if reference_path is not None:
-            report["reference_patch"], reference = load_reference_patch(Path(reference_path), target, problems)
+            report["reference_patch"], reference = load_reference_patch(Path(reference_path), target, argument)
         followups = []
         for path in followup_paths:
             issues = []
@@ -633,6 +642,7 @@ def main() -> None:
             report.setdefault("followups", []).append({"events": path, "runtime": runtime,
                                                        **result_evidence(supplemental)})
         report.update(standard(events, target, level, problems, followups, reference))
+        problems.extend(argument)
     else:
         try:
             prompt = Path(prompt_path).read_bytes()

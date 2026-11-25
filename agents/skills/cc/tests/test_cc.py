@@ -304,6 +304,8 @@ def chain_checks(tmp):
         report = readback(tmp, "standard", mismatched, target=target, reference_patch=reference)
         expect(report, "completion is unverified")
         assert not report["diff_reads"][0].get("reference_matched"), report
+        assert "supply an authenticated --reference-patch" not in " ".join(report["problems"]), report
+        assert "resume the same session" in " ".join(report["problems"]), report
     blank_terminated = tmp / "blank-terminated-reference.patch"
     blank_terminated.write_bytes(reference.read_bytes() + b"\n")
     expect(readback(tmp, "standard", original, target=target, reference_patch=blank_terminated))
@@ -512,14 +514,22 @@ def terminal_evidence(tmp):
         events = standard_events()
         events[-1]["origin"] = origin
         report = readback(tmp, "standard", events)
-        expect(report, "unexpected task-notification result origin:")
+        expect(report, "unexpected non-human result origin:")
         assert report["origin"] == origin and report["result"] == events[-1]["result"], report
         assert "results" not in report, report
-        diagnosis = next(p for p in report["problems"] if "unexpected task-notification result origin:" in p)
+        diagnosis = next(p for p in report["problems"] if "unexpected non-human result origin:" in p)
         assert all(value in diagnosis for value in origin.values()), report
         assert not any("expected one" in p or "background-task wakes" in p
                        or "CLAUDE_CODE_DISABLE_BACKGROUND_TASKS" in p for p in report["problems"]), report
 
+    for origin in [{"kind": "auto-continuation"}, {"subkind": "scheduled-trigger"}, "human"]:
+        events = standard_events()
+        events[-1]["origin"] = origin
+        expect(readback(tmp, "standard", events), "unexpected non-human result origin:")
+        followup = as_followup(standard_events())
+        followup[-1]["origin"] = origin
+        expect(readback(tmp, "standard", standard_events(), followups=[followup]),
+               "follow-up 1: unexpected non-human result origin:")
     events = standard_events()
     events[-1]["origin"] = {"kind": "human"}
     report = readback(tmp, "standard", events)
@@ -539,7 +549,7 @@ def terminal_evidence(tmp):
         report = readback(tmp, "standard", stream, followups=followups)
         expect(report, prefix + "expected one terminal result, found 2")
         assert prefix + "expected one init event, found 2" in report["problems"], report
-        assert any(p.startswith(prefix + "unexpected task-notification result origin:")
+        assert any(p.startswith(prefix + "unexpected non-human result origin:")
                    for p in report["problems"]), report
         held = report["followups"][0] if followups else report
         expected = [event for event in (followups[0] if followups else stream) if event.get("type") == "result"]
@@ -653,10 +663,28 @@ def runtime_evidence(tmp):
     report = readback(tmp, "standard", gap)
     assert "a --followup cannot clear" in report["problems"][-1], report
 
+    events = standard_events()
+    for event in events[2:4]:  # a verifier subagent's read reaches the verifier, not the reviewer
+        event["parent_tool_use_id"] = "toolu_verifier"
+    early = standard_events()
+    early = [early[0], early[2], early[3], early[1], early[4]]
+    for stream in (events, early):
+        report = readback(tmp, "standard", stream)
+        expect(report, "every recognized read failed")
+        assert report["diff_reads"][0]["reason"] == "not requested by the forked /review thread after its recipe"
+        assert "resume the same session" in report["problems"][-1], report
+    empty = tmp / "empty-reference.patch"
+    empty.write_bytes(b"")
+    report = readback(tmp, "standard", standard_events(command="ls -la"), reference_patch=empty)
+    expect(report, "reference patch contains no patch text")
+    assert any("resume the same session" in p for p in report["problems"]), report
+    assert not any("cannot clear" in p for p in report["problems"]), report
+
     for fork, error in [(None, "None does not mark"), ("toolu_01", "'toolu_01' does not mark"),
                         ("forked-command-review", None)]:
         events = standard_events()
-        events[1]["parent_tool_use_id"] = fork
+        for event in events[1:4]:  # the recipe and the reviewer's own calls share one thread
+            event["parent_tool_use_id"] = fork
         report = readback(tmp, "standard", events)
         expect(report, error and "a prompt-started forked command")
         assert report["recipe_parent_tool_use_id"] == fork, report
@@ -689,6 +717,16 @@ def delivery_report(tmp):
     assert report["delivery"]["delivered"] == 4 and report["delivery"]["files"][1]["delivered"] == 2, report
     assert report["ok"] and "delivery" not in " ".join(report["problems"]), report
     checks += 1
+    odd = as_followup(standard_events(output='"x":1:foo "\ud83d":2:bar\n'))
+    expect(readback(tmp, "standard", events, followups=[odd], reference_patch=reference))
+    late = events + [
+        {"type": "assistant", "parent_tool_use_id": FORK, "message": {"content": [{"type": "tool_use",
+            "id": "late", "name": "Read", "input": {"file_path": "/repo/src/b.js"}}]}},
+        {"type": "user", "parent_tool_use_id": FORK, "message": {"content": [{"type": "tool_result",
+            "tool_use_id": "late", "content": f"1\t{second}\n"}]}}]
+    report = readback(tmp, "standard", late, reference_patch=reference)
+    expect(report)
+    assert report["delivery"]["delivered"] == 2, report
     assert "delivery" not in readback(tmp, "standard", events)
     held = readback(tmp, "standard", standard_events(command="ls -la", output=f"+{first}\n"), reference_patch=reference)
     expect(held, "no successful correlated")
@@ -721,6 +759,7 @@ def delivery_git_report(tmp):
     git("config", "diff.renames", "true")
     git("config", "core.filemode", "true")
     write(removed, deleted_text)
+    write("a/foo.txt", "top-level a folder payload before the change")
     write(mode, "unchanged executable payload has no changed lines")
     write("old rename.txt", "unchanged rename payload remains independently identifiable")
     for name in links:
@@ -750,6 +789,9 @@ def delivery_git_report(tmp):
                 "thirteen.txt": "abcdefghijklm"}
     for name, content in {**separate, **quoted, **boundary, **ambiguous}.items():
         write(name, content)
+    write("a/foo.txt", "top-level a folder payload after the change")
+    write("b/new.txt", "top-level b folder payload is newly added")
+    folders = ["a/foo.txt", "b/new.txt"]
     for name, lines in {**grep_files, **suffixes}.items():
         write(name, "\n".join(lines))
     invalid = os.fsdecode(b"invalid-\xff.txt")
@@ -844,6 +886,7 @@ def delivery_git_report(tmp):
     compare(observe("ambiguous-grep", ambiguous, ["same.txt"], [ambiguous_followup]),
             expected({name: (1, 0) for name in ambiguous}))
 
+    compare(observe("prefix-folders", folders, folders), expected({"a/foo.txt": (2, 2), "b/new.txt": (1, 1)}))
     compare(observe("boundaries", boundary, boundary),
             expected({name: (1, 1) for name in ("twelve.txt", "twelve-padded.txt", "thirteen.txt")},
                      ["short.txt", "short-padded.txt"]))
@@ -855,6 +898,7 @@ def delivery_git_report(tmp):
     assert git("diff", target, "HEAD", "--", "same.txt").startswith("diff --git same.txt same.txt\n")
     compare(observe("no-prefix-config", separate, ["same.txt"]),
             expected({name: (1, int(name == "same.txt")) for name in separate}))
+    compare(observe("no-prefix-folders", folders, folders), expected({"a/foo.txt": (2, 2), "b/new.txt": (1, 1)}))
     reference = tmp / "delivery-semicolon.patch"
     reference.write_text(git("diff", f"{target}..HEAD", "--"), encoding="utf-8")
     hidden = standard_events(target=f"{target}..HEAD", command=f"git diff {target}..HEAD; git status --short",
