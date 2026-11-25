@@ -64,8 +64,6 @@ from pathlib import Path
 LEVEL = re.compile(r"`(\w+) effort\b")
 HEX = re.compile(r"[0-9a-f]{7,40}\Z")
 REF = re.compile(r"[\w@{}~^/.][\w@{}~^/.-]*\Z")
-HEAD_ANCESTOR = re.compile(r"HEAD(?:[~^](?:[1-9][0-9]*)?)+\Z")
-HEAD_ALIAS = re.compile(r"(?:HEAD|@)(?:[~^]0|@\{0\})*\Z")
 REFERENCE_TARGET = re.compile(r"[0-9a-f]{7,40}(?:\.\.HEAD)?\Z")
 EXIT_CODE = re.compile(r"\A\s*Exit code(?:\s*:\s*|\s+)(\d+)(?:\s|$)", re.IGNORECASE)
 PATCH_TEXT = re.compile(r"^diff --git ", re.MULTILINE)
@@ -424,10 +422,10 @@ def direct_diff(words: list[str], target: str) -> bool:
         return False
     base, head = operands
     if target == "-":
-        # The current-diff recipe reads <ref>...HEAD, or HEAD~1 when it cannot tell the base;
-        # `git diff HEAD` and pathspecs show no committed changes on the frozen subject.
-        return head == "HEAD" and (bool(HEAD_ANCESTOR.fullmatch(base)) or
-                                   ranged and not HEAD_ALIAS.fullmatch(base) and bool(REF.fullmatch(base)))
+        # The current-diff recipe reads <ref>...HEAD, or HEAD~1 when it cannot tell the base. A
+        # spelling of HEAD or a pathspec reads no committed change; the result must show a patch.
+        # Bare `git diff HEAD` stays a companion, so it never certifies a chain's completion.
+        return head == "HEAD" and base != "HEAD" and bool(REF.fullmatch(base))
     return bool(HEX.fullmatch(base) and target.startswith(base) and head == "HEAD")
 
 
@@ -537,6 +535,8 @@ def standard(events: list[dict], target: str, level: str, problems: list[str], f
         evidence.update(observed_level=observed_level, recipe_header=recipe.split("\n\n", 2)[:2])
         if observed_level != level:
             problems.append(f"recipe ran at {observed_level} effort, bound level is {level}")
+        if target == "-" and "Review target:" in recipe:
+            problems.append("recipe names a review target; current-diff readback expects none")
         if target != "-" and f"Review target: `{target}`" not in recipe:
             problems.append(f"recipe target is not {target}")
     requests = [(source, i, p) for source, stream in enumerate(sessions)
@@ -575,8 +575,14 @@ def standard(events: list[dict], target: str, level: str, problems: list[str], f
         if len(matches) != 1 or matches[0][0] <= index:
             read["reason"] = "no unique later correlated tool_result"
             continue
-        _, part, event = matches[0]
+        position, part, event = matches[0]
+        # Finding 5: the result, like the request, must reach the reviewer's thread.
+        if reason := outside(source, position):
+            read["reason"] = f"result {reason}"
+            continue
         read["ok"], read["reason"] = tool_result_status(part, event, difference_exit)
+        if read["ok"] and target == "-" and not PATCH_TEXT.search(text_of(part.get("content"))):
+            read.update(ok=False, reason="current-diff read showed no patch")
         details = event.get("tool_use_result")
         if ((isinstance(details, dict) and details.get("persistedOutputPath"))
                 or text_of(part.get("content")).startswith("<persisted-output>")):
@@ -659,7 +665,8 @@ def transcript(sid: str, problems: list[str],
     typed, answers = [], []
     for record in records:
         message = record.get("message") if isinstance(record.get("message"), dict) else None
-        if record.get("isSidechain") or record.get("isMeta"):
+        if (record.get("isSidechain") or record.get("isMeta") or record.get("isCompactSummary")
+                or record.get("isVisibleInTranscriptOnly")):
             continue
         if record.get("type") == "user" and not any(part.get("type") == "tool_result" for part in parts_of(record)):
             typed.append(text_of(message.get("content")) if message is not None else None)
@@ -710,8 +717,9 @@ def followup_streams(paths: list[str], kind: str, sid: str, model: str, problems
         entry["prompt_delivery"] = "unverified"
         if located is not None and prompts and (prompt := prompts[len(streams)]) is not None:
             # The transcript's first answer to the prompt must be this stream's own main-thread message.
-            replies = {event["message"].get("id") for event in stream if event.get("type") == "assistant"
-                       and event.get("parent_tool_use_id") is None and isinstance(event.get("message"), dict)}
+            replies = {event["message"]["id"] for event in stream if event.get("type") == "assistant"
+                       and event.get("parent_tool_use_id") is None and isinstance(event.get("message"), dict)
+                       and isinstance(event["message"].get("id"), str)}
             match = next((index for index in range(position + 1, len(typed)) if typed[index] is not None
                           and raw(typed[index]) == prompt and answers[index] is not None and answers[index] in replies),
                          None)
@@ -753,7 +761,14 @@ def main() -> None:
         except OSError as exc:
             prompts.append(None)
             argument.append(f"cannot read follow-up prompt: {exc}")
-    events = load_events(Path(events_path), problems)
+    unreadable: list[str] = []
+    events = load_events(Path(events_path), problems, "events", unreadable)
+    if unreadable:
+        report = {"kind": kind, "session_id": sid, "model": model, "ok": False,
+                  "problems": unreadable + argument + ["fix the EVENTS path and rerun readback"]}
+        Path(out).write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8",
+                             errors="backslashreplace")
+        sys.exit("hold: " + "; ".join(report["problems"]))
     result = common(events, sid, model, problems)
     report = {"kind": kind, "session_id": sid, "model": model,
               "runtime": launch_runtime(events, kind, problems), **result_evidence(result)}
@@ -765,6 +780,8 @@ def main() -> None:
         reference = None
         if reference_path is not None:
             report["reference_patch"], reference = load_reference_patch(Path(reference_path), target, argument)
+        if located is not None:
+            report["transcript"] = located[0]
         followups = followup_streams(followup_paths, kind, sid, model, problems, argument, report, prompts, located)
         unread = any(entry.get("runtime") == {} for entry in report.get("followups", []))
         report.update(standard(events, target, level, problems, followups, reference, unread))

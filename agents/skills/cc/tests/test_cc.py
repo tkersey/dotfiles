@@ -672,20 +672,25 @@ def runtime_evidence(tmp):
     expect(report)
     assert report["observed_level"] == "high" and report["recipe_parent_tool_use_id"] == FORK, report
     held = "no successful correlated `git diff` read against the current diff"
-    for command, error in [("git diff origin/HEAD...HEAD", None), ("git diff @{upstream}...HEAD", None),
-                           ("git diff main...HEAD", None), ("git diff HEAD~1", None), ("git diff HEAD", held),
-                           ("git diff .", held), ("git diff src/", held), ("git diff HEAD...HEAD", held),
-                           ("git diff origin/HEAD...HEAD; git diff HEAD", held), ("git diff HEAD^", None),
-                           ("git diff @~1...HEAD", None), ("git diff HEAD~0", held), ("git diff HEAD^0", held),
-                           ("git diff @...HEAD", held), ("git diff HEAD@{0}..HEAD", held), ("git diff HEAD~0..HEAD", held),
-                           ("git diff --stat origin/HEAD...HEAD", held), ("git diff --output=/tmp/x HEAD", held),
-                           ("ls -la", held)]:
-        stream = standard_events(command=command)
+    # A spelling of HEAD or a pathspec prints nothing on the frozen subject; a real range prints a patch.
+    for command, output, error in [
+            ("git diff origin/HEAD...HEAD", PATCH, None), ("git diff @{upstream}...HEAD", PATCH, None),
+            ("git diff main...HEAD", PATCH, None), ("git diff HEAD~1", PATCH, None), ("git diff HEAD^", PATCH, None),
+            ("git diff @~1", PATCH, None), ("git diff @~1...HEAD", PATCH, None), ("git diff HEAD", PATCH, held),
+            ("git diff origin/HEAD...HEAD; git diff HEAD", PATCH, held), ("git diff --stat origin/HEAD...HEAD", PATCH, held),
+            ("git diff --output=/tmp/x HEAD", PATCH, held), ("ls -la", PATCH, held)] + [
+            (command, "", held) for command in ("git diff .", "git diff src/", "git diff HEAD...HEAD", "git diff HEAD~0",
+                                                "git diff HEAD^0", "git diff @...HEAD", "git diff HEAD@{0}..HEAD",
+                                                "git diff HEAD^{}...HEAD", "git diff @{0}...HEAD", "git diff head")]:
+        stream = standard_events(command=command, output=output)
         stream[1]["message"]["content"][0]["text"] = current[1]["message"]["content"][0]["text"]
         report = readback(tmp, "standard", stream, target="-")
         expect(report, error)
         assert error is None or "`git diff <upstream>...HEAD`" in report["problems"][-1], report
         assert "--reference-patch" not in " ".join(report["problems"]), report
+    # A recipe that names a target reviewed another scope than the bound current diff.
+    expect(readback(tmp, "standard", standard_events(command="git diff origin/HEAD...HEAD"), target="-"),
+           "recipe names a review target; current-diff readback expects none")
     for version, error in [("2.1.287", None), ("2.1.340+build.5", None), ("2.1.287-rc.0", "is not 2.1.287 or newer"),
                            ("2.1.300abc", "is not 2.1.287 or newer"), ("2.1.340-beta.1", None), ("2.1.200-rc.1", "is not 2.1.287 or newer"),
                            ("2.1.340.1", "is not 2.1.287 or newer"), ("v2.1.340", "is not 2.1.287 or newer")]:
@@ -710,6 +715,11 @@ def runtime_evidence(tmp):
         event["parent_tool_use_id"] = "toolu_verifier"
     early = standard_events()
     early = [early[0], early[2], early[3], early[1], early[4]]
+    stray = standard_events()
+    stray[3]["parent_tool_use_id"] = "toolu_sub"
+    report = readback(tmp, "standard", stray)
+    expect(report, "did not reach the reviewer")
+    assert report["diff_reads"][0]["reason"] == "result requested by a subagent, not the forked /review thread", report
     main_thread = standard_events()
     for event in main_thread[2:4]:
         event["parent_tool_use_id"] = None
@@ -735,6 +745,11 @@ def runtime_evidence(tmp):
                       followup_prompts=[tmp / "missing-prompt.txt"])
     expect(report, "cannot read follow-up prompt")
     assert not any("cannot clear" in p for p in report["problems"]), report
+    missing_events = subprocess.run([sys.executable, "-I", str(SCRIPT), "standard", str(tmp / "no-events.jsonl"), SID, MODEL,
+                                     BASE, "high", str(tmp / "no-events.json")], capture_output=True, text=True)
+    report = json.loads((tmp / "no-events.json").read_text(encoding="utf-8"))
+    assert missing_events.returncode != 0 and report["problems"][-1] == "fix the EVENTS path and rerun readback", report
+    assert not any("expected one init" in p or "resume" in p for p in report["problems"]), report
     # readback() writes every follow-up it is given, so call the helper directly with a missing path.
     (tmp / "gap.jsonl").write_text(json_lines(standard_events(command="ls -la")), encoding="utf-8")
     unreadable = subprocess.run([sys.executable, "-I", str(SCRIPT), "standard", str(tmp / "gap.jsonl"), SID, MODEL, BASE,
@@ -1215,6 +1230,16 @@ def main():
                           followups=[answered(as_followup(standard_events()), "msg-a")], followup_prompts=[ask])
         expect(report)
         assert report["followups"][0]["prompt_delivery"] == "verified", report
+        assert report["transcript"].endswith(f"{SID}.jsonl"), report  # the evidence names its transcript
+        summary = {"type": "user", "sessionId": SID, "isCompactSummary": True, "isVisibleInTranscriptOnly": True,
+                   "message": {"content": "This session is being continued from a previous conversation."}}
+        report = readback(tmp, "standard", standard_events(command="ls -la"), standard_typed[:-1] + [summary, reply("msg-a")],
+                          followups=[answered(as_followup(standard_events()), "msg-a")], followup_prompts=[ask])
+        expect(report)  # compaction between a prompt and its answer does not take the answer slot
+        odd_id = answered(as_followup(standard_events()), "msg-a")
+        odd_id[-2]["message"]["id"] = [1]
+        expect(readback(tmp, "standard", standard_events(), standard_typed, followups=[odd_id], followup_prompts=[ask]),
+               "answered by this stream")
         # A prompt verified for another resume's stream is not this stream's delivery.
         expect(readback(tmp, "standard", standard_events(), standard_typed,
                         followups=[answered(as_followup(standard_events()), "msg-b")], followup_prompts=[ask]),

@@ -229,11 +229,11 @@ follow-up route below. Do not introduce an unsandboxed replay or widen permissio
 For an explicitly bound current-diff review, omit the CLI target and pass `-` as
 the helper's target instead of `$base..HEAD`; the recipe then has no target line and
 is recognized by its effort header. Its read gate is unchanged except that the
-recipe's own reads qualify: a direct `git diff <ref>...HEAD`, `<ref>..HEAD` or
-`<ref> HEAD` whose ref is not a spelling of HEAD (the recipe reads
-`origin/HEAD...HEAD`), or an ancestor such as `git diff HEAD~1` when it cannot tell
-the base. `git diff HEAD`, spellings of HEAD such as `HEAD~0` or `@`, and pathspecs
-show no committed change on the frozen subject and do not qualify. Judge whether the observed ref is the bound
+recipe's own reads qualify: a direct `git diff <ref>...HEAD`, `<ref>..HEAD`,
+`<ref> HEAD` or `<ref>` (the recipe reads `origin/HEAD...HEAD`, or `HEAD~1` when it
+cannot tell the base) whose correlated result shows a patch. A spelling of HEAD or a
+pathspec shows none on the frozen subject, so it never qualifies, and bare
+`git diff HEAD` stays a companion read. The recipe must not name a review target. Judge whether the observed ref is the bound
 current-diff scope.
 
 [readback.py](scripts/readback.py) writes the evidence and every problem, and
