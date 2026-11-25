@@ -278,9 +278,16 @@ history uses its locked migration path.
 
 ### Retained source under an older archive layout
 
-`UnsupportedLegacyArchiveLayout` is not an empty archive. Preserve its manifest
-and source bytes. Do not skip manifest entries, relabel archived-only records as
-admitted, or send an unfamiliar manifest through the current archive importer.
+Ledger 1.10.0 reads both archive inventories: per-generation
+`legacy-archive/<generation>/manifest.json` and the earlier flat
+`legacy-archive/manifest.json` with its `worktrees` array. Either selects only
+trees whose inventory lists the owner's slot or binding and verifies imported
+bytes against it, so an owner absent from a flat archive prepares normally.
+Earlier releases return `UnsupportedLegacyArchiveLayout` for the flat layout;
+that is not an empty archive. Bootstrap with `ensure-ledger --min-version 1.10.0`
+instead of skipping entries. Preserve manifests and source bytes. An invalid
+inventory still fails closed; do not relabel archived-only records as admitted
+or send an unfamiliar manifest through the archive importer.
 
 For an exact current-format source tree retained in that archive, a selected
 owner read or doctor must first establish `StoreBindingWithoutSlot` against the
