@@ -85,7 +85,7 @@ selecting another successor. Before that selection, compare the previous
 intervention's predicted and observed results, and apply the fresh activation or
 explicit assessment that a failed prediction or a reached epoch backstop requires.
 For stateful or concurrent software, that assessment includes
-[simulator coverage of recurring trace-dependent findings](recurrence.md#progress-before-another-iteration).
+[generator coverage of recurring sequence- and trace-dependent findings](recurrence.md#progress-before-another-iteration).
 Preserve the applicability and provenance of earlier
 failures and predictions across compaction. An unresolved mechanism remains
 investigable under the existing authority and epoch rules. Missing evidence blocks

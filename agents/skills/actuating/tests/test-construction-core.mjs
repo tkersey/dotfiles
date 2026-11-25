@@ -81,7 +81,9 @@ function check(src) {
   // Simulation-first correctness is an owner decision. These are source-contract checks,
   // not a simulator run or evidence that an agent builds or uses one.
   const simulation=normalized(section(skill,'Simulation-first correctness'));
-  for(const rule of ['A law is trace-dependent when its truth depends on the order, interleaving, timing, or repetition',
+  for(const rule of ['A law is trace-dependent when its truth depends on one of the properties listed below',
+    'A law that depends only on the order of operations on in-memory state is a sequence law; property tests that generate operation sequences check it, wherever the code lives',
+    "Each state's pending obligation cites the binding law that creates it; that law is the source law the rest-reachability check protects",
     'durable state: data that outlives the process that wrote it',
     'concurrency: actors such as threads, tasks, processes, or peers',
     'retry, restart, recovery, or replay of an input','time: clocks, deadlines, timeouts, or schedules',
@@ -114,18 +116,19 @@ function check(src) {
     'A one-shot tool also injects a failure at every effect seam','only the user can reduce them',
     'a sweep that never produces an event kind the changed code handles is incomplete',
     'When no simulator exists, build the smallest one',
-    'keeps its ordinary tests and runs in the simulator as real code',
+    'keeps its ordinary tests, with property tests for its sequence laws, and runs in the simulator as real code',
     'a seam outside the authorized path scope is a [source-binding](#source-binding) blocker',
     'In `analyze`, classify and judge against these rules without building, extending, or running mutating controls'])
     assert(simulation.includes(rule),`lost simulation rule: ${rule}`);
   // Law coverage is checked against the source binding in both directions, not by
   // handing reviewers the simulator's law inventory.
   for(const rule of ['Every trace-dependent law in the [source binding](#source-binding) is cited by an executable law the simulator checks',
-    'every executable law cites a binding law or the [construction rule](#construction-rules) it enforces',
+    'and every sequence law by a property test','Every executable law that gates code cites a binding law',
+    'a construction-rule assertion also names the [construction rule](#construction-rules) it enforces',
     'also cites the required source law it protects and the conditions under which violating the rule breaks that law',
     'A rule alone grants no gating authority',
-    'A binding law without one is missing required verification',
-    'is a strengthening without source authority, which must not gate the code',
+    'A binding law without a check is missing required verification',
+    'A law that cites no binding law cannot gate the code',
     'Where the accepted source has stable clause identifiers in the repository, make this check executable',
     'Coverage shows that each law is checked, not that its check is adequate',
     'with the same two-way coverage against the binding'])
@@ -160,7 +163,8 @@ function check(src) {
   assert(plateau.includes('that explicit assessment, and any earlier one prompted by recurring findings, includes simulator coverage'),'lost plateau simulator check');
   for(const rule of ['extend the applicable property-test generator or oracle to expose recurring families, including operation sequences',
     'Reclassify it only when evidence establishes a listed stateful or concurrent property',
-    'recurring trace-dependent findings alone do not establish one',
+    'recurring sequence findings alone do not establish one',
+    "the simulator's for trace-dependent laws and the property tests' for sequence laws",
     'Clean counts do not measure this coverage'])
     assert(plateau.includes(rule),`lost recurrence boundary: ${rule}`);
   assert(normalized(progress).includes('pre-epoch screens and their corrections'));
@@ -200,7 +204,7 @@ function check(src) {
   assert.equal(policy.universalist_compilation.nomination_result_required,false);
   assert.equal(policy.universalist_compilation.nomination_is_executed_proof,false);
   assert.equal(policy.efficacy.policy_unit_tests_prove_model_efficacy,false);
-  assert.equal(contract.skill.source_fingerprint,'actuating-construction-core-v44');
+  assert.equal(contract.skill.source_fingerprint,'actuating-construction-core-v45');
   const clauses=Object.fromEntries(contract.clauses.map(c=>[c.clause_id,c]));
   assert(clauses['ACT-IMPLEMENT-ENTRY-001'].success_signals.some(s=>s.includes('without a fixed reasoning sequence')));
   assert(clauses['ACT-METANOETIC-ADMISSIBILITY-001'].success_signals.some(s=>s.includes('no required order relative to Universalist')));
@@ -221,6 +225,8 @@ function check(src) {
   assert(sim.required_artifacts.some(s=>s.includes('evidence that real code implements the exits and feasible guards the reachability check relies on')));
   assert(sim.required_artifacts.some(s=>s.includes('a gating construction-rule assertion also cites the required source law and the conditions under which violating the rule breaks that law')));
   assert(sim.failure_signals.some(s=>s.startsWith('a trace-dependent binding law has no executable law')));
+  assert(sim.failure_signals.some(s=>s.startsWith('a sequence law is left to indirect simulator generation')),'sequence-law routing lost');
+  assert(sim.failure_signals.some(s=>s.startsWith('a lifecycle state holds a pending obligation that cites no binding law')),'obligation citation lost');
   for(const signal of ['recurring sequence-dependent findings alone reclassify pure software as stateful without evidence of a listed stateful or concurrent property',
     'a valid wait is failed or forced to terminate while its source-required progress premise is absent, or the required exit remains unchecked when that premise holds',
     'observed transition membership is treated as proof that a declared exit or its guard is implemented and feasible',
@@ -288,9 +294,14 @@ const mutations=[
   ['repository history as policy',append('construction.md','\nPROJECTX: this project justified the rule.\n')],
   ['repository commit link',append('references/counterexample-guided-normalization.md','\nSee [abc1234](https://github.com/example/project/commit/abc1234).\n')],
   ['repository history in rationale',decisionMutation(c=>{c.rationale+=' The simulator caught 3 of 4 defects there.';})],
-  ['one-way law coverage',swap('construction.md',', and every executable law cites a binding law or the [construction rule](#construction-rules) it enforces','')],
-  ['coverage gap tolerated',swap('construction.md','A binding law without one is missing required verification.','A binding law without one may be covered later.')],
-  ['unauthorized law gates code',swap('construction.md','which must not gate the code','which may gate the code')],
+  ['one-way law coverage',swap('construction.md','Every executable law that gates code cites a binding law;','')],
+  ['sequence laws uncovered',swap('construction.md',', and every sequence law by a property test','')],
+  ['sequence law forced into simulator',swap('construction.md','property tests that generate operation sequences check it, wherever the code lives','the simulator checks it inside stateful software')],
+  ['input order makes a law trace-dependent',swap('construction.md','one of the properties listed below','the order or repetition of inputs')],
+  ['lifecycle obligation uncited',swap('construction.md',"Each state's pending obligation cites the binding law that creates it; that law is the source law the rest-reachability check protects.",'')],
+  ['obligation-citation signal dropped',decisionMutation(c=>{c.failure_signals=c.failure_signals.filter(s=>!s.startsWith('a lifecycle state holds a pending obligation'));})],
+  ['coverage gap tolerated',swap('construction.md','A binding law without a check is missing required verification.','A binding law without a check may be covered later.')],
+  ['unauthorized law gates code',swap('construction.md','A law that cites no binding law cannot gate the code','A law that cites no binding law may gate the code')],
   ['construction-rule gate lacks source authority',swap('construction.md','also cites the required source law it protects and the conditions under which violating the rule breaks that law','needs only the construction rule it enforces')],
   ['coverage claimed as adequacy',swap('construction.md','Coverage shows that each law is checked, not that its check is adequate','Coverage shows that each check is adequate')],
   ['pure library laws uncovered',swap('construction.md','with the same two-way coverage against the binding, generators','with generators')],
@@ -320,7 +331,7 @@ const mutations=[
   ['restart credited as power loss',swap('construction.md','a process restart with surviving operating system caches does not establish power-loss durability','a process restart establishes power-loss durability')],
   ['oracle shares deciding logic',swap('construction.md','The oracle shares none of the deciding logic it checks','The oracle may reuse the deciding logic it checks')],
   ['unbounded simulator construction',swap('construction.md','build the smallest one','build a complete one')],
-  ['changed helper forced into simulation',swap('construction.md','keeps its ordinary tests and runs in the simulator as real code','needs its own simulator')],
+  ['changed helper forced into simulation',swap('construction.md','keeps its ordinary tests, with property tests for its sequence laws, and runs in the simulator as real code','needs its own simulator')],
   ['scope broadened for seams',swap('construction.md','a seam outside the authorized path scope is a [source-binding](#source-binding) blocker, not license to broaden that scope','a seam outside the authorized path scope may be added')],
   ['analyze builds',swap('construction.md','without building, extending, or running mutating controls','and builds what is missing')],
   ['construction rule dropped',swap('construction.md','- Give every admitted input exactly one recorded terminal disposition, such as applied, rejected, superseded, or failed: never none and never two.\n','')],

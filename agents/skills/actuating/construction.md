@@ -152,8 +152,11 @@ source requirement governs a rule it contradicts.
 
 Reviews and example tests sample traces; the laws of stateful or concurrent
 software quantify over them. A law is trace-dependent when its truth depends on
-the order, interleaving, timing, or repetition of inputs, faults, restarts, or
-transfers. Classify each program or library the Goal builds or changes; a Goal
+one of the properties listed below: state that outlives a run, the interleaving of
+actors, retry, restart, recovery, or replay, time, or the outcome of an external
+effect. A law that depends only on the order of operations on in-memory state is
+a sequence law; property tests that generate operation sequences check it,
+wherever the code lives. Classify each program or library the Goal builds or changes; a Goal
 that changes no program or library, such as documentation alone, needs no
 classification. It is stateful or concurrent when it has any of:
 
@@ -175,7 +178,7 @@ exits, leaving no partial state that a later run reads, and its outputs are its
 result rather than state it reads back, such as a formatter or an artifact
 generator. A tool that resumes, retries, syncs, caches, or keeps a state file is
 stateful. Classify by these properties, not by repository, language, or size.
-[Recurring trace-dependent findings](recurrence.md#progress-before-another-iteration)
+[Recurring sequence- or trace-dependent findings](recurrence.md#progress-before-another-iteration)
 require reassessing the applicable generator or oracle and this classification.
 Input order alone does not establish any of these properties: a pure library's
 property tests can generate operation sequences. Reclassify it only when the
@@ -191,22 +194,24 @@ For stateful or concurrent software, the construction includes:
   violating the rule breaks that law. A rule alone grants no gating authority.
 - **Two-way law coverage.** Every trace-dependent law in the
   [source binding](#source-binding) is cited by an executable law the simulator
-  checks, and every executable law cites a binding law or the
-  [construction rule](#construction-rules) it enforces. A binding law without one
-  is missing required verification. A law that cites neither either reveals a
-  binding law to add from the source or is a strengthening without source
-  authority, which must not gate the code. Where the accepted source has stable clause identifiers
-  in the repository, make this check executable. Coverage shows that each law is
-  checked, not that its check is adequate;
+  checks, and every sequence law by a property test. Every executable law that
+  gates code cites a binding law; a construction-rule assertion also names the
+  [construction rule](#construction-rules) it enforces. A binding law without a
+  check is missing required verification. A law that cites no binding law cannot
+  gate the code: it either reveals a binding law to add from the source or remains
+  a diagnostic without source authority. Where the accepted source has stable
+  clause identifiers in the repository, make this check executable. Coverage shows
+  that each law is checked, not that its check is adequate;
   [re-injection](counterexamples.md#re-inject-confirmed-defects) calibrates that.
 - **Lifecycle tables.** Each stored-state machine has an explicit table of its
-  states, [ordinary transitions](#construction-rules), and enabling conditions,
-  with a mechanical check,
-  at compile time where the language allows, that every state reaches rest through
-  ordinary inputs under the stated source-required environment assumptions.
-  The simulator asserts that every transition it observes is in the table. This
-  checks observed membership only; it cannot establish that a declared exit is
-  implemented or its guard can be satisfied. Under
+  states, [ordinary transitions](#construction-rules), and enabling conditions.
+  Each state's pending obligation cites the binding law that creates it; that law
+  is the source law the rest-reachability check protects. A mechanical check, at
+  compile time where the language allows, establishes that every state reaches
+  rest through ordinary inputs under the stated source-required environment
+  assumptions. The simulator asserts that every transition it observes is in the
+  table. This checks observed membership only; it cannot establish that a
+  declared exit is implemented or its guard can be satisfied. Under
   [proof acceptance](#proof-acceptance), establish that the real code implements
   the exits and feasible guards on which the reachability check relies. Reuse
   adequate native evidence or a shared authoritative representation of table and
@@ -272,9 +277,11 @@ When no simulator exists, build the smallest one that runs the real code paths t
 Goal builds or changes, owns the nondeterminism those paths consume, and checks the
 laws the Goal establishes or could break; grow it through
 [re-injection](counterexamples.md#re-inject-confirmed-defects). A changed module
-with no trace-dependent law, such as a string helper inside a daemon, keeps its
-ordinary tests and runs in the simulator as real code; an in-memory module with
-one, such as an index or cache, has that law checked there. Seams the simulator
+with no trace-dependent law, such as a string helper or an in-memory deque inside
+a daemon, keeps its ordinary tests, with property tests for its sequence laws, and
+runs in the simulator as real code; an in-memory module with one, such as an index
+or cache that must agree with its source across restarts or interleaved writers,
+has that law checked there. Seams the simulator
 needs are part of the construction; a seam outside the authorized path scope is a
 [source-binding](#source-binding) blocker, not license to broaden that scope. The
 simulator drives the real code, so it is not the optional

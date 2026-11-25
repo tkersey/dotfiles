@@ -87,17 +87,17 @@ skill, making a commit, or passing an unrelated check is not supported progress.
 For [stateful or concurrent software](construction.md#simulation-first-correctness),
 that explicit assessment, and any earlier one prompted by recurring findings,
 includes simulator coverage. When admitted findings across screen corrections or
-invalidated epochs keep
-violating trace-dependent laws, appearing only under a particular sequence,
-interleaving, or timing of inputs, faults, restarts, or transfers, confirm that
-the simulator catches each such family on
-[re-injection](counterexamples.md#re-inject-confirmed-defects). Extend its
+invalidated epochs keep appearing only under a particular sequence, interleaving,
+or timing of inputs, faults, restarts, or transfers, confirm that the applicable
+generator catches each such family on
+[re-injection](counterexamples.md#re-inject-confirmed-defects): the simulator's
+for trace-dependent laws and the property tests' for sequence laws. Extend that
 generator or oracle for every family it misses, then sweep again, before selecting
 the next repair. For software classified as a pure library or one-shot tool,
 extend the applicable property-test generator or oracle to expose recurring
 families, including operation sequences, and reassess the classification.
 Reclassify it only when evidence establishes a listed stateful or concurrent
-property; recurring trace-dependent findings alone do not establish one. Clean
+property; recurring sequence findings alone do not establish one. Clean
 counts do not measure this coverage.
 
 When an admitted defect lies in a deciding site an earlier intervention added,
