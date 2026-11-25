@@ -41,12 +41,12 @@ function check(src) {
     'Completion':'dc56a54f2fd79d07f4d801b030cbf5b5a1ec6758be7a8c72eae0e8c2f630f58f'
   })) assert.equal(hash(section(skill,h)),digest,`changed acceptance/authority section: ${h}`);
   assert.equal(hash(section(skill,'Construction Working Set')),
-    'de9ee5fa5fb2cb205c5c970dfbcd2c98b76467166ac09b5f71510da986178e14','changed construction assignment binding');
+    'a700fdc90b29b61e05f7520f2e36ffaebf35baa668c8a7bfb0bb055550ff7b45','changed construction assignment binding');
   const admissionStart=counter.indexOf('Before counterexample-driven selection,');
   const admissionEnd=counter.indexOf('\n## Compile the first loss of guarantee');
   assert(admissionStart>=0 && admissionEnd>admissionStart);
   assert.equal(hash(counter.slice(admissionStart,admissionEnd)),
-    'ecd80ffbd34cb57ba11e83d6b671c73dda6123d4faa4621b43a54ad24435d516','changed witness admission');
+    '565fc772892c5d343f778cf96706610aa545d965c1f5d08105b2bf6c07d370a5','changed witness admission');
 
   assert(core.includes('No fixed order of diagnosis, algebraic derivation, prototyping, or proof attempts is required'));
   assert(core.includes('Missing proof is not a witnessed defect'));
@@ -76,7 +76,7 @@ function check(src) {
   assert.equal(policy.universalist_compilation.nomination_result_required,false);
   assert.equal(policy.universalist_compilation.nomination_is_executed_proof,false);
   assert.equal(policy.efficacy.policy_unit_tests_prove_model_efficacy,false);
-  assert.equal(contract.skill.source_fingerprint,'actuating-construction-core-v41');
+  assert.equal(contract.skill.source_fingerprint,'actuating-construction-core-v42');
   const clauses=Object.fromEntries(contract.clauses.map(c=>[c.clause_id,c]));
   assert(clauses['ACT-IMPLEMENT-ENTRY-001'].success_signals.some(s=>s.includes('without a fixed reasoning sequence')));
   assert(clauses['ACT-METANOETIC-ADMISSIBILITY-001'].success_signals.some(s=>s.includes('no required order relative to Universalist')));

@@ -256,7 +256,7 @@ test('canonical admission is unchanged; effect and evaluation guidance remain bo
   const end = counter.indexOf('\n## Compile the first loss of guarantee');
   assert(start >= 0 && end > start);
   assert.equal(createHash('sha256').update(counter.slice(start, end)).digest('hex'),
-    'ecd80ffbd34cb57ba11e83d6b671c73dda6123d4faa4621b43a54ad24435d516');
+    '565fc772892c5d343f778cf96706610aa545d965c1f5d08105b2bf6c07d370a5');
   const normalized = counter.replace(/\s+/g, ' ');
   for (const phrase of ['independently established evidence', 'separately supported, authorized obligation',
     'delegation, resumption, and compaction', 'including test expectations, check selection, compatibility, and completion claims',

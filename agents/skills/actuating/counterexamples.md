@@ -48,7 +48,8 @@ never changes the subject, captures new records, or provisions tools for capture
 Ledger's automatic custody preparation precedes projection independently of that
 capture flag, under its own explicit file/custody-maintenance constraints.
 Other routes inherit their actual effect scope; supporting skills cannot expand it.
-Actuating neither copies the corpus nor persists its current interpretation.
+Actuating owns no separate durable store. Preserve useful deciding arguments
+through the [Construction Working Set](construction.md#construction-working-set).
 
 A rejected strengthening must not enter code to placate a reviewer or protect a
 clean streak. Reopen authority or remove it. Correcting an unsupported public
@@ -87,9 +88,18 @@ cannot supply that basis merely because its proposed correction seems safer or
 would satisfy a reviewer. A separately supported, authorized obligation may justify
 the same edit; initial implementation still derives directly from the accepted Goal.
 
+Through Review Fold, reuse a prior disposition when its source authority,
+applicability, and deciding premises remain established. Repetition, a new reviewer,
+or a new head alone does not require rederiving a supported judgment. Reopen the
+affected judgment when a relevant premise changes, new evidence challenges it, or
+a flaw in the prior reasoning is found; a retained conclusion cannot veto a
+supported challenge. Recover missing deciding evidence or establish the current
+obligation independently; a stored verdict cannot substitute for that basis.
+
 Carry the disposition, decisive evidence, unresolved premises, and their effect on
-permitted corrective work in the existing assignment through delegation, resumption,
-and compaction. Do not reduce a rejected allegation to a task title saying to fix it.
+candidate selection and permitted corrective work in the existing assignment
+through delegation, resumption, and compaction. Do not reduce a rejected allegation
+to a task title saying to fix it.
 During the existing diff/proof inspection, compare actual changes to that basis,
 including test expectations, check selection, compatibility, and completion claims.
 Correct rejection in prose does not excuse an unsupported change. This adds no
