@@ -66,6 +66,19 @@ bypass policy. The recipe header establishes review level, not effective reasoni
 effort. See [effort precedence](https://code.claude.com/docs/en/env-vars#precedence)
 and [effort caps](https://code.claude.com/docs/en/settings-reference#maxeffortlevel).
 
+Also bind `CLAUDE_CODE_DISABLE_BACKGROUND_TASKS=1` on every launch and resume.
+Without it, each finished background subagent can wake the session for another
+turn with its own init and result (observed: a resumed follow-up whose eight
+background reviewers produced nine results, the first only announcing them).
+The [environment reference](https://code.claude.com/docs/en/env-vars) and
+[subagent guidance](https://code.claude.com/docs/en/sub-agents) document disabling
+background shell and subagent runs and automatic backgrounding; Claude waits for
+subagents. This prevents new background work through those paths, not other
+notification sources or ambiguity already present in a captured stream (observed
+on 2.1.332: under these settings a resumed follow-up's subagent ran in the
+foreground and the invocation ended with one result; `/review xhigh` reviewed
+inline without subagents).
+
 ## Freeze the subject
 
 Resolve the repository and full base/head commit IDs before launch and keep them
@@ -82,6 +95,9 @@ frozen.
   substitute for a committed range.
 - Launch from the repository root and recheck HEAD and working-tree/index state
   at admission.
+- A large range can receive a summary-only first pass (observed on 176 files and
+  46.9k added lines). Retain that inquiry limitation and allow for the same-session
+  follow-up below within the caller's existing recovery budget.
 
 ## Enforce read-only execution and launch
 
@@ -107,7 +123,8 @@ permitted Git subcommands without `-c` or `-C`, read-only filters in pipes, and 
 redirects, temporary files, builds, or tests); together these cut denied calls
 from 2.4 to 0.8 per review. Keep Claude's runtime state, including
 transcripts, and attempt files (`$settings`, `$prompt`, `$events`, `$diagnostics`,
-`$readback_json`, and any `$reference_patch`) outside those paths. Create these
+`$readback_json`, any `$reference_patch`, and each follow-up's `$followup_prompt`,
+`$followup_events` and `$followup_diagnostics`) outside those paths. Create these
 per-attempt settings with a JSON encoder:
 
 ```bash
@@ -127,10 +144,13 @@ ordinary disable flags. Hold if effective policy admits unbounded side effects,
 overrides the sandbox, adds unsandboxed exclusions, or cannot be established.
 Do not bypass it. See [settings precedence](https://code.claude.com/docs/en/settings)
 and [hook controls](https://code.claude.com/docs/en/settings-reference#disableallhooks).
-Require Claude Code 2.1.285 or newer, support for the flags and settings below,
-and a functioning sandbox; unavailability is a hold, never permission to run
-unsandboxed. Offline readback tests do not qualify the installed runtime's
-filesystem enforcement or native verifier delegation.
+Require Claude Code 2.1.287 or newer for
+[prompt-started forked-command stream evidence](https://code.claude.com/docs/en/headless#follow-subagent-messages);
+readback holds when the session's init reports an older or missing version.
+Verify support for the flags and settings below and a functioning sandbox;
+unavailability is a hold, never permission to run unsandboxed. Offline readback
+tests do not qualify the installed runtime's filesystem enforcement or native
+verifier delegation.
 
 ```bash
 sid=$(uuidgen | tr '[:upper:]' '[:lower:]')
@@ -143,7 +163,7 @@ read_tools=(Read Grep Glob
 # Standard
 (cd "$repo" && GIT_OPTIONAL_LOCKS=0 GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=core.fsmonitor \
   GIT_CONFIG_VALUE_0=false CLAUDE_CODE_EFFORT_LEVEL="$selected_effort" \
-  claude -p --session-id "$sid" \
+  CLAUDE_CODE_DISABLE_BACKGROUND_TASKS=1 claude -p --session-id "$sid" \
   --model "$selected_model" --effort "$selected_effort" \
   --restricted --settings "$settings" --tools "Read,Grep,Glob,Bash,Agent" \
   --strict-mcp-config --mcp-config '{"mcpServers":{}}' \
@@ -155,7 +175,7 @@ read_tools=(Read Grep Glob
 # Custom: $prompt holds the exact instruction bytes
 (cd "$repo" && GIT_OPTIONAL_LOCKS=0 GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=core.fsmonitor \
   GIT_CONFIG_VALUE_0=false CLAUDE_CODE_EFFORT_LEVEL="$selected_effort" \
-  claude -p --session-id "$sid" \
+  CLAUDE_CODE_DISABLE_BACKGROUND_TASKS=1 claude -p --session-id "$sid" \
   --model "$selected_model" --effort "$selected_effort" \
   --restricted --settings "$settings" --tools "Read,Grep,Glob,Bash" \
   --strict-mcp-config --mcp-config '{"mcpServers":{}}' \
@@ -186,11 +206,14 @@ uv run --no-project python -I "$skill_dir/scripts/readback.py" custom \
   "$events" "$sid" "$selected_model" "$prompt" "$readback_json"
 ```
 
-For a semicolon-hidden read, optionally append `--reference-patch "$reference_patch"`.
+Optionally append `--reference-patch "$reference_patch"`: it lets a
+semicolon-hidden read count as patch delivery and adds the `delivery` report below.
 Reuse a complete reference patch captured by the caller's existing executor under
 an enforced read-only filesystem boundary covering the repository, Git directory,
 and common directory. While the subject is frozen, capture the complete stdout of
-`git diff "$base..HEAD" --` only if that command exits 0. Bind its actual invocation,
+`git diff "$base..HEAD" --` only if that command exits 0, under the Git
+configuration the reviewer's session sees and without added formatting options: a
+semicolon-hidden read matches only identical bytes. Bind its actual invocation,
 successful exit, full base/head IDs, and effective boundary to this attempt in the
 existing Working Set; retain the unmodified UTF-8 bytes beside the attempt files.
 Do not substitute a partial, path-limited, stale, reformatted, or failed capture.
@@ -204,23 +227,42 @@ capture or its provenance is unavailable, omit the option and use the existing
 follow-up route below. Do not introduce an unsandboxed replay or widen permissions.
 
 For an explicitly bound current-diff review, omit the CLI target and pass `-` as
-the helper's target instead of `$base..HEAD`.
+the helper's target instead of `$base..HEAD`; the recipe then has no target line and
+is recognized by its effort header and must name no review target. The helper cannot
+resolve that scope (upstream...HEAD plus uncommitted changes), so its read gate
+admits an unchained direct `git diff` whose own correlated result shows a patch, such
+as `git diff origin/HEAD...HEAD` or `git diff HEAD`; a chain's output cannot be
+attributed to one read. Judge whether the observed reads cover the bound scope.
 
 [readback.py](scripts/readback.py) writes the evidence and every problem, and
 exits nonzero (hold) unless all of these hold:
 
 - Init and result belong to `$sid` and the selected model; the run succeeded;
-  `modelUsage` names only that model (no fallback).
+  `modelUsage` names only that model (no fallback). Each stream's first init,
+  original or follow-up, reports Claude Code 2.1.287 or newer (a pre-release precedes
+  its release), only tools from the launch inventory (init names the Agent tool
+  `Task`), `permissionMode: dontAsk`,
+  and no MCP servers. These facts and the loaded plugins are retained under
+  `runtime`; plugins are evidence for the caller's managed-policy review, not a
+  check (observed: managed plugins load under `--restricted`, and a resume loaded
+  one the launch had not).
 - **Standard:** native result text is nonempty; the expanded recipe names the
   frozen target, its depth header names the bound level (observed: `medium` ran
-  the `high` recipe), and a
-  matching reviewer `git diff` has a correlated completed tool result establishing
+  the `high` recipe), its message carries a `parent_tool_use_id` starting with
+  `forked-command-` (the runtime's marker of a prompt-started forked command), and a
+  matching `git diff` requested in that forked thread after the recipe, or in a
+  follow-up's main thread, has a correlated completed tool result establishing
   either target completion or delivery of the complete bound patch as described
-  below.
-  A command request alone, a failed read, or a result for another tool call is
-  insufficient. The helper recognizes direct patch reads, including ordinary
-  context options and explicit path limits. A successful per-file read does not
-  establish complete changeset coverage; the caller judges that separately.
+  below. A command request alone, a failed read, or a result for another tool call
+  is insufficient. A subagent's read, in the original or a follow-up, or one before
+  the recipe stays in `diff_reads` with its reason but does not reach the reviewer;
+  such `other_bash_requests` entries carry `outside` with the same reason. The helper
+  recognizes direct patch reads, including ordinary context options and explicit
+  path limits. A path-limited read observes only its paths: it must show a patch,
+  and a completed chain whose final `&&` group holds only path-limited target reads
+  counts only when its output contains the whole reference patch. A successful
+  per-file read does not establish complete changeset coverage; the caller judges
+  that separately.
   It recognizes bounded `;`/`&&` chains without treating quoted or escaped
   operators as shell syntax. A successful compound result establishes a target
   read only in its final `&&` group. Thus `git diff <base>..HEAD && git diff HEAD`
@@ -239,11 +281,52 @@ exits nonzero (hold) unless all of these hold:
   A longer final line, truncated patch, or patch markers alone cannot match.
   Otherwise retain the unverified compound observation and use the same-session
   follow-up below; do not replace the native recipe.
-  Recipe text alone does not authenticate native command resolution;
-  retain the host's actual `/review` invocation.
+  A hold without a successful read retains other observed Bash command requests
+  as `other_bash_requests`. These are requests, not successful reads; unsupported
+  syntax does not establish that no Git command ran. Recover a missing observation
+  with the follow-up below (a reference patch matches a semicolon-hidden read that is
+  not path-limited, or a completed chain of path-limited reads)
+  only when no other hold remains: follow-ups add reads and clear nothing else, so
+  the helper names that remedy only then. A bad `--reference-patch` argument is not
+  such a hold: fix it and rerun readback.
+  `persisted_output: true` means the output was saved to a file and the reviewer
+  received an inline preview. The flag neither establishes nor refutes completion,
+  which comes from the tool result. Without `reference_matched: true`, an `ok`
+  persisted read passes the gate as the target observation but does not establish
+  delivery of its content: judge that from `delivery` or later correlated reads
+  (path-limited diffs, or Read of the persisted file) and otherwise retain an
+  inquiry limitation. A preview may contain the complete reference patch while
+  target completion remains unknown.
+  The forked-command marker shows that a prompt-started forked command produced
+  the recipe, not which command resolved; retain the host's actual `/review`
+  invocation.
 - **Custom:** exactly one transcript `<config>/projects/*/$sid.jsonl` exists and
   its first user message equals the prompt bytes; stream-json does not echo a
   piped prompt, so this is the delivery evidence. `structured_output` is present.
+
+With a reference patch, `delivery` lists per file how many distinctive changed
+lines (at least 12 non-whitespace characters) appear in a tool result that reached
+the reviewer: the forked thread after its recipe or a follow-up's main thread, each
+stream up to its first result. A subagent's own tool results do not count; its
+answer to the reviewer does. It decodes Git's
+quoted paths, including `diff.noprefix` headers, and preserves spaces, rename
+destinations, and deletion paths. Read line numbers, grep match/context prefixes
+with or without a path (the Grep tool omits it for a one-file search) or a line
+number, and diff markers are removed. Known
+reference paths (including rename sources, their trailing parts for searches below
+the session directory, and absolute paths under the stream's init directory)
+disambiguate grep prefixes; unresolved ambiguous prefixes remain
+unnormalized. Binary or short-line files are listed as `unmeasured`; sections whose
+paths cannot be resolved, such as differing custom `diff.srcPrefix` and
+`diff.dstPrefix` output (identical custom prefixes read as folders), are retained
+under `unparsed_headers` and excluded from the counts. Treat those sections as an inquiry
+limitation. Passing readback does not establish delivery (observed: of 17 real
+reviews that passed every check, 16 delivered 70–93% of distinctive changed lines
+and left up to three files untouched; one whose follow-up delegated reading to
+subagents delivered 29% to the resumed session and left 19 files untouched).
+`delivery` records text presence, not attention or reasoning, and identical text
+elsewhere also matches. It is evidence for the caller's coverage judgment and
+never a hold.
 
 Permission denials remain in the report for caller adjudication. An unresolved
 required read holds credit; a recovered, covered, or demonstrably unnecessary
@@ -253,10 +336,24 @@ verdict or complete inquiry. The caller also retains the host exit status,
 effective boundary, any reference capture's provenance, and rechecks the Git
 subject. Never select the latest session, a title match, or another review's file.
 
+Result cardinality and notification provenance are separate observations. Only a
+result with no origin or a `human` origin authenticates the requested turn's
+terminal response; any other origin, including `task-notification`, holds even with
+one init and one result. A `task-notification` origin does not by itself identify a
+background-task cause or prove multiple results.
+When a stream has multiple result events, the report holds, sets `result` to null,
+and retains every original event in order under `results`, including its status,
+provenance, and denials. The same rule applies within each `followups` entry. Do not
+select a favorable event as the terminal result. A later resume with background
+tasks disabled cannot repair that stream, original or follow-up, because every
+follow-up stays in the readback; retain its hold and use the caller's existing
+recovery rules.
+
 ## Standard result: adjudicate the original text
 
-`result.result` is the native rendered result. Preserve it unchanged and pass it
-directly to the caller's existing finding and limitation adjudication. Ordinary
+For a single terminal result, the native event's `result` field is the rendered
+result. Preserve it unchanged and pass it directly to the caller's existing
+finding and limitation adjudication. Ordinary
 clean prose is valid evidence; no exact `(none)` sentinel, findings JSON, or second
 model call is required. The helper does not infer whether text is clean.
 
@@ -281,9 +378,11 @@ Confidence is not evidence.
 - Cancellation: terminate only the host-owned process, confirm it exited, and
   treat a late result as evidence, not credit.
 - **Incomplete inquiry follow-up** (caller-authorized): continue the same session
-  with `CLAUDE_CODE_EFFORT_LEVEL="$selected_effort" claude -p --resume "$sid"`
-  plus the same model, effort, permission, tool and schema flags,
-  `--output-format stream-json --verbose`, `</dev/null`. Name
+  with the resume below: the launch's environment bindings and flags, `--resume`
+  in place of `--session-id`, and the follow-up prompt on stdin (a custom
+  follow-up keeps its own launch's tool and `--json-schema` flags). Run it with
+  the launch's `$sid` and `read_tools`; rerunning the setup's `sid=` line would
+  resume a session that does not exist. Name
   the concrete gap, exact paths and ranges; ask it to complete the observation and
   reassess, overturning conclusions when warranted. The response is supplemental
   evidence attributed separately, not a new verdict or an additional clean.
@@ -293,22 +392,66 @@ Confidence is not evidence.
   result, the concrete gap and the bound subject in the follow-up prompt, as
   `$cas` does for delegated reviewers, and adjudicate the reply as supplemental
   review of that text, not a continuation of the reviewer's inquiry.
-  For an unverified compound diff that no authenticated reference establishes,
-  request a standalone foreground `git diff <base>..HEAD` and reassessment of
-  conclusions dependent on that read.
+  For a missing or unverified target read that no authenticated reference
+  establishes, the follow-up prompt holds the original result, the observed
+  requests and results, the missing content, and the bound range and head. It asks
+  the resumed session to read with direct foreground `git diff <base>..HEAD -- <path>`
+  calls, one command per call, without pipes, redirects, chains, shell loops,
+  variables, or background execution. A qualifying unchained path-limited read that
+  shows a patch supplies the target observation, so another oversized full-range diff is
+  unnecessary once that observation and the required content exist. One file's diff can overflow
+  too, so the prompt also asks it to read any persisted remainder with bounded Read
+  ranges of the persisted file or the source, continuing from the last delivered
+  line with an overlapping range when unsure, and keeping base/head, path identity
+  and deletion-side content. It then asks for dependent reasoning and reassessment
+  of the original findings and limitations. The caller judges coverage from the
+  observed reads: Read observations supply content, not the helper's target-diff
+  observation, and a patch or a changed verdict alone does not establish adequate
+  review.
+
+  ```bash
+  # Standard follow-up: $followup_prompt holds the follow-up prompt bytes
+  (cd "$repo" && GIT_OPTIONAL_LOCKS=0 GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=core.fsmonitor \
+    GIT_CONFIG_VALUE_0=false CLAUDE_CODE_EFFORT_LEVEL="$selected_effort" \
+    CLAUDE_CODE_DISABLE_BACKGROUND_TASKS=1 claude -p --resume "$sid" \
+    --model "$selected_model" --effort "$selected_effort" \
+    --restricted --settings "$settings" --tools "Read,Grep,Glob,Bash,Agent" \
+    --strict-mcp-config --mcp-config '{"mcpServers":{}}' \
+    --permission-mode dontAsk --permission-prompts none --allowed-tools "${read_tools[@]}" Agent \
+    --disallowed-tools Edit Write NotebookEdit Skill Workflow 'mcp__*' \
+    --output-format stream-json --verbose \
+    <"$followup_prompt" >"$followup_events" 2>"$followup_diagnostics")
+  ```
+
   Capture each resumed invocation in its own events file, retaining the actual
   resume invocation and unchanged Git subject; never concatenate terminal streams.
-  Pass the original events plus the supplemental stream to standard readback:
+  Pass the original events plus the supplemental stream to readback; custom
+  readback takes `--followup` the same way, checks each stream against the custom
+  inventory, and requires its `structured_output`:
 
   ```bash
   uv run --no-project python -I "$skill_dir/scripts/readback.py" standard \
     "$events" "$sid" "$selected_model" "$base..HEAD" "$level" "$readback_json" \
-    --followup "$followup_events"
+    --followup "$followup_events" --followup-prompt "$followup_prompt"
   ```
 
+  stream-json does not echo a piped prompt, so with `--followup-prompt` (one per
+  `--followup`, same order) readback requires each prompt's exact bytes as a typed
+  user message after the previous prompt in the session-bound transcript (runtime
+  records such as compaction summaries may sit between them), answered first by a
+  main-thread message of that follow-up stream, and reports `prompt_delivery:
+  verified`; without it `prompt_delivery` is `unverified` and the bound resume
+  invocation is the only delivery evidence.
+
   Repeat `--followup` in execution order only within the caller's recovery budget.
-  The helper checks each stream's session, model, terminal result and correlated
-  reads. It preserves the original `result`, every failed/unverified read, and
+  The helper checks each stream's session, model, runtime and terminal result, the
+  correlated reads of standard streams, and the `structured_output` of custom ones;
+  it does not check a custom follow-up's reads. A missing or unreadable follow-up
+  file, prompt file or (for standard) transcript is a caller-argument problem: fix it
+  and rerun readback (an unreadable follow-up may hold the missing read, so do that
+  before resuming). An undecodable capture, a malformed transcript line, or several
+  transcripts for one session are session problems. It preserves the original
+  `result`, every failed/unverified read, and
   supplemental results and denials under `followups`. Adjudicate all of them;
   successful readback does not establish adequate reassessment or erase a finding.
 - Compaction alone is not failure or a fresh review.
