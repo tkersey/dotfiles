@@ -42,7 +42,7 @@ assert.deepEqual(c.pre_epoch_screen, {
   summary_only_patch_observation_holds_every_changeset_standard:true,
   claude_missing_read_followup:'same-session-for-unread-paths', held_screen_blocks_epoch:true,
   opens_review_epoch:false, awards_review_credit:false, replaces_initial_inventory_request:false,
-  finding_triggers_initial_inventory_barrier:false, stateful_simulator_evidence_is_reviewability_proof:true
+  finding_triggers_initial_evidence_barrier:false, stateful_simulator_evidence_is_reviewability_proof:true
 });
 assert.equal(c.review_epoch.opens_on_first_initial_inventory_dispatch, true);
 assert(!('opens_on_first_review_dispatch' in c.review_epoch));

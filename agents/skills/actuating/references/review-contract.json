@@ -270,7 +270,7 @@
     "opens_review_epoch": false,
     "awards_review_credit": false,
     "replaces_initial_inventory_request": false,
-    "finding_triggers_initial_inventory_barrier": false,
+    "finding_triggers_initial_evidence_barrier": false,
     "stateful_simulator_evidence_is_reviewability_proof": true
   },
   "review_entry": {

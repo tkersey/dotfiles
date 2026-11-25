@@ -55,7 +55,7 @@ Adjudicate the original and supplemental results together.
 
 Fold screen findings through Review Fold. An admitted current material finding
 invalidates the candidate and returns to construction; with no epoch open, it
-triggers no initial-inventory barrier. For stateful or concurrent software,
+triggers no initial evidence barrier. For stateful or concurrent software,
 [re-inject](counterexamples.md#re-inject-confirmed-defects) it like any confirmed
 defect. The screen binds its exact head: a successor, or any other change before
 the first initial-inventory request, needs a new screen. A held screen blocks the

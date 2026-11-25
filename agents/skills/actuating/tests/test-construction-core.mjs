@@ -151,7 +151,7 @@ function check(src) {
     'record `screen_disposition: pass | hold` with its basis, never `credit_disposition`',
     'The screen must observe the complete base-to-head patch',
     'that holds the screen and every epoch standard alike','The screen binds its exact head',
-    'with no epoch open, it triggers no initial-inventory barrier',
+    'with no epoch open, it triggers no initial evidence barrier',
     'The screen awards no review credit and replaces no request'])
     assert(screen.includes(rule),`lost screen rule: ${rule}`);
   const screenPolicy=policy.pre_epoch_screen;
@@ -159,7 +159,7 @@ function check(src) {
   assert.equal(screenPolicy.applies_to,'every-review-epoch');
   assert.equal(screenPolicy.disposition_field,'screen_disposition');
   for(const key of ['records_credit_disposition','awards_review_credit','opens_review_epoch',
-    'replaces_initial_inventory_request','finding_triggers_initial_inventory_barrier'])
+    'replaces_initial_inventory_request','finding_triggers_initial_evidence_barrier'])
     assert.equal(screenPolicy[key],false,key);
   for(const key of ['complete_patch_observation_required','summary_only_patch_observation_holds_every_changeset_standard',
     'binds_exact_reviewable_head','held_screen_blocks_epoch'])

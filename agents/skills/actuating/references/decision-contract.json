@@ -548,7 +548,7 @@
           "a fail-fast one-shot tool is required to build a simulator, or skips fault injection at an effect seam",
           "a sweep is credited without its seeds and generator version, or without producing the event kinds the changed code handles",
           "a confirmed defect's fix enters a reviewable or published head before re-injection, a scripted replay stands in for a generator or oracle extension, or a defect the current simulator does not reach is called outside the simulated behavior",
-          "screen results are recorded as credit_disposition or credited as review lenses, confirmations, or clean counts, or a screen finding triggers the initial-inventory barrier",
+          "screen results are recorded as credit_disposition or credited as review lenses, confirmations, or clean counts, or a screen finding triggers the initial evidence barrier",
           "analyze builds or extends a simulator or runs mutating controls",
           "runtime guidance cites one repository's history as policy"
         ],
