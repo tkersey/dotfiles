@@ -58,7 +58,7 @@ accepted budget or a safety/authority boundary, not at the first favorable resul
 
 ## Actuating: additional standard confirmations
 
-Read the current [review contract](../../actuating/references/review-contract.md)
+Read `$actuating`'s current review contract (`references/review-contract.md`)
 for the production baseline. Do not change its JSON, lens prompts, native default
 review, or credit rules for this experiment.
 
@@ -67,9 +67,9 @@ review, or credit rules for this experiment.
 | Production baseline | Initial standard plus five auxiliaries; four subsequent standard confirmations, with the existing ordering, adjudication, invalidation and recovery rules. |
 | Reduced evaluation | The same initial standard plus all five auxiliaries; no subsequent standard confirmations. This is a six-review evaluation, not production convergence. |
 
-The [pre-epoch screen](../../actuating/review-closeout.md#pre-epoch-screen) precedes
-both arms and belongs to neither inventory; record whether it ran and its
-`screen_disposition`.
+`$actuating`'s pre-epoch screen (`review-closeout.md`, "Pre-epoch screen")
+precedes both arms and belongs to neither inventory; record whether it ran and
+its `screen_disposition`.
 
 Start with retrospective analysis when complete exact-head owner evidence exists.
 Bind each receipt to the actual candidate, model, instructions and review scope.

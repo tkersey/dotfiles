@@ -2,6 +2,7 @@ import copy
 import importlib.util
 import json
 from pathlib import Path
+import re
 import subprocess
 import sys
 import unittest
@@ -84,6 +85,15 @@ class ContractTests(unittest.TestCase):
             self.assertTrue(set(clause["expected_routes"]) <= routes, clause["clause_id"])
             self.assertTrue(set(clause["prohibited_routes"]) <= routes, clause["clause_id"])
         self.assertLessEqual(len(SKILL.splitlines()), 500)
+
+
+    def test_other_skills_are_referenced_by_name(self):
+        # Installed skills need not be siblings; resolve another skill by its $name.
+        siblings = {path.name for path in ROOT.parent.iterdir() if path.is_dir() and path != ROOT}
+        self.assertIn("actuating", siblings)
+        for path in [ROOT / "SKILL.md", *sorted((ROOT / "references").glob("*.md"))]:
+            linked = set(re.findall(r"\]\((?:\.\./)+([A-Za-z0-9_-]+)/", path.read_text())) & siblings
+            self.assertFalse(linked, f"{path.name} links into another skill by path: {sorted(linked)}")
 
 
 class EvaluatorTests(unittest.TestCase):

@@ -49,7 +49,7 @@ whose evidence shows only a summary, such as `--stat` output or recent commit
 messages, has missed its assigned inquiry; that holds the screen and every epoch
 standard alike until the observation is recovered. Recover a missing patch read
 under the existing observation recovery; in `claude` mode that is
-[cc](../cc/SKILL.md)'s same-session follow-up for the unread paths, as the
+`$cc`'s same-session follow-up for the unread paths, as the
 [binding](references/review-contract.md#binding-and-owner-authority) describes.
 Adjudicate the original and supplemental results together.
 

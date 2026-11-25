@@ -158,9 +158,8 @@ For each unresolved thread:
    ```
 
    Validation includes the governing skill's controls for the repair, such as
-   Actuating's [re-injection](../actuating/counterexamples.md#re-inject-confirmed-defects)
-   for stateful or concurrent software. Then enter `rebind-successor-head` and
-   restart complete preflight.
+   `$actuating`'s re-injection of confirmed defects for stateful or concurrent
+   software. Then enter `rebind-successor-head` and restart complete preflight.
 5. Resolve the GitHub thread only after the disposition is evidenced at the
    current head and live resolution readback succeeds.
 6. Refetch every review-thread page after each resolution batch and require zero
