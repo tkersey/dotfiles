@@ -787,6 +787,54 @@ Retain all attempts and distinguish structural validation, bounded transfer, and
 comparative efficacy. Existing review and completion requirements remain with
 their owners; this evaluation supplies no production review credit.
 
+## Composition of independently justified edits
+
+Status: **authored comparison; incremental efficacy unestablished**. This tests
+whether concrete edit triggers and an explicit premise-interference question
+improve construction beyond the existing compositional guidance. It adds no
+runtime stage, proof packet, production review credit, or delivery gate.
+
+| Arm | Frozen guidance |
+|---|---|
+| Control | Dotfiles `b3d029d417f9146a4310ac67576fd5b450341e30`, after the simulation-first and pre-epoch-screen changes. |
+| Candidate | The same runtime sources with only the Initial construction paragraph replacement under evaluation; freeze its exact bytes before dispatch. |
+
+Use the exposure, first-candidate freezing, matched endpoint, and whole-task cost
+rules above. Both arms receive the same accepted requirements, candidate code,
+baseline justifications, and ordinary verification access. Do not tell either
+arm which justification fails or which construction should replace it. An edit
+justified under the original premises is not necessarily justified after another
+edit changes those premises. Genuine contextual equivalences whose hypotheses
+hold under the admitted composition remain composable.
+
+These disclosed families are calibration material; choose fresh task instances
+and withhold the deciding continuations for an adoption claim.
+
+| Paired family | Source-required observation and calibration control |
+|---|---|
+| Memoization and a new live dependency | Change the live policy while immutable content and its validity stay fixed. Observe current authorization separately from cached validity; retain justified caching when only an unrelated display label changes. |
+| Parallel lanes and canonical identity | Interleave distinct names that resolve to one resource. Preserve each request's required result and effect, ordering within the canonical resource, and independence between different resources; preserve the adequate lane argument when inputs already carry canonical identity. |
+| Normalization and a later consumer | Continue equal normalized views into a required decision that depends on erased provenance. Pair with an intentionally lossy accepted contract whose continuations need no discarded distinction. |
+| Admitted commands and a changed interpreter | Observe the actual source-required effect after interpretation changes. Pair with a representation change already covered by an adequate correspondence argument. |
+| Shared preparation and mutable test state | Observe whether one test's use changes another's fixture or independent oracle. Pair with safely shared immutable preparation and fresh mutable sessions. |
+| Reused reasoning and required completion checks | Reopen an argument whose deciding dependency changed; retain an argument whose dependencies still hold. Neither reuse nor a passing predecessor check supplies a required check of the delivered candidate. |
+
+Score the first construction and justified no-change decisions before repair
+feedback. Inspect the actual dependency or identity boundary, required-valid
+behavior, unaffected reasoning retained, and any unnecessary deciding site or
+investigation. Merely naming composition, adding a type, rejecting all aliases,
+discarding every cache, serializing independent resources, or redoing every prior
+argument earns no credit. Keep source-required completion and review obligations
+equal in both arms.
+
+Predeclare repetitions, stopping rules, and useful quality or total-cost thresholds.
+Retain every attempt, including failures and incomplete runs. A bounded pilot can
+check feasibility and calibration; a tie or insufficient power leaves incremental
+efficacy unresolved. Do not add more instructions because a comparison is
+inconclusive. Prefer the smaller instruction when adequately powered comparisons
+show equivalent outcomes and cost. Source-contract mutations establish only the
+instruction boundaries they exercise.
+
 ## Simulation-first construction
 
 Status: **authored, not model-replayed**. This separate comparison tests the

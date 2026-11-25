@@ -76,16 +76,24 @@ consult [resource-sensitive effects](../universalist/references/resource-sensiti
 Distinguish repairing execution from restricting admission or justified claims;
 every source-required valid operation remains an obligation.
 
-When the construction relies on a compositional law, cover its actual admitted
-environments, callbacks, application, and handlers. Preserve required joint
-observations with shared context; agreement of isolated results or marginal
+When replacing, combining, reordering, sharing, or removing a construction, use
+the accepted source to determine which inputs, observations, and continuations
+the affected construction must support. Establish the required relationships in
+the actual admitted environments, callbacks, applications, and handlers; matching
+type names or isolated results alone do not establish interchangeability. When
+combining edits, check whether one changes a premise used to justify another.
+Re-establish affected reasoning on the assembled construction and reuse reasoning
+whose dependencies remain established. The existing [proof acceptance](#proof-acceptance)
+rules still govern required checks and completion credit.
+
+Preserve required joint observations with shared context; agreement of marginal
 distributions can erase a deciding relationship. Distinguish a captured value,
-a fresh effect occurrence, and replay of an acquired response when those behaviors
-are observable. Use the existing proof selection and
-[laws in admitted contexts](../universalist/references/claim-appropriate-proof.md#laws-in-admitted-contexts)
-to settle missing closure or contextual preservation. Neither restricting away
-required-valid uses nor adding an unrequired probability or replay framework
-discharges the source obligation.
+a fresh effect occurrence, and replay of an acquired response when observable.
+Use the existing proof selection and `$universalist`'s
+`references/claim-appropriate-proof.md`, **Laws in admitted contexts**, to settle
+missing closure or contextual preservation. Neither restricting away required-valid
+uses nor adding an unrequired probability or replay framework discharges the
+source obligation.
 
 Develop the implementation and its argument together. Establish primitive meaning
 and why permitted composition gives the required result, including exceptional

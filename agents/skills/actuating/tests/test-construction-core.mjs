@@ -54,6 +54,18 @@ function check(src) {
   assert(core.includes('neither local-repair-first nor redesign is compulsory'));
   assert(core.includes('including `$universalist` for task-relevant semantic work'));
   assert(core.includes('independent evidence'));
+  for(const boundary of [
+    'When replacing, combining, reordering, sharing, or removing a construction',
+    'use the accepted source to determine which inputs, observations, and continuations the affected construction must support',
+    'Establish the required relationships in the actual admitted environments, callbacks, applications, and handlers',
+    'matching type names or isolated results alone do not establish interchangeability',
+    'When combining edits, check whether one changes a premise used to justify another',
+    'Re-establish affected reasoning on the assembled construction',
+    'reuse reasoning whose dependencies remain established',
+    'The existing [proof acceptance](#proof-acceptance) rules still govern required checks and completion credit',
+    'Preserve required joint observations with shared context',
+    'Distinguish a captured value, a fresh effect occurrence, and replay of an acquired response when observable'
+  ]) assert(core.includes(boundary),`lost composition boundary: ${boundary}`);
   // Skills carry no repository-specific content: no sentence opens with an all-caps
   // project label such as "NAME:", and no link points at a particular repository's
   // commits, pull requests, or issues.
@@ -204,9 +216,14 @@ function check(src) {
   assert.equal(policy.universalist_compilation.nomination_result_required,false);
   assert.equal(policy.universalist_compilation.nomination_is_executed_proof,false);
   assert.equal(policy.efficacy.policy_unit_tests_prove_model_efficacy,false);
-  assert.equal(contract.skill.source_fingerprint,'actuating-construction-core-v45');
+  assert.equal(contract.skill.source_fingerprint,'actuating-construction-core-v46');
   const clauses=Object.fromEntries(contract.clauses.map(c=>[c.clause_id,c]));
   assert(clauses['ACT-IMPLEMENT-ENTRY-001'].success_signals.some(s=>s.includes('without a fixed reasoning sequence')));
+  const initial=clauses['ACT-IMPLEMENT-ENTRY-001'];
+  assert(initial.success_signals.includes('primitive meanings and their composition are established under the source-required observation or refinement relation when replacing, combining, reordering, sharing, or removing a construction, including admitted higher-order contexts and required joint observations'));
+  assert(initial.success_signals.includes('combined edits check whether one changes a premise used to justify another; affected reasoning is re-established on the assembled construction, while reasoning whose dependencies remain established is reused under existing proof-acceptance rules'));
+  assert(initial.failure_signals.includes('combined edits retain justifications whose deciding premises another edit changes, or reopen reasoning whose dependencies remain established solely because edits were combined'));
+  assert(initial.failure_signals.includes('matching type names or isolated results alone are credited as interchangeability, or reused reasoning substitutes for required exact-head verification or completion credit'));
   assert(clauses['ACT-METANOETIC-ADMISSIBILITY-001'].success_signals.some(s=>s.includes('no required order relative to Universalist')));
   assert(clauses['ACT-UNIVERSALIST-COMPILATION-001'].success_signals.some(s=>s.includes('optional presentation')));
   const routeIds=new Set(contract.routes.map(r=>r.route_id));
@@ -279,7 +296,22 @@ const loose=phrase=>new RegExp(phrase.replace(/[.*+?^${}()|[\]\\]/g,'\\$&').repl
 const swap=(path,before,after)=>src=>{src[path]=src[path].replace(loose(before),after);};
 const append=(path,text)=>src=>{src[path]+=text;};
 const decisionMutation=fn=>jsonMutation('references/decision-contract.json',p=>fn(p.skill_decision_contract.clauses.find(c=>c.clause_id==='ACT-SIMULATION-001')));
+const initialMutation=fn=>jsonMutation('references/decision-contract.json',p=>fn(p.skill_decision_contract.clauses.find(c=>c.clause_id==='ACT-IMPLEMENT-ENTRY-001')));
 const mutations=[
+  ['concrete composition trigger lost',swap('construction.md','When replacing, combining, reordering, sharing, or removing a construction','When explicitly asked about composition')],
+  ['candidate chooses supported context',swap('construction.md','use the accepted source to determine which inputs, observations, and continuations','use the candidate to determine which inputs, observations, and continuations')],
+  ['incumbent observations become requirements',swap('construction.md','Establish the required relationships in the actual admitted environments','Preserve every incumbent observation in the actual admitted environments')],
+  ['isolated agreement proves interchangeability',swap('construction.md','matching type names or isolated results alone do not establish interchangeability','matching type names or isolated results establish interchangeability')],
+  ['combined edit premises unchecked',swap('construction.md','When combining edits, check whether one changes a premise used to justify another.','')],
+  ['affected reasoning left stale',swap('construction.md','Re-establish affected reasoning on the assembled construction','Retain affected reasoning from the separate edits')],
+  ['all reasoning reopened',swap('construction.md','reuse reasoning whose dependencies remain established','re-establish all reasoning after every edit')],
+  ['reasoning reuse transfers completion credit',swap('construction.md','The existing [proof acceptance](#proof-acceptance) rules still govern required checks and completion credit.','Reused reasoning transfers prior completion credit to the assembled construction.')],
+  ['joint observations dropped',swap('construction.md','Preserve required joint observations with shared context','Preserve isolated observations')],
+  ['effect occurrence distinction dropped',swap('construction.md','Distinguish a captured value, a fresh effect occurrence, and replay of an acquired response when observable.','')],
+  ['concrete composition signal dropped',initialMutation(c=>{c.success_signals=c.success_signals.filter(s=>!s.startsWith('primitive meanings and their composition'));})],
+  ['combined premise signal dropped',initialMutation(c=>{c.success_signals=c.success_signals.filter(s=>!s.startsWith('combined edits check'));})],
+  ['stale or needless rederivation signal dropped',initialMutation(c=>{c.failure_signals=c.failure_signals.filter(s=>!s.startsWith('combined edits retain'));})],
+  ['substituted completion credit signal dropped',initialMutation(c=>{c.failure_signals=c.failure_signals.filter(s=>!s.startsWith('matching type names'));})],
   ['caller dependency reintroduced',src=>{src['../universalist/SKILL.md']+='\nInside Actuating, load its workflow.\n';}],
   ['review weakening',jsonMutation('references/review-contract.json',p=>p.standard_convergence.required_consecutive_clean_attempts=4)],
   ['fixed cross-skill order',jsonMutation('references/review-contract.json',p=>p.construction_selection.metanoetic_before_universalist_when_triggered=true)],
