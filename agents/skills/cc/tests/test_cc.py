@@ -109,8 +109,9 @@ def readback(base: Path, kind: str, events, records=None, prompt=PROMPT, extra_t
         path.write_text(json_lines(stream), encoding="utf-8")
         args.extend(["--followup", str(path)])
     for index, followup_prompt in enumerate(followup_prompts):
-        path = tmp / f"followup-prompt-{index}.txt"
-        path.write_bytes(followup_prompt)
+        path = followup_prompt if isinstance(followup_prompt, Path) else tmp / f"followup-prompt-{index}.txt"
+        if not isinstance(followup_prompt, Path):
+            path.write_bytes(followup_prompt)
         args.extend(["--followup-prompt", str(path)])
     # sys.executable is the interpreter selected by the outer UV invocation.
     proc = subprocess.run([sys.executable, "-I", str(SCRIPT), *args],
@@ -654,7 +655,13 @@ def runtime_evidence(tmp):
         events = standard_events()
         events[0][key] = value
         expect(readback(tmp, "standard", events), error)
-    for version, error in [("2.1.340-beta.1", None), ("2.1.200-rc.1", "is not 2.1.287 or newer"),
+    current = standard_events()
+    current[1]["message"]["content"][0]["text"] = "`high effort → 8 inline angles → ≤10 findings`\n\n## Phase 1"
+    report = readback(tmp, "standard", current, target="-")
+    expect(report)
+    assert report["observed_level"] == "high" and report["recipe_parent_tool_use_id"] == FORK, report
+    for version, error in [("2.1.287", None), ("2.1.340+build.5", None), ("2.1.287-rc.0", "is not 2.1.287 or newer"),
+                           ("2.1.300abc", "is not 2.1.287 or newer"), ("2.1.340-beta.1", None), ("2.1.200-rc.1", "is not 2.1.287 or newer"),
                            ("2.1.340.1", "is not 2.1.287 or newer"), ("v2.1.340", "is not 2.1.287 or newer")]:
         events = standard_events()
         events[0]["claude_code_version"] = version
@@ -677,12 +684,17 @@ def runtime_evidence(tmp):
         event["parent_tool_use_id"] = "toolu_verifier"
     early = standard_events()
     early = [early[0], early[2], early[3], early[1], early[4]]
+    main_thread = standard_events()
+    for event in main_thread[2:4]:
+        event["parent_tool_use_id"] = None
+    report = readback(tmp, "standard", main_thread)
+    assert report["diff_reads"][0]["reason"] == "requested by the main conversation, not the forked /review thread", report
     recipeless = standard_events()
     del recipeless[1]
     subagent = as_followup(standard_events())
     subagent[1]["parent_tool_use_id"] = subagent[2]["parent_tool_use_id"] = "toolu_sub"
     for stream, followups, reason in [
-            (events, [], "requested outside the forked /review thread, such as by a subagent"),
+            (events, [], "requested by a subagent, not the forked /review thread"),
             (early, [], "requested before the /review recipe"), (recipeless, [], "no /review recipe precedes it"),
             (standard_events(command="ls -la"), [subagent], "requested by a subagent, not the resumed session")]:
         report = readback(tmp, "standard", stream, followups=followups)
@@ -691,8 +703,12 @@ def runtime_evidence(tmp):
     events[2]["message"]["content"][0]["input"] = {"command": "git log -p"}
     report = readback(tmp, "standard", events)
     assert report["other_bash_requests"] == [{"tool_use_id": "diff-1", "command": "git log -p",
-        "outside": "requested outside the forked /review thread, such as by a subagent"}], report
+        "outside": "requested by a subagent, not the forked /review thread"}], report
     assert "resume the same session" in report["problems"][-1], report
+    report = readback(tmp, "standard", standard_events(command="ls -la"), followups=[as_followup(standard_events())],
+                      followup_prompts=[tmp / "missing-prompt.txt"])
+    expect(report, "cannot read follow-up prompt")
+    assert not any("cannot clear" in p for p in report["problems"]), report
     empty = tmp / "empty-reference.patch"
     empty.write_bytes(b"")
     report = readback(tmp, "standard", standard_events(command="ls -la"), reference_patch=empty)
@@ -899,6 +915,13 @@ def delivery_git_report(tmp):
     bare_followup = as_followup(standard_events(target=target, command=shlex.join(["git", *bare_args]),
                                                 output=bare_output))
     compare(observe("grep-bare", grep_reference, ["same.txt"], [bare_followup]),
+            expected({name: (len(lines), len(lines) if name in grep_files else 0)
+                      for name, lines in grep_reference.items()}))
+    plain_args = ["grep", "-C1", "needle_match", "--", *grep_files]
+    plain_output = git(*plain_args)
+    assert plain_output.startswith("grep space.txt-before_context_0"), plain_output
+    plain = as_followup(standard_events(target=target, command=shlex.join(["git", *plain_args]), output=plain_output))
+    compare(observe("grep-unnumbered", grep_reference, ["same.txt"], [plain]),
             expected({name: (len(lines), len(lines) if name in grep_files else 0)
                       for name, lines in grep_reference.items()}))
     rooted = "\n".join(prefix + line for prefix, line in zip((f"{repo}/", "./", f"{repo}/"),
@@ -1113,7 +1136,7 @@ def main():
         assert report["followups"][0]["prompt_delivery"] == "verified", report
         for records, prompts in [(transcript(), [ask]), (typed, [ask + b" "])]:
             expect(readback(tmp, "custom", custom_events(), records, followups=[custom_events()],
-                            followup_prompts=prompts), "follow-up 1: transcript user message 2 is not the follow-up")
+                            followup_prompts=prompts), "follow-up 1: the follow-up prompt is not a later typed transcript message")
         standard_typed = [{"type": "user", "sessionId": SID, "message": {"content": "/review high x..HEAD"}},
                           {"type": "user", "sessionId": SID, "message": {"content": [{"type": "tool_result"}]}},
                           {"type": "user", "sessionId": SID, "message": {"content": ask.decode()}}]
@@ -1124,6 +1147,23 @@ def main():
         report = readback(tmp, "standard", standard_events(), followups=[as_followup(standard_events())])
         expect(report)
         assert report["followups"][0]["prompt_delivery"] == "unverified", report
+        ask2 = b"Now reassess finding 3.\n"
+        compacted = typed + [{"type": "user", "sessionId": SID, "isCompactSummary": True, "isVisibleInTranscriptOnly": True,
+                              "message": {"content": "This session is being continued from a previous conversation."}},
+                             {"type": "user", "sessionId": SID, "message": {"content": [{"type": "text", "text": ask2.decode()}]}}]
+        report = readback(tmp, "custom", custom_events(), compacted, followups=[custom_events(), custom_events()],
+                          followup_prompts=[ask, ask2])
+        expect(report)
+        assert [entry["prompt_delivery"] for entry in report["followups"]] == ["verified", "verified"], report
+        expect(readback(tmp, "custom", custom_events(), compacted, followups=[custom_events(), custom_events()],
+                        followup_prompts=[ask2, ask]), "follow-up 2: the follow-up prompt is not a later typed")
+        foreign = standard_typed + [{"type": "user", "sessionId": "other", "message": {"content": "x"}}]
+        expect(readback(tmp, "standard", standard_events(), foreign, followups=[as_followup(standard_events())],
+                        followup_prompts=[ask]), "transcript mixes sessions")
+        report = readback(tmp, "custom", custom_events(), None, followups=[custom_events()], followup_prompts=[ask])
+        assert sum("no unique transcript" in p for p in report["problems"]) == 1, report  # one transcript reader
+        surrogate = [{"type": "user", "sessionId": SID, "message": {"content": "\ud83d prompt"}}]
+        expect(readback(tmp, "custom", custom_events(), surrogate), "first transcript message is not the exact prompt")
         unpaired = subprocess.run([sys.executable, "-I", str(SCRIPT), "standard", "events", SID, MODEL, BASE, "high",
                                    "out", "--followup", "a", "--followup", "b", "--followup-prompt", "p"],
                                   capture_output=True, text=True)

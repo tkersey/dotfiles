@@ -36,9 +36,9 @@ the reviewer, each stream up to its first result. It reports text presence,
 never a hold. Optional same-session follow-up streams can supply a
 missing observation while retaining the original result and every supplemental
 result separately. With --followup-prompt (one per --followup), each prompt must
-be the next typed user message in the session transcript. Reference provenance,
-Git subject, recovery authorization, reassessment, and coverage remain with the
-caller.
+be a typed user message after the previous one in the session-bound transcript.
+Reference provenance, Git subject, recovery authorization, reassessment, and
+coverage remain with the caller.
 Without a successful read, other Bash command requests are retained as
 other_bash_requests without inferring which programs they executed. The hold
 names the same-session follow-up remedy only when no other hold remains, since
@@ -73,6 +73,7 @@ FIND_ACTIONS = {"-exec", "-execdir", "-ok", "-okdir", "-delete", "-fprint", "-fp
                 "-fls", "-printf"}
 # Prompt-started forked-command messages reach stream-json from 2.1.287 (headless docs).
 MIN_VERSION = (2, 1, 287)
+SEMVER = re.compile(r"(\d+)\.(\d+)\.(\d+)(-[0-9A-Za-z.-]+)?(\+[0-9A-Za-z.-]+)?\Z")
 FORKED = "forked-command-"
 # Launch inventories as init reports them; init names the Agent tool `Task`.
 INVENTORY = {"standard": {"Read", "Grep", "Glob", "Bash", "Agent", "Task"},
@@ -84,6 +85,11 @@ GREP_PREFIX = re.compile(r"(?=(:[0-9]+:|-[0-9]+-))")
 BARE_PREFIX = re.compile(r"[0-9]+[:-]")
 GIT_ESCAPE = re.compile(rb'\\([0-3][0-7]{2}|[abfnrtv\\"])')
 GIT_ESCAPES = dict(zip(b'abfnrtv\\"', b'\a\b\f\n\r\t\v\\"'))
+
+
+def raw(text: str) -> bytes:
+    """UTF-8 bytes of JSON-decoded text, which may hold lone surrogates."""
+    return text.encode("utf-8", "surrogatepass")
 
 
 def text_of(content) -> str:
@@ -180,9 +186,9 @@ def launch_runtime(events: list[dict], kind: str, problems: list[str]) -> dict:
     if init is None:
         return {}
     version, tools = init.get("claude_code_version"), init.get("tools")
-    release = re.match(r"(\d+)\.(\d+)\.(\d+)(?![\d.])", version) if isinstance(version, str) else None
-    parsed = tuple(map(int, release.groups())) if release else None
-    if parsed is None or parsed < MIN_VERSION:
+    release = SEMVER.match(version) if isinstance(version, str) else None
+    parsed = (*map(int, release.groups()[:3]), release[4] is None) if release else None
+    if parsed is None or parsed < (*MIN_VERSION, True):
         problems.append(f"init claude_code_version {version!r} is not 2.1.287 or newer")
     if not isinstance(tools, list) or not all(isinstance(tool, str) for tool in tools):
         problems.append(f"init tools {tools!r} is not a list of tool names")
@@ -199,12 +205,9 @@ def launch_runtime(events: list[dict], kind: str, problems: list[str]) -> dict:
 def git_path(text: str) -> str:
     """Decode Git's C-quoted pathname bytes without changing unquoted whitespace."""
     if text.startswith('"') and text.endswith('"'):
-        try:
-            quoted = text[1:-1].encode("utf-8")
-        except UnicodeEncodeError:  # lone surrogates from tool output are not Git's quoting
-            return text
-        raw = GIT_ESCAPE.sub(lambda m: bytes([int(m[1], 8) if len(m[1]) == 3 else GIT_ESCAPES[m[1][0]]]), quoted)
-        return raw.decode("utf-8", errors="surrogateescape")
+        decoded = GIT_ESCAPE.sub(lambda m: bytes([int(m[1], 8) if len(m[1]) == 3 else GIT_ESCAPES[m[1][0]]]),
+                                 raw(text[1:-1]))
+        return decoded.decode("utf-8", errors="surrogateescape")
     return text
 
 
@@ -246,15 +249,16 @@ def output_text(line: str, paths: set[str]) -> tuple[str, ...]:
     read = READ_PREFIX.match(line)
     if read:
         return line, line[read.end():]
-    candidates = [(match.start(), match.start() + len(match[1]))
-                  for match in GREP_PREFIX.finditer(line) if match.start()]
-    known = [(start, end) for start, end in candidates if git_path(line[:start]) in paths]
+    # A grep line names a changed file, then ':' or '-', then an optional line number.
+    known = [number.end() if (number := BARE_PREFIX.match(line, index + 1)) else index + 1
+             for index, char in enumerate(line) if char in ":-" and index and git_path(line[:index]) in paths]
     if known:
-        return (line, line[known[0][1]:]) if len(known) == 1 else (line,)
+        return (line, line[known[0]:]) if len(known) == 1 else (line,)
+    candidates = [match.start() + len(match[1]) for match in GREP_PREFIX.finditer(line) if match.start()]
     bare = BARE_PREFIX.match(line)
     if bare:
         return line, line[bare.end():]
-    return (line, line[candidates[0][1]:]) if len(candidates) == 1 else (line,)
+    return (line, line[candidates[0]:]) if len(candidates) == 1 else (line,)
 
 
 def delivery(reference: str, streams: list[list[dict]]) -> dict:
@@ -482,8 +486,9 @@ def standard(events: list[dict], target: str, level: str, problems: list[str], f
     # Reads and delivery stop at each stream's first result, which is the response being judged.
     sessions = [session] + [stream[:next((i for i, e in enumerate(stream) if e.get("type") == "result"), len(stream))]
                             for stream in followups]
+    # The recipe names its target only when one was passed; its effort header is always present.
     start = next((i for i, e in enumerate(session) if e.get("type") == "user" and isinstance(e.get("message"), dict)
-                  and "Review target:" in text_of(e["message"].get("content"))), None)
+                  and ("Review target:" in (text := text_of(e["message"].get("content"))) or LEVEL.search(text))), None)
     carrier = session[start] if start is not None else None
     fork = carrier.get("parent_tool_use_id") if carrier is not None else None
 
@@ -496,7 +501,10 @@ def standard(events: list[dict], target: str, level: str, problems: list[str], f
             return "no /review recipe precedes it"
         if index <= start:
             return "requested before the /review recipe"
-        return None if parent == fork else "requested outside the forked /review thread, such as by a subagent"
+        if parent == fork:
+            return None
+        return ("requested by the main conversation, not the forked /review thread" if parent is None
+                else "requested by a subagent, not the forked /review thread")
 
     recipe = text_of(carrier["message"].get("content")) if carrier else None
     evidence = {"diff_reads": []}
@@ -600,25 +608,34 @@ def transcript_path(sid: str) -> Path | None:
     return matches[0] if len(matches) == 1 else None
 
 
-def custom(result: dict, sid: str, prompt: bytes, problems: list[str]) -> dict:
-    evidence = {"prompt_sha256": hashlib.sha256(prompt).hexdigest()}
+def transcript(sid: str, problems: list[str]) -> tuple[str, list[str]] | None:
+    """The session transcript and its typed user messages in order, from the launch prompt on.
+
+    stream-json does not echo a piped prompt, so these are the delivery evidence.
+    """
     try:
         path = transcript_path(sid)
     except (OSError, ValueError) as exc:
-        path = None
         problems.append(f"cannot locate transcript: {exc}")
+        return None
     if path is None:
         problems.append(f"no unique transcript for {sid}")
-    else:
-        evidence["transcript"] = str(path)
-        records = load_events(path, problems, "transcript")
-        sessions = [r["sessionId"] for r in records if "sessionId" in r]
-        if not sessions or any(session != sid for session in sessions):
-            problems.append("transcript mixes sessions or has no session identity")
-        first = next((r for r in records if r.get("type") == "user" and not r.get("isMeta")), None)
-        message = first.get("message") if first else None
-        delivered = text_of(message.get("content")) if isinstance(message, dict) else None
-        if delivered is None or delivered.encode() != prompt:
+        return None
+    records = load_events(path, problems, "transcript")
+    sessions = [r["sessionId"] for r in records if "sessionId" in r]
+    if not sessions or any(session != sid for session in sessions):
+        problems.append("transcript mixes sessions or has no session identity")
+    typed = [text_of(r["message"].get("content")) for r in records
+             if r.get("type") == "user" and not r.get("isMeta") and not r.get("isSidechain")
+             and isinstance(r.get("message"), dict) and not any(part.get("type") == "tool_result" for part in parts_of(r))]
+    return str(path), typed
+
+
+def custom(result: dict, prompt: bytes, located: tuple[str, list[str]] | None, problems: list[str]) -> dict:
+    evidence = {"prompt_sha256": hashlib.sha256(prompt).hexdigest()}
+    if located is not None:
+        evidence["transcript"], typed = located
+        if not typed or raw(typed[0]) != prompt:
             problems.append("first transcript message is not the exact prompt: delivery unverified")
     output = result.get("structured_output")
     if not isinstance(output, dict):
@@ -627,26 +644,12 @@ def custom(result: dict, sid: str, prompt: bytes, problems: list[str]) -> dict:
     return evidence
 
 
-def transcript_prompts(sid: str, problems: list[str]) -> list[str] | None:
-    """The session's typed user messages in order: the launch prompt, then each follow-up prompt."""
-    try:
-        path = transcript_path(sid)
-    except (OSError, ValueError) as exc:
-        problems.append(f"cannot locate transcript: {exc}")
-        return None
-    if path is None:
-        problems.append(f"no unique transcript for {sid}")
-        return None
-    return [r["message"]["content"] for r in load_events(path, problems, "transcript")
-            if r.get("type") == "user" and not r.get("isMeta") and not r.get("isSidechain")
-            and isinstance(r.get("message"), dict) and isinstance(r["message"].get("content"), str)]
-
-
-def followup_streams(paths: list[str], kind: str, sid: str, model: str, problems: list[str],
-                     report: dict, prompt_paths: list[str]) -> list[list[dict]]:
+def followup_streams(paths: list[str], kind: str, sid: str, model: str, problems: list[str], report: dict,
+                     prompts: list[bytes | None], located: tuple[str, list[str]] | None) -> list[list[dict]]:
     """Check each same-session follow-up stream on its own and report it under followups."""
-    # stream-json does not echo a piped prompt, so the transcript is the delivery evidence.
-    typed = transcript_prompts(sid, problems) if prompt_paths else None
+    # Each prompt is a later typed message than the previous one; runtime records such as
+    # compaction summaries may sit between them.
+    typed, position = (located[1] if located else []), 0
     streams = []
     for path in paths:
         issues = []
@@ -660,18 +663,12 @@ def followup_streams(paths: list[str], kind: str, sid: str, model: str, problems
         elif not isinstance(supplemental.get("result"), str) or not supplemental["result"].strip():
             issues.append("no nonempty follow-up result text in the terminal result")
         entry["prompt_delivery"] = "unverified"
-        if prompt_paths:
-            number = len(streams) + 1
-            try:
-                prompt = Path(prompt_paths[number - 1]).read_bytes()
-            except OSError as exc:
-                prompt = None
-                issues.append(f"cannot read follow-up prompt: {exc}")
-            delivered = typed[number] if typed is not None and len(typed) > number else None
-            if prompt is not None and delivered is not None and delivered.encode("utf-8", "surrogatepass") == prompt:
-                entry["prompt_delivery"] = "verified"
+        if prompts and (prompt := prompts[len(streams)]) is not None:
+            match = next((index for index in range(position + 1, len(typed)) if raw(typed[index]) == prompt), None)
+            if match is None:
+                issues.append("the follow-up prompt is not a later typed transcript message: delivery unverified")
             else:
-                issues.append(f"transcript user message {number + 1} is not the follow-up prompt: delivery unverified")
+                position, entry["prompt_delivery"] = match, "verified"
         problems.extend(f"follow-up {len(streams) + 1}: {issue}" for issue in issues)
         streams.append(stream)
         report.setdefault("followups", []).append(entry)
@@ -696,27 +693,37 @@ def main() -> None:
     else:
         events_path, sid, model, prompt_path, out = args[:5]
     problems: list[str] = []
+    # Caller-argument problems are fixed without the session, so they never block its remedy.
+    argument: list[str] = []
+    prompts: list[bytes | None] = []
+    for path in prompt_paths:
+        try:
+            prompts.append(Path(path).read_bytes())
+        except OSError as exc:
+            prompts.append(None)
+            argument.append(f"cannot read follow-up prompt: {exc}")
     events = load_events(Path(events_path), problems)
     result = common(events, sid, model, problems)
     report = {"kind": kind, "session_id": sid, "model": model,
               "runtime": launch_runtime(events, kind, problems), **result_evidence(result)}
+    located = transcript(sid, problems) if kind == "custom" or prompt_paths else None
     if kind == "standard":
         if not isinstance(result.get("result"), str) or not result["result"].strip():
             problems.append("no nonempty native result text in the terminal result")
-        reference, argument = None, []
+        reference = None
         if reference_path is not None:
             report["reference_patch"], reference = load_reference_patch(Path(reference_path), target, argument)
-        followups = followup_streams(followup_paths, kind, sid, model, problems, report, prompt_paths)
+        followups = followup_streams(followup_paths, kind, sid, model, problems, report, prompts, located)
         report.update(standard(events, target, level, problems, followups, reference))
-        problems.extend(argument)
     else:
         try:
             prompt = Path(prompt_path).read_bytes()
         except OSError as exc:
             prompt = b""
             problems.append(f"cannot read prompt: {exc}")
-        report.update(custom(result, sid, prompt, problems))
-        followup_streams(followup_paths, kind, sid, model, problems, report, prompt_paths)
+        report.update(custom(result, prompt, located, problems))
+        followup_streams(followup_paths, kind, sid, model, problems, report, prompts, located)
+    problems.extend(argument)
     report.update(ok=not problems, problems=problems)
     Path(out).write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8", errors="backslashreplace")
     if problems:

@@ -227,15 +227,17 @@ capture or its provenance is unavailable, omit the option and use the existing
 follow-up route below. Do not introduce an unsandboxed replay or widen permissions.
 
 For an explicitly bound current-diff review, omit the CLI target and pass `-` as
-the helper's target instead of `$base..HEAD`.
+the helper's target instead of `$base..HEAD`; the recipe then has no target line and
+is recognized by its effort header.
 
 [readback.py](scripts/readback.py) writes the evidence and every problem, and
 exits nonzero (hold) unless all of these hold:
 
 - Init and result belong to `$sid` and the selected model; the run succeeded;
   `modelUsage` names only that model (no fallback). Each stream's first init,
-  original or follow-up, reports Claude Code 2.1.287 or newer, only tools from the
-  launch inventory (init names the Agent tool `Task`), `permissionMode: dontAsk`,
+  original or follow-up, reports Claude Code 2.1.287 or newer (a pre-release precedes
+  its release), only tools from the launch inventory (init names the Agent tool
+  `Task`), `permissionMode: dontAsk`,
   and no MCP servers. These facts and the loaded plugins are retained under
   `runtime`; plugins are evidence for the caller's managed-policy review, not a
   check (observed: managed plugins load under `--restricted`, and a resume loaded
@@ -301,8 +303,8 @@ stream up to its first result. A subagent's own tool results do not count; its
 answer to the reviewer does. It decodes Git's
 quoted paths, including `diff.noprefix` headers, and preserves spaces, rename
 destinations, and deletion paths. Read line numbers, grep match/context prefixes
-with or without a path (the Grep tool omits it for a one-file search), and diff
-markers are removed. Known
+with or without a path (the Grep tool omits it for a one-file search) or a line
+number, and diff markers are removed. Known
 reference paths (including rename sources, their trailing parts for searches below
 the session directory, and absolute paths under the stream's init directory)
 disambiguate grep prefixes; unresolved ambiguous prefixes remain
@@ -426,9 +428,10 @@ Confidence is not evidence.
   ```
 
   stream-json does not echo a piped prompt, so with `--followup-prompt` (one per
-  `--followup`, same order) readback requires each prompt's exact bytes as the next
-  typed user message in the session transcript and reports `prompt_delivery:
-  verified`; without it `prompt_delivery` is `unverified` and the bound resume
+  `--followup`, same order) readback requires each prompt's exact bytes as a typed
+  user message after the previous prompt in the session-bound transcript (runtime
+  records such as compaction summaries may sit between them) and reports
+  `prompt_delivery: verified`; without it `prompt_delivery` is `unverified` and the bound resume
   invocation is the only delivery evidence.
 
   Repeat `--followup` in execution order only within the caller's recovery budget.
