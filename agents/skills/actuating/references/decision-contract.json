@@ -522,6 +522,7 @@
         "required_artifacts": [
           "classification of each program or library the Goal builds or changes as stateful or concurrent, or a pure library, by its properties rather than its repository, language, or size",
           "for stateful or concurrent software: source-cited executable laws, a lifecycle table per stored-state machine with a mechanical rest-reachability check and simulator-asserted table membership, and a seeded deterministic simulator over the real code with pinned seeds and traces",
+          "two-way law coverage: every trace-dependent binding law cited by a simulator-checked executable law, or for pure libraries by a property test, and every executable law citing a binding law or the construction rule it enforces",
           "a slow, obviously correct oracle that shares none of the deciding logic it checks, for every optimization the Goal builds or changes",
           "for pure libraries: property-based tests of their laws; for fail-fast one-shot tools also a fault-injection test at every effect seam",
           "for each fresh sweep: its seeds, generator version, and the event kinds it produced",
@@ -533,6 +534,7 @@
           "the simulator runs the real code from one seed, owns time, randomness, scheduling, and outside services, runs embedded storage for real, fakes services in other processes with contract-checked fakes, yields the same trace for the same seed, injects the disturbances the requirements say the system survives, and checks every law after every event and rest at quiescence",
           "when no simulator exists, the smallest one covering the changed paths, their nondeterminism, and the laws the Goal establishes or could break is built; a changed module without a trace-dependent law keeps its ordinary tests and runs in the simulator as real code",
           "a mechanical check establishes that every stored state reaches rest through ordinary inputs, and the simulator observes no transition outside the table",
+          "law coverage holds in both directions before reviewability, executable where the accepted source has stable clause identifiers in the repository; coverage is not taken as proof that a check is adequate",
           "optimizations agree with independent slow counterparts on required observations in tests and in the simulator",
           "construction rules govern the state, transitions, and interfaces the Goal builds or changes as construction means, with retained history, required compatibility spellings, and prediction surfaces bounded as stated",
           "every confirmed defect is re-injected before a head carrying its fix becomes reviewable or is published; a miss first extends the generator or oracle; every re-injected defect pins a seed and trace that fail on the defective version and pass with the fix",
@@ -550,7 +552,9 @@
           "a confirmed defect's fix enters a reviewable or published head before re-injection, a scripted replay stands in for a generator or oracle extension, or a defect the current simulator does not reach is called outside the simulated behavior",
           "screen results are recorded as credit_disposition or credited as review lenses, confirmations, or clean counts, or a screen finding triggers the initial evidence barrier",
           "analyze builds or extends a simulator or runs mutating controls",
-          "runtime guidance cites one repository's history as policy"
+          "runtime guidance cites one repository's history as policy",
+          "a trace-dependent binding law has no executable law, or a law citing neither a binding law nor a construction rule gates the code",
+          "the simulator law inventory is added to review requests instead of being checked against the source binding"
         ],
         "rationale": "Reviews and example tests sample traces; a seeded simulator over the real code explores them and keeps every caught defect caught, and re-injection measures whether it does. A changeset standard that observes only a summary of the patch misses its assigned inquiry, and one complete reading before the wide initial inventory spares an invalidated head that cost. tests/construction-comparison.md#simulation-first-construction defines the held-out comparison that informs revision of these rules."
       }

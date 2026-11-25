@@ -106,6 +106,16 @@ function check(src) {
     'a seam outside the authorized path scope is a [source-binding](#source-binding) blocker',
     'In `analyze`, classify and judge against these rules without building, extending, or running mutating controls'])
     assert(simulation.includes(rule),`lost simulation rule: ${rule}`);
+  // Law coverage is checked against the source binding in both directions, not by
+  // handing reviewers the simulator's law inventory.
+  for(const rule of ['Every trace-dependent law in the [source binding](#source-binding) is cited by an executable law the simulator checks',
+    'every executable law cites a binding law or the [construction rule](#construction-rules) it enforces',
+    'A binding law without one is missing required verification',
+    'is a strengthening without source authority, which must not gate the code',
+    'Where the accepted source has stable clause identifiers in the repository, make this check executable',
+    'Coverage shows that each law is checked, not that its check is adequate',
+    'with the same two-way coverage against the binding'])
+    assert(simulation.includes(rule),`lost law coverage rule: ${rule}`);
   const rules=normalized(section(skill,'Construction rules'));
   for(const rule of ['Apply these rules to the stored state, transitions, and interfaces the Goal builds or changes',
     'They are construction means, not source requirements: a violation is a liability only through a required law it breaks',
@@ -187,6 +197,8 @@ function check(src) {
   assert(sim.success_signals.some(s=>s.includes('every re-injected defect pins a seed and trace')),'pinning limited to misses');
   assert(sim.required_artifacts.some(s=>s.includes('a pinned seed and trace that fail on the defective version and pass with the fix')));
   assert(sim.failure_signals.some(s=>s.includes('screen results are recorded as credit_disposition')));
+  assert(sim.required_artifacts.some(s=>s.startsWith('two-way law coverage')),'lost law coverage artifact');
+  assert(sim.failure_signals.some(s=>s.startsWith('a trace-dependent binding law has no executable law')));
   assert(!anecdote.test(sim.rationale) && !/\b\d+ of \d+\b/.test(sim.rationale),'repository-specific rationale');
   for(const c of contract.clauses) {
     for(const id of c.trigger_refs) assert(triggerIds.has(id),id);
@@ -216,6 +228,7 @@ function check(src) {
   const simulationComparison=normalized(section(comparison,'Simulation-first construction'));
   for(const control of ['authored, not model-replayed','5939b6c039478a5fb932459bab4c5c2bee5edd19',
     'informs their revision, not their current force','the implementing run never sees them',
+    'two-way coverage must flag it before review',
     'Retain all attempts in the denominators',
     'Report simulator construction, seed budget, and CI time separately from per-defect time to first detection',
     'A tie or underpowered result is inconclusive','adds no delivery gate or permission for paid model runs'])
@@ -246,6 +259,13 @@ const mutations=[
   ['repository history as policy',append('construction.md','\nPROJECTX: this project justified the rule.\n')],
   ['repository commit link',append('references/counterexample-guided-normalization.md','\nSee [abc1234](https://github.com/example/project/commit/abc1234).\n')],
   ['repository history in rationale',decisionMutation(c=>{c.rationale+=' The simulator caught 3 of 4 defects there.';})],
+  ['one-way law coverage',swap('construction.md',', and every executable law cites a binding law or the [construction rule](#construction-rules) it enforces','')],
+  ['coverage gap tolerated',swap('construction.md','A binding law without one is missing required verification.','A binding law without one may be covered later.')],
+  ['unauthorized law gates code',swap('construction.md','which must not gate the code','which may gate the code')],
+  ['coverage claimed as adequacy',swap('construction.md','Coverage shows that each law is checked, not that its check is adequate','Coverage shows that each check is adequate')],
+  ['pure library laws uncovered',swap('construction.md','with the same two-way coverage against the binding, generators','with generators')],
+  ['coverage artifact dropped',decisionMutation(c=>{c.required_artifacts=c.required_artifacts.filter(s=>!s.startsWith('two-way law coverage'));})],
+  ['missing-law comparison dropped',swap('tests/construction-comparison.md','two-way coverage must flag it before review','reviewers may notice it')],
   ['simulator made optional',swap('construction.md','the construction includes','the construction may include')],
   ['sweep made optional',swap('construction.md','Record each sweep','The fresh sweep is optional. Record each sweep')],
   ['one-shot tools forced into simulation',swap('construction.md','So is a one-shot tool whose effects only fail fast','So is no one-shot tool, even one whose effects only fail fast')],

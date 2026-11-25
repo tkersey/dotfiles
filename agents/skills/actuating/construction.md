@@ -182,7 +182,18 @@ For stateful or concurrent software, the construction includes:
 
 - **Executable laws.** Each invariant is a function that tests and the simulator
   call. It carries, as data, the accepted-source location it encodes, such as a
-  requirement clause or user instruction, and its failure report names it.
+  requirement clause or user instruction, or the construction rule it enforces,
+  and its failure report names it.
+- **Two-way law coverage.** Every trace-dependent law in the
+  [source binding](#source-binding) is cited by an executable law the simulator
+  checks, and every executable law cites a binding law or the
+  [construction rule](#construction-rules) it enforces. A binding law without one
+  is missing required verification. A law that cites neither either reveals a
+  binding law to add from the source or is a strengthening without source
+  authority, which must not gate the code. Where the accepted source has stable clause identifiers
+  in the repository, make this check executable. Coverage shows that each law is
+  checked, not that its check is adequate;
+  [re-injection](counterexamples.md#re-inject-confirmed-defects) calibrates that.
 - **Lifecycle tables.** Each stored-state machine has an explicit table of its
   states and [ordinary transitions](#construction-rules), with a mechanical check,
   at compile time where the language allows, that every state reaches rest through
@@ -216,8 +227,9 @@ drivers, and daemons:
 - It pins each failure as its seed and recorded event trace. The trace replays as
   a regression even after a generator change alters what the seed produces.
 
-Pure libraries use property-based tests of their laws, with generators that reach
-the source domain and its boundaries, and the same optimization oracles. A one-shot
+Pure libraries use property-based tests of their laws, with the same two-way
+coverage against the binding, generators that reach the source domain and its
+boundaries, and the same optimization oracles. A one-shot
 tool also injects a failure at every effect seam and checks that the failure is
 reported and leaves nothing a later run reads.
 

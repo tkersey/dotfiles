@@ -809,6 +809,7 @@ comparison informs their revision, not their current force.
 | Cross-boundary reference | A withheld transfer across several owners leaves a reference the receiver cannot resolve. Pair with a transfer that carries values. |
 | Incremental optimization | A withheld incremental index diverges from its rebuild after a particular event sequence. Pair with a sequence where both agree. |
 | Fail-fast one-shot tool | Fault injection at each effect seam suffices; building a simulator here spends cost without benefit. Pair with a near-identical tool that resumes from a state file. |
+| Missing law | A withheld trace-dependent requirement has no executable law while every existing law passes; two-way coverage must flag it before review. Pair with a requirement that is not trace-dependent and is correctly decided by an ordinary test. |
 
 An independent evaluator fixes each family's withheld defects before model runs;
 the implementing run never sees them. Score held-out defects caught before review,
