@@ -4,6 +4,7 @@ usage:
   uv run --no-project python -I readback.py standard EVENTS SESSION_ID MODEL TARGET LEVEL OUT
       [--reference-patch PATCH] [--followup EVENTS]...
   uv run --no-project python -I readback.py custom   EVENTS SESSION_ID MODEL PROMPT_FILE OUT
+      [--followup EVENTS]...
 
 EVENTS is captured `--output-format stream-json --verbose` stdout. MODEL is the
 full selected model ID. TARGET is the target passed to /review (`<base>..HEAD`),
@@ -20,7 +21,8 @@ The standard read gate recognizes direct Bash `git diff` calls against TARGET
 and bounded `;`/`&&` chains, not arbitrary shell programs. Shell success proves
 only the final && group's completion; earlier semicolon groups remain unknown.
 A request needs a later completed tool_result with the same tool ID; in the
-original stream it must come from the forked /review thread after its recipe.
+original stream it must come from the forked /review thread after its recipe, and
+in a follow-up from the resumed session's main thread, not a subagent.
 
 With --reference-patch, the helper compares observed output with a complete UTF-8
 patch supplied by the caller; it never runs Git. The caller must establish that
@@ -29,9 +31,9 @@ for the same frozen subject. A target read that precedes `;` counts as patch
 delivery only when its output contains the whole reference at line boundaries,
 allowing omission of one final newline. The target command's completion remains
 unknown. Patch markers alone never count. A reference also yields delivery: per
-file, how many distinctive changed lines appear in any tool result of the
-original or follow-up streams, each up to its first result. It reports text
-presence, never a hold. Optional same-session follow-up streams can supply a
+file, how many distinctive changed lines appear in a tool result that reached
+the reviewer, each stream up to its first result. It reports text presence,
+never a hold. Optional same-session follow-up streams can supply a
 missing observation while retaining the original result and every supplemental
 result separately. Reference provenance, Git subject, recovery
 authorization, reassessment, and coverage remain with the caller.
@@ -180,8 +182,9 @@ def launch_runtime(events: list[dict], kind: str, problems: list[str]) -> dict:
               and re.fullmatch(r"\d+\.\d+\.\d+", version) else None)
     if parsed is None or parsed < MIN_VERSION:
         problems.append(f"init claude_code_version {version!r} is not 2.1.287 or newer")
-    if (not isinstance(tools, list) or not all(isinstance(tool, str) for tool in tools)
-            or not set(tools) <= INVENTORY[kind]):
+    if not isinstance(tools, list) or not all(isinstance(tool, str) for tool in tools):
+        problems.append(f"init tools {tools!r} is not a list of tool names")
+    elif not set(tools) <= INVENTORY[kind]:
         problems.append(f"init tools {tools!r} exceed the {kind} launch inventory")
     if init.get("permissionMode") != "dontAsk":
         problems.append(f"init permissionMode {init.get('permissionMode')!r} is not dontAsk")
@@ -478,12 +481,24 @@ def standard(events: list[dict], target: str, level: str, problems: list[str], f
     start = next((i for i, e in enumerate(session) if e.get("type") == "user" and isinstance(e.get("message"), dict)
                   and "Review target:" in text_of(e["message"].get("content"))), None)
     carrier = session[start] if start is not None else None
+    fork = carrier.get("parent_tool_use_id") if carrier is not None else None
+
+    def outside(source: int, index: int) -> str | None:
+        """Why an event did not reach the reviewer: a subagent's or pre-recipe event did not."""
+        parent = sessions[source][index].get("parent_tool_use_id")
+        if source:
+            return None if parent is None else "requested by a subagent, not the resumed session"
+        if carrier is None:
+            return "no /review recipe precedes it"
+        if index <= start:
+            return "requested before the /review recipe"
+        return None if parent == fork else "requested outside the forked /review thread, such as by a subagent"
+
     recipe = text_of(carrier["message"].get("content")) if carrier else None
     evidence = {"diff_reads": []}
     if recipe is None:
         problems.append("no expanded /review recipe in the session")
     else:
-        fork = carrier.get("parent_tool_use_id")
         evidence["recipe_parent_tool_use_id"] = fork
         if not (isinstance(fork, str) and fork.startswith(FORKED)):
             problems.append(f"recipe parent_tool_use_id {fork!r} does not mark a prompt-started forked command")
@@ -506,7 +521,8 @@ def standard(events: list[dict], target: str, level: str, problems: list[str], f
             if observation is None:
                 if request.get("name") == "Bash" and isinstance(command, str):
                     others.append({"tool_use_id": request.get("id"), "command": command,
-                                   **({"followup": source} if source else {})})
+                                   **({"followup": source} if source else {}),
+                                   **({"outside": reason} if (reason := outside(source, index)) else {})})
                 continue
             shape, completion_bound, difference_exit = observation
             tool_id = request.get("id")
@@ -516,10 +532,8 @@ def standard(events: list[dict], target: str, level: str, problems: list[str], f
             if source:
                 read["followup"] = source
             evidence["diff_reads"].append(read)
-            # A verifier subagent's or an earlier read does not reach the forked reviewer.
-            if source == 0 and (carrier is None or index <= start or sessions[0][index].get("parent_tool_use_id")
-                                != carrier.get("parent_tool_use_id")):
-                read["reason"] = "not requested by the forked /review thread after its recipe"
+            if reason := outside(source, index):
+                read["reason"] = reason
                 continue
             if inputs.get("run_in_background"):
                 read["reason"] = "background request does not establish completed diff observation"
@@ -558,7 +572,8 @@ def standard(events: list[dict], target: str, level: str, problems: list[str], f
                                    else "supply an authenticated --reference-patch, or ") + remedy)
             elif evidence["diff_reads"]:
                 problems.append(f"no successful correlated `git diff` read against {target}: every recognized "
-                                f"read failed or lacks a unique later result (see diff_reads); {remedy}")
+                                "read failed, lacks a unique later result, or did not reach the reviewer "
+                                f"(see diff_reads); {remedy}")
             elif others:
                 problems.append(f"no successful correlated `git diff` read against {target}: "
                                 "other Bash requests did not establish a target patch read (see other_bash_requests); "
@@ -568,7 +583,10 @@ def standard(events: list[dict], target: str, level: str, problems: list[str], f
                                 f"no recognized target diff request was found; {remedy}")
             evidence["other_bash_requests"] = others
     if reference is not None:
-        evidence["delivery"] = delivery(reference, sessions)
+        # Count only what reached the reviewer; each stream keeps its init for the session directory.
+        evidence["delivery"] = delivery(reference, [
+            [e for i, e in enumerate(stream) if e.get("subtype") == "init" or not outside(source, i)]
+            for source, stream in enumerate(sessions)])
     return evidence
 
 
@@ -600,9 +618,30 @@ def custom(result: dict, sid: str, prompt: bytes, problems: list[str]) -> dict:
             problems.append("first transcript message is not the exact prompt: delivery unverified")
     output = result.get("structured_output")
     if not isinstance(output, dict):
-        problems.append("no structured_output object from a unique terminal result")
+        problems.append("no structured_output object in the terminal result")
     evidence["structured_output"] = output
     return evidence
+
+
+def followup_streams(paths: list[str], kind: str, sid: str, model: str, problems: list[str],
+                     report: dict) -> list[list[dict]]:
+    """Check each same-session follow-up stream on its own and report it under followups."""
+    streams = []
+    for path in paths:
+        issues = []
+        stream = load_events(Path(path), issues, "follow-up events")
+        supplemental = common(stream, sid, model, issues)
+        entry = {"events": path, "runtime": launch_runtime(stream, kind, issues), **result_evidence(supplemental)}
+        if kind == "custom":
+            entry["structured_output"] = supplemental.get("structured_output")
+            if not isinstance(entry["structured_output"], dict):
+                issues.append("no follow-up structured_output object in the terminal result")
+        elif not isinstance(supplemental.get("result"), str) or not supplemental["result"].strip():
+            issues.append("no nonempty follow-up result text in the terminal result")
+        problems.extend(f"follow-up {len(streams) + 1}: {issue}" for issue in issues)
+        streams.append(stream)
+        report.setdefault("followups", []).append(entry)
+    return streams
 
 
 def main() -> None:
@@ -614,8 +653,10 @@ def main() -> None:
         events_path, sid, model, target, level, out = args[:6]
         followup_paths = [value for flag, value in flags if flag == "--followup"]
         reference_path = next((value for flag, value in flags if flag == "--reference-patch"), None)
-    elif kind == "custom" and len(args) == 5:
-        events_path, sid, model, prompt_path, out = args
+    elif (kind == "custom" and len(args) >= 5 and len(args) % 2 == 1
+          and all(flag == "--followup" for flag in args[5::2])):
+        events_path, sid, model, prompt_path, out = args[:5]
+        followup_paths = list(args[6::2])
     else:
         sys.exit(__doc__)
     problems: list[str] = []
@@ -625,22 +666,11 @@ def main() -> None:
               "runtime": launch_runtime(events, kind, problems), **result_evidence(result)}
     if kind == "standard":
         if not isinstance(result.get("result"), str) or not result["result"].strip():
-            problems.append("no nonempty native result text from a unique terminal result")
+            problems.append("no nonempty native result text in the terminal result")
         reference, argument = None, []
         if reference_path is not None:
             report["reference_patch"], reference = load_reference_patch(Path(reference_path), target, argument)
-        followups = []
-        for path in followup_paths:
-            issues = []
-            stream = load_events(Path(path), issues, "follow-up events")
-            supplemental = common(stream, sid, model, issues)
-            runtime = launch_runtime(stream, "standard", issues)
-            if not isinstance(supplemental.get("result"), str) or not supplemental["result"].strip():
-                issues.append("no nonempty follow-up result text from a unique terminal result")
-            problems.extend(f"follow-up {len(followups) + 1}: {issue}" for issue in issues)
-            followups.append(stream)
-            report.setdefault("followups", []).append({"events": path, "runtime": runtime,
-                                                       **result_evidence(supplemental)})
+        followups = followup_streams(followup_paths, kind, sid, model, problems, report)
         report.update(standard(events, target, level, problems, followups, reference))
         problems.extend(argument)
     else:
@@ -650,6 +680,7 @@ def main() -> None:
             prompt = b""
             problems.append(f"cannot read prompt: {exc}")
         report.update(custom(result, sid, prompt, problems))
+        followup_streams(followup_paths, kind, sid, model, problems, report)
     report.update(ok=not problems, problems=problems)
     Path(out).write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8", errors="backslashreplace")
     if problems:

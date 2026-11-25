@@ -245,11 +245,12 @@ exits nonzero (hold) unless all of these hold:
   the `high` recipe), its message carries a `parent_tool_use_id` starting with
   `forked-command-` (the runtime's marker of a prompt-started forked command), and a
   matching `git diff` requested in that forked thread after the recipe, or in a
-  follow-up, has a correlated completed tool result establishing either target
-  completion or delivery of the complete bound patch as described below.
-  A command request alone, a failed read, or a result for another tool call is
-  insufficient. A verifier subagent's read or one before the recipe stays in
-  `diff_reads` with its reason but does not reach the reviewer. The helper
+  follow-up's main thread, has a correlated completed tool result establishing
+  either target completion or delivery of the complete bound patch as described
+  below. A command request alone, a failed read, or a result for another tool call
+  is insufficient. A subagent's read, in the original or a follow-up, or one before
+  the recipe stays in `diff_reads` with its reason but does not reach the reviewer;
+  such `other_bash_requests` entries carry `outside` with the same reason. The helper
   recognizes direct patch reads, including ordinary context options and explicit
   path limits. A successful per-file read does not
   establish complete changeset coverage; the caller judges that separately.
@@ -294,8 +295,10 @@ exits nonzero (hold) unless all of these hold:
   piped prompt, so this is the delivery evidence. `structured_output` is present.
 
 With a reference patch, `delivery` lists per file how many distinctive changed
-lines (at least 12 non-whitespace characters) appear in any tool result of the
-original or follow-up streams, each up to its first result. It decodes Git's
+lines (at least 12 non-whitespace characters) appear in a tool result that reached
+the reviewer: the forked thread after its recipe or a follow-up's main thread, each
+stream up to its first result. A subagent's own tool results do not count; its
+answer to the reviewer does. It decodes Git's
 quoted paths, including `diff.noprefix` headers, and preserves spaces, rename
 destinations, and deletion paths. Read line numbers, grep match/context prefixes
 with or without a path (the Grep tool omits it for a one-file search), and diff
@@ -306,11 +309,13 @@ unnormalized. Binary or short-line files are listed as `unmeasured`; sections wh
 paths cannot be resolved, such as differing custom `diff.srcPrefix` and
 `diff.dstPrefix` output (identical custom prefixes read as folders), are retained
 under `unparsed_headers` and excluded from the counts. Treat those sections as an inquiry
-limitation. Passing readback does not establish delivery (observed: 17 real reviews
-that passed every check delivered 70–93% of distinctive changed lines and left up
-to three files untouched). `delivery` records text presence, not attention or
-reasoning, and identical text elsewhere also matches. It is evidence for the
-caller's coverage judgment and never a hold.
+limitation. Passing readback does not establish delivery (observed: of 17 real
+reviews that passed every check, 16 delivered 70–93% of distinctive changed lines
+and left up to three files untouched; one whose follow-up delegated reading to
+subagents delivered 29% to the resumed session and left 19 files untouched).
+`delivery` records text presence, not attention or reasoning, and identical text
+elsewhere also matches. It is evidence for the caller's coverage judgment and
+never a hold.
 
 Permission denials remain in the report for caller adjudication. An unresolved
 required read holds credit; a recovered, covered, or demonstrably unnecessary
@@ -409,7 +414,9 @@ Confidence is not evidence.
 
   Capture each resumed invocation in its own events file, retaining the actual
   resume invocation and unchanged Git subject; never concatenate terminal streams.
-  Pass the original events plus the supplemental stream to standard readback:
+  Pass the original events plus the supplemental stream to readback; custom
+  readback takes `--followup` the same way, checks each stream against the custom
+  inventory, and requires its `structured_output`:
 
   ```bash
   uv run --no-project python -I "$skill_dir/scripts/readback.py" standard \

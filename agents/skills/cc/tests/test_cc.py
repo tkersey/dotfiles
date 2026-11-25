@@ -491,7 +491,7 @@ def inquiry_diagnostics(tmp):
     failed = standard_events(output="Exit code 128\nfatal: bad revision")
     failed[3]["message"]["content"][0]["is_error"] = True
     report = readback(tmp, "standard", failed)
-    expect(report, "every recognized read failed or lacks a unique later result")
+    expect(report, "every recognized read failed, lacks a unique later result, or did not reach the reviewer")
     assert any("dependent reassessment" in p and "--followup" in p for p in report["problems"]), report
     original = standard_events(command=requests[0])
     report = readback(tmp, "standard", original, followups=[supplemental])
@@ -620,12 +620,12 @@ def persisted_reads(tmp):
     failed = standard_events(output=preview)
     failed[3]["message"]["content"][0]["is_error"] = True
     report = readback(tmp, "standard", failed)
-    expect(report, "every recognized read failed or lacks a unique later result")
+    expect(report, "every recognized read failed, lacks a unique later result, or did not reach the reviewer")
     assert report["diff_reads"][0]["persisted_output"] and not report["diff_reads"][0]["ok"], report
     failed = as_followup(standard_events(output=preview))
     failed[2]["tool_use_result"].update(exitCode=128, persistedOutputPath="/x/b.txt")
     report = readback(tmp, "standard", standard_events(command="ls -la"), followups=[failed])
-    expect(report, "every recognized read failed or lacks a unique later result")
+    expect(report, "every recognized read failed, lacks a unique later result, or did not reach the reviewer")
     assert report["diff_reads"][0]["persisted_output"] and not report["diff_reads"][0]["ok"], report
 
 
@@ -643,7 +643,7 @@ def runtime_evidence(tmp):
                               ("tools", ["Task", "Bash", "Read", "Write"], "exceed the standard launch inventory"),
                               ("tools", ["Agent", "Bash", "Read"], None),
                               ("tools", ["Bash", "mcp__x__y"], "exceed the standard launch inventory"),
-                              ("tools", "Bash", "exceed the standard launch inventory"),
+                              ("tools", "Bash", "is not a list of tool names"),
                               ("permissionMode", "default", "is not dontAsk"),
                               ("mcp_servers", [{"name": "x"}], "is not empty"),
                               ("mcp_servers", None, "is not empty")]:
@@ -668,11 +668,22 @@ def runtime_evidence(tmp):
         event["parent_tool_use_id"] = "toolu_verifier"
     early = standard_events()
     early = [early[0], early[2], early[3], early[1], early[4]]
-    for stream in (events, early):
-        report = readback(tmp, "standard", stream)
-        expect(report, "every recognized read failed")
-        assert report["diff_reads"][0]["reason"] == "not requested by the forked /review thread after its recipe"
-        assert "resume the same session" in report["problems"][-1], report
+    recipeless = standard_events()
+    del recipeless[1]
+    subagent = as_followup(standard_events())
+    subagent[1]["parent_tool_use_id"] = subagent[2]["parent_tool_use_id"] = "toolu_sub"
+    for stream, followups, reason in [
+            (events, [], "requested outside the forked /review thread, such as by a subagent"),
+            (early, [], "requested before the /review recipe"), (recipeless, [], "no /review recipe precedes it"),
+            (standard_events(command="ls -la"), [subagent], "requested by a subagent, not the resumed session")]:
+        report = readback(tmp, "standard", stream, followups=followups)
+        expect(report, "did not reach the reviewer" if stream is not recipeless else "no expanded /review recipe")
+        assert [read["reason"] for read in report["diff_reads"]] == [reason], report
+    events[2]["message"]["content"][0]["input"] = {"command": "git log -p"}
+    report = readback(tmp, "standard", events)
+    assert report["other_bash_requests"] == [{"tool_use_id": "diff-1", "command": "git log -p",
+        "outside": "requested outside the forked /review thread, such as by a subagent"}], report
+    assert "resume the same session" in report["problems"][-1], report
     empty = tmp / "empty-reference.patch"
     empty.write_bytes(b"")
     report = readback(tmp, "standard", standard_events(command="ls -la"), reference_patch=empty)
@@ -725,6 +736,13 @@ def delivery_report(tmp):
         {"type": "user", "parent_tool_use_id": FORK, "message": {"content": [{"type": "tool_result",
             "tool_use_id": "late", "content": f"1\t{second}\n"}]}}]
     report = readback(tmp, "standard", late, reference_patch=reference)
+    expect(report)
+    assert report["delivery"]["delivered"] == 2, report
+    verifier = events[:-1] + [{**event, "parent_tool_use_id": "toolu_v"} for event in late[-2:]] + events[-1:]
+    sub_followup = copy.deepcopy(followup)
+    for event in sub_followup[1:3]:
+        event["parent_tool_use_id"] = "toolu_sub"
+    report = readback(tmp, "standard", verifier, followups=[sub_followup], reference_patch=reference)
     expect(report)
     assert report["delivery"]["delivered"] == 2, report
     assert "delivery" not in readback(tmp, "standard", events)
@@ -1067,6 +1085,15 @@ def main():
         expect(readback(tmp, "standard", malformed), "no successful correlated")
 
         expect(readback(tmp, "custom", custom_events(), transcript()))
+        report = readback(tmp, "custom", custom_events(), transcript(), followups=[custom_events()])
+        expect(report)
+        assert report["followups"][0]["structured_output"] == custom_events()[-1]["structured_output"], report
+        missing = custom_events()
+        del missing[-1]["structured_output"]
+        expect(readback(tmp, "custom", custom_events(), transcript(), followups=[missing]),
+               "follow-up 1: no follow-up structured_output object")
+        expect(readback(tmp, "custom", custom_events(), transcript(), followups=[standard_events()]),
+               "follow-up 1: init tools")
         expect(readback(tmp, "custom", custom_events(), transcript(PROMPT + b" ")), "delivery unverified")
         missing = custom_events()
         del missing[-1]["structured_output"]
