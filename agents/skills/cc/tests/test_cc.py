@@ -678,7 +678,12 @@ def runtime_evidence(tmp):
             ("git diff main...HEAD", PATCH, None), ("git diff HEAD~1", PATCH, None), ("git diff HEAD^", PATCH, None),
             ("git diff @~1", PATCH, None), ("git diff @~1...HEAD", PATCH, None), ("git diff HEAD", PATCH, held),
             ("git diff origin/HEAD...HEAD; git diff HEAD", PATCH, held), ("git diff --stat origin/HEAD...HEAD", PATCH, held),
-            ("git diff --output=/tmp/x HEAD", PATCH, held), ("ls -la", PATCH, held)] + [
+            ("git diff --output=/tmp/x HEAD", PATCH, held), ("ls -la", PATCH, held),
+            # Current-diff scope includes uncommitted changes, so working-tree reads can print a patch
+            # without any committed range; a trailing one cannot certify an earlier read either.
+            ("git diff @", PATCH, held), ("git diff .", PATCH, held), ("git diff HEAD~0", PATCH, held),
+            ("git diff src/", PATCH, held), ("git diff origin/HEAD...HEAD; git diff .", PATCH, held),
+            ("git diff origin/HEAD...HEAD; git diff @", PATCH, held)] + [
             (command, "", held) for command in ("git diff .", "git diff src/", "git diff HEAD...HEAD", "git diff HEAD~0",
                                                 "git diff HEAD^0", "git diff @...HEAD", "git diff HEAD@{0}..HEAD",
                                                 "git diff HEAD^{}...HEAD", "git diff @{0}...HEAD", "git diff head")]:
@@ -720,6 +725,10 @@ def runtime_evidence(tmp):
     report = readback(tmp, "standard", stray)
     expect(report, "did not reach the reviewer")
     assert report["diff_reads"][0]["reason"] == "result requested by a subagent, not the forked /review thread", report
+    # Records split only at newlines: U+2028 appears unescaped inside a JSON string.
+    separated = "".join(json.dumps(event, ensure_ascii=False) + "\n"
+                        for event in standard_events(output=PATCH + "+line\u2028separator\n"))
+    expect(readback(tmp, "standard", separated))
     main_thread = standard_events()
     for event in main_thread[2:4]:
         event["parent_tool_use_id"] = None
@@ -1263,7 +1272,7 @@ def main():
         report = readback(tmp, "standard", standard_events(command="ls -la"), standard_typed, extra_transcript=True,
                           followups=[answered(as_followup(standard_events()), "msg-a")], followup_prompts=[ask])
         expect(report, "multiple transcripts")
-        # Finding 4: one bad transcript line is a session problem; the rest still verifies delivery.
+        # One bad transcript line is a session problem; the rest still verifies delivery.
         damaged = readback(tmp, "custom", custom_events(), json_lines(typed) + "{bad JSON\n", followups=[first],
                            followup_prompts=[ask])
         expect(damaged, "invalid JSON")

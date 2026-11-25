@@ -64,6 +64,8 @@ from pathlib import Path
 LEVEL = re.compile(r"`(\w+) effort\b")
 HEX = re.compile(r"[0-9a-f]{7,40}\Z")
 REF = re.compile(r"[\w@{}~^/.][\w@{}~^/.-]*\Z")
+# A nonzero-generation ancestor of HEAD, the recipe's fallback when it cannot tell the base.
+HEAD_ANCESTOR = re.compile(r"(?:HEAD|@)(?:[~^](?:[1-9][0-9]*)?)*[~^](?:[1-9][0-9]*)?\Z")
 REFERENCE_TARGET = re.compile(r"[0-9a-f]{7,40}(?:\.\.HEAD)?\Z")
 EXIT_CODE = re.compile(r"\A\s*Exit code(?:\s*:\s*|\s+)(\d+)(?:\s|$)", re.IGNORECASE)
 PATCH_TEXT = re.compile(r"^diff --git ", re.MULTILINE)
@@ -112,7 +114,7 @@ def parts_of(event: dict) -> list[dict]:
 
 def load_events(path: Path, problems: list[str], label="events", unreadable: list[str] | None = None) -> list[dict]:
     try:
-        lines = path.read_text(encoding="utf-8").splitlines()
+        lines = path.read_text(encoding="utf-8").split("\n")
     except OSError as exc:
         (problems if unreadable is None else unreadable).append(f"cannot read {label}: {exc}")
         return []
@@ -422,10 +424,14 @@ def direct_diff(words: list[str], target: str) -> bool:
         return False
     base, head = operands
     if target == "-":
-        # The current-diff recipe reads <ref>...HEAD, or HEAD~1 when it cannot tell the base. A
-        # spelling of HEAD or a pathspec reads no committed change; the result must show a patch.
-        # Bare `git diff HEAD` stays a companion, so it never certifies a chain's completion.
-        return head == "HEAD" and base != "HEAD" and bool(REF.fullmatch(base))
+        # The current-diff recipe reads a commit range <ref>...HEAD, or HEAD~1 when it cannot tell
+        # the base. A range compares commits, never the working tree, so a spelling of HEAD there
+        # shows no patch, which the result check rejects. A single working-tree operand (`.`, `@`,
+        # `HEAD~0`, a path) can show only uncommitted changes, so it is not a target read and
+        # never certifies a chain's completion.
+        if ranged:
+            return head == "HEAD" and base != "HEAD" and bool(REF.fullmatch(base))
+        return bool(HEAD_ANCESTOR.fullmatch(base))
     return bool(HEX.fullmatch(base) and target.startswith(base) and head == "HEAD")
 
 
@@ -576,7 +582,7 @@ def standard(events: list[dict], target: str, level: str, problems: list[str], f
             read["reason"] = "no unique later correlated tool_result"
             continue
         position, part, event = matches[0]
-        # Finding 5: the result, like the request, must reach the reviewer's thread.
+        # The result, like the request, must reach the reviewer's thread.
         if reason := outside(source, position):
             read["reason"] = f"result {reason}"
             continue
@@ -661,7 +667,8 @@ def transcript(sid: str, problems: list[str],
     sessions = [r["sessionId"] for r in records if "sessionId" in r]
     if not sessions or any(session != sid for session in sessions):
         problems.append("transcript mixes sessions or has no session identity")
-    # A malformed record stays in place as None, so the launch prompt is never a later record.
+    # A record with a malformed message stays in place as None, so the launch prompt is never a
+    # later record. An undecodable JSON line is dropped and already holds as invalid JSON.
     typed, answers = [], []
     for record in records:
         message = record.get("message") if isinstance(record.get("message"), dict) else None
