@@ -429,11 +429,21 @@ def direct_diff(words: list[str], target: str) -> bool:
     return bool(HEX.fullmatch(base) and target.startswith(base) and head == "HEAD")
 
 
-def path_limited(command: str, target: str) -> bool:
-    """A target read naming paths after `--`, chained or not, observes only those paths."""
+def limited_reads(command: str, target: str) -> tuple[bool, bool]:
+    """Whether every target read is path-limited, and whether every one after the last `;` is.
+
+    A read naming paths after `--` observes only those paths, so a whole reference cannot fit
+    its output, and its patch must be attributable: unchained, or a whole-reference match.
+    """
     parsed = pieces(command)
-    return bool(parsed) and any(direct_diff(words, target) and "--" in words and words.index("--") < len(words) - 1
-                                for words in parsed[0])
+    if not parsed:
+        return False, False
+    commands, operators = parsed
+    final_group = max((index + 1 for index, op in enumerate(operators) if op == ";"), default=0)
+    limited = [(index, "--" in words and words.index("--") < len(words) - 1)
+               for index, words in enumerate(commands) if direct_diff(words, target)]
+    completing = [flag for index, flag in limited if index >= final_group]
+    return bool(limited) and all(flag for _, flag in limited), bool(completing) and all(completing)
 
 
 def tool_result_status(part: dict, event: dict, difference_exit: bool) -> tuple[bool, str]:
@@ -455,7 +465,14 @@ def tool_result_status(part: dict, event: dict, difference_exit: bool) -> tuple[
     codes = [int(match.group(1))] if match else []
     details = event.get("tool_use_result")
     if isinstance(details, str):
-        details = None  # observed: "Error: Exit code N ..." on failed main-thread Bash calls
+        # Observed on failed main-thread Bash calls: "Error: Exit code N ..."; any other error
+        # string is a failure without an exit code.
+        coded = re.match(r"(?:Error:\s*)?Exit code\s+(\d+)", details)
+        if coded:
+            codes.append(int(coded.group(1)))
+        elif details.startswith("Error"):
+            return False, f"Bash result reports an error: {details[:80]}"
+        details = None
     if details is not None:
         if not isinstance(details, dict):
             return False, "malformed Bash result metadata"
@@ -514,14 +531,12 @@ def standard(events: list[dict], target: str, level: str, problems: list[str], f
     # The recipe names its target only when one was passed; its effort header is always present.
     messages = [(i, e, text_of(e["message"].get("content"))) for i, e in enumerate(session)
                 if e.get("type") == "user" and isinstance(e.get("message"), dict)]
-    if target != "-":
-        start = next((i for i, _, text in messages if "Review target:" in text), None)
-    else:
-        # Prefer the forked command's message; otherwise take the first effort header so the
-        # fork-marker check names the real cause instead of reporting no recipe.
-        headed = [(i, e) for i, e, text in messages if "Review target:" in text or LEVEL.search(text)]
-        start = next((i for i, e in headed if str(e.get("parent_tool_use_id") or "").startswith(FORKED)),
-                     headed[0][0] if headed else None)
+    # Prefer the forked command's message; otherwise take the first match so the fork-marker
+    # check names the real cause instead of reporting no recipe.
+    headed = [(i, e) for i, e, text in messages
+              if "Review target:" in text or target == "-" and LEVEL.search(text)]
+    start = next((i for i, e in headed if str(e.get("parent_tool_use_id") or "").startswith(FORKED)),
+                 headed[0][0] if headed else None)
     carrier = session[start] if start is not None else None
     fork = carrier.get("parent_tool_use_id") if carrier is not None else None
 
@@ -598,13 +613,18 @@ def standard(events: list[dict], target: str, level: str, problems: list[str], f
             read["reason"] = f"result {reason}"
             continue
         read["ok"], read["reason"] = tool_result_status(part, event, difference_exit)
-        # Without a whole-reference match, a chain's output cannot show which read printed a patch.
-        if (read["ok"] and shape == "chain" and completion_bound and path_limited(command, target)
+        every_limited, completing_limited = limited_reads(command, target)
+        # A completed chain is attributable when its completing group holds a full target read;
+        # if every completing read is path-limited, only a whole-reference match attributes it.
+        if (read["ok"] and shape == "chain" and completion_bound and completing_limited
                 and not reference_observed(text_of(part.get("content")), reference)):
-            read.update(ok=False, reason="a chain's output cannot show which read printed a path-limited patch")
-        elif (read["ok"] and (target == "-" or path_limited(command, target))
+            read.update(ok=False, attributable=False,
+                        reason="a chain's output cannot show which read printed a path-limited patch")
+        elif (read["ok"] and (target == "-" or shape == "direct" and every_limited)
                 and not PATCH_TEXT.search(text_of(part.get("content")))):
             read.update(ok=False, reason="current-diff or path-limited read showed no patch")
+        if every_limited:
+            read["path_limited"] = True
         details = event.get("tool_use_result")
         if ((isinstance(details, dict) and details.get("persistedOutputPath"))
                 or text_of(part.get("content")).startswith("<persisted-output>")):
@@ -627,15 +647,17 @@ def standard(events: list[dict], target: str, level: str, problems: list[str], f
                   if unread_followups else
                   f"resume the same session with the bound launch settings, complete a direct foreground "
                   f"{wanted} and dependent reassessment, then pass the separate stream with --followup")
+        referable = (not problems and reference is None and REFERENCE_TARGET.fullmatch(target) and any(
+            (read.get("unverified") and not read.get("path_limited")) or read.get("attributable") is False
+            for read in evidence["diff_reads"]))
+        offer = "supply an authenticated --reference-patch, or " if referable else ""
         if any(read.get("unverified") for read in evidence["diff_reads"]):
             problems.append(f"no successful correlated `git diff` read against {scope}: the recognized read "
-                            "precedes a `;`, so its completion is unverified; "
-                            + ("" if problems or reference is not None or not REFERENCE_TARGET.fullmatch(target)
-                               else "supply an authenticated --reference-patch, or ") + remedy)
+                            f"precedes a `;`, so its completion is unverified; {offer}{remedy}")
         elif evidence["diff_reads"]:
             problems.append(f"no successful correlated `git diff` read against {scope}: every recognized "
                             "read failed, lacks a unique later result, or did not reach the reviewer "
-                            f"(see diff_reads); {remedy}")
+                            f"(see diff_reads); {offer}{remedy}")
         elif others:
             problems.append(f"no successful correlated `git diff` read against {scope}: "
                             "other Bash requests did not establish a target patch read (see other_bash_requests); "

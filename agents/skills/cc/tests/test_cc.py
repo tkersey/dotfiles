@@ -302,6 +302,19 @@ def chain_checks(tmp):
         assert report["diff_reads"][0]["reason"] in (
             "a chain's output cannot show which read printed a path-limited patch",
             "target diff precedes a semicolon; its completion status is unavailable"), report
+    # A full read in the completing group establishes the observation; path-limited siblings do not matter.
+    for command in [f"git diff {target} && git diff {target} -- a.txt", f"git diff {target} -- a.txt && git diff {target}"]:
+        chained, run = observation(command)
+        expect(readback(tmp, "standard", chained, target=target))
+    # The reference route is offered only where a whole reference can be observed.
+    hidden, run = observation(f"git diff {target} -- a.txt; git status --short")
+    report = readback(tmp, "standard", hidden, target=target)
+    expect(report, "completion is unverified")
+    assert "--reference-patch" not in report["problems"][-1], report
+    guarded, run = observation(f"git diff {target} --stat && git diff {target} -- a.txt")
+    report = readback(tmp, "standard", guarded, target=target)
+    expect(report, "no successful correlated")
+    assert "supply an authenticated --reference-patch" in report["problems"][-1], report
 
     original, run = observation(f"git diff {target}; git diff HEAD")
     assert run.returncode == 0 and "diff --git" in run.stdout
@@ -716,6 +729,11 @@ def runtime_evidence(tmp):
     unmarked[1]["message"]["content"][0]["text"] = current[1]["message"]["content"][0]["text"]
     unmarked[1]["parent_tool_use_id"] = None
     expect(readback(tmp, "standard", unmarked, target="-"), "does not mark a prompt-started forked command")
+    # A bound target's recipe is the forked command's message, not an earlier quotation of its line.
+    quoted = standard_events()
+    quoted.insert(1, {"type": "user", "parent_tool_use_id": None, "message": {"content": [
+        {"type": "text", "text": f"Earlier: Review target: `{BASE}` was mentioned."}]}})
+    expect(readback(tmp, "standard", quoted))
     # With a bound target, only the target line identifies the recipe, not an earlier effort mention.
     mention = standard_events()
     mention.insert(1, {"type": "user", "parent_tool_use_id": None, "message": {"content": [
@@ -763,6 +781,12 @@ def runtime_evidence(tmp):
     separated = "".join(json.dumps(event, ensure_ascii=False) + "\n"
                         for event in standard_events(output=PATCH + "+line\u2028separator\n"))
     expect(readback(tmp, "standard", separated))
+    # An error string without is_error still fails the read; its exit code is read from it.
+    for metadata in ["Error: Exit code 128\nfatal: bad revision", "Error: Permission to use Bash has been denied"]:
+        stringly = as_followup(standard_events())
+        stringly[2]["tool_use_result"] = metadata
+        expect(readback(tmp, "standard", standard_events(command="ls -la"), followups=[stringly]),
+               "no successful correlated")
     exit_one = as_followup(standard_events(command=f"git diff --exit-code {BASE[:12]} HEAD",
                                            output="Exit code 1\n" + PATCH))
     exit_one[2]["message"]["content"][0]["is_error"] = True

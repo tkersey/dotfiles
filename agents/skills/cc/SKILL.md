@@ -258,8 +258,11 @@ exits nonzero (hold) unless all of these hold:
   the recipe stays in `diff_reads` with its reason but does not reach the reviewer;
   such `other_bash_requests` entries carry `outside` with the same reason. The helper
   recognizes direct patch reads, including ordinary context options and explicit
-  path limits. A successful per-file read does not
-  establish complete changeset coverage; the caller judges that separately.
+  path limits. A path-limited read observes only its paths: it must show a patch,
+  and a completed chain whose final `&&` group holds only path-limited target reads
+  counts only when its output contains the whole reference patch. A successful
+  per-file read does not establish complete changeset coverage; the caller judges
+  that separately.
   It recognizes bounded `;`/`&&` chains without treating quoted or escaped
   operators as shell syntax. A successful compound result establishes a target
   read only in its final `&&` group. Thus `git diff <base>..HEAD && git diff HEAD`
@@ -281,7 +284,8 @@ exits nonzero (hold) unless all of these hold:
   A hold without a successful read retains other observed Bash command requests
   as `other_bash_requests`. These are requests, not successful reads; unsupported
   syntax does not establish that no Git command ran. Recover a missing observation
-  with the follow-up below (a reference patch matches only a semicolon-hidden read)
+  with the follow-up below (a reference patch matches a semicolon-hidden read that is
+  not path-limited, or a completed chain of path-limited reads)
   only when no other hold remains: follow-ups add reads and clear nothing else, so
   the helper names that remedy only then. A bad `--reference-patch` argument is not
   such a hold: fix it and rerun readback.
