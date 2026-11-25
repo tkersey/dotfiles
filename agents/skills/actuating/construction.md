@@ -321,6 +321,8 @@ and permitted continuations that can invalidate its basis. Follow the implicated
 operations, not unrelated commands. Preserve the requirement, not an obsolete
 mechanism; reuse adequate native constructions and direct corrections. Retire
 displaced weaker success decisions without erasing distinct authorities.
+Closing a finding or passing its witness does not retire that requirement; revise
+or retire obligations only as their accepted source and applicability permit.
 
 Carry this assignment, its source, and deciding evidence through selection,
 delegation, and resumption, including compaction; recover it from the bound source
@@ -328,6 +330,17 @@ when missing. Finding identities, locations, and suggested edits are evidence an
 revisable means, not the assignment's scope or completion condition. Narrower
 subtasks do not discharge the enclosing obligation. Keep this in the existing work,
 without a separate packet, stage, or required presentation.
+
+When completed reasoning should change future construction, verification, or
+adjudication, preserve its useful consequence through
+[Learnings' destination selection](../learnings/SKILL.md#decision-before-retention).
+Reuse an adequate existing owner artifact; retain deciding premises and evidence,
+or recoverable owner references, when the conclusion alone cannot guide reuse.
+A retained argument supplies conditional evidence, not authority or current
+applicability. Failed authorized retention remains failed; preserve material
+recovery references through an existing authorized handoff before their sole
+context is discarded. This neither creates an alternate corpus nor blocks work
+justified independently of missing history.
 
 ## Completion
 

@@ -4,7 +4,7 @@
     "skill": {
       "name": "actuating",
       "kind": "mixed",
-      "source_fingerprint": "actuating-construction-core-v41"
+      "source_fingerprint": "actuating-construction-core-v42"
     },
     "triggers": [
       {
@@ -134,14 +134,17 @@
         "success_signals": [
           "Git owns realization; verifiers own executed proof; the selected Codex or host subagent runtime owns review execution evidence; Review Fold owns CEX admission; Ledger owns automatic custody preparation; Ship owns public effects",
           "analysis forbids new semantic captures while automatic corpus preparation precedes projection without separate approval, subject to explicit file/custody-maintenance constraints",
-          "current causal interpretation and closure are ephemeral",
+          "current applicability and closure are derived from owner evidence; useful conditional arguments remain with existing owners, not a separate Actuating store",
           "direct source binding preserves outcomes, non-goals, scope, compatibility, migration, and deciding observations",
           "source-fixed requirements remain distinct from proposed means and execution authority",
           "source revisions reclassify applicable evidence without erasing unresolved provenance",
           "adequate bindings reuse the Working Set and existing owner formats without a separate Goal Contract packet",
           "the next construction assignment preserves the source-required relationship, required-valid behavior, and deciding uncertainty through selection, delegation, resumption, and compaction",
           "compact working history retains or recovers completed review epochs, relevant terminal unsuccessful verification attempts, persistent obligations or obstructions, interventions and expected versus actual results, last supported progress, and the prior activation basis from existing evidence",
-          "attempt history survives head and credit resets, resumption, and compaction; unknown history remains unknown rather than restarting at zero"
+          "attempt history survives head and credit resets, resumption, and compaction; unknown history remains unknown rather than restarting at zero",
+          "closing a finding does not retire its continuing source-required obligation",
+          "completed reasoning informs future decisions through Learnings' existing destination selection, retaining deciding premises and evidence when reuse depends on them without requiring another artifact",
+          "failed authorized retention remains distinguishable from success; material recovery references survive through an existing authorized handoff without an alternate corpus or a gate on independently justified work"
         ],
         "failure_signals": [
           "agent-authored labels or equal digests certify semantics",
@@ -256,13 +259,17 @@
           "only current entailed accepted witnesses create automatic correctness pressure",
           "every semantic delta has counterexample, Goal, or explicit new authority",
           "claim corrections and residuals retain authority and closure consequences",
-          "failed checks use counterexample admission without granting expectations authority or rewriting failed results as passes"
+          "failed checks use counterexample admission without granting expectations authority or rewriting failed results as passes",
+          "Review Fold reuses a prior disposition under established authority, applicability, and deciding premises; changed premises, new evidence, or flawed prior reasoning reopen the affected judgment",
+          "the resulting disposition constrains candidate selection, delegated work, and the actual semantic diff"
         ],
         "failure_signals": [
           "rejected strengthening implemented to protect review convergence",
           "duplicate observation treated as a new causal dimension",
           "claim narrowing silently weakens accepted behavior",
-          "a refuted test diagnosis waives mandatory verification or changes expectations merely to match the candidate"
+          "a refuted test diagnosis waives mandatory verification or changes expectations merely to match the candidate",
+          "a historical verdict substitutes for its deciding basis or vetoes a supported challenge",
+          "repetition, a new reviewer, or a new head alone restarts an otherwise supported adjudication"
         ],
         "rationale": "Adjudication governs actual code, not just the response narrative."
       },

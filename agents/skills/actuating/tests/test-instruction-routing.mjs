@@ -28,7 +28,7 @@ const coreHashes = {
   'Proof acceptance': '8cefa9c1e82aa83b5c54737a9bbcb77d70d1442c916f434473d22679b82b0fc9',
   'Comments in code': '9dfab826dd63fbdd4ac448cbf0d7c690edef00145282604d9f0737c39edc39bf',
   'Realization and common proof obligations': '8f782e151a2c48cca2da1506830376ad597b689fde6985014f30c466f87be6e3',
-  'Construction Working Set': 'de9ee5fa5fb2cb205c5c970dfbcd2c98b76467166ac09b5f71510da986178e14',
+  'Construction Working Set': 'a700fdc90b29b61e05f7520f2e36ffaebf35baa668c8a7bfb0bb055550ff7b45',
   'Completion': 'dc56a54f2fd79d07f4d801b030cbf5b5a1ec6758be7a8c72eae0e8c2f630f58f'
 };
 // Pin the authorized recovery/epoch revision; unchanged construction and acceptance remain protected.
