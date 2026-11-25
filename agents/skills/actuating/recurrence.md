@@ -80,6 +80,17 @@ stagnation, automatic passage reinjection, a redesign requirement, or round limi
 Act on an earlier causal trigger without waiting for either count. Applying a
 skill, making a commit, or passing an unrelated check is not supported progress.
 
+For [stateful or concurrent software](construction.md#simulation-first-correctness),
+a findings plateau requires a simulator check before another repair round. A plateau is
+successive closed epochs whose clean results stop improving, typically because
+each repair's new code supplies the next findings. Ask whether the finding
+families are trace-shaped, appearing only under a particular sequence or
+interleaving of inputs, faults, restarts, time changes, or transfers, and whether
+the simulator catches each on [re-injection](counterexamples.md#re-inject-confirmed-defects).
+Extend its generator or oracle for every family it misses, then sweep again,
+before selecting the next repair. PAREDROS: from epoch 10 the clean count went
+18, 14, 14 of 23 while such families recurred.
+
 When an admitted defect lies in a deciding site an earlier intervention added,
 inspect that site's role and the argument that justified it. When a supported
 mechanism survives an attempted correction, reassess the explanation and required

@@ -63,6 +63,7 @@ adequate evidence. Do not load every guide at entry or impose a reasoning sequen
 | Selected work | Guidance |
 |---|---|
 | Implementation or source-bound analysis | [construction.md](construction.md): source, construction, proof, and applicable obligations. Analysis stays read-only with `corpus_write_authorized: false`. |
+| Building, changing, or analyzing a program or library | [Construction rules](construction.md#construction-rules) and [simulation-first correctness](construction.md#simulation-first-correctness), which classifies it as stateful or concurrent, or a pure library. For the stateful or concurrent kind, also [re-injection](counterexamples.md#re-inject-confirmed-defects) before a confirmed defect's fix lands and the [pre-epoch screen](review-closeout.md#pre-epoch-simulation-and-screen) before a review epoch. |
 | Delegation, resumption, or local completion | [Working Set](construction.md#construction-working-set) and [completion](construction.md#completion). |
 | Finding, failed check, or counterexample-driven selection | [counterexamples.md](counterexamples.md) before admission; [architecture.md](architecture.md) before responding to each admitted liability. |
 | Supporting construction skills or architecture techniques | [architecture.md](architecture.md). Universalist's `candidate`, `preserve-incumbent`, `unresolved`, and `obstructed` results remain interpretable, not required output. |
@@ -83,6 +84,9 @@ deciding evidence, and unresolved questions from their existing owners before
 selecting another successor. Before that selection, compare the previous
 intervention's predicted and observed results, and apply the fresh activation or
 explicit assessment that a failed prediction or a reached epoch backstop requires.
+On a findings plateau in stateful or concurrent software, also
+[check the simulator against the finding families](recurrence.md#progress-before-another-iteration)
+before that selection.
 Preserve the applicability and provenance of earlier
 failures and predictions across compaction. An unresolved mechanism remains
 investigable under the existing authority and epoch rules. Missing evidence blocks

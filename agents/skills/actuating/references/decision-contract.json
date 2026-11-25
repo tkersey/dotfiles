@@ -4,7 +4,7 @@
     "skill": {
       "name": "actuating",
       "kind": "mixed",
-      "source_fingerprint": "actuating-construction-core-v42"
+      "source_fingerprint": "actuating-construction-core-v43"
     },
     "triggers": [
       {
@@ -502,6 +502,51 @@
           "narrower evidence, another candidate or mode, skipped checks, or absence of failure substitutes for successful required verification"
         ],
         "rationale": "Success is justified behavior in the actual code, not process completion or route classification."
+      },
+      {
+        "clause_id": "ACT-SIMULATION-001",
+        "trigger_refs": [
+          "ACT-BARE",
+          "ACT-ROUTE",
+          "ACT-COUNTEREXAMPLE",
+          "ACT-POST-ELIMINATION",
+          "ACT-REVIEW"
+        ],
+        "expected_routes": [
+          "ACT-IMPLEMENT",
+          "ACT-ANALYZE",
+          "ACT-REVIEW-CLOSEOUT",
+          "ACT-CLOSE"
+        ],
+        "prohibited_routes": [],
+        "required_artifacts": [
+          "classification of each program or library the Goal builds or changes as stateful or concurrent, or a pure library",
+          "for stateful or concurrent software: requirement-cited executable laws, a lifecycle table per stored-state machine with a mechanical rest-reachability check, and a seeded deterministic simulator over the real code with pinned regression seeds",
+          "a slow, obviously correct oracle for every optimization",
+          "for pure libraries: property-based tests of their laws",
+          "for each confirmed defect in stateful or concurrent software: the re-injection result and, after a miss, the generator or oracle extension and a pinned seed that fails with the fix reverted",
+          "before a full review epoch on a stateful or concurrent subject: simulator results on pinned seeds and a fresh sweep, and one changeset standard screen that passed review-credit admission over the complete patch"
+        ],
+        "success_signals": [
+          "classification follows durable state, concurrency, retry or recovery, time, and external effects; daemons, runtimes, stores, schedulers, and protocols are stateful or concurrent, including their in-memory modules",
+          "the simulator runs the real code from one seed, fakes only time, randomness, and external services, chooses every interleaving from the seed, injects restarts, replays, faults, and other disturbances the requirements say the system survives, checks every law after every event and rest at quiescence, and replays any failure from its seed",
+          "a mechanical check establishes that every stored state reaches rest through ordinary inputs",
+          "optimizations agree with their slow counterparts on required observations in tests and in the simulator",
+          "construction deletes subjectless state, gives every stored state an ordinary exit, computes each derived quantity in one function, disposes every admitted input exactly once, keeps one canonical spelling per wire value, passes values across trust or namespace boundaries, and reports recorded facts on read surfaces",
+          "every confirmed defect in stateful or concurrent software is re-injected once before its fix lands; a miss first extends the generator or oracle to the defect's family, then pins a seed that fails with the fix reverted",
+          "a full review epoch on a stateful or concurrent subject follows a simulator pass on pinned seeds and a fresh sweep, and one changeset standard screen that reviewed the complete patch and passed review-credit admission",
+          "the screen opens no epoch; the screen and the simulator award no review credit; the initial inventory and five-clean convergence are unchanged",
+          "a findings plateau asks whether trace-shaped finding families escape the simulator and extends it before another repair round"
+        ],
+        "failure_signals": [
+          "stateful or concurrent software is called complete or reviewable without its laws, lifecycle check, or simulator, absent user authority reducing that verification",
+          "an abstract model, wall-clock time, live services, unseeded randomness or scheduling, or final-state-only checking substitutes for the simulator over real code",
+          "a pure library is required to build a simulator",
+          "a confirmed defect's fix lands before re-injection, or a scripted replay of the report stands in for a generator or oracle extension",
+          "screen or simulator results are credited as review lenses, confirmations, or clean counts, or a screen finding triggers the initial-inventory barrier",
+          "another repair round starts on a findings plateau without checking simulator coverage of trace-shaped families"
+        ],
+        "rationale": "Reviews sample traces; a seeded simulator over the real code explores them and keeps every caught defect caught. PAREDROS: thirteen 24-review epochs closed unclean, while the simulator caught 11 of 11 re-injected review-found defects in 1 s to ~15 min each against ~2 h per epoch, and found 7 defects the reviews missed."
       }
     ],
     "instrumentation": {

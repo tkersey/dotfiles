@@ -1,6 +1,6 @@
 {
   "schema": "actuating-review-contract/v23",
-  "contract_id": "actuating-review-contract-v32",
+  "contract_id": "actuating-review-contract-v33",
   "required_lenses": [
     {
       "name": "standard",
@@ -253,6 +253,19 @@
     "clean_epoch_closes_after_standard_convergence": true,
     "initial_implementation_requires_review_dispatch": false,
     "confirmation_invalidation_requires_new_initial_wave": false
+  },
+  "pre_epoch_screen": {
+    "guidance_ref": "agents/skills/actuating/review-closeout.md#pre-epoch-simulation-and-screen",
+    "applies_to": "stateful-or-concurrent-subject",
+    "simulator_pinned_seeds_and_fresh_sweep_required": true,
+    "changeset_standard_screen_required": true,
+    "screen_admission": "review-credit-admission-test-without-credit",
+    "complete_patch_review_required": true,
+    "claude_full_patch_followup": "same-session-when-patch-read-is-the-only-hold-or-delivery-is-unestablished",
+    "opens_review_epoch": false,
+    "awards_review_credit": false,
+    "replaces_initial_inventory_request": false,
+    "confirmed_defects_reinjected_before_fix": true
   },
   "review_entry": {
     "complete_goal_proof_inventory_required": true,

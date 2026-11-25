@@ -329,6 +329,8 @@ a summary does not itself recover the obligation or change the receipt.
 
 [Review-closeout](../review-closeout.md#review-epoch-immutability-and-evidence-acquisition)
 owns opening, freezing, invalidation, the initial evidence barrier, and closing.
+Its [pre-epoch screen](../review-closeout.md#pre-epoch-simulation-and-screen)
+precedes the epoch, opens none, and earns no credit.
 The epoch is ephemeral, derived from owner facts; all requests and credit stay
 bound to its exact head. An incomplete candidate can be implemented outside review
 but cannot enter closure review.

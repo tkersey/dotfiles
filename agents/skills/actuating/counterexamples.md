@@ -176,3 +176,29 @@ are selectable; claim-specific evidence and the root's common proof obligations
 remain binding. Stop inquiry when further source-supported investigation cannot
 change the selected mechanism or its required proof. Samples discriminate an
 explanation; they do not prove an open-domain exclusion.
+
+## Re-inject confirmed defects
+
+For [stateful or concurrent software](construction.md#simulation-first-correctness),
+the simulator is the required negative control for every confirmed defect: a current
+entailed witness admitted by Review Fold, whether review, self-review, the
+simulator, a test, or production found it. Before its fix lands:
+
+1. Re-inject the defect once: run the simulator's pinned seeds and a sweep on the
+   defective predecessor, or on an isolated copy with only that defect restored.
+   A simulator-found defect's own failing seed already does this.
+2. If the simulator misses it, first extend the generator so generated runs reach
+   the defect's family, or the oracle so it observes the violated law. A scripted
+   replay of the reported trace is not an extension.
+3. Pin a seed that fails with the fix reverted and passes with it.
+
+A catch must come from a law or oracle exposing the defect's wrong observation,
+under the [control rules above](#compile-the-first-loss-of-guarantee); an unrelated
+crash, timeout, or build failure is not one. Controls keep their authority,
+isolation, and review-freeze limits. A defect outside the simulated behavior, such
+as in its build, packaging, or documentation, uses the ordinary control; state
+that classification. Pure libraries use the ordinary control with their property
+tests as the witness. When the simulator cannot be extended to express an in-scope
+defect, report the obstruction; only the user can waive this control. PAREDROS:
+the simulator caught 11 of 11 re-injected review-found defects, two only after
+generator extension.

@@ -9,7 +9,7 @@ import {dirname, resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const paths = ['SKILL.md', 'construction.md', 'architecture.md', 'counterexamples.md',
+const paths = ['SKILL.md', 'construction.md', 'architecture.md', 'counterexamples.md', 'recurrence.md',
   'agents/openai.yaml', 'references/review-contract.json',
   'references/decision-contract.json', 'universalist-composition.md',
   '../universalist/SKILL.md', '../universalist/README.md',
@@ -70,13 +70,41 @@ function check(src) {
   assert(normalized(section(skill,'Proof acceptance')).includes('A passing weakened suite cannot discharge an unchanged requirement'));
   assert(normalized(section(skill,'Proof acceptance')).includes('does not demand a finished causal account before authorized exploration'));
 
-  assert.equal(policy.contract_id,'actuating-review-contract-v32');
+  // Simulation-first correctness is an owner decision. These are source-contract checks,
+  // not a simulator run or evidence that an agent builds or uses one.
+  const simulation=normalized(section(skill,'Simulation-first correctness'));
+  for(const rule of ['durable state: data that outlives the process that wrote it',
+    'so does every module inside such software, including in-memory ones',
+    'Software with none of these, such as a parser, codec, or in-memory data structure, is a pure library',
+    'For stateful or concurrent software, the construction includes',
+    'every state reaches rest through ordinary inputs','It checks every law after every event',
+    'Any failure replays from its seed','slow, obviously correct counterpart',
+    'Pure libraries use property-based tests of their laws','only the user can reduce them'])
+    assert(simulation.includes(rule),`lost simulation rule: ${rule}`);
+  const rules=normalized(section(skill,'Construction rules'));
+  for(const rule of ['Delete state whose subject no longer exists',
+    'Give every stored state an exit by an ordinary transition',
+    'Compute each derived quantity in exactly one function, invoked by every transition that changes it',
+    'Give every admitted input exactly one disposition','Give each wire value one canonical spelling',
+    'Pass values, not references, across trust or namespace boundaries',
+    'Make read surfaces report recorded facts, not predictions of a later decision'])
+    assert(rules.includes(rule),`lost construction rule: ${rule}`);
+  const reinjection=normalized(section(counter,'Re-inject confirmed defects'));
+  for(const rule of ['Before its fix lands','A scripted replay of the reported trace is not an extension',
+    'Pin a seed that fails with the fix reverted and passes with it','only the user can waive this control'])
+    assert(reinjection.includes(rule),`lost re-injection rule: ${rule}`);
+  assert(normalized(src['recurrence.md']).includes('a findings plateau requires a simulator check before another repair round'),
+    'lost plateau simulator check');
+  assert.equal(policy.pre_epoch_screen.awards_review_credit,false);
+  assert.equal(policy.pre_epoch_screen.opens_review_epoch,false);
+  assert.equal(policy.pre_epoch_screen.replaces_initial_inventory_request,false);
+  assert.equal(policy.contract_id,'actuating-review-contract-v33');
   assert.equal(policy.construction_selection.reasoning_sequence_required,false);
   assert.equal(policy.construction_selection.metanoetic_before_universalist_when_triggered,false);
   assert.equal(policy.universalist_compilation.nomination_result_required,false);
   assert.equal(policy.universalist_compilation.nomination_is_executed_proof,false);
   assert.equal(policy.efficacy.policy_unit_tests_prove_model_efficacy,false);
-  assert.equal(contract.skill.source_fingerprint,'actuating-construction-core-v42');
+  assert.equal(contract.skill.source_fingerprint,'actuating-construction-core-v43');
   const clauses=Object.fromEntries(contract.clauses.map(c=>[c.clause_id,c]));
   assert(clauses['ACT-IMPLEMENT-ENTRY-001'].success_signals.some(s=>s.includes('without a fixed reasoning sequence')));
   assert(clauses['ACT-METANOETIC-ADMISSIBILITY-001'].success_signals.some(s=>s.includes('no required order relative to Universalist')));
@@ -84,7 +112,8 @@ function check(src) {
   const routeIds=new Set(contract.routes.map(r=>r.route_id));
   const triggerIds=new Set(contract.triggers.map(t=>t.trigger_id));
   assert.equal(routeIds.size,4); assert.equal(triggerIds.size,5);
-  assert.deepEqual(Object.keys(clauses).sort(),["ACT-CLOSURE-001","ACT-CONSTRUCTION-COMPILER-001","ACT-IMPLEMENT-ENTRY-001","ACT-LAW-AUTHORITY-001","ACT-METANOETIC-ADMISSIBILITY-001","ACT-OWNER-FACTS-001","ACT-REVIEW-EPOCH-001","ACT-REVIEW-EVIDENCE-001","ACT-UNIVERSALIST-COMPILATION-001"]);
+  assert.deepEqual(Object.keys(clauses).sort(),["ACT-CLOSURE-001","ACT-CONSTRUCTION-COMPILER-001","ACT-IMPLEMENT-ENTRY-001","ACT-LAW-AUTHORITY-001","ACT-METANOETIC-ADMISSIBILITY-001","ACT-OWNER-FACTS-001","ACT-REVIEW-EPOCH-001","ACT-REVIEW-EVIDENCE-001","ACT-SIMULATION-001","ACT-UNIVERSALIST-COMPILATION-001"]);
+  assert(clauses['ACT-SIMULATION-001'].failure_signals.includes('a pure library is required to build a simulator'));
   for(const c of contract.clauses) {
     for(const id of c.trigger_refs) assert(triggerIds.has(id),id);
     for(const id of [...c.expected_routes,...c.prohibited_routes]) assert(routeIds.has(id),id);
@@ -126,7 +155,15 @@ const mutations=[
   ['lost mathematical capability',src=>{src['construction.md']=src['construction.md'].replace('including `$universalist` for task-relevant semantic','excluding mathematical');}],
   ['duplicate acceptance rule',src=>{src['counterexamples.md']+='\nBefore accepting validation for local completion or reviewability\n';}],
   ['baseline instruction leakage unchecked',src=>{src['tests/construction-comparison.md']=src['tests/construction-comparison.md'].replace('`AGENTS.md`','an unspecified file');}],
-  ['first candidate unfrozen',src=>{src['tests/construction-comparison.md']=src['tests/construction-comparison.md'].replace('Freeze the first completed candidate','Score the final repaired result');}]
+  ['first candidate unfrozen',src=>{src['tests/construction-comparison.md']=src['tests/construction-comparison.md'].replace('Freeze the first completed candidate','Score the final repaired result');}],
+  ['simulator made optional',src=>{src['construction.md']=src['construction.md'].replace('the construction includes','the construction may include');}],
+  ['simulator scope widened past durable state',src=>{src['construction.md']=src['construction.md'].replace('durable state: data that outlives the process that wrote it','retained state: memory that a later operation reads');}],
+  ['construction rule dropped',src=>{src['construction.md']=src['construction.md'].replace('- Give every admitted input exactly one disposition.\n','');}],
+  ['fix lands before re-injection',src=>{src['counterexamples.md']=src['counterexamples.md'].replace('Before its fix lands','After its fix lands');}],
+  ['plateau check optional',src=>{src['recurrence.md']=src['recurrence.md'].replace('requires a simulator check','permits a simulator check');}],
+  ['screen credited',jsonMutation('references/review-contract.json',p=>p.pre_epoch_screen.awards_review_credit=true)],
+  ['screen opens epoch',jsonMutation('references/review-contract.json',p=>p.pre_epoch_screen.opens_review_epoch=true)],
+  ['simulation clause removed',jsonMutation('references/decision-contract.json',p=>{p.skill_decision_contract.clauses=p.skill_decision_contract.clauses.filter(c=>c.clause_id!=='ACT-SIMULATION-001');})]
 ];
 for(const [name,mutate] of mutations) {
   const mutant={...sources}; mutate(mutant);

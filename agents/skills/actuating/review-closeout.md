@@ -30,6 +30,34 @@ Count the closed epoch once; its requests and clean
 confirmations are not separate repair rounds. Reset review credit as required
 while preserving the history of unsuccessful approaches.
 
+## Pre-epoch simulation and screen
+
+For a [stateful or concurrent](construction.md#simulation-first-correctness)
+subject, two checks precede the first initial-inventory request on a reviewable head:
+
+1. The simulator passes its pinned seeds and a sweep of fresh seeds on that head,
+   as part of the local proof that makes it reviewable.
+2. One changeset standard review of that head from the selected executor passes the
+   [Review-credit admission](references/review-contract.md#review-credit-admission)
+   test, which here earns no credit. It must review the complete base-to-head
+   patch. In `claude` mode, when [cc](../cc/SKILL.md) readback's only hold is the
+   missing patch read, or readback passes without establishing delivery of the
+   whole patch, run cc's same-session follow-up for the full patch and adjudicate
+   both results together.
+
+The screen precedes the epoch, which opens on the first initial-inventory request,
+so a screen finding triggers no initial-inventory barrier. Fold it through Review
+Fold; an admitted current material finding returns to construction, and the
+successor repeats both checks. Every confirmed defect, from the screen, the epoch,
+self-review, the simulator, or production, is
+[re-injected](counterexamples.md#re-inject-confirmed-defects) before its fix lands.
+
+Neither check awards review credit or replaces a request. The epoch still runs its
+full initial inventory, including its own changeset standard, and requires five
+consecutive credited standard cleans; every other rule here is unchanged.
+PAREDROS: one standard review that read the full diff found as many issues as
+the epoch's 23 lens reviews combined.
+
 ## Invalidated-batch supersession
 
 When an accepted current material entailed finding has invalidated an initial

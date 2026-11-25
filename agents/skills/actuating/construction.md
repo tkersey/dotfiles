@@ -117,6 +117,88 @@ required architectures or intermediate deliverables. Keep the applicable
 [common proof obligations](#realization-and-common-proof-obligations) and
 [completion contract](#completion) fixed, not a prescribed account of how to think.
 
+## Construction rules
+
+These rules exclude by construction the defect families that review and
+simulation kept finding in stateful software. Apply each wherever its subject
+exists; an explicit source requirement governs a rule it contradicts.
+
+- Delete state whose subject no longer exists.
+- Give every stored state an exit by an ordinary transition until it reaches
+  rest, a state with no pending obligation. Ordinary transitions are triggered by
+  a request, completion, elapsed time, specified fault, or restart, not by
+  operator repair, data edits, or a code change.
+- Compute each derived quantity in exactly one function, invoked by every
+  transition that changes it.
+- Give every admitted input exactly one disposition.
+- Give each wire value one canonical spelling.
+- Pass values, not references, across trust or namespace boundaries.
+- Make read surfaces report recorded facts, not predictions of a later decision.
+
+PAREDROS: thirteen review epochs closed unclean while repairs created new
+findings; these rules generalize the restructuring that removed those families.
+
+## Simulation-first correctness
+
+Classify each program or library the Goal builds or changes. It is stateful or
+concurrent when it has any of:
+
+- durable state: data that outlives the process that wrote it;
+- concurrency: actors such as threads, tasks, processes, or peers whose
+  interleaving can change an observation;
+- retry, restart, recovery, or replay of an input;
+- time: clocks, deadlines, timeouts, or schedules;
+- external effects: calls or writes outside the process that can fail, stall,
+  repeat, or reorder.
+
+Daemons, runtimes, stores, schedulers, and protocols qualify, and so does every
+module inside such software, including in-memory ones such as an index or cache.
+Software with none of these, such as a parser, codec, or in-memory data structure,
+is a pure library. A pure library keeps its own property tests when stateful
+software uses it, and that software's simulator runs it as real code.
+
+For stateful or concurrent software, the construction includes:
+
+- **Executable laws.** Each invariant is a function that tests and the simulator
+  call. It carries, as data, the requirement clause it encodes, and its failure
+  report names that clause.
+- **Lifecycle tables.** Each stored-state machine has an explicit table of its
+  states and [ordinary transitions](#construction-rules), with a mechanical check,
+  at compile time where the language allows, that every state reaches rest through
+  ordinary inputs. PAREDROS: after restructuring removed the old families,
+  newly added code again stored states with no ordinary exit.
+- **A deterministic simulator over the real code.** From one seed it runs the
+  system's real code, such as its application, drivers, and daemons, faking only
+  time, randomness, and external services at their seams and choosing every
+  interleaving from the seed. It injects restarts, replays, and faults, plus
+  the other disturbances the requirements say the system survives, such as clock
+  regression, configuration changes, or handoffs between owners. It checks every law
+  after every event and, at quiescence, when inputs stop and fake time passes
+  every deadline, that every state has reached rest. Any failure replays from its
+  seed, and the seeds of past failures stay pinned as regressions.
+- **Oracles for optimizations.** Every optimization keeps its slow, obviously
+  correct counterpart as an oracle, compared on the required observations in tests
+  and in the simulator. PAREDROS: a rebuild oracle caught a use-after-free in a new
+  incremental index within hours of its landing.
+
+Pure libraries use property-based tests of their laws, with generators that reach
+the source domain and its boundaries, and the same optimization oracles.
+
+These are required verification under [proof acceptance](#proof-acceptance), and
+only the user can reduce them: the laws, lifecycle checks, oracles, property
+tests, and the simulator's pinned seeds plus a sweep of fresh seeds belong in the
+proof inventory. When no simulator exists, build one that covers what the Goal
+builds or changes, and grow it through
+[re-injection](counterexamples.md#re-inject-confirmed-defects). It drives the real
+code, so it is not the optional
+[executable behavioral model](references/counterexample-guided-normalization.md#executable-behavioral-models),
+which abstracts the code.
+
+PAREDROS: thirteen 24-review epochs closed unclean. A seeded simulator over the
+real application, driver, and daemon then caught 11 of 11 re-injected review-found
+defects in 1 s to ~15 min each, against ~2 h per review epoch, and found 7 defects
+the reviews had missed.
+
 ## Proof acceptance
 
 Required verification gates completion. Every required check must finish

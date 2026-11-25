@@ -26,9 +26,20 @@ const c = json('references/review-contract.json');
 const d = json('references/decision-contract.json').skill_decision_contract;
 const names = ['standard','soundness-skeptic','footgun-finder','invariant-ace','complexity-mitigator','fresh-eyes'];
 assert.equal(c.schema, 'actuating-review-contract/v23');
-assert.equal(c.contract_id, 'actuating-review-contract-v32');
+assert.equal(c.contract_id, 'actuating-review-contract-v33');
 assert.equal(d.contract_version, 'SKDC-v1');
-assert.equal(d.skill.source_fingerprint, 'actuating-construction-core-v42');
+assert.equal(d.skill.source_fingerprint, 'actuating-construction-core-v43');
+// Owner-decided pre-epoch gate: it precedes the epoch, opens none, and earns no credit.
+assert.deepEqual(c.pre_epoch_screen, {
+  guidance_ref:'agents/skills/actuating/review-closeout.md#pre-epoch-simulation-and-screen',
+  applies_to:'stateful-or-concurrent-subject',
+  simulator_pinned_seeds_and_fresh_sweep_required:true, changeset_standard_screen_required:true,
+  screen_admission:'review-credit-admission-test-without-credit', complete_patch_review_required:true,
+  claude_full_patch_followup:'same-session-when-patch-read-is-the-only-hold-or-delivery-is-unestablished',
+  opens_review_epoch:false, awards_review_credit:false, replaces_initial_inventory_request:false,
+  confirmed_defects_reinjected_before_fix:true
+});
+assert(text('review-closeout.md').includes('## Pre-epoch simulation and screen\n'));
 assert(c.candidate_acceptance.common_obligations.includes(
   'required discriminator execution completed successfully against the exact candidate'));
 assert(!c.candidate_acceptance.common_obligations.some(s => s.includes('explicit limitation')));
