@@ -393,8 +393,8 @@ Confidence is not evidence.
   requests and results, the missing content, and the bound range and head. It asks
   the resumed session to read with direct foreground `git diff <base>..HEAD -- <path>`
   calls, one command per call, without pipes, redirects, chains, shell loops,
-  variables, or background execution. A qualifying path-limited read that shows a
-  patch supplies the target observation, so another oversized full-range diff is
+  variables, or background execution. A qualifying unchained path-limited read that
+  shows a patch supplies the target observation, so another oversized full-range diff is
   unnecessary once that observation and the required content exist. One file's diff can overflow
   too, so the prompt also asks it to read any persisted remainder with bounded Read
   ranges of the persisted file or the source, continuing from the last delivered

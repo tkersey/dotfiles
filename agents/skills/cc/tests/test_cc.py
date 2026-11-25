@@ -291,11 +291,17 @@ def chain_checks(tmp):
     report = readback(tmp, "standard", events, target=target)
     expect(report, "every recognized read failed")
     assert report["diff_reads"][0]["shape"] == "direct", report
-    chained, run = observation(f"git diff {target} --stat && git diff {target} -- 'missing path'")
-    report = readback(tmp, "standard", chained, target=target)
-    expect(report, "every recognized read failed")
     assert report["diff_reads"][0]["reason"] == "current-diff or path-limited read showed no patch", report
-    assert report["diff_reads"][0]["reason"] == "current-diff or path-limited read showed no patch", report
+    # A chain's output cannot show which read printed a patch, even when an earlier group printed one.
+    for command in [f"git diff {target} --stat && git diff {target} -- 'missing path'",
+                    f"git diff {target}; git diff {target} -- 'missing path'",
+                    f"git diff {target} --stat && git diff {target} -- a.txt"]:
+        chained, run = observation(command)
+        report = readback(tmp, "standard", chained, target=target)
+        expect(report, "no successful correlated")
+        assert report["diff_reads"][0]["reason"] in (
+            "a chain's output cannot show which read printed a path-limited patch",
+            "target diff precedes a semicolon; its completion status is unavailable"), report
 
     original, run = observation(f"git diff {target}; git diff HEAD")
     assert run.returncode == 0 and "diff --git" in run.stdout
@@ -702,6 +708,14 @@ def runtime_evidence(tmp):
         expect(report, error)
         assert error is None or "`git diff <upstream>...HEAD`" in report["problems"][-1], report
         assert "--reference-patch" not in " ".join(report["problems"]), report
+    wide = "ab" * 32
+    expect(readback(tmp, "standard", standard_events(target=f"{wide}..HEAD", command=f"git diff {wide}..HEAD"),
+                    target=f"{wide}..HEAD"))
+    # A current-diff recipe without the fork marker is reported as such, not as a missing recipe.
+    unmarked = standard_events(command="git diff origin/HEAD...HEAD")
+    unmarked[1]["message"]["content"][0]["text"] = current[1]["message"]["content"][0]["text"]
+    unmarked[1]["parent_tool_use_id"] = None
+    expect(readback(tmp, "standard", unmarked, target="-"), "does not mark a prompt-started forked command")
     # With a bound target, only the target line identifies the recipe, not an earlier effort mention.
     mention = standard_events()
     mention.insert(1, {"type": "user", "parent_tool_use_id": None, "message": {"content": [
@@ -749,6 +763,12 @@ def runtime_evidence(tmp):
     separated = "".join(json.dumps(event, ensure_ascii=False) + "\n"
                         for event in standard_events(output=PATCH + "+line\u2028separator\n"))
     expect(readback(tmp, "standard", separated))
+    exit_one = as_followup(standard_events(command=f"git diff --exit-code {BASE[:12]} HEAD",
+                                           output="Exit code 1\n" + PATCH))
+    exit_one[2]["message"]["content"][0]["is_error"] = True
+    exit_one[2]["tool_use_result"] = "Error: Exit code 1\n" + PATCH
+    report = readback(tmp, "standard", standard_events(command="ls -la"), followups=[exit_one])
+    expect(report)
     main_thread = standard_events()
     for event in main_thread[2:4]:
         event["parent_tool_use_id"] = None

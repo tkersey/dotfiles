@@ -62,8 +62,8 @@ import sys
 from pathlib import Path
 
 LEVEL = re.compile(r"`(\w+) effort\b")
-HEX = re.compile(r"[0-9a-f]{7,40}\Z")
-REFERENCE_TARGET = re.compile(r"[0-9a-f]{7,40}(?:\.\.HEAD)?\Z")
+HEX = re.compile(r"[0-9a-f]{7,64}\Z")
+REFERENCE_TARGET = re.compile(r"[0-9a-f]{7,64}(?:\.\.HEAD)?\Z")
 EXIT_CODE = re.compile(r"\A\s*Exit code(?:\s*:\s*|\s+)(\d+)(?:\s|$)", re.IGNORECASE)
 PATCH_TEXT = re.compile(r"^diff --git ", re.MULTILINE)
 SUMMARY_DIFF = re.compile(r"--(?:stat|shortstat|numstat|name-only|name-status)(?:=\S*)?")
@@ -454,6 +454,8 @@ def tool_result_status(part: dict, event: dict, difference_exit: bool) -> tuple[
     match = EXIT_CODE.match(content)
     codes = [int(match.group(1))] if match else []
     details = event.get("tool_use_result")
+    if isinstance(details, str):
+        details = None  # observed: "Error: Exit code N ..." on failed main-thread Bash calls
     if details is not None:
         if not isinstance(details, dict):
             return False, "malformed Bash result metadata"
@@ -510,10 +512,16 @@ def standard(events: list[dict], target: str, level: str, problems: list[str], f
     sessions = [session] + [stream[:next((i for i, e in enumerate(stream) if e.get("type") == "result"), len(stream))]
                             for stream in followups]
     # The recipe names its target only when one was passed; its effort header is always present.
-    start = next((i for i, e in enumerate(session) if e.get("type") == "user" and isinstance(e.get("message"), dict)
-                  and ("Review target:" in (text := text_of(e["message"].get("content")))
-                       or target == "-" and LEVEL.search(text)
-                       and str(e.get("parent_tool_use_id") or "").startswith(FORKED))), None)
+    messages = [(i, e, text_of(e["message"].get("content"))) for i, e in enumerate(session)
+                if e.get("type") == "user" and isinstance(e.get("message"), dict)]
+    if target != "-":
+        start = next((i for i, _, text in messages if "Review target:" in text), None)
+    else:
+        # Prefer the forked command's message; otherwise take the first effort header so the
+        # fork-marker check names the real cause instead of reporting no recipe.
+        headed = [(i, e) for i, e, text in messages if "Review target:" in text or LEVEL.search(text)]
+        start = next((i for i, e in headed if str(e.get("parent_tool_use_id") or "").startswith(FORKED)),
+                     headed[0][0] if headed else None)
     carrier = session[start] if start is not None else None
     fork = carrier.get("parent_tool_use_id") if carrier is not None else None
 
@@ -590,7 +598,11 @@ def standard(events: list[dict], target: str, level: str, problems: list[str], f
             read["reason"] = f"result {reason}"
             continue
         read["ok"], read["reason"] = tool_result_status(part, event, difference_exit)
-        if (read["ok"] and (target == "-" or path_limited(command, target))
+        # Without a whole-reference match, a chain's output cannot show which read printed a patch.
+        if (read["ok"] and shape == "chain" and completion_bound and path_limited(command, target)
+                and not reference_observed(text_of(part.get("content")), reference)):
+            read.update(ok=False, reason="a chain's output cannot show which read printed a path-limited patch")
+        elif (read["ok"] and (target == "-" or path_limited(command, target))
                 and not PATCH_TEXT.search(text_of(part.get("content")))):
             read.update(ok=False, reason="current-diff or path-limited read showed no patch")
         details = event.get("tool_use_result")
