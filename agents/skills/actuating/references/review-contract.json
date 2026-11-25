@@ -241,7 +241,7 @@
   },
   "review_epoch": {
     "derived_not_stored": true,
-    "opens_on_first_review_dispatch": true,
+    "opens_on_first_initial_inventory_dispatch": true,
     "binds_exact_reviewable_candidate_head": true,
     "candidate_frozen_while_open": true,
     "successor_mutation_forbidden_while_open": true,
@@ -255,17 +255,23 @@
     "confirmation_invalidation_requires_new_initial_wave": false
   },
   "pre_epoch_screen": {
-    "guidance_ref": "agents/skills/actuating/review-closeout.md#pre-epoch-simulation-and-screen",
-    "applies_to": "stateful-or-concurrent-subject",
-    "simulator_pinned_seeds_and_fresh_sweep_required": true,
+    "guidance_ref": "agents/skills/actuating/review-closeout.md#pre-epoch-screen",
+    "applies_to": "every-review-epoch",
     "changeset_standard_screen_required": true,
-    "screen_admission": "review-credit-admission-test-without-credit",
-    "complete_patch_review_required": true,
-    "claude_full_patch_followup": "same-session-when-patch-read-is-the-only-hold-or-delivery-is-unestablished",
+    "precedes_first_initial_inventory_dispatch": true,
+    "binds_exact_reviewable_head": true,
+    "screen_admission": "review-credit-admission-predicate-without-credit",
+    "disposition_field": "screen_disposition",
+    "records_credit_disposition": false,
+    "complete_patch_observation_required": true,
+    "summary_only_patch_observation_holds_every_changeset_standard": true,
+    "claude_missing_read_followup": "same-session-for-unread-paths",
+    "held_screen_blocks_epoch": true,
     "opens_review_epoch": false,
     "awards_review_credit": false,
     "replaces_initial_inventory_request": false,
-    "confirmed_defects_reinjected_before_fix": true
+    "finding_triggers_initial_inventory_barrier": false,
+    "stateful_simulator_evidence_is_reviewability_proof": true
   },
   "review_entry": {
     "complete_goal_proof_inventory_required": true,

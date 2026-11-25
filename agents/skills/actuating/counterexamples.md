@@ -179,26 +179,36 @@ explanation; they do not prove an open-domain exclusion.
 
 ## Re-inject confirmed defects
 
-For [stateful or concurrent software](construction.md#simulation-first-correctness),
-the simulator is the required negative control for every confirmed defect: a current
-entailed witness admitted by Review Fold, whether review, self-review, the
-simulator, a test, or production found it. Before its fix lands:
+Re-injection calibrates generated evidence against real defects. For
+[stateful or concurrent software](construction.md#simulation-first-correctness),
+the simulator is the required negative control for every confirmed defect: a
+current entailed witness admitted by Review Fold, whether review, self-review, the
+simulator, a test, or production found it. Before a head carrying its fix becomes
+reviewable or is published:
 
-1. Re-inject the defect once: run the simulator's pinned seeds and a sweep on the
-   defective predecessor, or on an isolated copy with only that defect restored.
-   A simulator-found defect's own failing seed already does this.
+1. Re-inject the defect: run the simulator's pinned seeds and traces and a fresh
+   sweep on the defective predecessor, or on an isolated copy with only that defect
+   restored. A simulator-found defect's own failing seed already does this.
 2. If the simulator misses it, first extend the generator so generated runs reach
-   the defect's family, or the oracle so it observes the violated law. A scripted
-   replay of the reported trace is not an extension.
-3. Pin a seed that fails with the fix reverted and passes with it.
+   the defect's family, or the oracle so it observes the violated law, then
+   re-inject again. A scripted replay of the reported trace is not an extension.
+3. Pin a seed, with its trace, that fails on the defective version and passes with
+   the fix.
 
 A catch must come from a law or oracle exposing the defect's wrong observation,
 under the [control rules above](#compile-the-first-loss-of-guarantee); an unrelated
-crash, timeout, or build failure is not one. Controls keep their authority,
-isolation, and review-freeze limits. A defect outside the simulated behavior, such
-as in its build, packaging, or documentation, uses the ordinary control; state
-that classification. Pure libraries use the ordinary control with their property
-tests as the witness. When the simulator cannot be extended to express an in-scope
-defect, report the obstruction; only the user can waive this control. PAREDROS:
-the simulator caught 11 of 11 re-injected review-found defects, two only after
-generator extension.
+crash, timeout, or build failure is not one. Those rules' authority, isolation, and
+review-freeze limits apply, so re-inject outside an open review epoch. Only a
+defect whose wrong observation is not behavior of the running software, such as
+one in its build, packaging, or documentation, uses the ordinary control alone;
+state that classification. A false alarm, or a defect in the simulator, a law, a
+fake, or an oracle, is an [oracle correction](#observe-and-adjudicate) with its own
+independent evidence, never a weakened law. Pure libraries apply the same steps
+with their property tests' generators, and one-shot tools with their effect-seam
+fault injection, in place of the simulator.
+
+When the simulator cannot be extended to express an in-scope defect, report the
+obstruction and apply the ordinary control to the fix. The affected law's
+simulation evidence then remains the unresolved coverage claim the control rules
+above require: it blocks dependent reviewability and completion until the
+simulator expresses the defect or the user accepts the gap.

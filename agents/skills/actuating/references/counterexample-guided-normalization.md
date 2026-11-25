@@ -155,7 +155,10 @@ Use a small executable behavioral model, such as Quint, when exploring relevant
 state transitions can distinguish candidate constructions or challenge a required
 relationship. Reuse adequate native evidence or an existing model. Model the
 uncertainty that matters with its source-required observations and permitted
-operations; no new toolchain, model, or checking stage is mandatory.
+operations; no new toolchain, model, or checking stage is mandatory. The
+[deterministic simulator](../construction.md#simulation-first-correctness) that
+stateful or concurrent software requires is a separate obligation over the real
+code, not this model; the evidence distinctions below also govern its sweeps.
 
 Keep sampling, bounded exploration, exhaustive finite-model checking, and
 successful induction distinct. Bind the actual checker mode, configuration,

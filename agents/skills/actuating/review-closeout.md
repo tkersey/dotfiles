@@ -3,7 +3,8 @@
 ## Review-epoch immutability and evidence acquisition
 
 Read [review-contract.md](references/review-contract.md). A review epoch opens on
-the first review request against an exact locally proved `reviewable` head. While
+the first initial-inventory request against an exact locally proved `reviewable`
+head; the [pre-epoch screen](#pre-epoch-screen) precedes it and opens none. While
 open, freeze that subject and forbid successor mutation.
 
 A material current entailed finding invalidates the candidate and all review
@@ -30,33 +31,40 @@ Count the closed epoch once; its requests and clean
 confirmations are not separate repair rounds. Reset review credit as required
 while preserving the history of unsuccessful approaches.
 
-## Pre-epoch simulation and screen
+## Pre-epoch screen
 
-For a [stateful or concurrent](construction.md#simulation-first-correctness)
-subject, two checks precede the first initial-inventory request on a reviewable head:
+Before the first initial-inventory request on a reviewable head, run one changeset
+standard review of that exact head from the selected executor. A single complete
+reading of the patch is cheap and often finds what would invalidate the head, so
+an invalidated head need not consume the wide initial inventory. For stateful or
+concurrent software, the head's reviewable proof already includes the
+[simulator](construction.md#simulation-first-correctness) results.
 
-1. The simulator passes its pinned seeds and a sweep of fresh seeds on that head,
-   as part of the local proof that makes it reviewable.
-2. One changeset standard review of that head from the selected executor passes the
-   [Review-credit admission](references/review-contract.md#review-credit-admission)
-   test, which here earns no credit. It must review the complete base-to-head
-   patch. In `claude` mode, when [cc](../cc/SKILL.md) readback's only hold is the
-   missing patch read, or readback passes without establishing delivery of the
-   whole patch, run cc's same-session follow-up for the full patch and adjudicate
-   both results together.
+Adjudicate the screen with the
+[Review-credit admission](references/review-contract.md#review-credit-admission)
+predicate, but record `screen_disposition: pass | hold` with its basis, never
+`credit_disposition`; no standard count, obligation, or completion statement reads
+it. The screen must observe the complete base-to-head patch. A changeset standard
+whose evidence shows only a summary, such as `--stat` output or recent commit
+messages, has missed its assigned inquiry; that holds the screen and every epoch
+standard alike until the observation is recovered. Recover a missing patch read
+under the existing observation recovery; in `claude` mode that is
+[cc](../cc/SKILL.md)'s same-session follow-up for the unread paths, as the
+[binding](references/review-contract.md#binding-and-owner-authority) describes.
+Adjudicate the original and supplemental results together.
 
-The screen precedes the epoch, which opens on the first initial-inventory request,
-so a screen finding triggers no initial-inventory barrier. Fold it through Review
-Fold; an admitted current material finding returns to construction, and the
-successor repeats both checks. Every confirmed defect, from the screen, the epoch,
-self-review, the simulator, or production, is
-[re-injected](counterexamples.md#re-inject-confirmed-defects) before its fix lands.
+Fold screen findings through Review Fold. An admitted current material finding
+invalidates the candidate and returns to construction; with no epoch open, it
+triggers no initial-inventory barrier. For stateful or concurrent software,
+[re-inject](counterexamples.md#re-inject-confirmed-defects) it like any confirmed
+defect. The screen binds its exact head: a successor, or any other change before
+the first initial-inventory request, needs a new screen. A held screen blocks the
+epoch until recovered; an unrecoverable observation is the obstruction the epoch's
+own changeset standard would face, so report it.
 
-Neither check awards review credit or replaces a request. The epoch still runs its
-full initial inventory, including its own changeset standard, and requires five
-consecutive credited standard cleans; every other rule here is unchanged.
-PAREDROS: one standard review that read the full diff found as many issues as
-the epoch's 23 lens reviews combined.
+The screen awards no review credit and replaces no request. The epoch still runs
+its full initial inventory, including its own changeset standard, and requires
+five consecutive credited standard cleans; every other rule here is unchanged.
 
 ## Invalidated-batch supersession
 

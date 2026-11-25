@@ -520,34 +520,39 @@
         ],
         "prohibited_routes": [],
         "required_artifacts": [
-          "classification of each program or library the Goal builds or changes as stateful or concurrent, or a pure library",
-          "for stateful or concurrent software: requirement-cited executable laws, a lifecycle table per stored-state machine with a mechanical rest-reachability check, and a seeded deterministic simulator over the real code with pinned regression seeds",
-          "a slow, obviously correct oracle for every optimization",
+          "classification of each program or library the Goal builds or changes as stateful or concurrent, or a pure library, by its properties rather than its repository, language, or size",
+          "for stateful or concurrent software: source-cited executable laws, a lifecycle table per stored-state machine with a mechanical rest-reachability check and simulator-asserted table membership, and a seeded deterministic simulator over the real code with pinned seeds and traces",
+          "a slow, obviously correct oracle that shares none of the deciding logic it checks, for every optimization the Goal builds or changes",
           "for pure libraries: property-based tests of their laws; for fail-fast one-shot tools also a fault-injection test at every effect seam",
-          "for each confirmed defect in stateful or concurrent software: the re-injection result and, after a miss, the generator or oracle extension and a pinned seed that fails with the fix reverted",
-          "before a full review epoch on a stateful or concurrent subject: simulator results on pinned seeds and a fresh sweep, and one changeset standard screen that passed review-credit admission over the complete patch"
+          "for each fresh sweep: its seeds, generator version, and the event kinds it produced",
+          "for each confirmed defect in stateful or concurrent software: the re-injection result, any generator or oracle extension after a miss, and a pinned seed and trace that fail on the defective version and pass with the fix",
+          "before every review epoch: a changeset standard screen of the exact reviewable head over the complete patch, with a recorded screen_disposition"
         ],
         "success_signals": [
-          "classification follows durable state a later run or another actor relies on, concurrency, retry or recovery, time, and external effects whose outcome later behavior depends on; daemons, runtimes, stores, schedulers, and protocols are stateful or concurrent, including their in-memory modules; fail-fast one-shot tools are classified with pure libraries and inject a failure at every effect seam",
-          "the simulator runs the real code from one seed, fakes only time, randomness, and external services, chooses every interleaving from the seed, injects restarts, replays, faults, and other disturbances the requirements say the system survives, checks every law after every event and rest at quiescence, and replays any failure from its seed",
-          "a mechanical check establishes that every stored state reaches rest through ordinary inputs",
-          "optimizations agree with their slow counterparts on required observations in tests and in the simulator",
-          "construction deletes subjectless state, gives every stored state an ordinary exit, computes each derived quantity in one function, disposes every admitted input exactly once, keeps one canonical spelling per wire value, passes values across trust or namespace boundaries, and reports recorded facts on read surfaces",
-          "every confirmed defect in stateful or concurrent software is re-injected once before its fix lands; a miss first extends the generator or oracle to the defect's family, then pins a seed that fails with the fix reverted",
-          "a full review epoch on a stateful or concurrent subject follows a simulator pass on pinned seeds and a fresh sweep, and one changeset standard screen that reviewed the complete patch and passed review-credit admission",
-          "the screen opens no epoch; the screen and the simulator award no review credit; the initial inventory and five-clean convergence are unchanged",
-          "a findings plateau asks whether trace-shaped finding families escape the simulator and extends it before another repair round"
+          "classification follows durable state a later run or another actor relies on, concurrency, retry or recovery, time, and external effects whose outcome later behavior depends on; daemons, runtimes, stores, schedulers, and protocols are stateful or concurrent; fail-fast one-shot tools are classified with pure libraries and inject a failure at every effect seam",
+          "the simulator runs the real code from one seed, owns time, randomness, scheduling, and outside services, runs embedded storage for real, fakes services in other processes with contract-checked fakes, yields the same trace for the same seed, injects the disturbances the requirements say the system survives, and checks every law after every event and rest at quiescence",
+          "when no simulator exists, the smallest one covering the changed paths, their nondeterminism, and the laws the Goal establishes or could break is built; a changed module without a trace-dependent law keeps its ordinary tests and runs in the simulator as real code",
+          "a mechanical check establishes that every stored state reaches rest through ordinary inputs, and the simulator observes no transition outside the table",
+          "optimizations agree with independent slow counterparts on required observations in tests and in the simulator",
+          "construction rules govern the state, transitions, and interfaces the Goal builds or changes as construction means, with retained history, required compatibility spellings, and prediction surfaces bounded as stated",
+          "every confirmed defect is re-injected before a head carrying its fix becomes reviewable or is published; a miss first extends the generator or oracle; every re-injected defect pins a seed and trace that fail on the defective version and pass with the fix",
+          "a defect the simulator cannot be extended to express receives the ordinary control and leaves that law's simulation evidence unresolved, blocking dependent reviewability and completion until the simulator expresses it or the user accepts the gap",
+          "the pre-epoch screen observes the complete patch, records screen_disposition, binds its exact head, opens no epoch, and earns no credit; the initial inventory and five-clean convergence are unchanged; a summary-only patch observation holds every changeset standard",
+          "recurring trace-dependent findings add a simulator coverage check to the progress assessment before the next repair, and software misclassified as pure is reclassified",
+          "analyze classifies and judges against these rules without building, extending, or running mutating controls"
         ],
         "failure_signals": [
           "stateful or concurrent software is called complete or reviewable without its laws, lifecycle check, or simulator, absent user authority reducing that verification",
-          "an abstract model, wall-clock time, live services, unseeded randomness or scheduling, or final-state-only checking substitutes for the simulator over real code",
+          "an abstract model, wall-clock time, live outside services, unseeded randomness or scheduling, a fake that cannot produce its contract's failures, or final-state-only checking substitutes for the simulator over real code",
           "a pure library is required to build a simulator",
-          "a confirmed defect's fix lands before re-injection, or a scripted replay of the report stands in for a generator or oracle extension",
-          "screen or simulator results are credited as review lenses, confirmations, or clean counts, or a screen finding triggers the initial-inventory barrier",
-          "another repair round starts on a findings plateau without checking simulator coverage of trace-shaped families",
-          "a fail-fast one-shot tool is required to build a simulator, or skips fault injection at an effect seam"
+          "a fail-fast one-shot tool is required to build a simulator, or skips fault injection at an effect seam",
+          "a sweep is credited without its seeds and generator version, or without producing the event kinds the changed code handles",
+          "a confirmed defect's fix enters a reviewable or published head before re-injection, a scripted replay stands in for a generator or oracle extension, or a defect the current simulator does not reach is called outside the simulated behavior",
+          "screen results are recorded as credit_disposition or credited as review lenses, confirmations, or clean counts, or a screen finding triggers the initial-inventory barrier",
+          "analyze builds or extends a simulator or runs mutating controls",
+          "runtime guidance cites one repository's history as policy"
         ],
-        "rationale": "Reviews sample traces; a seeded simulator over the real code explores them and keeps every caught defect caught. PAREDROS: thirteen 24-review epochs closed unclean, while the simulator caught 11 of 11 re-injected review-found defects in 1 s to ~15 min each against ~2 h per epoch, and found 7 defects the reviews missed."
+        "rationale": "Reviews and example tests sample traces; a seeded simulator over the real code explores them and keeps every caught defect caught, and re-injection measures whether it does. A changeset standard that observes only a summary of the patch misses its assigned inquiry, and one complete reading before the wide initial inventory spares an invalidated head that cost. tests/construction-comparison.md#simulation-first-construction defines the held-out comparison that informs revision of these rules."
       }
     ],
     "instrumentation": {

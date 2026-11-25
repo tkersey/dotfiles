@@ -119,29 +119,43 @@ required architectures or intermediate deliverables. Keep the applicable
 
 ## Construction rules
 
-These rules exclude by construction the defect families that review and
-simulation kept finding in stateful software. Apply each wherever its subject
-exists; an explicit source requirement governs a rule it contradicts.
+Apply these rules to the stored state, transitions, and interfaces the Goal builds
+or changes. Each excludes a defect family that review and simulation keep finding
+in stateful software. They are construction means, not source requirements: a
+violation is a liability only through a required law it breaks, and an explicit
+source requirement governs a rule it contradicts.
 
-- Delete state whose subject no longer exists.
+- Delete state whose subject no longer exists. A record kept for a required
+  observation, audit, idempotence, or recovery is history about its subject, not
+  live state: no transition reads it as current.
 - Give every stored state an exit by an ordinary transition until it reaches
   rest, a state with no pending obligation. Ordinary transitions are triggered by
-  a request, completion, elapsed time, specified fault, or restart, not by
-  operator repair, data edits, or a code change.
+  a request through the software's own interface, including an operator's, or by
+  completion, elapsed time, a specified fault, or restart. Editing data, code, or
+  configuration outside that interface is not one.
 - Compute each derived quantity in exactly one function, invoked by every
-  transition that changes it.
-- Give every admitted input exactly one disposition.
-- Give each wire value one canonical spelling.
-- Pass values, not references, across trust or namespace boundaries.
+  transition that changes it. An incremental update is an optimization of that
+  function and keeps it as its oracle.
+- Give every admitted input exactly one recorded terminal disposition, such as
+  applied, rejected, superseded, or failed: never none and never two.
+- Give each wire value one canonical spelling. Accept another spelling only where
+  a compatibility contract requires it, normalize it on admission, and emit only
+  the canonical one.
+- Pass values, not references, across trust or namespace boundaries: wherever the
+  receiver cannot resolve the sender's references against the same state, such as
+  another trust domain, process lifetime, or owner.
 - Make read surfaces report recorded facts, not predictions of a later decision.
-
-PAREDROS: thirteen review epochs closed unclean while repairs created new
-findings; these rules generalize the restructuring that removed those families.
+  A surface whose purpose is prediction, such as a dry run, computes it with the
+  deciding function.
 
 ## Simulation-first correctness
 
-Classify each program or library the Goal builds or changes. It is stateful or
-concurrent when it has any of:
+Reviews and example tests sample traces; the laws of stateful or concurrent
+software quantify over them. A law is trace-dependent when its truth depends on
+the order, interleaving, timing, or repetition of inputs, faults, restarts, or
+transfers. Classify each program or library the Goal builds or changes; a Goal
+that changes no program or library, such as documentation alone, needs no
+classification. It is stateful or concurrent when it has any of:
 
 - durable state: data that outlives the process that wrote it and that a later
   run, or another actor of the same software, reads or relies on;
@@ -154,59 +168,81 @@ concurrent when it has any of:
   retries them, resumes after them, re-runs idempotently over them, compensates
   for them, or coordinates with other actors through them.
 
-Daemons, runtimes, stores, schedulers, and protocols qualify, and so does every
-module inside such software, including in-memory ones such as an index or cache.
-Software with none of these, such as a parser, codec, or in-memory data structure,
-is a pure library. So is a one-shot tool whose effects only fail fast: it reports
-the failure and exits, leaving nothing that a later run or another actor relies
-on, such as a formatter or an artifact generator. A tool that resumes, retries,
-syncs, or keeps a state file is stateful. A pure library keeps its own property
-tests when stateful software uses it, and that software's simulator runs it as
-real code.
+Daemons, runtimes, stores, schedulers, and protocols qualify. Software with none
+of these, such as a parser, codec, or in-memory data structure, is a pure library.
+So is a one-shot tool whose effects only fail fast: on failure it reports and
+exits, leaving no partial state that a later run reads, and its outputs are its
+result rather than state it reads back, such as a formatter or an artifact
+generator. A tool that resumes, retries, syncs, caches, or keeps a state file is
+stateful. Classify by these properties, not by repository, language, or size.
+[Recurring trace-dependent findings](recurrence.md#progress-before-another-iteration)
+in software classified as pure show that it is stateful.
 
 For stateful or concurrent software, the construction includes:
 
 - **Executable laws.** Each invariant is a function that tests and the simulator
-  call. It carries, as data, the requirement clause it encodes, and its failure
-  report names that clause.
+  call. It carries, as data, the accepted-source location it encodes, such as a
+  requirement clause or user instruction, and its failure report names it.
 - **Lifecycle tables.** Each stored-state machine has an explicit table of its
   states and [ordinary transitions](#construction-rules), with a mechanical check,
   at compile time where the language allows, that every state reaches rest through
-  ordinary inputs. PAREDROS: after restructuring removed the old families,
-  newly added code again stored states with no ordinary exit.
-- **A deterministic simulator over the real code.** From one seed it runs the
-  system's real code, such as its application, drivers, and daemons, faking only
-  time, randomness, and external services at their seams and choosing every
-  interleaving from the seed. It injects restarts, replays, and faults, plus
-  the other disturbances the requirements say the system survives, such as clock
-  regression, configuration changes, or handoffs between owners. It checks every law
-  after every event and, at quiescence, when inputs stop and fake time passes
-  every deadline, that every state has reached rest. Any failure replays from its
-  seed, and the seeds of past failures stay pinned as regressions.
-- **Oracles for optimizations.** Every optimization keeps its slow, obviously
-  correct counterpart as an oracle, compared on the required observations in tests
-  and in the simulator. PAREDROS: a rebuild oracle caught a use-after-free in a new
-  incremental index within hours of its landing.
+  ordinary inputs. The simulator asserts that every transition it observes is in
+  the table, so the table cannot drift from the code.
+- **A deterministic simulator over the real code**, as specified below.
+- **Oracles for optimizations.** Every optimization the Goal builds or changes
+  keeps its slow, obviously correct counterpart as an oracle, compared on the
+  required observations in tests and in the simulator. The oracle shares none of
+  the deciding logic it checks:
+  [shared production logic cannot certify itself](verification.md#construct-the-necessary-work).
+
+From one seed, the simulator runs the system's real code, such as its application,
+drivers, and daemons:
+
+- It owns every source of nondeterminism that code consumes: time, randomness
+  (including runtime-seeded hashing), the scheduling of runnable actors, and
+  services outside the software. Storage the software embeds, such as its files or
+  an in-process database, runs for real in a per-run scratch area. A service in
+  another process, including a database server, is faked at its client seam; each
+  fake produces the failures, delays, duplicates, reorderings, and isolation
+  behavior its contract allows, checked against the real service. A fake that
+  cannot produce a permitted behavior hides that behavior's defects.
+- It chooses every interleaving and disturbance from the seed: restarts, replays,
+  and faults, plus the other disturbances the requirements say the system
+  survives, such as clock regression, configuration changes, or handoffs between
+  owners. Running one seed twice yields the same event trace.
+- It checks every law after every event and, at quiescence, when inputs stop and
+  fake time passes every deadline, that every admitted obligation has reached
+  rest. An idle recurring schedule is at rest.
+- It pins each failure as its seed and recorded event trace. The trace replays as
+  a regression even after a generator change alters what the seed produces.
 
 Pure libraries use property-based tests of their laws, with generators that reach
 the source domain and its boundaries, and the same optimization oracles. A one-shot
 tool also injects a failure at every effect seam and checks that the failure is
-reported and leaves nothing a later run relies on.
+reported and leaves nothing a later run reads.
 
 These are required verification under [proof acceptance](#proof-acceptance), and
-only the user can reduce them: the laws, lifecycle checks, oracles, property
-tests, and the simulator's pinned seeds plus a sweep of fresh seeds belong in the
-proof inventory. When no simulator exists, build one that covers what the Goal
-builds or changes, and grow it through
-[re-injection](counterexamples.md#re-inject-confirmed-defects). It drives the real
-code, so it is not the optional
-[executable behavioral model](references/counterexample-guided-normalization.md#executable-behavioral-models),
-which abstracts the code.
+only the user can reduce them. The laws, lifecycle checks, oracles, property tests,
+and the simulator's pinned seeds and traces plus a sweep of fresh seeds belong in
+the proof inventory that makes a head reviewable. Record each sweep's seeds,
+generator version, and the event kinds it produced; a sweep that never produces an
+event kind the changed code handles is incomplete. A sweep samples traces; keep it
+distinct from exhaustive checking under the
+[behavioral-model evidence rules](references/counterexample-guided-normalization.md#executable-behavioral-models).
 
-PAREDROS: thirteen 24-review epochs closed unclean. A seeded simulator over the
-real application, driver, and daemon then caught 11 of 11 re-injected review-found
-defects in 1 s to ~15 min each, against ~2 h per review epoch, and found 7 defects
-the reviews had missed.
+When no simulator exists, build the smallest one that runs the real code paths the
+Goal builds or changes, owns the nondeterminism those paths consume, and checks the
+laws the Goal establishes or could break; grow it through
+[re-injection](counterexamples.md#re-inject-confirmed-defects). A changed module
+with no trace-dependent law, such as a string helper inside a daemon, keeps its
+ordinary tests and runs in the simulator as real code; an in-memory module with
+one, such as an index or cache, has that law checked there. Seams the simulator
+needs are part of the construction; a seam outside the authorized path scope is a
+[source-binding](#source-binding) blocker, not license to broaden that scope. The
+simulator drives the real code, so it is not the optional
+[executable behavioral model](references/counterexample-guided-normalization.md#executable-behavioral-models),
+which abstracts the code. In `analyze`, classify and judge against these rules
+without building, extending, or running mutating controls.
 
 ## Proof acceptance
 

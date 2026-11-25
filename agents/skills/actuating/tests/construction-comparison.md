@@ -786,3 +786,44 @@ agreement between checks sharing the same mistaken observation is insufficient.
 Retain all attempts and distinguish structural validation, bounded transfer, and
 comparative efficacy. Existing review and completion requirements remain with
 their owners; this evaluation supplies no production review credit.
+
+## Simulation-first construction
+
+Status: **authored, not model-replayed**. This separate comparison tests the
+construction rules, simulation-first correctness, re-injection, and pre-epoch
+screen as one bundle for stateful or concurrent software. Reuse the exposure
+controls, trial isolation, freezing, and scoring above; it adds no delivery gate
+or permission for paid model runs. The rules are an owner decision; this
+comparison informs their revision, not their current force.
+
+| Arm | Frozen guidance | Result |
+|---|---|---|
+| Control: review-driven closeout | Dotfiles `5939b6c039478a5fb932459bab4c5c2bee5edd19`, before these rules. | Not run. |
+| Candidate: simulation-first | The exact candidate commit containing these rules and evaluator-only changes; bind its SHA before replay. | Not run. |
+
+| Task family | Deciding observation and nearby control |
+|---|---|
+| Stranded stored state | A withheld fault or refusal leaves a state with no ordinary exit; the lifecycle check or quiescence check must fail. Pair with a terminal state that is genuinely at rest. |
+| Interleaving-dependent disposition | A withheld input arriving behind a pending cancel or handoff is lost or doubled. Pair with the same inputs in an order that is correct. |
+| Clock regression | A withheld deadline is wrong after fake time moves backward. Pair with monotone time, where the deadline is right. |
+| Cross-boundary reference | A withheld transfer across several owners leaves a reference the receiver cannot resolve. Pair with a transfer that carries values. |
+| Incremental optimization | A withheld incremental index diverges from its rebuild after a particular event sequence. Pair with a sequence where both agree. |
+| Fail-fast one-shot tool | Fault injection at each effect seam suffices; building a simulator here spends cost without benefit. Pair with a near-identical tool that resumes from a state file. |
+
+An independent evaluator fixes each family's withheld defects before model runs;
+the implementing run never sees them. Score held-out defects caught before review,
+defects escaping to review or to a withheld falsifier, false alarms and oracle
+corrections, required-valid preservation, and whole-task cost. Report simulator
+construction, seed budget, and CI time separately from per-defect time to first
+detection, and compare detection time with review cost on the same basis rather
+than against parallel wall time alone.
+
+Freeze the first candidate, no-change decision, or unfinished attempt before
+revealing withheld cases. Retain all attempts in the denominators. Assess quality
+before cost under the same accepted correctness bar, and preserve the existing
+review inventory and five-clean requirement where the selected route needs them;
+these comparisons earn no production review credit. Predeclare repetitions,
+stopping rules, and meaningful thresholds. A tie or underpowered result is
+inconclusive; more simulation prose alone does not support retaining the rules.
+Consider ablating the screen, re-injection, and construction rules separately only
+after a useful combined signal. Source-contract tests establish no model efficacy.

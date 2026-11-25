@@ -63,13 +63,13 @@ adequate evidence. Do not load every guide at entry or impose a reasoning sequen
 | Selected work | Guidance |
 |---|---|
 | Implementation or source-bound analysis | [construction.md](construction.md): source, construction, proof, and applicable obligations. Analysis stays read-only with `corpus_write_authorized: false`. |
-| Building, changing, or analyzing a program or library | [Construction rules](construction.md#construction-rules) and [simulation-first correctness](construction.md#simulation-first-correctness), which classifies it as stateful or concurrent, or a pure library. For the stateful or concurrent kind, also [re-injection](counterexamples.md#re-inject-confirmed-defects) before a confirmed defect's fix lands and the [pre-epoch screen](review-closeout.md#pre-epoch-simulation-and-screen) before a review epoch. |
+| Building, changing, or analyzing a program or library | [Construction rules](construction.md#construction-rules) and [simulation-first correctness](construction.md#simulation-first-correctness), which classifies it as stateful or concurrent, or a pure library. For the stateful or concurrent kind, also [re-injection](counterexamples.md#re-inject-confirmed-defects) of every confirmed defect before a head carrying its fix becomes reviewable or is published. `analyze` judges against them without building or mutating. |
 | Delegation, resumption, or local completion | [Working Set](construction.md#construction-working-set) and [completion](construction.md#completion). |
 | Finding, failed check, or counterexample-driven selection | [counterexamples.md](counterexamples.md) before admission; [architecture.md](architecture.md) before responding to each admitted liability. |
 | Supporting construction skills or architecture techniques | [architecture.md](architecture.md). Universalist's `candidate`, `preserve-incumbent`, `unresolved`, and `obstructed` results remain interpretable, not required output. |
 | Materially costly verification, slow qualification, or broad retry while cost impedes the Goal | [verification.md](verification.md); ordinary cheap validation needs no extra workflow. |
 | Unsuccessful required verification, invalidated review, repeated correction, falsified elimination, unresolved broader Goal after narrow repair, or efficacy assessment | [recurrence.md](recurrence.md) before another correction, broad retry, successor wave, or retained claim. |
-| Review-closeout or bare Actuating reaching review | [review-closeout.md](review-closeout.md) before dispatch; it routes inventory, convergence, executor, scheduling, and recovery. |
+| Review-closeout or bare Actuating reaching review | [review-closeout.md](review-closeout.md) before dispatch, beginning with its [pre-epoch screen](review-closeout.md#pre-epoch-screen); it routes inventory, convergence, executor, scheduling, and recovery. |
 | Authorized publication or a review-closeout terminal decision | `$ship` for public effects; [closure.md](references/closure.md) for closure. Publication alone does not complete review-closeout. |
 
 The review contract's JSON is checked-in policy, not workflow state. The decision
@@ -84,9 +84,8 @@ deciding evidence, and unresolved questions from their existing owners before
 selecting another successor. Before that selection, compare the previous
 intervention's predicted and observed results, and apply the fresh activation or
 explicit assessment that a failed prediction or a reached epoch backstop requires.
-On a findings plateau in stateful or concurrent software, also
-[check the simulator against the finding families](recurrence.md#progress-before-another-iteration)
-before that selection.
+For stateful or concurrent software, that assessment includes
+[simulator coverage of recurring trace-dependent findings](recurrence.md#progress-before-another-iteration).
 Preserve the applicability and provenance of earlier
 failures and predictions across compaction. An unresolved mechanism remains
 investigable under the existing authority and epoch rules. Missing evidence blocks

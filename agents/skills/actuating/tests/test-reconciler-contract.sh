@@ -29,17 +29,24 @@ assert.equal(c.schema, 'actuating-review-contract/v23');
 assert.equal(c.contract_id, 'actuating-review-contract-v33');
 assert.equal(d.contract_version, 'SKDC-v1');
 assert.equal(d.skill.source_fingerprint, 'actuating-construction-core-v43');
-// Owner-decided pre-epoch gate: it precedes the epoch, opens none, and earns no credit.
+// Owner-decided pre-epoch gate: it precedes every epoch, opens none, records its own
+// disposition, and earns no credit. The epoch opens on the first initial-inventory request.
 assert.deepEqual(c.pre_epoch_screen, {
-  guidance_ref:'agents/skills/actuating/review-closeout.md#pre-epoch-simulation-and-screen',
-  applies_to:'stateful-or-concurrent-subject',
-  simulator_pinned_seeds_and_fresh_sweep_required:true, changeset_standard_screen_required:true,
-  screen_admission:'review-credit-admission-test-without-credit', complete_patch_review_required:true,
-  claude_full_patch_followup:'same-session-when-patch-read-is-the-only-hold-or-delivery-is-unestablished',
+  guidance_ref:'agents/skills/actuating/review-closeout.md#pre-epoch-screen',
+  applies_to:'every-review-epoch',
+  changeset_standard_screen_required:true, precedes_first_initial_inventory_dispatch:true,
+  binds_exact_reviewable_head:true,
+  screen_admission:'review-credit-admission-predicate-without-credit',
+  disposition_field:'screen_disposition', records_credit_disposition:false,
+  complete_patch_observation_required:true,
+  summary_only_patch_observation_holds_every_changeset_standard:true,
+  claude_missing_read_followup:'same-session-for-unread-paths', held_screen_blocks_epoch:true,
   opens_review_epoch:false, awards_review_credit:false, replaces_initial_inventory_request:false,
-  confirmed_defects_reinjected_before_fix:true
+  finding_triggers_initial_inventory_barrier:false, stateful_simulator_evidence_is_reviewability_proof:true
 });
-assert(text('review-closeout.md').includes('## Pre-epoch simulation and screen\n'));
+assert.equal(c.review_epoch.opens_on_first_initial_inventory_dispatch, true);
+assert(!('opens_on_first_review_dispatch' in c.review_epoch));
+assert(text('review-closeout.md').includes('## Pre-epoch screen\n'));
 assert(c.candidate_acceptance.common_obligations.includes(
   'required discriminator execution completed successfully against the exact candidate'));
 assert(!c.candidate_acceptance.common_obligations.some(s => s.includes('explicit limitation')));

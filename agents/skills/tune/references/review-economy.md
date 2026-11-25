@@ -67,6 +67,10 @@ review, or credit rules for this experiment.
 | Production baseline | Initial standard plus five auxiliaries; four subsequent standard confirmations, with the existing ordering, adjudication, invalidation and recovery rules. |
 | Reduced evaluation | The same initial standard plus all five auxiliaries; no subsequent standard confirmations. This is a six-review evaluation, not production convergence. |
 
+The [pre-epoch screen](../../actuating/review-closeout.md#pre-epoch-screen) precedes
+both arms and belongs to neither inventory; record whether it ran and its
+`screen_disposition`.
+
 Start with retrospective analysis when complete exact-head owner evidence exists.
 Bind each receipt to the actual candidate, model, instructions and review scope.
 Adjudicate supported material defects and duplicates under the same accepted
