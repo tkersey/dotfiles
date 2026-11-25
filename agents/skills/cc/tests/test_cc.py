@@ -291,6 +291,10 @@ def chain_checks(tmp):
     report = readback(tmp, "standard", events, target=target)
     expect(report, "every recognized read failed")
     assert report["diff_reads"][0]["shape"] == "direct", report
+    chained, run = observation(f"git diff {target} --stat && git diff {target} -- 'missing path'")
+    report = readback(tmp, "standard", chained, target=target)
+    expect(report, "every recognized read failed")
+    assert report["diff_reads"][0]["reason"] == "current-diff or path-limited read showed no patch", report
     assert report["diff_reads"][0]["reason"] == "current-diff or path-limited read showed no patch", report
 
     original, run = observation(f"git diff {target}; git diff HEAD")
@@ -683,7 +687,8 @@ def runtime_evidence(tmp):
     for command, output, error in [
             ("git diff origin/HEAD...HEAD", PATCH, None), ("git diff @{upstream}...HEAD", PATCH, None),
             ("git diff origin/release+1...HEAD", PATCH, None), ("git diff HEAD~1", PATCH, None),
-            ("git diff HEAD", PATCH, None), ("git diff @", PATCH, None),
+            ("git diff HEAD", PATCH, None), ("git diff @", PATCH, None), ("git diff --staged", PATCH, None),
+            ("git diff --cached origin/HEAD", PATCH, None),
             ("git diff --stat origin/HEAD...HEAD", PATCH, held), ("git diff --output=/tmp/x HEAD", PATCH, held),
             ("ls -la", PATCH, held),
             # A chain's output cannot be attributed to one read: the patch may come from a companion.
@@ -702,6 +707,12 @@ def runtime_evidence(tmp):
     mention.insert(1, {"type": "user", "parent_tool_use_id": None, "message": {"content": [
         {"type": "text", "text": "Earlier note: `xhigh effort` is discussed here."}]}})
     expect(readback(tmp, "standard", mention))
+    # Without a target line, only the forked command's message is the recipe.
+    current_mention = standard_events(command="git diff origin/HEAD...HEAD")
+    current_mention[1]["message"]["content"][0]["text"] = current[1]["message"]["content"][0]["text"]
+    current_mention.insert(1, {"type": "user", "parent_tool_use_id": None, "message": {"content": [
+        {"type": "text", "text": "Earlier note: `xhigh effort` is discussed here."}]}})
+    expect(readback(tmp, "standard", current_mention, target="-"))
     # A recipe that names a target reviewed another scope than the bound current diff.
     expect(readback(tmp, "standard", standard_events(command="git diff origin/HEAD...HEAD"), target="-"),
            "recipe names a review target; current-diff readback expects none")
@@ -786,6 +797,14 @@ def runtime_evidence(tmp):
     report = json.loads((tmp / "gap.json").read_text(encoding="utf-8"))
     assert any(p.startswith("follow-up 1: cannot decode follow-up events") for p in report["problems"]), report
     assert any("cannot clear" in p for p in report["problems"]), report
+    homeless = subprocess.run([sys.executable, "-I", "-c", "import os, runpy, sys, pathlib; "
+                               "pathlib.Path.home = lambda: (_ for _ in ()).throw(RuntimeError('no home')); "
+                               "sys.argv = sys.argv[1:]; runpy.run_path(sys.argv[0], run_name='__main__')",
+                               str(SCRIPT), "custom", str(tmp / "gap.jsonl"), SID, MODEL, str(tmp / "gap.jsonl"),
+                               str(tmp / "homeless.json")], capture_output=True, text=True,
+                              env={k: v for k, v in os.environ.items() if k != "CLAUDE_CONFIG_DIR"})
+    assert "Traceback" not in homeless.stderr, homeless.stderr
+    assert any("cannot locate transcript" in p for p in json.loads((tmp / "homeless.json").read_text())["problems"])
     config = tmp / "unreadable-config"
     (config / "projects" / "-repo" / f"{SID}.jsonl").mkdir(parents=True)
     (tmp / "unreadable-prompt.txt").write_bytes(b"prompt")

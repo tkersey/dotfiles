@@ -413,6 +413,7 @@ def direct_diff(words: list[str], target: str) -> bool:
     operands = [word for word in args if word not in options
                 and not re.fullmatch(r"(?:--unified=|-U)[0-9]+", word)]
     if target == "-":
+        operands = [word for word in operands if word not in ("--cached", "--staged")]
         # The helper cannot resolve the current-diff scope (upstream...HEAD plus uncommitted
         # changes); it admits any direct patch read whose result shows a patch, and the caller
         # judges whether the observed reads cover the bound scope.
@@ -428,13 +429,11 @@ def direct_diff(words: list[str], target: str) -> bool:
     return bool(HEX.fullmatch(base) and target.startswith(base) and head == "HEAD")
 
 
-def path_limited(command: str) -> bool:
-    """A direct read naming paths after `--` observes only those paths."""
+def path_limited(command: str, target: str) -> bool:
+    """A target read naming paths after `--`, chained or not, observes only those paths."""
     parsed = pieces(command)
-    if not parsed or parsed[1]:
-        return False
-    words = parsed[0][0]
-    return "--" in words and words.index("--") < len(words) - 1
+    return bool(parsed) and any(direct_diff(words, target) and "--" in words and words.index("--") < len(words) - 1
+                                for words in parsed[0])
 
 
 def tool_result_status(part: dict, event: dict, difference_exit: bool) -> tuple[bool, str]:
@@ -513,7 +512,8 @@ def standard(events: list[dict], target: str, level: str, problems: list[str], f
     # The recipe names its target only when one was passed; its effort header is always present.
     start = next((i for i, e in enumerate(session) if e.get("type") == "user" and isinstance(e.get("message"), dict)
                   and ("Review target:" in (text := text_of(e["message"].get("content")))
-                       or target == "-" and LEVEL.search(text))), None)
+                       or target == "-" and LEVEL.search(text)
+                       and str(e.get("parent_tool_use_id") or "").startswith(FORKED))), None)
     carrier = session[start] if start is not None else None
     fork = carrier.get("parent_tool_use_id") if carrier is not None else None
 
@@ -590,7 +590,7 @@ def standard(events: list[dict], target: str, level: str, problems: list[str], f
             read["reason"] = f"result {reason}"
             continue
         read["ok"], read["reason"] = tool_result_status(part, event, difference_exit)
-        if (read["ok"] and (target == "-" or path_limited(command))
+        if (read["ok"] and (target == "-" or path_limited(command, target))
                 and not PATCH_TEXT.search(text_of(part.get("content")))):
             read.update(ok=False, reason="current-diff or path-limited read showed no patch")
         details = event.get("tool_use_result")
@@ -654,7 +654,7 @@ def transcript(sid: str, problems: list[str],
     """
     try:
         paths = transcript_paths(sid)
-    except (OSError, ValueError) as exc:
+    except (OSError, ValueError, RuntimeError) as exc:
         missing.append(f"cannot locate transcript: {exc}")
         return None
     if len(paths) > 1:
