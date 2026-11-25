@@ -228,15 +228,11 @@ follow-up route below. Do not introduce an unsandboxed replay or widen permissio
 
 For an explicitly bound current-diff review, omit the CLI target and pass `-` as
 the helper's target instead of `$base..HEAD`; the recipe then has no target line and
-is recognized by its effort header. Its read gate is unchanged except that the
-recipe's own reads qualify: a commit range `git diff <ref>...HEAD`, `<ref>..HEAD` or
-`<ref> HEAD` with a ref other than HEAD (the recipe reads `origin/HEAD...HEAD`), or a
-nonzero ancestor such as `git diff HEAD~1` when it cannot tell the base, whose
-correlated result shows a patch. A range compares commits, so a spelling of HEAD
-there shows none; a single working-tree operand (`.`, `@`, `HEAD~0`, a path) shows
-only uncommitted changes and never qualifies, and bare `git diff HEAD` stays a
-companion read. The recipe must not name a review target. Judge whether the observed ref is the bound
-current-diff scope.
+is recognized by its effort header and must name no review target. The helper cannot
+resolve that scope (upstream...HEAD plus uncommitted changes), so its read gate
+admits an unchained direct `git diff` whose own correlated result shows a patch, such
+as `git diff origin/HEAD...HEAD` or `git diff HEAD`; a chain's output cannot be
+attributed to one read. Judge whether the observed reads cover the bound scope.
 
 [readback.py](scripts/readback.py) writes the evidence and every problem, and
 exits nonzero (hold) unless all of these hold:
@@ -397,9 +393,9 @@ Confidence is not evidence.
   requests and results, the missing content, and the bound range and head. It asks
   the resumed session to read with direct foreground `git diff <base>..HEAD -- <path>`
   calls, one command per call, without pipes, redirects, chains, shell loops,
-  variables, or background execution. A qualifying path-limited read supplies the
-  target observation, so another oversized full-range diff is unnecessary once
-  that observation and the required content exist. One file's diff can overflow
+  variables, or background execution. A qualifying path-limited read that shows a
+  patch supplies the target observation, so another oversized full-range diff is
+  unnecessary once that observation and the required content exist. One file's diff can overflow
   too, so the prompt also asks it to read any persisted remainder with bounded Read
   ranges of the persisted file or the source, continuing from the last delivered
   line with an overlapping range when unsure, and keeping base/head, path identity
@@ -450,7 +446,8 @@ Confidence is not evidence.
   file, prompt file or (for standard) transcript is a caller-argument problem: fix it
   and rerun readback (an unreadable follow-up may hold the missing read, so do that
   before resuming). An undecodable capture, a malformed transcript line, or several
-  transcripts for one session are session problems. It preserves the original `result`, every failed/unverified read, and
+  transcripts for one session are session problems. It preserves the original
+  `result`, every failed/unverified read, and
   supplemental results and denials under `followups`. Adjudicate all of them;
   successful readback does not establish adequate reassessment or erase a finding.
 - Compaction alone is not failure or a fresh review.

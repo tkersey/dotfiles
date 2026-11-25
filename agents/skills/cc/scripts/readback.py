@@ -63,9 +63,6 @@ from pathlib import Path
 
 LEVEL = re.compile(r"`(\w+) effort\b")
 HEX = re.compile(r"[0-9a-f]{7,40}\Z")
-REF = re.compile(r"[\w@{}~^/.][\w@{}~^/.-]*\Z")
-# A nonzero-generation ancestor of HEAD, the recipe's fallback when it cannot tell the base.
-HEAD_ANCESTOR = re.compile(r"(?:HEAD|@)(?:[~^](?:[1-9][0-9]*)?)*[~^](?:[1-9][0-9]*)?\Z")
 REFERENCE_TARGET = re.compile(r"[0-9a-f]{7,40}(?:\.\.HEAD)?\Z")
 EXIT_CODE = re.compile(r"\A\s*Exit code(?:\s*:\s*|\s+)(\d+)(?:\s|$)", re.IGNORECASE)
 PATCH_TEXT = re.compile(r"^diff --git ", re.MULTILINE)
@@ -380,6 +377,8 @@ def diff_read(command: str, target: str) -> tuple[str, bool, bool] | None:
     if not parsed:
         return None
     commands, operators = parsed
+    if target == "-" and operators:
+        return None  # a chain's output cannot be attributed to one current-diff read
     target_reads = [direct_diff(piece, target) for piece in commands]
     if not any(target_reads):
         return None
@@ -413,26 +412,29 @@ def direct_diff(words: list[str], target: str) -> bool:
                "--patch", "-p", "--unified", "-U"}
     operands = [word for word in args if word not in options
                 and not re.fullmatch(r"(?:--unified=|-U)[0-9]+", word)]
-    ranged = len(operands) == 2
+    if target == "-":
+        # The helper cannot resolve the current-diff scope (upstream...HEAD plus uncommitted
+        # changes); it admits any direct patch read whose result shows a patch, and the caller
+        # judges whether the observed reads cover the bound scope.
+        return not any(word.startswith("-") for word in operands)
     if len(operands) == 1:
         operands = re.split(r"\.{2,3}", operands[0])
-        ranged = len(operands) == 2
         if len(operands) == 1:
             # The caller freezes a clean working tree at HEAD before dispatch.
             operands.append("HEAD")
     if len(operands) != 2:
         return False
     base, head = operands
-    if target == "-":
-        # The current-diff recipe reads a commit range <ref>...HEAD, or HEAD~1 when it cannot tell
-        # the base. A range compares commits, never the working tree, so a spelling of HEAD there
-        # shows no patch, which the result check rejects. A single working-tree operand (`.`, `@`,
-        # `HEAD~0`, a path) can show only uncommitted changes, so it is not a target read and
-        # never certifies a chain's completion.
-        if ranged:
-            return head == "HEAD" and base != "HEAD" and bool(REF.fullmatch(base))
-        return bool(HEAD_ANCESTOR.fullmatch(base))
     return bool(HEX.fullmatch(base) and target.startswith(base) and head == "HEAD")
+
+
+def path_limited(command: str) -> bool:
+    """A direct read naming paths after `--` observes only those paths."""
+    parsed = pieces(command)
+    if not parsed or parsed[1]:
+        return False
+    words = parsed[0][0]
+    return "--" in words and words.index("--") < len(words) - 1
 
 
 def tool_result_status(part: dict, event: dict, difference_exit: bool) -> tuple[bool, str]:
@@ -510,7 +512,8 @@ def standard(events: list[dict], target: str, level: str, problems: list[str], f
                             for stream in followups]
     # The recipe names its target only when one was passed; its effort header is always present.
     start = next((i for i, e in enumerate(session) if e.get("type") == "user" and isinstance(e.get("message"), dict)
-                  and ("Review target:" in (text := text_of(e["message"].get("content"))) or LEVEL.search(text))), None)
+                  and ("Review target:" in (text := text_of(e["message"].get("content")))
+                       or target == "-" and LEVEL.search(text))), None)
     carrier = session[start] if start is not None else None
     fork = carrier.get("parent_tool_use_id") if carrier is not None else None
 
@@ -587,8 +590,9 @@ def standard(events: list[dict], target: str, level: str, problems: list[str], f
             read["reason"] = f"result {reason}"
             continue
         read["ok"], read["reason"] = tool_result_status(part, event, difference_exit)
-        if read["ok"] and target == "-" and not PATCH_TEXT.search(text_of(part.get("content"))):
-            read.update(ok=False, reason="current-diff read showed no patch")
+        if (read["ok"] and (target == "-" or path_limited(command))
+                and not PATCH_TEXT.search(text_of(part.get("content")))):
+            read.update(ok=False, reason="current-diff or path-limited read showed no patch")
         details = event.get("tool_use_result")
         if ((isinstance(details, dict) and details.get("persistedOutputPath"))
                 or text_of(part.get("content")).startswith("<persisted-output>")):
@@ -602,7 +606,8 @@ def standard(events: list[dict], target: str, level: str, problems: list[str], f
                             reason="target diff precedes a semicolon; its completion status is unavailable")
     if not any(read["ok"] for read in evidence["diff_reads"]):
         scope, wanted = ((target, "target diff read") if target != "-" else
-                         ("the current diff", "current-diff read such as `git diff <upstream>...HEAD`"))
+                         ("the current diff", "unchained `git diff` read of the current diff, such as "
+                          "`git diff <upstream>...HEAD` or `git diff HEAD`"))
         # Follow-ups only add reads, so every hold recorded before this one survives them.
         remedy = ("other holds remain that a --followup cannot clear; do not resume for this read alone, "
                   "and apply the caller's existing recovery rules" if problems else
@@ -669,7 +674,7 @@ def transcript(sid: str, problems: list[str],
         problems.append("transcript mixes sessions or has no session identity")
     # A record with a malformed message stays in place as None, so the launch prompt is never a
     # later record. An undecodable JSON line is dropped and already holds as invalid JSON.
-    typed, answers = [], []
+    typed, answers, answered = [], [], []
     for record in records:
         message = record.get("message") if isinstance(record.get("message"), dict) else None
         if (record.get("isSidechain") or record.get("isMeta") or record.get("isCompactSummary")
@@ -678,8 +683,10 @@ def transcript(sid: str, problems: list[str],
         if record.get("type") == "user" and not any(part.get("type") == "tool_result" for part in parts_of(record)):
             typed.append(text_of(message.get("content")) if message is not None else None)
             answers.append(None)
-        elif record.get("type") == "assistant" and answers and answers[-1] is None and message is not None:
-            answers[-1] = message.get("id") if isinstance(message.get("id"), str) else None
+            answered.append(False)
+        elif record.get("type") == "assistant" and answered and not answered[-1]:
+            answered[-1] = True
+            answers[-1] = message.get("id") if message is not None and isinstance(message.get("id"), str) else None
     return str(path), typed, answers
 
 

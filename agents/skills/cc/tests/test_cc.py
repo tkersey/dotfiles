@@ -281,11 +281,17 @@ def chain_checks(tmp):
 
     for command in [f"git diff {target} && git diff HEAD",
                     f"git diff {target} --stat; git diff {target}",
-                    f"git diff {target} --stat && git diff {target} && git status --short && ls -la",
-                    f"git diff {target} -- 'literal;path' 'literal&&path'"]:
+                    f"git diff {target} --stat && git diff {target} && git status --short && ls -la"]:
         events, run = observation(command)
         assert run.returncode == 0
         expect(readback(tmp, "standard", events, target=target))
+    # Quoted operators are literal paths, so this is one direct read; naming paths that do not
+    # exist observes nothing, and an empty path-limited read must show a patch to count.
+    events, run = observation(f"git diff {target} -- 'literal;path' 'literal&&path'")
+    report = readback(tmp, "standard", events, target=target)
+    expect(report, "every recognized read failed")
+    assert report["diff_reads"][0]["shape"] == "direct", report
+    assert report["diff_reads"][0]["reason"] == "current-diff or path-limited read showed no patch", report
 
     original, run = observation(f"git diff {target}; git diff HEAD")
     assert run.returncode == 0 and "diff --git" in run.stdout
@@ -672,27 +678,30 @@ def runtime_evidence(tmp):
     expect(report)
     assert report["observed_level"] == "high" and report["recipe_parent_tool_use_id"] == FORK, report
     held = "no successful correlated `git diff` read against the current diff"
-    # A spelling of HEAD or a pathspec prints nothing on the frozen subject; a real range prints a patch.
+    # The helper cannot resolve the current-diff scope, so an unchained direct read counts when its own
+    # result shows a patch; whether the reads cover the bound scope is the caller's judgment.
     for command, output, error in [
             ("git diff origin/HEAD...HEAD", PATCH, None), ("git diff @{upstream}...HEAD", PATCH, None),
-            ("git diff main...HEAD", PATCH, None), ("git diff HEAD~1", PATCH, None), ("git diff HEAD^", PATCH, None),
-            ("git diff @~1", PATCH, None), ("git diff @~1...HEAD", PATCH, None), ("git diff HEAD", PATCH, held),
-            ("git diff origin/HEAD...HEAD; git diff HEAD", PATCH, held), ("git diff --stat origin/HEAD...HEAD", PATCH, held),
-            ("git diff --output=/tmp/x HEAD", PATCH, held), ("ls -la", PATCH, held),
-            # Current-diff scope includes uncommitted changes, so working-tree reads can print a patch
-            # without any committed range; a trailing one cannot certify an earlier read either.
-            ("git diff @", PATCH, held), ("git diff .", PATCH, held), ("git diff HEAD~0", PATCH, held),
-            ("git diff src/", PATCH, held), ("git diff origin/HEAD...HEAD; git diff .", PATCH, held),
-            ("git diff origin/HEAD...HEAD; git diff @", PATCH, held)] + [
-            (command, "", held) for command in ("git diff .", "git diff src/", "git diff HEAD...HEAD", "git diff HEAD~0",
-                                                "git diff HEAD^0", "git diff @...HEAD", "git diff HEAD@{0}..HEAD",
-                                                "git diff HEAD^{}...HEAD", "git diff @{0}...HEAD", "git diff head")]:
+            ("git diff origin/release+1...HEAD", PATCH, None), ("git diff HEAD~1", PATCH, None),
+            ("git diff HEAD", PATCH, None), ("git diff @", PATCH, None),
+            ("git diff --stat origin/HEAD...HEAD", PATCH, held), ("git diff --output=/tmp/x HEAD", PATCH, held),
+            ("ls -la", PATCH, held),
+            # A chain's output cannot be attributed to one read: the patch may come from a companion.
+            ("git diff @...HEAD && git diff HEAD", PATCH, held), ("git diff origin/HEAD...HEAD; git diff .", PATCH, held),
+            ("git diff --stat origin/HEAD...HEAD && git diff origin/HEAD...HEAD", PATCH, held)] + [
+            (command, "", held) for command in ("git diff origin/HEAD...HEAD", "git diff .", "git diff HEAD^{}...HEAD",
+                                                "git diff @{0}...HEAD", "git diff HEAD")]:
         stream = standard_events(command=command, output=output)
         stream[1]["message"]["content"][0]["text"] = current[1]["message"]["content"][0]["text"]
         report = readback(tmp, "standard", stream, target="-")
         expect(report, error)
         assert error is None or "`git diff <upstream>...HEAD`" in report["problems"][-1], report
         assert "--reference-patch" not in " ".join(report["problems"]), report
+    # With a bound target, only the target line identifies the recipe, not an earlier effort mention.
+    mention = standard_events()
+    mention.insert(1, {"type": "user", "parent_tool_use_id": None, "message": {"content": [
+        {"type": "text", "text": "Earlier note: `xhigh effort` is discussed here."}]}})
+    expect(readback(tmp, "standard", mention))
     # A recipe that names a target reviewed another scope than the bound current diff.
     expect(readback(tmp, "standard", standard_events(command="git diff origin/HEAD...HEAD"), target="-"),
            "recipe names a review target; current-diff readback expects none")
@@ -1245,6 +1254,12 @@ def main():
         report = readback(tmp, "standard", standard_events(command="ls -la"), standard_typed[:-1] + [summary, reply("msg-a")],
                           followups=[answered(as_followup(standard_events()), "msg-a")], followup_prompts=[ask])
         expect(report)  # compaction between a prompt and its answer does not take the answer slot
+        # The first reply after a prompt is its answer even when that reply's id is malformed.
+        malformed_first = standard_typed[:-1] + [{"type": "assistant", "sessionId": SID, "message": {"id": [1]}},
+                                                 reply("msg-a")]
+        expect(readback(tmp, "standard", standard_events(), malformed_first,
+                        followups=[answered(as_followup(standard_events()), "msg-a")], followup_prompts=[ask]),
+               "answered by this stream")
         odd_id = answered(as_followup(standard_events()), "msg-a")
         odd_id[-2]["message"]["id"] = [1]
         expect(readback(tmp, "standard", standard_events(), standard_typed, followups=[odd_id], followup_prompts=[ask]),
