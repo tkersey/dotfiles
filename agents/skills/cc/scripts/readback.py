@@ -2,9 +2,9 @@
 
 usage:
   uv run --no-project python -I readback.py standard EVENTS SESSION_ID MODEL TARGET LEVEL OUT
-      [--reference-patch PATCH] [--followup EVENTS]...
+      [--reference-patch PATCH] [--followup EVENTS]... [--followup-prompt PROMPT_FILE]...
   uv run --no-project python -I readback.py custom   EVENTS SESSION_ID MODEL PROMPT_FILE OUT
-      [--followup EVENTS]...
+      [--followup EVENTS]... [--followup-prompt PROMPT_FILE]...
 
 EVENTS is captured `--output-format stream-json --verbose` stdout. MODEL is the
 full selected model ID. TARGET is the target passed to /review (`<base>..HEAD`),
@@ -35,8 +35,10 @@ file, how many distinctive changed lines appear in a tool result that reached
 the reviewer, each stream up to its first result. It reports text presence,
 never a hold. Optional same-session follow-up streams can supply a
 missing observation while retaining the original result and every supplemental
-result separately. Reference provenance, Git subject, recovery
-authorization, reassessment, and coverage remain with the caller.
+result separately. With --followup-prompt (one per --followup), each prompt must
+be the next typed user message in the session transcript. Reference provenance,
+Git subject, recovery authorization, reassessment, and coverage remain with the
+caller.
 Without a successful read, other Bash command requests are retained as
 other_bash_requests without inferring which programs they executed. The hold
 names the same-session follow-up remedy only when no other hold remains, since
@@ -178,8 +180,8 @@ def launch_runtime(events: list[dict], kind: str, problems: list[str]) -> dict:
     if init is None:
         return {}
     version, tools = init.get("claude_code_version"), init.get("tools")
-    parsed = (tuple(map(int, version.split("."))) if isinstance(version, str)
-              and re.fullmatch(r"\d+\.\d+\.\d+", version) else None)
+    release = re.match(r"(\d+)\.(\d+)\.(\d+)(?![\d.])", version) if isinstance(version, str) else None
+    parsed = tuple(map(int, release.groups())) if release else None
     if parsed is None or parsed < MIN_VERSION:
         problems.append(f"init claude_code_version {version!r} is not 2.1.287 or newer")
     if not isinstance(tools, list) or not all(isinstance(tool, str) for tool in tools):
@@ -240,7 +242,7 @@ def patch_files(reference: str) -> list[dict]:
 
 
 def output_text(line: str, paths: set[str]) -> tuple[str, ...]:
-    """Remove one display prefix; ambiguous grep boundaries stay unnormalized."""
+    """Remove a display prefix; ambiguous known-path grep boundaries stay unnormalized."""
     read = READ_PREFIX.match(line)
     if read:
         return line, line[read.end():]
@@ -269,6 +271,8 @@ def delivery(reference: str, streams: list[list[dict]]) -> dict:
             # Type changes can produce multiple sections for the same real file.
             files.setdefault(section["path"], []).extend(section["lines"])
     paths = {name for section in sections for name in section["aliases"]}
+    # A search below the session directory prints the trailing part of a reference path.
+    paths.update(name[index + 1:] for name in tuple(paths) for index, char in enumerate(name) if char == "/")
     paths.update("./" + name for name in tuple(paths))
     for stream in streams:
         init = next((event for event in stream if event.get("type") == "system" and event.get("subtype") == "init"), {})
@@ -623,9 +627,26 @@ def custom(result: dict, sid: str, prompt: bytes, problems: list[str]) -> dict:
     return evidence
 
 
+def transcript_prompts(sid: str, problems: list[str]) -> list[str] | None:
+    """The session's typed user messages in order: the launch prompt, then each follow-up prompt."""
+    try:
+        path = transcript_path(sid)
+    except (OSError, ValueError) as exc:
+        problems.append(f"cannot locate transcript: {exc}")
+        return None
+    if path is None:
+        problems.append(f"no unique transcript for {sid}")
+        return None
+    return [r["message"]["content"] for r in load_events(path, problems, "transcript")
+            if r.get("type") == "user" and not r.get("isMeta") and not r.get("isSidechain")
+            and isinstance(r.get("message"), dict) and isinstance(r["message"].get("content"), str)]
+
+
 def followup_streams(paths: list[str], kind: str, sid: str, model: str, problems: list[str],
-                     report: dict) -> list[list[dict]]:
+                     report: dict, prompt_paths: list[str]) -> list[list[dict]]:
     """Check each same-session follow-up stream on its own and report it under followups."""
+    # stream-json does not echo a piped prompt, so the transcript is the delivery evidence.
+    typed = transcript_prompts(sid, problems) if prompt_paths else None
     streams = []
     for path in paths:
         issues = []
@@ -638,6 +659,19 @@ def followup_streams(paths: list[str], kind: str, sid: str, model: str, problems
                 issues.append("no follow-up structured_output object in the terminal result")
         elif not isinstance(supplemental.get("result"), str) or not supplemental["result"].strip():
             issues.append("no nonempty follow-up result text in the terminal result")
+        entry["prompt_delivery"] = "unverified"
+        if prompt_paths:
+            number = len(streams) + 1
+            try:
+                prompt = Path(prompt_paths[number - 1]).read_bytes()
+            except OSError as exc:
+                prompt = None
+                issues.append(f"cannot read follow-up prompt: {exc}")
+            delivered = typed[number] if typed is not None and len(typed) > number else None
+            if prompt is not None and delivered is not None and delivered.encode("utf-8", "surrogatepass") == prompt:
+                entry["prompt_delivery"] = "verified"
+            else:
+                issues.append(f"transcript user message {number + 1} is not the follow-up prompt: delivery unverified")
         problems.extend(f"follow-up {len(streams) + 1}: {issue}" for issue in issues)
         streams.append(stream)
         report.setdefault("followups", []).append(entry)
@@ -646,19 +680,21 @@ def followup_streams(paths: list[str], kind: str, sid: str, model: str, problems
 
 def main() -> None:
     kind, args = (sys.argv[1], sys.argv[2:]) if len(sys.argv) > 1 else (None, [])
-    followup_paths, reference_path = [], None
-    flags = list(zip(args[6::2], args[7::2])) if kind == "standard" and len(args) >= 6 and len(args) % 2 == 0 else None
-    if (flags is not None and all(flag in ("--followup", "--reference-patch") for flag, _ in flags)
-            and sum(flag == "--reference-patch" for flag, _ in flags) <= 1):
-        events_path, sid, model, target, level, out = args[:6]
-        followup_paths = [value for flag, value in flags if flag == "--followup"]
-        reference_path = next((value for flag, value in flags if flag == "--reference-patch"), None)
-    elif (kind == "custom" and len(args) >= 5 and len(args) % 2 == 1
-          and all(flag == "--followup" for flag in args[5::2])):
-        events_path, sid, model, prompt_path, out = args[:5]
-        followup_paths = list(args[6::2])
-    else:
+    positional = {"standard": 6, "custom": 5}.get(kind or "", 0)
+    if not positional or len(args) < positional or (len(args) - positional) % 2:
         sys.exit(__doc__)
+    flags = list(zip(args[positional::2], args[positional + 1::2]))
+    named = {name: [value for flag, value in flags if flag == name]
+             for name in ("--followup", "--followup-prompt", "--reference-patch")}
+    followup_paths, prompt_paths = named["--followup"], named["--followup-prompt"]
+    if (any(flag not in named for flag, _ in flags) or len(prompt_paths) not in (0, len(followup_paths))
+            or len(named["--reference-patch"]) > (kind == "standard")):
+        sys.exit(__doc__)
+    reference_path = next(iter(named["--reference-patch"]), None)
+    if kind == "standard":
+        events_path, sid, model, target, level, out = args[:6]
+    else:
+        events_path, sid, model, prompt_path, out = args[:5]
     problems: list[str] = []
     events = load_events(Path(events_path), problems)
     result = common(events, sid, model, problems)
@@ -670,7 +706,7 @@ def main() -> None:
         reference, argument = None, []
         if reference_path is not None:
             report["reference_patch"], reference = load_reference_patch(Path(reference_path), target, argument)
-        followups = followup_streams(followup_paths, kind, sid, model, problems, report)
+        followups = followup_streams(followup_paths, kind, sid, model, problems, report, prompt_paths)
         report.update(standard(events, target, level, problems, followups, reference))
         problems.extend(argument)
     else:
@@ -680,7 +716,7 @@ def main() -> None:
             prompt = b""
             problems.append(f"cannot read prompt: {exc}")
         report.update(custom(result, sid, prompt, problems))
-        followup_streams(followup_paths, kind, sid, model, problems, report)
+        followup_streams(followup_paths, kind, sid, model, problems, report, prompt_paths)
     report.update(ok=not problems, problems=problems)
     Path(out).write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8", errors="backslashreplace")
     if problems:

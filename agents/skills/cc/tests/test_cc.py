@@ -85,7 +85,7 @@ def json_lines(records):
 
 
 def readback(base: Path, kind: str, events, records=None, prompt=PROMPT, extra_transcript=False, target=BASE,
-             followups=(), reference_patch=None, env_extra=None, cwd=None):
+             followups=(), reference_patch=None, env_extra=None, cwd=None, followup_prompts=()):
     tmp = Path(tempfile.mkdtemp(dir=base))
     events_path, out = tmp / "events.jsonl", tmp / "out.json"
     events_path.write_text(json_lines(events), encoding="utf-8")
@@ -108,6 +108,10 @@ def readback(base: Path, kind: str, events, records=None, prompt=PROMPT, extra_t
         path = tmp / f"followup-{index}.jsonl"
         path.write_text(json_lines(stream), encoding="utf-8")
         args.extend(["--followup", str(path)])
+    for index, followup_prompt in enumerate(followup_prompts):
+        path = tmp / f"followup-prompt-{index}.txt"
+        path.write_bytes(followup_prompt)
+        args.extend(["--followup-prompt", str(path)])
     # sys.executable is the interpreter selected by the outer UV invocation.
     proc = subprocess.run([sys.executable, "-I", str(SCRIPT), *args],
                           env={**os.environ, "CLAUDE_CONFIG_DIR": str(config), **(env_extra or {})},
@@ -650,6 +654,11 @@ def runtime_evidence(tmp):
         events = standard_events()
         events[0][key] = value
         expect(readback(tmp, "standard", events), error)
+    for version, error in [("2.1.340-beta.1", None), ("2.1.200-rc.1", "is not 2.1.287 or newer"),
+                           ("2.1.340.1", "is not 2.1.287 or newer"), ("v2.1.340", "is not 2.1.287 or newer")]:
+        events = standard_events()
+        events[0]["claude_code_version"] = version
+        expect(readback(tmp, "standard", events), error)
     custom = custom_events()
     custom[0]["tools"].append("Task")
     expect(readback(tmp, "custom", custom, transcript()), "exceed the custom launch inventory")
@@ -808,6 +817,7 @@ def delivery_git_report(tmp):
     for name, content in {**separate, **quoted, **boundary, **ambiguous}.items():
         write(name, content)
     write("a/foo.txt", "top-level a folder payload after the change")
+    write("docs/01-intro.md", "numbered chapter needle stays identifiable")
     write("b/new.txt", "top-level b folder payload is newly added")
     folders = ["a/foo.txt", "b/new.txt"]
     for name, lines in {**grep_files, **suffixes}.items():
@@ -898,6 +908,13 @@ def delivery_git_report(tmp):
     compare(observe("grep-rooted", grep_reference, ["same.txt"], [rooted_followup]),
             expected({name: (len(lines), len(lines) if name == "grep space.txt" else 0)
                       for name, lines in grep_reference.items()}))
+    # A search from a subdirectory prints `01-intro.md:1:`, not the bare `1:` of a one-file search.
+    nested_args = ["-C", "docs", "grep", "-n", "chapter needle"]
+    assert git(*nested_args).startswith("01-intro.md:1:")
+    nested = as_followup(standard_events(target=target, command=shlex.join(["git", *nested_args]),
+                                         output=git(*nested_args)))
+    compare(observe("grep-nested", ["docs/01-intro.md"], ["same.txt"], [nested]),
+            expected({"docs/01-intro.md": (1, 1)}))
     ambiguous_args = ["grep", "-n", "-e", "prefix", "--", "ambiguity.txt"]
     ambiguous_followup = as_followup(standard_events(target=target,
         command=shlex.join(["git", *ambiguous_args]), output=git(*ambiguous_args)))
@@ -1049,6 +1066,9 @@ def main():
         expect(readback(tmp, "standard", background), "no successful correlated")
         # Bash metadata appears on main-conversation results, so exercise it in a follow-up.
         for details in [{"backgroundTaskId": "task-1"}, {"interrupted": True}, {"exitCode": 129}]:
+            original = standard_events()
+            original[3]["tool_use_result"] = details
+            expect(readback(tmp, "standard", original), "no successful correlated")
             followup = as_followup(standard_events())
             followup[2]["tool_use_result"].update(details)
             expect(readback(tmp, "standard", standard_events(command="ls -la"), followups=[followup]),
@@ -1085,6 +1105,29 @@ def main():
         expect(readback(tmp, "standard", malformed), "no successful correlated")
 
         expect(readback(tmp, "custom", custom_events(), transcript()))
+        ask = b"Reassess finding 2 against check.txt.\n"
+        typed = transcript() + [{"type": "user", "isSidechain": True, "sessionId": SID, "message": {"content": "sub"}},
+                                {"type": "user", "sessionId": SID, "message": {"content": ask.decode()}}]
+        report = readback(tmp, "custom", custom_events(), typed, followups=[custom_events()], followup_prompts=[ask])
+        expect(report)
+        assert report["followups"][0]["prompt_delivery"] == "verified", report
+        for records, prompts in [(transcript(), [ask]), (typed, [ask + b" "])]:
+            expect(readback(tmp, "custom", custom_events(), records, followups=[custom_events()],
+                            followup_prompts=prompts), "follow-up 1: transcript user message 2 is not the follow-up")
+        standard_typed = [{"type": "user", "sessionId": SID, "message": {"content": "/review high x..HEAD"}},
+                          {"type": "user", "sessionId": SID, "message": {"content": [{"type": "tool_result"}]}},
+                          {"type": "user", "sessionId": SID, "message": {"content": ask.decode()}}]
+        report = readback(tmp, "standard", standard_events(command="ls -la"), standard_typed,
+                          followups=[as_followup(standard_events())], followup_prompts=[ask])
+        expect(report)
+        assert report["followups"][0]["prompt_delivery"] == "verified", report
+        report = readback(tmp, "standard", standard_events(), followups=[as_followup(standard_events())])
+        expect(report)
+        assert report["followups"][0]["prompt_delivery"] == "unverified", report
+        unpaired = subprocess.run([sys.executable, "-I", str(SCRIPT), "standard", "events", SID, MODEL, BASE, "high",
+                                   "out", "--followup", "a", "--followup", "b", "--followup-prompt", "p"],
+                                  capture_output=True, text=True)
+        assert unpaired.returncode != 0 and "usage:" in unpaired.stderr
         report = readback(tmp, "custom", custom_events(), transcript(), followups=[custom_events()])
         expect(report)
         assert report["followups"][0]["structured_output"] == custom_events()[-1]["structured_output"], report

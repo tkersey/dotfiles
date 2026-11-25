@@ -276,7 +276,7 @@ function claudeObservation({sid=claudeSession(5), level='high', result=claudeCle
     assert.deepEqual(report.permission_denials, permissionDenials);
     if (followup) {
       assert.deepEqual(report.followups, [{events:'followup.jsonl', runtime:claudeRuntimeEvidence,
-        result:followup.result, permission_denials:followup.permissionDenials ?? []}]);
+        result:followup.result, permission_denials:followup.permissionDenials ?? [], prompt_delivery:'unverified'}]);
       assert.equal(report.diff_reads.find(read => read.followup === 1)?.ok, true);
     }
     if (diff === 'unverified-chain') {

@@ -303,8 +303,9 @@ quoted paths, including `diff.noprefix` headers, and preserves spaces, rename
 destinations, and deletion paths. Read line numbers, grep match/context prefixes
 with or without a path (the Grep tool omits it for a one-file search), and diff
 markers are removed. Known
-reference paths (including rename sources and absolute paths under the stream's
-init directory) disambiguate grep prefixes; unresolved ambiguous prefixes remain
+reference paths (including rename sources, their trailing parts for searches below
+the session directory, and absolute paths under the stream's init directory)
+disambiguate grep prefixes; unresolved ambiguous prefixes remain
 unnormalized. Binary or short-line files are listed as `unmeasured`; sections whose
 paths cannot be resolved, such as differing custom `diff.srcPrefix` and
 `diff.dstPrefix` output (identical custom prefixes read as folders), are retained
@@ -421,8 +422,14 @@ Confidence is not evidence.
   ```bash
   uv run --no-project python -I "$skill_dir/scripts/readback.py" standard \
     "$events" "$sid" "$selected_model" "$base..HEAD" "$level" "$readback_json" \
-    --followup "$followup_events"
+    --followup "$followup_events" --followup-prompt "$followup_prompt"
   ```
+
+  stream-json does not echo a piped prompt, so with `--followup-prompt` (one per
+  `--followup`, same order) readback requires each prompt's exact bytes as the next
+  typed user message in the session transcript and reports `prompt_delivery:
+  verified`; without it `prompt_delivery` is `unverified` and the bound resume
+  invocation is the only delivery evidence.
 
   Repeat `--followup` in execution order only within the caller's recovery budget.
   The helper checks each stream's session, model, terminal result and correlated
