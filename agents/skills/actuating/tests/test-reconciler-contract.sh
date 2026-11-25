@@ -26,9 +26,27 @@ const c = json('references/review-contract.json');
 const d = json('references/decision-contract.json').skill_decision_contract;
 const names = ['standard','soundness-skeptic','footgun-finder','invariant-ace','complexity-mitigator','fresh-eyes'];
 assert.equal(c.schema, 'actuating-review-contract/v23');
-assert.equal(c.contract_id, 'actuating-review-contract-v32');
+assert.equal(c.contract_id, 'actuating-review-contract-v33');
 assert.equal(d.contract_version, 'SKDC-v1');
-assert.equal(d.skill.source_fingerprint, 'actuating-construction-core-v42');
+assert.equal(d.skill.source_fingerprint, 'actuating-construction-core-v45');
+// Owner-decided pre-epoch gate: it precedes every epoch, opens none, records its own
+// disposition, and earns no credit. The epoch opens on the first initial-inventory request.
+assert.deepEqual(c.pre_epoch_screen, {
+  guidance_ref:'agents/skills/actuating/review-closeout.md#pre-epoch-screen',
+  applies_to:'every-review-epoch',
+  changeset_standard_screen_required:true, precedes_first_initial_inventory_dispatch:true,
+  binds_exact_reviewable_head:true,
+  screen_admission:'review-credit-admission-predicate-without-credit',
+  disposition_field:'screen_disposition', records_credit_disposition:false,
+  complete_patch_observation_required:true,
+  summary_only_patch_observation_holds_every_changeset_standard:true,
+  claude_missing_read_followup:'same-session-for-unread-paths', held_screen_blocks_epoch:true,
+  opens_review_epoch:false, awards_review_credit:false, replaces_initial_inventory_request:false,
+  finding_triggers_initial_evidence_barrier:false, stateful_simulator_evidence_is_reviewability_proof:true
+});
+assert.equal(c.review_epoch.opens_on_first_initial_inventory_dispatch, true);
+assert(!('opens_on_first_review_dispatch' in c.review_epoch));
+assert(text('review-closeout.md').includes('## Pre-epoch screen\n'));
 assert(c.candidate_acceptance.common_obligations.includes(
   'required discriminator execution completed successfully against the exact candidate'));
 assert(!c.candidate_acceptance.common_obligations.some(s => s.includes('explicit limitation')));

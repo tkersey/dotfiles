@@ -3,7 +3,8 @@
 ## Review-epoch immutability and evidence acquisition
 
 Read [review-contract.md](references/review-contract.md). A review epoch opens on
-the first review request against an exact locally proved `reviewable` head. While
+the first initial-inventory request against an exact locally proved `reviewable`
+head; the [pre-epoch screen](#pre-epoch-screen) precedes it and opens none. While
 open, freeze that subject and forbid successor mutation.
 
 A material current entailed finding invalidates the candidate and all review
@@ -29,6 +30,46 @@ decision-relevant context from existing owners. Use the
 Count the closed epoch once; its requests and clean
 confirmations are not separate repair rounds. Reset review credit as required
 while preserving the history of unsuccessful approaches.
+
+## Pre-epoch screen
+
+Before the first initial-inventory request on a reviewable head, run one changeset
+standard review of that exact head from the selected executor. The screen tests
+whether the candidate should enter the wide initial inventory. For stateful or
+concurrent software, the head's reviewable proof already includes the
+[simulator](construction.md#simulation-first-correctness) results.
+
+Adjudicate the screen with the
+[Review-credit admission](references/review-contract.md#review-credit-admission)
+predicate, but record `screen_disposition: pass | hold` with its basis, never
+`credit_disposition`; no standard count, obligation, or completion statement reads
+it as review credit. The screen must observe the complete base-to-head patch. A
+changeset standard
+whose evidence shows only a summary, such as `--stat` output or recent commit
+messages, has missed its assigned inquiry; that holds the screen and every epoch
+standard alike until the observation is recovered. Recover a missing patch read
+under the existing observation recovery; in `claude` mode that is
+`$cc`'s same-session follow-up for the unread paths, as the
+[binding](references/review-contract.md#binding-and-owner-authority) describes.
+Adjudicate the original and supplemental results together.
+
+Fold screen findings through Review Fold. An admitted current material finding
+invalidates the candidate and returns to construction; with no epoch open, it
+triggers no initial evidence barrier. For stateful or concurrent software,
+[re-inject](counterexamples.md#re-inject-confirmed-defects) it like any confirmed
+defect. The screen binds its exact head: a successor, or any other change before
+the first initial-inventory request, needs a new screen. A held screen blocks the
+epoch until recovered; an unrecoverable observation is the obstruction the epoch's
+own changeset standard would face, so report it.
+
+Retain screen findings, holds, and their corrections in the existing
+[attempt history](recurrence.md#progress-before-another-iteration). Screen-only
+repair cycles remain subject to its causal progress triggers; they open no epoch
+and do not advance the invalidated-epoch count.
+
+The screen awards no review credit and replaces no request. The epoch still runs
+its full initial inventory, including its own changeset standard, and requires
+five consecutive credited standard cleans; every other rule here is unchanged.
 
 ## Invalidated-batch supersession
 

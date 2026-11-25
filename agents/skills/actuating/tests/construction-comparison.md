@@ -786,3 +786,58 @@ agreement between checks sharing the same mistaken observation is insufficient.
 Retain all attempts and distinguish structural validation, bounded transfer, and
 comparative efficacy. Existing review and completion requirements remain with
 their owners; this evaluation supplies no production review credit.
+
+## Simulation-first construction
+
+Status: **authored, not model-replayed**. This separate comparison tests the
+construction rules, simulation-first correctness, re-injection, and pre-epoch
+screen as one bundle for stateful or concurrent software. Reuse the exposure
+controls, trial isolation, freezing, and scoring above; it adds no delivery gate
+or permission for paid model runs. The rules are an owner decision; this
+comparison informs their revision, not their current force.
+
+| Arm | Frozen guidance | Result |
+|---|---|---|
+| Control: review-driven closeout | Dotfiles `5939b6c039478a5fb932459bab4c5c2bee5edd19`, before these rules. | Not run. |
+| Candidate: simulation-first | The exact candidate commit containing these rules and evaluator-only changes; bind its SHA before replay. | Not run. |
+
+| Task family | Deciding observation and nearby control |
+|---|---|
+| Stranded stored state | A withheld fault or refusal leaves a state with no implemented ordinary exit after the source-required input, recovery, availability, and fairness conditions are satisfied. Pair with an approval-dependent obligation that must remain pending while the operator has supplied no decision; stopping inputs must not force its completion. |
+| Lifecycle table correspondence | Every observed edge belongs to the table, but the declared exit is absent from the code or has an unsatisfiable guard. Require independent evidence that the exit used by the reachability argument is realizable. Pair with an implemented exit whose source-required guard is satisfiable, and with valid waiting before its input arrives. |
+| Interleaving-dependent disposition | A withheld input arriving behind a pending cancel or handoff is lost or doubled. Pair with the same inputs in an order that is correct. |
+| Clock regression | A withheld deadline is wrong after fake time moves backward. Pair with monotone time, where the deadline is right. |
+| Cross-boundary reference | A withheld transfer across several owners leaves a reference the receiver cannot resolve. Pair with a transfer that carries values. |
+| Incremental optimization | A withheld incremental index diverges from its rebuild after a particular event sequence. Pair with a sequence where both agree. |
+| Fail-fast one-shot tool | Fault injection at each effect seam suffices; building a simulator here spends cost without benefit. Pair with a near-identical tool that resumes from a state file. |
+| Recurring sequence defects in a pure library | Two successive wraparound defects in a deterministic in-memory deque require richer generated operation sequences and a separate sequence oracle. Pair with a deque that durably resumes after restart: require evidence of a listed stateful property before changing the classification. |
+| Embedded storage durability | A missing synchronization operation passes process-restart checks because data remains in the operating-system cache. A source-permitted power-loss trace through a controlled storage substrate must expose the loss while executing the real storage code. Pair with synchronized data that survives the same fault, and a contract that promises process-restart recovery only. |
+| Missing law | A supplied trace-dependent requirement has no executable law while every existing law passes; two-way coverage must flag it before review. Withhold the concrete violating trace, not the requirement. Pair with a requirement that is not trace-dependent and is correctly decided by an ordinary test. |
+
+Supply the complete accepted requirements to both arms, including every obligation
+used by the evaluator. An independent evaluator fixes each family's withheld
+defects and concrete traces before model runs; the implementing run never sees
+them. Score held-out detection, false alarms and oracle corrections,
+required-valid preservation, and whole-task cost. Report simulator, pre-epoch
+screen, and epoch-review detection separately; the screen is itself review, so a
+screen catch is not a simulator catch or a defect caught before all review. Retain
+defects escaping to a withheld falsifier. Report simulator construction, seed
+budget, and CI time separately from per-defect time to first detection, and
+compare detection time with review cost on the same basis rather than against
+parallel wall time alone.
+
+Charge screen and recovery work on every screened head, including heads that
+never open an epoch; report wide inventories avoided or repeated separately. An
+estimate of the screen's marginal savings keeps complete-patch observation
+equivalent in both arms. Report improvements in patch observation separately
+from moving review earlier; the bundled result alone cannot distinguish them.
+
+Freeze the first candidate, no-change decision, or unfinished attempt before
+revealing withheld cases. Retain all attempts in the denominators. Assess quality
+before cost under the same accepted correctness bar, and preserve the existing
+review inventory and five-clean requirement where the selected route needs them;
+these comparisons earn no production review credit. Predeclare repetitions,
+stopping rules, and meaningful thresholds. A tie or underpowered result is
+inconclusive; more simulation prose alone does not support retaining the rules.
+Consider ablating the screen, re-injection, and construction rules separately only
+after a useful combined signal. Source-contract tests establish no model efficacy.

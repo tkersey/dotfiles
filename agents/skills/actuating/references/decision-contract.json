@@ -4,7 +4,7 @@
     "skill": {
       "name": "actuating",
       "kind": "mixed",
-      "source_fingerprint": "actuating-construction-core-v42"
+      "source_fingerprint": "actuating-construction-core-v45"
     },
     "triggers": [
       {
@@ -502,6 +502,70 @@
           "narrower evidence, another candidate or mode, skipped checks, or absence of failure substitutes for successful required verification"
         ],
         "rationale": "Success is justified behavior in the actual code, not process completion or route classification."
+      },
+      {
+        "clause_id": "ACT-SIMULATION-001",
+        "trigger_refs": [
+          "ACT-BARE",
+          "ACT-ROUTE",
+          "ACT-COUNTEREXAMPLE",
+          "ACT-POST-ELIMINATION",
+          "ACT-REVIEW"
+        ],
+        "expected_routes": [
+          "ACT-IMPLEMENT",
+          "ACT-ANALYZE",
+          "ACT-REVIEW-CLOSEOUT",
+          "ACT-CLOSE"
+        ],
+        "prohibited_routes": [],
+        "required_artifacts": [
+          "classification of each program or library the Goal builds or changes as stateful or concurrent, or a pure library, by its properties rather than its repository, language, or size",
+          "for stateful or concurrent software: source-cited executable laws, a lifecycle table per stored-state machine whose pending obligations cite the binding laws that create them, with a mechanical rest-reachability check, simulator-asserted table membership, and evidence that real code implements the exits and feasible guards the reachability check relies on, plus a seeded deterministic simulator over the real code with pinned seeds and traces",
+          "two-way law coverage: every trace-dependent binding law cited by a simulator-checked executable law and every sequence law by a property test, or for pure libraries by property tests, and every gating executable law citing a binding law; a gating construction-rule assertion also cites the required source law and the conditions under which violating the rule breaks that law",
+          "a slow, obviously correct oracle that shares none of the deciding logic it checks, for every optimization the Goal builds or changes",
+          "for pure libraries: property-based tests of their laws; for fail-fast one-shot tools also a fault-injection test at every effect seam",
+          "for each fresh sweep: its seeds, generator version, and the event kinds it produced",
+          "for each confirmed defect in stateful or concurrent software: the re-injection result, any generator or oracle extension after a miss, and a pinned seed and trace that fail on the defective version and pass with the fix",
+          "before every review epoch: a changeset standard screen of the exact reviewable head over the complete patch, with a recorded screen_disposition"
+        ],
+        "success_signals": [
+          "classification follows durable state a later run or another actor relies on, concurrency, retry or recovery, time, and external effects whose outcome later behavior depends on; daemons, runtimes, stores, schedulers, and protocols are stateful or concurrent; fail-fast one-shot tools are classified with pure libraries and inject a failure at every effect seam",
+          "the simulator runs the real code from one seed, owns time, randomness, scheduling, and outside services, runs embedded storage code for real over a controlled filesystem or disk seam when source-required faults need it, fakes services in other processes with contract-checked fakes, yields the same trace for the same seed, and injects the disturbances the requirements say the system survives",
+          "safety laws are checked after every event; required progress is checked under realized source-required input, availability, recovery, and fairness assumptions; valid waits remain valid while a premise is absent, and continuations with that premise supplied expose missing required exits",
+          "when no simulator exists, the smallest one covering the changed paths, their nondeterminism, and the laws the Goal establishes or could break is built; a changed module without a trace-dependent law keeps its ordinary tests and runs in the simulator as real code",
+          "trace-dependent laws are defined by the listed stateful or concurrent properties; sequence laws over in-memory state are checked by property tests that generate operation sequences wherever the code lives",
+          "a mechanical check establishes rest reachability through ordinary inputs under stated source-required environment assumptions; observed table membership is kept distinct from evidence that the real code implements the exits and feasible guards the check relies on, and from required eventual progress",
+          "law coverage holds in both directions before reviewability, executable where the accepted source has stable clause identifiers in the repository; coverage is not taken as proof that a check is adequate",
+          "optimizations agree with independent slow counterparts on required observations in tests and in the simulator",
+          "construction rules govern the state, transitions, and interfaces the Goal builds or changes as construction means, with retained history, required compatibility spellings, and prediction surfaces bounded as stated",
+          "every confirmed defect is re-injected before a head carrying its fix becomes reviewable or is published; a miss first extends the generator or oracle; every re-injected defect pins a seed and trace that fail on the defective version and pass with the fix",
+          "a defect the simulator cannot be extended to express receives the ordinary control and leaves that law's simulation evidence unresolved, blocking dependent reviewability and completion until the simulator expresses it or the user accepts the gap",
+          "the pre-epoch screen observes the complete patch, records screen_disposition, binds its exact head, opens no epoch, and earns no credit; the initial inventory and five-clean convergence are unchanged; a summary-only patch observation holds every changeset standard",
+          "recurring sequence- or trace-dependent findings calibrate the applicable simulator or property-test generator and oracle; pure software is reclassified only when evidence establishes a previously missed stateful or concurrent property",
+          "held or candidate-invalidating screens and their corrections remain in the existing attempt history and causal progress assessment without counting as review epochs",
+          "analyze classifies and judges against these rules without building, extending, or running mutating controls"
+        ],
+        "failure_signals": [
+          "stateful or concurrent software is called complete or reviewable without its laws, lifecycle check, or simulator, absent user authority reducing that verification",
+          "an abstract model, wall-clock time, live outside services, unseeded randomness or scheduling, a fake that cannot produce its contract's failures, or final-state-only checking substitutes for the simulator over real code",
+          "a pure library is required to build a simulator",
+          "recurring sequence-dependent findings alone reclassify pure software as stateful without evidence of a listed stateful or concurrent property",
+          "a valid wait is failed or forced to terminate while its source-required progress premise is absent, or the required exit remains unchecked when that premise holds",
+          "observed transition membership is treated as proof that a declared exit or its guard is implemented and feasible",
+          "a process restart with surviving operating system caches is credited as power-loss durability evidence, or source-required storage faults are left outside simulator control",
+          "a fail-fast one-shot tool is required to build a simulator, or skips fault injection at an effect seam",
+          "a sweep is credited without its seeds and generator version, or without producing the event kinds the changed code handles",
+          "a confirmed defect's fix enters a reviewable or published head before re-injection, a scripted replay stands in for a generator or oracle extension, or a defect the current simulator does not reach is called outside the simulated behavior",
+          "screen results are recorded as credit_disposition or credited as review lenses, confirmations, or clean counts, or a screen finding triggers the initial evidence barrier",
+          "analyze builds or extends a simulator or runs mutating controls",
+          "runtime guidance cites one repository's history as policy",
+          "a trace-dependent binding law has no executable law, a law citing no binding law gates the code, or a construction-rule assertion gates code without the required source law and its applicability",
+          "the simulator law inventory is added to review requests instead of being checked against the source binding",
+          "a sequence law is left to indirect simulator generation instead of a property test, or a trace-dependent law to property tests that cannot produce its interleavings, faults, restarts, or time",
+          "a lifecycle state holds a pending obligation that cites no binding law, leaving its rest-reachability check without source authority"
+        ],
+        "rationale": "Reviews and example tests sample traces; a seeded simulator over the real code explores them and keeps every caught defect caught, and re-injection measures whether it does. Progress premises, source authority, and implementation correspondence keep those checks faithful to the required behavior. A changeset standard that observes only a summary of the patch misses its assigned inquiry; a complete pre-epoch reading can reject a candidate before the wide initial inventory. tests/construction-comparison.md#simulation-first-construction defines the held-out comparison that informs revision of these rules."
       }
     ],
     "instrumentation": {

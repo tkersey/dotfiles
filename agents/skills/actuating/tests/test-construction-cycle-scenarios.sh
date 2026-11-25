@@ -30,8 +30,24 @@ function observe(i) {
   const semantic = r => ['clean', 'findings'].includes(r.verdict);
   const credited = r => semantic(r) && r.credit_disposition === 'credit';
   const material = r => r.findings?.some(f => f.authority === 'entailed' && f.applicability === 'current');
+  const screen = i.pre_epoch_screen;
+  if (screen) {
+    assert.equal(screen.phase, 'pre_epoch_screen', 'wrong screen phase');
+    assert.equal(screen.scope, 'changeset', 'wrong screen scope');
+    assert.equal(screen.lens, 'standard', 'wrong screen lens');
+    assert.equal(screen.role, 'standard', 'wrong screen role');
+    assert.equal(screen.custom_instructions, undefined, 'custom standard prompt');
+    assert(['pass', 'hold'].includes(screen.screen_disposition), 'unknown screen disposition');
+    assert(!Object.hasOwn(screen, 'credit_disposition'), 'screen records review credit');
+    seen.add(screen.id);
+  }
+  const screenNeedsFold = screen?.verdict === 'findings' || Boolean(screen?.findings?.length);
+  const screenFolded = !screenNeedsFold || i.folded?.includes(screen.id) === true;
+  const screenPassed = screenFolded && screen?.head === i.head && screen.screen_disposition === 'pass' &&
+    screen.complete_patch_observed === true && semantic(screen) && !material(screen);
   const initialComplete = () => [...initialSlots.keys()].every(slot => semantic(slots.get(slot)?.at(-1) ?? {}));
   for (const r of i.receipts) {
+    assert(screenPassed, 'initial inventory requires a current passed screen');
     assert(!seen.has(r.id), 'duplicate receipt'); seen.add(r.id);
     assert.equal(r.head, i.head, 'stale receipt');
     assert(lenses.includes(r.lens), 'unknown lens');
@@ -102,14 +118,19 @@ function observe(i) {
   const mutating = ['implement', 'review-closeout', 'bare'].includes(i.route);
   const proofCurrent = i.proof?.head === i.head && i.proof?.status === 'passed';
   return {
-    mutable: mutating && !open && sourcesFolded,
+    mutable: mutating && !open && sourcesFolded && screenFolded,
     epoch_open: open,
     complete: ['review-closeout', 'bare'].includes(i.route) && converged && proofCurrent && completionSources,
-    may_dispatch: i.route !== 'implement' && proofCurrent && i.receipts.length === 0 && sourcesFolded
+    may_dispatch: i.route !== 'implement' && proofCurrent && screenPassed && i.receipts.length === 0 && sourcesFolded
   };
 }
+const passedScreen = head => ({
+  id:`screen-${head}`, head, phase:'pre_epoch_screen', scope:'changeset', lens:'standard', role:'standard',
+  verdict:'clean', screen_disposition:'pass', complete_patch_observed:true
+});
+const screenedDefaults = {...fixture.defaults, pre_epoch_screen:passedScreen(fixture.defaults.head)};
 for (const c of fixture.scenarios) {
-  const input = {...fixture.defaults, ...c.input};
+  const input = {...screenedDefaults, ...c.input};
   input.receipts = input.receipts.map(ref => {
     assert(Object.hasOwn(fixture.receipt_catalog, ref), `missing receipt ${ref}`);
     return fixture.receipt_catalog[ref];
@@ -118,12 +139,81 @@ for (const c of fixture.scenarios) {
   else assert.deepEqual(observe(input), c.expected, c.id);
 }
 
+const screenReady = {mutable:true, epoch_open:false, complete:false, may_dispatch:true};
+const screenBlocked = {...screenReady, may_dispatch:false};
+assert.deepEqual(observe(screenedDefaults), screenReady);
+for (const [name, pre_epoch_screen] of [
+  ['missing', undefined],
+  ['held', {...passedScreen('h1'), screen_disposition:'hold'}],
+  ['stale', passedScreen('h0')],
+  ['summary-only', {...passedScreen('h1'), complete_patch_observed:false}],
+  ['verdictless', {...passedScreen('h1'), verdict:'verdictless'}]
+]) {
+  const input = {...screenedDefaults, pre_epoch_screen};
+  assert.deepEqual(observe(input), screenBlocked, name);
+  assert.throws(() => observe({...input, receipts:[fixture.receipt_catalog.r07]}),
+    /initial inventory requires a current passed screen/, name);
+  assert.deepEqual(observe({...input, pre_epoch_screen:passedScreen('h1')}), screenReady, `${name}: recovered`);
+}
+const rejectedScreen = {...passedScreen('h1'), verdict:'findings', screen_disposition:'hold',
+  findings:fixture.receipt_catalog.r01.findings};
+const unfoldedScreen = {...screenBlocked, mutable:false};
+for (const pre_epoch_screen of [rejectedScreen,
+  {...rejectedScreen, screen_disposition:'pass'}, {...rejectedScreen, verdict:'verdictless'}]) {
+  const input = {...screenedDefaults, pre_epoch_screen};
+  assert.deepEqual(observe(input), unfoldedScreen);
+  assert.deepEqual(observe({...input, folded:undefined}), unfoldedScreen);
+  assert.deepEqual(observe({...input, folded:['unrelated-review']}), unfoldedScreen);
+  assert.deepEqual(observe({...input,
+    sources:[{id:'screen-finding', status:'folded', required:true}]}), unfoldedScreen);
+  assert.deepEqual(observe({...input, folded:[pre_epoch_screen.id]}), screenBlocked);
+  assert.deepEqual(observe({...input, folded:[pre_epoch_screen.id],
+    sources:[{id:'screen-finding', status:'unfolded', required:true}]}), unfoldedScreen);
+  assert.throws(() => observe({...input, folded:[pre_epoch_screen.id],
+    receipts:[fixture.receipt_catalog.r07]}), /initial inventory requires a current passed screen/);
+}
+for (const [authority, applicability] of [
+  ['strengthening','current'], ['preference','current'], ['entailed','non-current']
+]) {
+  const screen = {...passedScreen('h1'), verdict:'findings', findings:[{authority, applicability}]};
+  const input = {...screenedDefaults, pre_epoch_screen:screen};
+  assert.deepEqual(observe(input), unfoldedScreen);
+  assert.throws(() => observe({...input, receipts:[fixture.receipt_catalog.r07]}),
+    /initial inventory requires a current passed screen/);
+  assert.deepEqual(observe({...input, folded:[screen.id]}), screenReady);
+  assert.deepEqual(observe({...input, folded:[screen.id],
+    pre_epoch_screen:{...screen, screen_disposition:'hold'}}), screenBlocked);
+}
+for (const credit_disposition of ['credit', 'hold', undefined])
+  assert.throws(() => observe({...screenedDefaults,
+    pre_epoch_screen:{...passedScreen('h1'), credit_disposition}}), /screen records review credit/);
+for (const [delta, error] of [
+  [{phase:'initial'}, /wrong screen phase/],
+  [{scope:'file'}, /wrong screen scope/],
+  [{lens:'fresh-eyes'}, /wrong screen lens/],
+  [{role:'auxiliary'}, /wrong screen role/],
+  [{custom_instructions:'use only the summary'}, /custom standard prompt/],
+  [{screen_disposition:'credit'}, /unknown screen disposition/]
+]) assert.throws(() => observe({...screenedDefaults,
+  pre_epoch_screen:{...passedScreen('h1'), ...delta}}), error);
+assert.deepEqual(observe({...screenedDefaults, head:'h2', proof:{head:'h2', status:'passed'}}), screenBlocked);
+assert.deepEqual(observe({...screenedDefaults, head:'h2', proof:{head:'h2', status:'passed'},
+  pre_epoch_screen:passedScreen('h2')}), screenReady);
+
 // Each terminal outcome is necessary, not just a nonempty fold or a standard-only
 // fold. The same condition protects both completion and the frozen epoch.
 const cleanCase = fixture.scenarios.find(c => c.id === 'five-standard-cleans-and-all-auxiliaries-complete');
 assert(cleanCase);
-const cleanInput = {...fixture.defaults, ...cleanCase.input};
+const cleanInput = {...screenedDefaults, ...cleanCase.input};
 cleanInput.receipts = cleanInput.receipts.map(ref => fixture.receipt_catalog[ref]);
+assert.equal(observe({...cleanInput, receipts:cleanInput.receipts.slice(0,-1)}).complete, false,
+  'screen cannot supply the fifth credited standard clean');
+assert.throws(() => observe({...cleanInput,
+  receipts:cleanInput.receipts.filter(r => r.slot !== 'standard')}), /confirmation before initial barrier/,
+  'screen cannot replace the initial changeset standard');
+assert.throws(() => observe({...cleanInput,
+  receipts:cleanInput.receipts.map(r => r.slot === 'standard' ? {...r, id:cleanInput.pre_epoch_screen.id} : r)}),
+  /duplicate receipt/, 'screen identity cannot be reused as an inventory receipt');
 for (const receipt of cleanInput.receipts) {
   assert.deepEqual(observe({...cleanInput, folded:cleanInput.folded.filter(id => id !== receipt.id)}),
     {mutable:false, epoch_open:true, complete:false, may_dispatch:false}, `unfolded ${receipt.id}`);
@@ -325,6 +415,7 @@ assert.deepEqual(evaluate(partialRecovered),retired);
 assert.throws(()=>evaluate([...partialRecovered,confirmation(1)]),/confirmation after material finding/);
 // Successor qualification and full review are new-head obligations, not inherited credit.
 const successor = {...cleanInput,head:'h2',proof:{head:'h2',status:'passed'},focused_files:focusedFiles,
+  pre_epoch_screen:passedScreen('h2'),
   receipts:focusedClean.map(r=>({...r,head:'h2'})),folded:focusedClean.map(r=>r.id)};
 assert.equal(observe(successor).complete,true);
 assert.throws(()=>observe({...successor,receipts:[...successor.receipts,initial[0]]}),/duplicate receipt|stale receipt/);

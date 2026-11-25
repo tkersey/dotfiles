@@ -157,7 +157,9 @@ For each unresolved thread:
    patch -> validate -> publish successor head -> prove current-head discharge
    ```
 
-   Then enter `rebind-successor-head` and restart complete preflight.
+   Validation includes the governing skill's controls for the repair, such as
+   `$actuating`'s re-injection of confirmed defects for stateful or concurrent
+   software. Then enter `rebind-successor-head` and restart complete preflight.
 5. Resolve the GitHub thread only after the disposition is evidenced at the
    current head and live resolution readback succeeds.
 6. Refetch every review-thread page after each resolution batch and require zero

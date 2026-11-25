@@ -1,6 +1,6 @@
 {
   "schema": "actuating-review-contract/v23",
-  "contract_id": "actuating-review-contract-v32",
+  "contract_id": "actuating-review-contract-v33",
   "required_lenses": [
     {
       "name": "standard",
@@ -241,7 +241,7 @@
   },
   "review_epoch": {
     "derived_not_stored": true,
-    "opens_on_first_review_dispatch": true,
+    "opens_on_first_initial_inventory_dispatch": true,
     "binds_exact_reviewable_candidate_head": true,
     "candidate_frozen_while_open": true,
     "successor_mutation_forbidden_while_open": true,
@@ -253,6 +253,25 @@
     "clean_epoch_closes_after_standard_convergence": true,
     "initial_implementation_requires_review_dispatch": false,
     "confirmation_invalidation_requires_new_initial_wave": false
+  },
+  "pre_epoch_screen": {
+    "guidance_ref": "agents/skills/actuating/review-closeout.md#pre-epoch-screen",
+    "applies_to": "every-review-epoch",
+    "changeset_standard_screen_required": true,
+    "precedes_first_initial_inventory_dispatch": true,
+    "binds_exact_reviewable_head": true,
+    "screen_admission": "review-credit-admission-predicate-without-credit",
+    "disposition_field": "screen_disposition",
+    "records_credit_disposition": false,
+    "complete_patch_observation_required": true,
+    "summary_only_patch_observation_holds_every_changeset_standard": true,
+    "claude_missing_read_followup": "same-session-for-unread-paths",
+    "held_screen_blocks_epoch": true,
+    "opens_review_epoch": false,
+    "awards_review_credit": false,
+    "replaces_initial_inventory_request": false,
+    "finding_triggers_initial_evidence_barrier": false,
+    "stateful_simulator_evidence_is_reviewability_proof": true
   },
   "review_entry": {
     "complete_goal_proof_inventory_required": true,

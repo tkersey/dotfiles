@@ -117,6 +117,178 @@ required architectures or intermediate deliverables. Keep the applicable
 [common proof obligations](#realization-and-common-proof-obligations) and
 [completion contract](#completion) fixed, not a prescribed account of how to think.
 
+## Construction rules
+
+Apply these rules to the stored state, transitions, and interfaces the Goal builds
+or changes. Each excludes a defect family that review and simulation keep finding
+in stateful software. They are construction means, not source requirements: a
+violation is a liability only through a required law it breaks, and an explicit
+source requirement governs a rule it contradicts.
+
+- Delete state whose subject no longer exists. A record kept for a required
+  observation, audit, idempotence, or recovery is history about its subject, not
+  live state: no transition reads it as current.
+- Give every stored state an exit by an ordinary transition until it reaches
+  rest, a state with no pending obligation. Ordinary transitions are triggered by
+  a request through the software's own interface, including an operator's, or by
+  completion, elapsed time, a specified fault, or restart. Editing data, code, or
+  configuration outside that interface is not one.
+- Compute each derived quantity in exactly one function, invoked by every
+  transition that changes it. An incremental update is an optimization of that
+  function and keeps it as its oracle.
+- Give every admitted input exactly one recorded terminal disposition, such as
+  applied, rejected, superseded, or failed: never none and never two.
+- Give each wire value one canonical spelling. Accept another spelling only where
+  a compatibility contract requires it, normalize it on admission, and emit only
+  the canonical one.
+- Pass values, not references, across trust or namespace boundaries: wherever the
+  receiver cannot resolve the sender's references against the same state, such as
+  another trust domain, process lifetime, or owner.
+- Make read surfaces report recorded facts, not predictions of a later decision.
+  A surface whose purpose is prediction, such as a dry run, computes it with the
+  deciding function.
+
+## Simulation-first correctness
+
+Reviews and example tests sample traces; the laws of stateful or concurrent
+software quantify over them. A law is trace-dependent when its truth depends on
+one of the properties listed below: state that outlives a run, the interleaving of
+actors, retry, restart, recovery, or replay, time, or the outcome of an external
+effect. A law that depends only on the order of operations on in-memory state is
+a sequence law; property tests that generate operation sequences check it,
+wherever the code lives. Classify each program or library the Goal builds or changes; a Goal
+that changes no program or library, such as documentation alone, needs no
+classification. It is stateful or concurrent when it has any of:
+
+- durable state: data that outlives the process that wrote it and that a later
+  run, or another actor of the same software, reads or relies on;
+- concurrency: actors such as threads, tasks, processes, or peers whose
+  interleaving can change an observation;
+- retry, restart, recovery, or replay of an input;
+- time: clocks, deadlines, timeouts, or schedules;
+- external effects whose outcome later behavior depends on: calls or writes
+  outside the process that can fail, stall, repeat, or reorder, when the software
+  retries them, resumes after them, re-runs idempotently over them, compensates
+  for them, or coordinates with other actors through them.
+
+Daemons, runtimes, stores, schedulers, and protocols qualify. Software with none
+of these, such as a parser, codec, or in-memory data structure, is a pure library.
+So is a one-shot tool whose effects only fail fast: on failure it reports and
+exits, leaving no partial state that a later run reads, and its outputs are its
+result rather than state it reads back, such as a formatter or an artifact
+generator. A tool that resumes, retries, syncs, caches, or keeps a state file is
+stateful. Classify by these properties, not by repository, language, or size.
+[Recurring sequence- or trace-dependent findings](recurrence.md#progress-before-another-iteration)
+require reassessing the applicable generator or oracle and this classification.
+Input order alone does not establish any of these properties: a pure library's
+property tests can generate operation sequences. Reclassify it only when the
+evidence establishes a listed property that its earlier classification missed.
+
+For stateful or concurrent software, the construction includes:
+
+- **Executable laws.** Each invariant is a function that tests and the simulator
+  call. It carries, as data, the accepted-source location it encodes, such as a
+  requirement clause or user instruction, or the construction rule it enforces,
+  and its failure report names it. A construction-rule assertion that gates code
+  also cites the required source law it protects and the conditions under which
+  violating the rule breaks that law. A rule alone grants no gating authority.
+- **Two-way law coverage.** Every trace-dependent law in the
+  [source binding](#source-binding) is cited by an executable law the simulator
+  checks, and every sequence law by a property test. Every executable law that
+  gates code cites a binding law; a construction-rule assertion also names the
+  [construction rule](#construction-rules) it enforces. A binding law without a
+  check is missing required verification. A law that cites no binding law cannot
+  gate the code: it either reveals a binding law to add from the source or remains
+  a diagnostic without source authority. Where the accepted source has stable
+  clause identifiers in the repository, make this check executable. Coverage shows
+  that each law is checked, not that its check is adequate;
+  [re-injection](counterexamples.md#re-inject-confirmed-defects) calibrates that.
+- **Lifecycle tables.** Each stored-state machine has an explicit table of its
+  states, [ordinary transitions](#construction-rules), and enabling conditions.
+  Each state's pending obligation cites the binding law that creates it; that law
+  is the source law the rest-reachability check protects. A mechanical check, at
+  compile time where the language allows, establishes that every state reaches
+  rest through ordinary inputs under the stated source-required environment
+  assumptions. The simulator asserts that every transition it observes is in the
+  table. This checks observed membership only; it cannot establish that a
+  declared exit is implemented or its guard can be satisfied. Under
+  [proof acceptance](#proof-acceptance), establish that the real code implements
+  the exits and feasible guards on which the reachability check relies. Reuse
+  adequate native evidence or a shared authoritative representation of table and
+  implementation. Reachability establishes a possible exit; required eventual
+  progress needs the separate check below.
+- **A deterministic simulator over the real code**, as specified below.
+- **Oracles for optimizations.** Every optimization the Goal builds or changes
+  keeps its slow, obviously correct counterpart as an oracle, compared on the
+  required observations in tests and in the simulator. The oracle shares none of
+  the deciding logic it checks:
+  [shared production logic cannot certify itself](verification.md#construct-the-necessary-work).
+
+From one seed, the simulator runs the system's real code, such as its application,
+drivers, and daemons:
+
+- It owns every source of nondeterminism that code consumes: time, randomness
+  (including runtime-seeded hashing), the scheduling of runnable actors, and
+  services outside the software. Run embedded storage code, including an
+  in-process database engine, for real in a per-run scratch area. Control its
+  filesystem or disk seam when source-required faults include lost unsynced
+  writes, torn or reordered writes, or power loss. Keep the real storage
+  implementation above that seam; a process restart with surviving operating
+  system caches does not establish power-loss durability. Choose the seam by the
+  required fault model, not process placement alone. A service in another process,
+  including a database server, is faked at its client seam; each
+  fake produces the failures, delays, duplicates, reorderings, and isolation
+  behavior its contract allows, checked against the real service. A fake that
+  cannot produce a permitted behavior hides that behavior's defects.
+- It chooses every interleaving and disturbance from the seed: restarts, replays,
+  and faults, plus the other disturbances the requirements say the system
+  survives, such as clock regression, configuration changes, or handoffs between
+  owners. Running one seed twice yields the same event trace.
+- It checks safety laws after every event. Check required progress under the
+  source-required assumptions about future inputs, dependency availability,
+  recovery, and scheduling fairness. State and realize those premises in the
+  generated continuation. When the source requires admitted work to drain under
+  those conditions, stop new admissions, supply the required outstanding inputs,
+  settle faults as specified, and advance fake time through the relevant
+  deadlines; check that the admitted obligations reach rest. A source-permitted
+  wait for approval, a future input, or an unavailable dependency is valid while
+  its progress premise is absent. Do not invent a timeout or terminal disposition
+  to force it to rest. Also exercise the continuation where that premise holds,
+  so a missing required exit still fails. An idle recurring schedule is at rest.
+- It pins each failure as its seed and recorded event trace. The trace replays as
+  a regression even after a generator change alters what the seed produces.
+
+Pure libraries use property-based tests of their laws, with the same two-way
+coverage against the binding, generators that reach the source domain and its
+boundaries, and the same optimization oracles. A one-shot
+tool also injects a failure at every effect seam and checks that the failure is
+reported and leaves nothing a later run reads.
+
+These are required verification under [proof acceptance](#proof-acceptance), and
+only the user can reduce them. The laws, lifecycle checks, oracles, property tests,
+and the simulator's pinned seeds and traces plus a sweep of fresh seeds belong in
+the proof inventory that makes a head reviewable. Record each sweep's seeds,
+generator version, and the event kinds it produced; a sweep that never produces an
+event kind the changed code handles is incomplete. A sweep samples traces; keep it
+distinct from exhaustive checking under the
+[behavioral-model evidence rules](references/counterexample-guided-normalization.md#executable-behavioral-models).
+
+When no simulator exists, build the smallest one that runs the real code paths the
+Goal builds or changes, owns the nondeterminism those paths consume, and checks the
+laws the Goal establishes or could break; grow it through
+[re-injection](counterexamples.md#re-inject-confirmed-defects). A changed module
+with no trace-dependent law, such as a string helper or an in-memory deque inside
+a daemon, keeps its ordinary tests, with property tests for its sequence laws, and
+runs in the simulator as real code; an in-memory module with one, such as an index
+or cache that must agree with its source across restarts or interleaved writers,
+has that law checked there. Seams the simulator
+needs are part of the construction; a seam outside the authorized path scope is a
+[source-binding](#source-binding) blocker, not license to broaden that scope. The
+simulator drives the real code, so it is not the optional
+[executable behavioral model](references/counterexample-guided-normalization.md#executable-behavioral-models),
+which abstracts the code. In `analyze`, classify and judge against these rules
+without building, extending, or running mutating controls.
+
 ## Proof acceptance
 
 Required verification gates completion. Every required check must finish

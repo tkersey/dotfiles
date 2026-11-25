@@ -83,8 +83,15 @@ function check(src) {
   }
   for (const [heading, digest] of Object.entries(reviewHashes))
     assert.equal(hash(section(review, heading)), digest, heading);
-  assert.equal(blob(src['review-closeout.md']), '50ef4b9690983e2e57622e3a9703f06398cabf54');
-  assert.equal(blob(src['references/review-contract.json']), 'e4df44b5ea5a0616352f8f1002c95e31c712df47');
+  // Pin the authorized pre-epoch screen and epoch-opening revision; the epoch, supersession,
+  // and convergence sections stay hash-protected in test-composition-contract.sh.
+  assert.equal(blob(src['review-closeout.md']), '5176d751618dd383d33d3a91cd0eb4e5d6725132');
+  assert.equal(blob(src['references/review-contract.json']), '919c8710140dd784fb841ae1df6819b699555aca');
+  for (const route of ['(construction.md#construction-rules)',
+    '(construction.md#simulation-first-correctness)',
+    '(counterexamples.md#re-inject-confirmed-defects)',
+    '(review-closeout.md#pre-epoch-screen)'])
+    assert(normalized(section(entry, 'Selected guidance')).includes(route), 'unrouted simulation rule: ' + route);
   const complete = src['references/closure.md'].split('For full `complete`, require:\n\n```text\n')[1];
   assert(complete, 'missing terminal contract');
   assert.equal(hash(complete.split('\n```')[0]), closureHash);
@@ -129,6 +136,11 @@ const mutations = [
   ['lost verification', 'construction.md', 'Every required check must finish', 'An optional check may finish'],
   ['lost required-valid behavior', 'construction.md', 'required-valid behavior and observations preserved', 'optional valid behavior'],
   ['broken owner link', 'SKILL.md', '(construction.md#proof-acceptance)', '(construction.md#missing)'],
+  ['simulation unrouted', 'SKILL.md', '(construction.md#simulation-first-correctness)', '(construction.md#missing)'],
+  ['construction rules unrouted', 'SKILL.md', '(construction.md#construction-rules)', '(construction.md#missing)'],
+  ['screen unrouted', 'SKILL.md', '(review-closeout.md#pre-epoch-screen)', '(review-closeout.md#missing)'],
+  ['re-injection unrouted', 'SKILL.md', '(counterexamples.md#re-inject-confirmed-defects)', '(counterexamples.md#missing)'],
+  ['screen credited', 'review-closeout.md', 'The screen awards no review credit', 'The screen awards review credit'],
   ['lost read-only boundary', 'SKILL.md', 'It may acquire evidence', 'It may mutate evidence'],
   ['implicit publication', 'SKILL.md', 'it does not authorize mutation', 'it authorizes mutation'],
   ['local route widened', 'SKILL.md', 'local `complete`', 'published `complete`'],
