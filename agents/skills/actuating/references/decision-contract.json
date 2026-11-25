@@ -523,12 +523,12 @@
           "classification of each program or library the Goal builds or changes as stateful or concurrent, or a pure library",
           "for stateful or concurrent software: requirement-cited executable laws, a lifecycle table per stored-state machine with a mechanical rest-reachability check, and a seeded deterministic simulator over the real code with pinned regression seeds",
           "a slow, obviously correct oracle for every optimization",
-          "for pure libraries: property-based tests of their laws",
+          "for pure libraries: property-based tests of their laws; for fail-fast one-shot tools also a fault-injection test at every effect seam",
           "for each confirmed defect in stateful or concurrent software: the re-injection result and, after a miss, the generator or oracle extension and a pinned seed that fails with the fix reverted",
           "before a full review epoch on a stateful or concurrent subject: simulator results on pinned seeds and a fresh sweep, and one changeset standard screen that passed review-credit admission over the complete patch"
         ],
         "success_signals": [
-          "classification follows durable state, concurrency, retry or recovery, time, and external effects; daemons, runtimes, stores, schedulers, and protocols are stateful or concurrent, including their in-memory modules",
+          "classification follows durable state a later run or another actor relies on, concurrency, retry or recovery, time, and external effects whose outcome later behavior depends on; daemons, runtimes, stores, schedulers, and protocols are stateful or concurrent, including their in-memory modules; fail-fast one-shot tools are classified with pure libraries and inject a failure at every effect seam",
           "the simulator runs the real code from one seed, fakes only time, randomness, and external services, chooses every interleaving from the seed, injects restarts, replays, faults, and other disturbances the requirements say the system survives, checks every law after every event and rest at quiescence, and replays any failure from its seed",
           "a mechanical check establishes that every stored state reaches rest through ordinary inputs",
           "optimizations agree with their slow counterparts on required observations in tests and in the simulator",
@@ -544,7 +544,8 @@
           "a pure library is required to build a simulator",
           "a confirmed defect's fix lands before re-injection, or a scripted replay of the report stands in for a generator or oracle extension",
           "screen or simulator results are credited as review lenses, confirmations, or clean counts, or a screen finding triggers the initial-inventory barrier",
-          "another repair round starts on a findings plateau without checking simulator coverage of trace-shaped families"
+          "another repair round starts on a findings plateau without checking simulator coverage of trace-shaped families",
+          "a fail-fast one-shot tool is required to build a simulator, or skips fault injection at an effect seam"
         ],
         "rationale": "Reviews sample traces; a seeded simulator over the real code explores them and keeps every caught defect caught. PAREDROS: thirteen 24-review epochs closed unclean, while the simulator caught 11 of 11 re-injected review-found defects in 1 s to ~15 min each against ~2 h per epoch, and found 7 defects the reviews missed."
       }

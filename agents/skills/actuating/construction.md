@@ -143,19 +143,26 @@ findings; these rules generalize the restructuring that removed those families.
 Classify each program or library the Goal builds or changes. It is stateful or
 concurrent when it has any of:
 
-- durable state: data that outlives the process that wrote it;
+- durable state: data that outlives the process that wrote it and that a later
+  run, or another actor of the same software, reads or relies on;
 - concurrency: actors such as threads, tasks, processes, or peers whose
   interleaving can change an observation;
 - retry, restart, recovery, or replay of an input;
 - time: clocks, deadlines, timeouts, or schedules;
-- external effects: calls or writes outside the process that can fail, stall,
-  repeat, or reorder.
+- external effects whose outcome later behavior depends on: calls or writes
+  outside the process that can fail, stall, repeat, or reorder, when the software
+  retries them, resumes after them, re-runs idempotently over them, compensates
+  for them, or coordinates with other actors through them.
 
 Daemons, runtimes, stores, schedulers, and protocols qualify, and so does every
 module inside such software, including in-memory ones such as an index or cache.
 Software with none of these, such as a parser, codec, or in-memory data structure,
-is a pure library. A pure library keeps its own property tests when stateful
-software uses it, and that software's simulator runs it as real code.
+is a pure library. So is a one-shot tool whose effects only fail fast: it reports
+the failure and exits, leaving nothing that a later run or another actor relies
+on, such as a formatter or an artifact generator. A tool that resumes, retries,
+syncs, or keeps a state file is stateful. A pure library keeps its own property
+tests when stateful software uses it, and that software's simulator runs it as
+real code.
 
 For stateful or concurrent software, the construction includes:
 
@@ -182,7 +189,9 @@ For stateful or concurrent software, the construction includes:
   incremental index within hours of its landing.
 
 Pure libraries use property-based tests of their laws, with generators that reach
-the source domain and its boundaries, and the same optimization oracles.
+the source domain and its boundaries, and the same optimization oracles. A one-shot
+tool also injects a failure at every effect seam and checks that the failure is
+reported and leaves nothing a later run relies on.
 
 These are required verification under [proof acceptance](#proof-acceptance), and
 only the user can reduce them: the laws, lifecycle checks, oracles, property
