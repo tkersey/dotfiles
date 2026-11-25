@@ -71,6 +71,17 @@ def custom_events():
     ]
 
 
+def answered(stream, reply):
+    """A follow-up stream whose main thread answers with message REPLY, as its transcript records it."""
+    stream = copy.deepcopy(stream)
+    stream.insert(-1, {"type": "assistant", "parent_tool_use_id": None, "message": {"id": reply, "content": []}})
+    return stream
+
+
+def reply(message_id):
+    return {"type": "assistant", "sessionId": SID, "message": {"id": message_id, "content": []}}
+
+
 def transcript(prompt=PROMPT):
     return [
         {"type": "queue-operation", "sessionId": SID},
@@ -660,12 +671,18 @@ def runtime_evidence(tmp):
     report = readback(tmp, "standard", current, target="-")
     expect(report)
     assert report["observed_level"] == "high" and report["recipe_parent_tool_use_id"] == FORK, report
+    held = "no successful correlated `git diff` read against the current diff"
     for command, error in [("git diff origin/HEAD...HEAD", None), ("git diff @{upstream}...HEAD", None),
-                           ("git diff HEAD", None), ("git diff --stat origin/HEAD...HEAD", "no successful correlated"),
-                           ("git diff --output=/tmp/x HEAD", "no successful correlated"), ("ls -la", "no successful correlated")]:
+                           ("git diff main...HEAD", None), ("git diff HEAD~1", None), ("git diff HEAD", held),
+                           ("git diff .", held), ("git diff src/", held), ("git diff HEAD...HEAD", held),
+                           ("git diff origin/HEAD...HEAD; git diff HEAD", held),
+                           ("git diff --stat origin/HEAD...HEAD", held), ("git diff --output=/tmp/x HEAD", held),
+                           ("ls -la", held)]:
         stream = standard_events(command=command)
         stream[1]["message"]["content"][0]["text"] = current[1]["message"]["content"][0]["text"]
-        expect(readback(tmp, "standard", stream, target="-"), error)
+        report = readback(tmp, "standard", stream, target="-")
+        expect(report, error)
+        assert error is None or "`git diff <upstream>...HEAD`" in report["problems"][-1], report
     for version, error in [("2.1.287", None), ("2.1.340+build.5", None), ("2.1.287-rc.0", "is not 2.1.287 or newer"),
                            ("2.1.300abc", "is not 2.1.287 or newer"), ("2.1.340-beta.1", None), ("2.1.200-rc.1", "is not 2.1.287 or newer"),
                            ("2.1.340.1", "is not 2.1.287 or newer"), ("v2.1.340", "is not 2.1.287 or newer")]:
@@ -722,12 +739,32 @@ def runtime_evidence(tmp):
                                 capture_output=True, text=True)
     report = json.loads((tmp / "gap.json").read_text(encoding="utf-8"))
     assert unreadable.returncode != 0 and "Traceback" not in unreadable.stderr, unreadable.stderr
+    assert report["followups"] == [{"events": str(tmp / "missing-followup.jsonl"), "runtime": {}, "result": None,
+                                    "permission_denials": [], "prompt_delivery": "unverified"}], report
     assert any(p.startswith("follow-up 1: cannot read follow-up events") for p in report["problems"]), report
     assert not any("cannot clear" in p or "expected one init" in p for p in report["problems"]), report
-    report = readback(tmp, "standard", standard_events(command="ls -la"), followups=[as_followup(standard_events())],
+    (tmp / "corrupt-followup.jsonl").write_bytes(b"\xff\xfe not utf-8\n")
+    subprocess.run([sys.executable, "-I", str(SCRIPT), "standard", str(tmp / "gap.jsonl"), SID, MODEL, BASE, "high",
+                    str(tmp / "gap.json"), "--followup", str(tmp / "corrupt-followup.jsonl")], capture_output=True)
+    report = json.loads((tmp / "gap.json").read_text(encoding="utf-8"))
+    assert any(p.startswith("follow-up 1: cannot decode follow-up events") for p in report["problems"]), report
+    assert any("cannot clear" in p for p in report["problems"]), report
+    config = tmp / "unreadable-config"
+    (config / "projects" / "-repo" / f"{SID}.jsonl").mkdir(parents=True)
+    (tmp / "unreadable-prompt.txt").write_bytes(b"prompt")
+    subprocess.run([sys.executable, "-I", str(SCRIPT), "standard", str(tmp / "gap.jsonl"), SID, MODEL, BASE, "high",
+                    str(tmp / "unreadable.json"), "--followup", str(tmp / "gap.jsonl"), "--followup-prompt",
+                    str(tmp / "unreadable-prompt.txt")], capture_output=True, env={**os.environ, "CLAUDE_CONFIG_DIR": str(config)})
+    report = json.loads((tmp / "unreadable.json").read_text(encoding="utf-8"))
+    assert any(p.startswith("cannot read transcript") for p in report["problems"]), report
+    assert not any("session identity" in p for p in report["problems"]), report
+    failed_followup = as_followup(standard_events(output="Exit code 128\nfatal: bad revision"))
+    failed_followup[2]["message"]["content"][0]["is_error"] = True
+    report = readback(tmp, "standard", standard_events(command="ls -la"), followups=[failed_followup],
                       followup_prompts=[b"prompt"])
     expect(report, "no unique transcript")
-    assert not any("cannot clear" in p for p in report["problems"]), report
+    assert any("resume the same session" in p for p in report["problems"]), report
+    assert not any("cannot clear" in p or "later typed transcript" in p for p in report["problems"]), report
     empty = tmp / "empty-reference.patch"
     empty.write_bytes(b"")
     report = readback(tmp, "standard", standard_events(command="ls -la"), reference_patch=empty)
@@ -854,6 +891,7 @@ def delivery_git_report(tmp):
     write("a/foo.txt", "top-level a folder payload after the change")
     write("docs/01-intro.md", "numbered chapter needle stays identifiable")
     write("dated.txt", "2024-01-01 release cutoff moved to the second quarter")
+    write("schedule.txt", "12:30 standup moved to the afternoon block")
     write("b/new.txt", "top-level b folder payload is newly added")
     folders = ["a/foo.txt", "b/new.txt"]
     for name, lines in {**grep_files, **suffixes}.items():
@@ -948,6 +986,10 @@ def delivery_git_report(tmp):
     assert git(*dated_args).startswith("dated.txt:2024-01-01 release cutoff")
     dated = as_followup(standard_events(target=target, command=shlex.join(["git", *dated_args]), output=git(*dated_args)))
     compare(observe("grep-dated", ["dated.txt"], ["same.txt"], [dated]), expected({"dated.txt": (1, 1)}))
+    timed_args = ["grep", "-e", "standup", "--", "schedule.txt"]
+    assert git(*timed_args).startswith("schedule.txt:12:30 standup")
+    timed = as_followup(standard_events(target=target, command=shlex.join(["git", *timed_args]), output=git(*timed_args)))
+    compare(observe("grep-timed", ["schedule.txt"], ["same.txt"], [timed]), expected({"schedule.txt": (1, 1)}))
     rooted = "\n".join(prefix + line for prefix, line in zip((f"{repo}/", "./", f"{repo}/"),
                                                               git(*grep_args).split("\n")[:3]))
     rooted_followup = as_followup(standard_events(target=target, command="rg -n -C1 needle_match", output=rooted))
@@ -1154,38 +1196,49 @@ def main():
         expect(readback(tmp, "custom", custom_events(), transcript()))
         ask = b"Reassess finding 2 against check.txt.\n"
         typed = transcript() + [{"type": "user", "isSidechain": True, "sessionId": SID, "message": {"content": "sub"}},
-                                {"type": "user", "sessionId": SID, "message": {"content": ask.decode()}}]
-        report = readback(tmp, "custom", custom_events(), typed, followups=[custom_events()], followup_prompts=[ask])
+                                {"type": "user", "sessionId": SID, "message": {"content": ask.decode()}}, reply("msg-a")]
+        first = answered(custom_events(), "msg-a")
+        report = readback(tmp, "custom", custom_events(), typed, followups=[first], followup_prompts=[ask])
         expect(report)
         assert report["followups"][0]["prompt_delivery"] == "verified", report
         for records, prompts in [(transcript(), [ask]), (typed, [ask + b" "])]:
-            expect(readback(tmp, "custom", custom_events(), records, followups=[custom_events()],
+            expect(readback(tmp, "custom", custom_events(), records, followups=[first],
                             followup_prompts=prompts), "follow-up 1: the follow-up prompt is not a later typed transcript message")
         standard_typed = [{"type": "user", "sessionId": SID, "message": {"content": "/review high x..HEAD"}},
                           {"type": "user", "sessionId": SID, "message": {"content": [{"type": "tool_result"}]}},
-                          {"type": "user", "sessionId": SID, "message": {"content": ask.decode()}}]
+                          {"type": "user", "sessionId": SID, "message": {"content": ask.decode()}}, reply("msg-a")]
         report = readback(tmp, "standard", standard_events(command="ls -la"), standard_typed,
-                          followups=[as_followup(standard_events())], followup_prompts=[ask])
+                          followups=[answered(as_followup(standard_events()), "msg-a")], followup_prompts=[ask])
         expect(report)
         assert report["followups"][0]["prompt_delivery"] == "verified", report
+        # A prompt verified for another resume's stream is not this stream's delivery.
+        expect(readback(tmp, "standard", standard_events(), standard_typed,
+                        followups=[answered(as_followup(standard_events()), "msg-b")], followup_prompts=[ask]),
+               "answered by this stream: delivery unverified")
         report = readback(tmp, "standard", standard_events(), followups=[as_followup(standard_events())])
         expect(report)
         assert report["followups"][0]["prompt_delivery"] == "unverified", report
         ask2 = b"Now reassess finding 3.\n"
         compacted = typed + [{"type": "user", "sessionId": SID, "isCompactSummary": True, "isVisibleInTranscriptOnly": True,
                               "message": {"content": "This session is being continued from a previous conversation."}},
-                             {"type": "user", "sessionId": SID, "message": {"content": [{"type": "text", "text": ask2.decode()}]}}]
-        report = readback(tmp, "custom", custom_events(), compacted, followups=[custom_events(), custom_events()],
-                          followup_prompts=[ask, ask2])
+                             {"type": "user", "sessionId": SID, "message": {"content": [{"type": "text", "text": ask2.decode()}]}},
+                             reply("msg-b")]
+        second = answered(custom_events(), "msg-b")
+        report = readback(tmp, "custom", custom_events(), compacted, followups=[first, second], followup_prompts=[ask, ask2])
         expect(report)
         assert [entry["prompt_delivery"] for entry in report["followups"]] == ["verified", "verified"], report
-        expect(readback(tmp, "custom", custom_events(), compacted, followups=[custom_events(), custom_events()],
-                        followup_prompts=[ask2, ask]), "follow-up 2: the follow-up prompt is not a later typed")
+        expect(readback(tmp, "custom", custom_events(), compacted, followups=[first, second],
+                        followup_prompts=[ask2, ask]), "follow-up 1: the follow-up prompt is not a later typed")
+        expect(readback(tmp, "custom", custom_events(), compacted, followups=[second], followup_prompts=[ask]),
+               "follow-up 1: the follow-up prompt is not a later typed transcript message answered by this stream")
         foreign = standard_typed + [{"type": "user", "sessionId": "other", "message": {"content": "x"}}]
-        expect(readback(tmp, "standard", standard_events(), foreign, followups=[as_followup(standard_events())],
-                        followup_prompts=[ask]), "transcript mixes sessions")
+        expect(readback(tmp, "standard", standard_events(), foreign,
+                        followups=[answered(as_followup(standard_events()), "msg-a")], followup_prompts=[ask]),
+               "transcript mixes sessions")
         report = readback(tmp, "custom", custom_events(), None, followups=[custom_events()], followup_prompts=[ask])
         assert sum("no unique transcript" in p for p in report["problems"]) == 1, report  # one transcript reader
+        malformed = [{"type": "user", "sessionId": SID, "message": "not an object"}] + transcript()[1:]
+        expect(readback(tmp, "custom", custom_events(), malformed), "first transcript message is not the exact prompt")
         surrogate = [{"type": "user", "sessionId": SID, "message": {"content": "\ud83d prompt"}}]
         expect(readback(tmp, "custom", custom_events(), surrogate), "first transcript message is not the exact prompt")
         unpaired = subprocess.run([sys.executable, "-I", str(SCRIPT), "standard", "events", SID, MODEL, BASE, "high",

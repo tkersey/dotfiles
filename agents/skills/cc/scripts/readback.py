@@ -64,6 +64,7 @@ from pathlib import Path
 LEVEL = re.compile(r"`(\w+) effort\b")
 HEX = re.compile(r"[0-9a-f]{7,40}\Z")
 REF = re.compile(r"[\w@{}~^/.][\w@{}~^/.-]*\Z")
+HEAD_ANCESTOR = re.compile(r"HEAD(?:[~^][0-9]*)+\Z")
 REFERENCE_TARGET = re.compile(r"[0-9a-f]{7,40}(?:\.\.HEAD)?\Z")
 EXIT_CODE = re.compile(r"\A\s*Exit code(?:\s*:\s*|\s+)(\d+)(?:\s|$)", re.IGNORECASE)
 PATCH_TEXT = re.compile(r"^diff --git ", re.MULTILINE)
@@ -113,8 +114,11 @@ def parts_of(event: dict) -> list[dict]:
 def load_events(path: Path, problems: list[str], label="events", unreadable: list[str] | None = None) -> list[dict]:
     try:
         lines = path.read_text(encoding="utf-8").splitlines()
-    except (OSError, UnicodeError) as exc:
+    except OSError as exc:
         (problems if unreadable is None else unreadable).append(f"cannot read {label}: {exc}")
+        return []
+    except UnicodeError as exc:
+        problems.append(f"cannot decode {label}: {exc}")
         return []
     events = []
     for number, line in enumerate(lines, 1):
@@ -251,11 +255,15 @@ def output_text(line: str, paths: set[str]) -> tuple[str, ...]:
     read = READ_PREFIX.match(line)
     if read:
         return line, line[read.end():]
-    # A grep line names a changed file, then ':' or '-', then an optional line number.
-    known = [number.end() if (number := NUMBERED[char].match(line, index + 1)) else index + 1
+    # A grep line names a changed file, then ':' or '-', then an optional line number; digits
+    # there may also begin unnumbered content, so both readings stay.
+    known = [(index + 1, number.end() if (number := NUMBERED[char].match(line, index + 1)) else None)
              for index, char in enumerate(line) if char in ":-" and index and git_path(line[:index]) in paths]
     if known:
-        return (line, line[known[0]:]) if len(known) == 1 else (line,)
+        if len(known) > 1:
+            return (line,)
+        content, numbered = known[0]
+        return (line, line[content:], *((line[numbered:],) if numbered else ()))
     candidates = [match.start() + len(match[1]) for match in GREP_PREFIX.finditer(line) if match.start()]
     bare = BARE_PREFIX.match(line)
     if bare:
@@ -404,8 +412,10 @@ def direct_diff(words: list[str], target: str) -> bool:
                "--patch", "-p", "--unified", "-U"}
     operands = [word for word in args if word not in options
                 and not re.fullmatch(r"(?:--unified=|-U)[0-9]+", word)]
+    ranged = len(operands) == 2
     if len(operands) == 1:
         operands = re.split(r"\.{2,3}", operands[0])
+        ranged = len(operands) == 2
         if len(operands) == 1:
             # The caller freezes a clean working tree at HEAD before dispatch.
             operands.append("HEAD")
@@ -413,8 +423,10 @@ def direct_diff(words: list[str], target: str) -> bool:
         return False
     base, head = operands
     if target == "-":
-        # A current-diff recipe names no range; it reads a ref such as origin/HEAD against HEAD.
-        return bool(REF.fullmatch(base)) and head == "HEAD"
+        # The current-diff recipe reads <ref>...HEAD, or HEAD~1 when it cannot tell the base;
+        # `git diff HEAD` and pathspecs show no committed changes on the frozen subject.
+        return head == "HEAD" and (bool(HEAD_ANCESTOR.fullmatch(base)) or
+                                   ranged and base != "HEAD" and bool(REF.fullmatch(base)))
     return bool(HEX.fullmatch(base) and target.startswith(base) and head == "HEAD")
 
 
@@ -576,26 +588,28 @@ def standard(events: list[dict], target: str, level: str, problems: list[str], f
                 read.update(ok=False, unverified=True,
                             reason="target diff precedes a semicolon; its completion status is unavailable")
     if not any(read["ok"] for read in evidence["diff_reads"]):
+        scope, wanted = ((target, "target diff read") if target != "-" else
+                         ("the current diff", "current-diff read such as `git diff <upstream>...HEAD`"))
         # Follow-ups only add reads, so every hold recorded before this one survives them.
         remedy = ("other holds remain that a --followup cannot clear; do not resume for this read alone, "
                   "and apply the caller's existing recovery rules" if problems else
-                  "resume the same session with the bound launch settings, complete a direct foreground "
-                  "target diff read and dependent reassessment, then pass the separate stream with --followup")
+                  f"resume the same session with the bound launch settings, complete a direct foreground "
+                  f"{wanted} and dependent reassessment, then pass the separate stream with --followup")
         if any(read.get("unverified") for read in evidence["diff_reads"]):
-            problems.append(f"no successful correlated `git diff` read against {target}: the recognized read "
+            problems.append(f"no successful correlated `git diff` read against {scope}: the recognized read "
                             "precedes a `;`, so its completion is unverified; "
                             + ("" if problems or reference is not None
                                else "supply an authenticated --reference-patch, or ") + remedy)
         elif evidence["diff_reads"]:
-            problems.append(f"no successful correlated `git diff` read against {target}: every recognized "
+            problems.append(f"no successful correlated `git diff` read against {scope}: every recognized "
                             "read failed, lacks a unique later result, or did not reach the reviewer "
                             f"(see diff_reads); {remedy}")
         elif others:
-            problems.append(f"no successful correlated `git diff` read against {target}: "
+            problems.append(f"no successful correlated `git diff` read against {scope}: "
                             "other Bash requests did not establish a target patch read (see other_bash_requests); "
                             f"{remedy}")
         else:
-            problems.append(f"no successful correlated `git diff` read against {target}: "
+            problems.append(f"no successful correlated `git diff` read against {scope}: "
                             f"no recognized target diff request was found; {remedy}")
         evidence["other_bash_requests"] = others
     if reference is not None:
@@ -612,8 +626,10 @@ def transcript_path(sid: str) -> Path | None:
     return matches[0] if len(matches) == 1 else None
 
 
-def transcript(sid: str, problems: list[str], missing: list[str]) -> tuple[str, list[str]] | None:
-    """The session transcript and its typed user messages in order, from the launch prompt on.
+def transcript(sid: str, problems: list[str],
+               missing: list[str]) -> tuple[str, list[str | None], list[str | None]] | None:
+    """The session transcript's typed user messages in order, from the launch prompt on, each
+    with the id of the first assistant message that answered it.
 
     stream-json does not echo a piped prompt, so these are the delivery evidence.
     """
@@ -625,21 +641,32 @@ def transcript(sid: str, problems: list[str], missing: list[str]) -> tuple[str, 
     if path is None:
         missing.append(f"no unique transcript for {sid}")
         return None
+    unread = len(missing)
     records = load_events(path, problems, "transcript", missing)
+    if len(missing) > unread:
+        return None  # an unreadable transcript is unavailable evidence, not a session identity problem
     sessions = [r["sessionId"] for r in records if "sessionId" in r]
     if not sessions or any(session != sid for session in sessions):
         problems.append("transcript mixes sessions or has no session identity")
-    typed = [text_of(r["message"].get("content")) for r in records
-             if r.get("type") == "user" and not r.get("isMeta") and not r.get("isSidechain")
-             and isinstance(r.get("message"), dict) and not any(part.get("type") == "tool_result" for part in parts_of(r))]
-    return str(path), typed
+    # A malformed record stays in place as None, so the launch prompt is never a later record.
+    typed, answers = [], []
+    for record in records:
+        message = record.get("message") if isinstance(record.get("message"), dict) else None
+        if record.get("isSidechain") or record.get("isMeta"):
+            continue
+        if record.get("type") == "user" and not any(part.get("type") == "tool_result" for part in parts_of(record)):
+            typed.append(text_of(message.get("content")) if message is not None else None)
+            answers.append(None)
+        elif record.get("type") == "assistant" and answers and answers[-1] is None and message is not None:
+            answers[-1] = message.get("id") if isinstance(message.get("id"), str) else None
+    return str(path), typed, answers
 
 
-def custom(result: dict, prompt: bytes, located: tuple[str, list[str]] | None, problems: list[str]) -> dict:
+def custom(result: dict, prompt: bytes, located: tuple[str, list[str | None], list[str | None]] | None, problems: list[str]) -> dict:
     evidence = {"prompt_sha256": hashlib.sha256(prompt).hexdigest()}
     if located is not None:
-        evidence["transcript"], typed = located
-        if not typed or raw(typed[0]) != prompt:
+        evidence["transcript"], typed, _ = located
+        if not typed or typed[0] is None or raw(typed[0]) != prompt:
             problems.append("first transcript message is not the exact prompt: delivery unverified")
     output = result.get("structured_output")
     if not isinstance(output, dict):
@@ -650,11 +677,11 @@ def custom(result: dict, prompt: bytes, located: tuple[str, list[str]] | None, p
 
 def followup_streams(paths: list[str], kind: str, sid: str, model: str, problems: list[str], argument: list[str],
                      report: dict, prompts: list[bytes | None],
-                     located: tuple[str, list[str]] | None) -> list[list[dict]]:
+                     located: tuple[str, list[str | None], list[str | None]] | None) -> list[list[dict]]:
     """Check each same-session follow-up stream on its own and report it under followups."""
     # Each prompt is a later typed message than the previous one; runtime records such as
     # compaction summaries may sit between them.
-    typed, position = (located[1] if located else []), 0
+    typed, answers, position = (located[1], located[2], 0) if located else ([], [], 0)
     streams = []
     for path in paths:
         issues, unreadable = [], []
@@ -662,7 +689,8 @@ def followup_streams(paths: list[str], kind: str, sid: str, model: str, problems
         if unreadable:
             argument.extend(f"follow-up {len(streams) + 1}: {issue}" for issue in unreadable)
             streams.append(stream)
-            report.setdefault("followups", []).append({"events": path, "prompt_delivery": "unverified"})
+            report.setdefault("followups", []).append({"events": path, "runtime": {}, "result": None,
+                                                       "permission_denials": [], "prompt_delivery": "unverified"})
             continue
         supplemental = common(stream, sid, model, issues)
         entry = {"events": path, "runtime": launch_runtime(stream, kind, issues), **result_evidence(supplemental)}
@@ -673,10 +701,16 @@ def followup_streams(paths: list[str], kind: str, sid: str, model: str, problems
         elif not isinstance(supplemental.get("result"), str) or not supplemental["result"].strip():
             issues.append("no nonempty follow-up result text in the terminal result")
         entry["prompt_delivery"] = "unverified"
-        if prompts and (prompt := prompts[len(streams)]) is not None:
-            match = next((index for index in range(position + 1, len(typed)) if raw(typed[index]) == prompt), None)
+        if located is not None and prompts and (prompt := prompts[len(streams)]) is not None:
+            # The transcript's first answer to the prompt must be this stream's own main-thread message.
+            replies = {event["message"].get("id") for event in stream if event.get("type") == "assistant"
+                       and event.get("parent_tool_use_id") is None and isinstance(event.get("message"), dict)}
+            match = next((index for index in range(position + 1, len(typed)) if typed[index] is not None
+                          and raw(typed[index]) == prompt and answers[index] is not None and answers[index] in replies),
+                         None)
             if match is None:
-                issues.append("the follow-up prompt is not a later typed transcript message: delivery unverified")
+                issues.append("the follow-up prompt is not a later typed transcript message answered by this "
+                              "stream: delivery unverified")
             else:
                 position, entry["prompt_delivery"] = match, "verified"
         problems.extend(f"follow-up {len(streams) + 1}: {issue}" for issue in issues)
