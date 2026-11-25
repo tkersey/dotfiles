@@ -11,10 +11,17 @@ Does making the source-required relationship the active construction task improv
 first-candidate generalization and required-valid preservation, or preserve their
 quality with less total work? Better task wording is the intervention, not success.
 
+Supply the complete control and candidate instructions as accessible files before
+a comparison. Describe their behavioral difference and retain the actual delivered
+contents in the evaluation evidence. The installed skill does not require its Git
+history. If historical inputs are unavailable, their model trial cannot be replayed
+from this package alone; supplying new inputs creates a new comparison. Bundled
+fixtures support the artifact checks described below, not replay of past model runs.
+
 | Arm | Construction instructions | Result |
 |---|---|---|
-| Control: current workflow | Dotfiles `753569e0df6935a428ed8c509fb7fac5f23c008d`, including its full construction core, automatic reconsideration, Working Set, and ordinary assignment behavior. | Not run. |
-| Candidate: active construction task | The exact successor commit under evaluation, with the required relationship carried in the existing assignment and Working Set. Bind its actual contract and loaded sources before starting. | Not run. |
+| Control: current workflow | The supplied unchanged workflow, including its full construction core, automatic reconsideration, Working Set, and ordinary assignment behavior. | Not run. |
+| Candidate: active construction task | The same supplied guidance with only the assignment changed to carry the required relationship in the existing assignment and Working Set. Freeze the actual contract and delivered instructions before starting. | Not run. |
 
 The control is the actual current workflow, not a deliberately patch-only prompt.
 Preserve its ability to discover the same relationship or choose the same task.
@@ -34,12 +41,12 @@ The earlier reduced-choreography question remains separate and unrun:
 
 | Arm | Historical construction instructions | Result |
 |---|---|---|
-| A: accumulated | Dotfiles `5159d76f3b627fb334e2ecb89c5cccf1db9d2e07`, including its Actuating/Universalist composition and inherited instructions. | Not run. |
-| B: reduced | The original `actuating-construction-core-v21` comparison and its exact original candidate/adapter bytes; recover those bindings before replay. | Not run. |
+| A: accumulated | A supplied accumulated construction workflow, including its Actuating/Universalist composition and inherited instructions. | Not run. |
+| B: reduced | Supplied instructions with reduced workflow choreography and the same task knowledge, source obligations, capabilities, and completion bar. | Not run. |
 | C: protocol-free | Equivalent task, knowledge, authority, tools, and acceptance obligations without the construction protocol or its orchestration wrappers. | Not run. |
 
-The v21 binding identifies that historical intervention, not today's candidate.
-Do not substitute a later version or relabel historical receipts and results.
+Freeze the actual supplied instructions for each arm. Do not substitute new inputs
+while relabeling historical receipts and results as a replay.
 For C, separate domain knowledge from workflow instructions: retain relevant
 mathematics without reintroducing the protocol through a renamed reference.
 All arms retain source binding, witness admission, independent verification,
@@ -205,11 +212,11 @@ experiments and require their own accepted scope before production adoption.
 
 This is a separate, **authored, not model-replayed** development experiment. It
 neither replaces the comparisons above nor makes their historical controls current.
-First diagnose the unchanged workflow at dotfiles
-`52f0cc9be529be647b80ccef21fc60b28ad502a2`. Compare it with the exact candidate commit
-containing the counterexample-to-effect amendment, using the same model, reasoning
-effort, tools, evidence, total budget, and required endpoint. Bind the candidate SHA
-before replay. A package check or fixture control is not evidence of model efficacy.
+First diagnose the supplied unchanged workflow. Compare it with instructions
+differing only in the counterexample-to-effect amendment, using the same model,
+reasoning effort, tools, evidence, total budget, and required endpoint. Freeze the
+actual delivered guidance before replay. A package check or fixture control is
+not evidence of model efficacy.
 Keep an unchanged-workflow, cost-matched ordinary-inspection comparator when testing
 whether controlled comparisons outperform merely spending more effort.
 
@@ -289,11 +296,11 @@ The original codec loses null; its repaired counterpart retains it. Placebo and
 unrelated variants preserve the defect; the restrictive variant rejects a required
 input. Both Goals require successful construction for every input in the finite domain.
 
-From the repository root, with an existing temporary parent directory:
+From this skill's directory, with an existing temporary parent directory:
 
 ```sh
-node --test agents/skills/actuating/tests/test-review-action-fixture.mjs
-node agents/skills/actuating/tests/review-action-fixture.mjs prepare /tmp/trial-001 original distinct plain
+node --test tests/test-review-action-fixture.mjs
+node tests/review-action-fixture.mjs prepare /tmp/trial-001 original distinct plain
 ```
 
 Program choices are `original`, `repaired`, `nullAndOneLoss`, `zeroLoss`, `placebo`,
@@ -312,7 +319,7 @@ Assess that frozen subject with the SAME original preparation arguments, retaine
 the evaluator rather than supplied by the candidate:
 
 ```sh
-node agents/skills/actuating/tests/review-action-fixture.mjs assess /tmp/trial-001 original distinct plain
+node tests/review-action-fixture.mjs assess /tmp/trial-001 original distinct plain
 ```
 
 The assessor reads actual candidate bytes and reports their SHA-256, whether they
@@ -353,20 +360,18 @@ trajectories, not observed controller runs or evidence of policy superiority.
 Keep the existing valid alternative-representation and restrictive controls.
 
 On November 19, 2026, one fresh-context implementation agent received the prepared
-`original/distinct/plain` subject and construction guidance from dotfiles
-`6329a2a842a9c3335a7ba6a43b3eaf9ac0edf423`. Its assignment was local construction
+`original/distinct/plain` subject and the construction guidance supplied for that
+observation. Its assignment was local construction
 and checks, without a production review campaign. It received no evaluator,
 reference implementation, trajectory, or expected outcome. Its first completed
 candidate was frozen before assessment and before the next request; it exactly
-matches `programs.repaired`, SHA-256
-`821f1c4085409c6f483d3fc9a961f84197828d2858908e4f9790f4cb01b05895`.
+matches the bundled `programs.repaired` fixture.
 
 The same agent then received a new local request: preserve every original Goal
 obligation and additionally encode every required input in exactly one character,
 with wire spelling still free. This adds an explicit requirement; it does not
 retroactively change first-repair acceptance. The final source is retained verbatim
-in `fixtures/episode-codec.mjs`, SHA-256
-`e909932c2fa27551a27a8bba191be51b5c693cdad4bcc17785c506547daa3440`.
+in `fixtures/episode-codec.mjs`.
 
 | Frozen subject | Original observations | One-character encodings |
 |---|---|---|
@@ -440,9 +445,8 @@ for that distinction. Neither probe requires causal decomposition or indefinite
 observation unless the accepted task independently requires them.
 
 On November 19, 2026 (Pacific), two fresh-context agents independently received
-these subjects and the same `actuating implement` assignment, with Actuating and
-its selected guidance fixed at dotfiles
-`f1efed5086feb98824a4c65aa7d8afa02930417f`. They received the history and optional
+these subjects and the same `actuating implement` assignment, with the same frozen
+Actuating guidance. They received the history and optional
 question above, not the oracle, expected disposition, or the paired subject.
 No diagnosis or repair feedback was supplied during either assignment.
 
@@ -455,9 +459,8 @@ Both agents reproduced the 8/12 baseline and checkpoint counts, verified the
 supplied source hashes, and left instruction attribution unsupported. They did
 not turn that optional question into additional required work. Birch's final
 encoder retains the property-presence branch and writes `{timeout: value.timeout}`
-without the null/truthiness reinterpretation. Its final codec SHA-256 is
-`e44a578c262d5920ef6db640dc1310344cda9b182e26e460466cb156af086a13`;
-Cedar retains `programs.repaired`. The common baseline and partial checkpoint
+without the null/truthiness reinterpretation; Cedar retains `programs.repaired`.
+The common baseline and partial checkpoint
 are the exact checked-in `nullAndOneLoss` and `zeroLoss` controls.
 
 The parent independently executed the unchanged twelve-observation oracle on
@@ -480,8 +483,8 @@ above; it adds no delivery gate or permission for paid model runs.
 
 | Arm | Frozen guidance | Result |
 |---|---|---|
-| Control: existing integration | Dotfiles `8df45b596459cd3d3d51ec3a3aefd0be99072055`, including the existing Universalist premise-guided investigation and claim-directed correspondence guidance. | Not run. |
-| Candidate: targeted integration | The exact candidate commit containing only the two Actuating guidance edits and evaluator-only changes; bind its SHA before replay. | Not run. |
+| Control: existing integration | Supplied common guidance with Universalist's premise-guided investigation and claim-directed correspondence available, without the two targeted Actuating links. | Not run. |
+| Candidate: targeted integration | The same supplied guidance with the conditional links in proof acceptance and recurrence; freeze both delivered instruction bundles before replay. | Not run. |
 
 Both arms retain the same Universalist methods, source access, model/version,
 reasoning effort, authority, budget, review policy, and required endpoint. Do not
@@ -532,8 +535,8 @@ stage, report, review lane, production gate, or permission for paid model runs.
 
 | Arm | Frozen guidance | Result |
 |---|---|---|
-| Control: cleaned-up workflow | Dotfiles `910a9a5193fb57bf31989ee2df1a96c442560322`, including its existing construction assignment, source obligations, and conditional methods. | Not run. |
-| Candidate: success-premise assignment | The same guidance with only the Construction Working Set assignment replacement; bind the exact candidate commit and delivered sources before replay. | Not run. |
+| Control: cleaned-up workflow | The supplied cleaned-up workflow, including its existing construction assignment, source obligations, and conditional methods. | Not run. |
+| Candidate: success-premise assignment | The same guidance with only the Construction Working Set assignment replacement; freeze both delivered instruction bundles before replay. | Not run. |
 
 Do not substitute a pre-cleanup or patch-only control. Keep evaluator material out
 of both implementation contexts. Both arms receive the same contemporaneous
@@ -569,13 +572,11 @@ merged modules, or net lines. Distinct source-backed authorities remain distinct
 | Correct helper versus remaining weaker success decision | Retire displaced payload-only coverage, phase-based publication inference, or duplicate cleanup ownership when applicable. Preserve independent oracles and distinct authorities. |
 | Genuine defect versus adequate incumbent, false allegation, or wrong oracle | Allow a direct fix, justified no-change, or independently supported oracle correction. Reject-all, always-redesign, and always-add-checks policies fail calibration. |
 
-The disclosed Ledger coordination diagnostic starts from skills-zig
-[`bb4e7c7`](https://github.com/tkersey/skills-zig/commit/bb4e7c77527a1a3fc6faf37e0d436d93d691c910)
-and its contemporaneous coordination contract. Supply the already accepted
+The disclosed coordination diagnostic concerns a contract that qualifies
+empty-source success through coordination. Supply the already accepted
 empty-source condition to both arms; withhold concrete later fixtures, not the
-known requirement. Recover the accepted disposition before claiming historical
-replay fidelity; unavailable evidence is a limitation. The later
-[`0a7c9f8`](https://github.com/tkersey/skills-zig/commit/0a7c9f8e57e6ccc8b5659483bdf192170c758422)
+known requirement. The original accepted disposition is necessary for historical
+replay fidelity; unavailable evidence is a limitation. A later empty-source
 shortcut and its correction are evaluator-only evidence, never the implementation
 assignment. These disclosed cases are calibration material, not untouched holdouts.
 
@@ -645,9 +646,10 @@ The finite matrix is not exhaustive over all well-formed plans.
 
 ### Observed first successors
 
-One fresh no-history implementation agent received the task and current Actuating
-at `0ab3718aa027cb5633c01bdfe825836d45a69d3d`; another received the same task and this
-revision. Their initial task prompts differed only by the assigned skill and subject paths.
+One fresh no-history implementation agent received the task and the trial's baseline
+guidance; another received the same task and revised guidance explicitly preserving
+independently decidable conditions. Their initial task prompts differed only by the
+assigned skill and subject paths.
 Both first completed candidates were frozen before assessment or repair feedback.
 The independent oracle and its cases were fixed before either implementation ran.
 
@@ -655,27 +657,23 @@ The independent oracle and its cases were fixed before either implementation ran
 |---|---|---|
 | Original global-completeness implementation | 138 passed, 127 failed; all 32 fully observed matrix cases passed. | The discriminator detects lost decisions under partial evidence. |
 | First successor using the revised guidance | 265 passed, 0 failed; fixed inputs and candidate bytes unchanged. | Observed transfer beyond the supplied digest witness, with admission and valid behavior preserved in this domain. |
-| First successor using current main | 265 passed, 0 failed; fixed inputs and candidate bytes unchanged. | Evaluator information was exposed through the shared agent registry before its first edit; unsuitable as an isolated comparison. |
+| First successor using the trial's baseline guidance | 265 passed, 0 failed; fixed inputs and candidate bytes unchanged. | Evaluator information was exposed through the shared agent registry before its first edit; unsuitable as an isolated comparison. |
 
 The revised-guidance agent reported no access to evaluator material, other task
 copies, or the agent registry. Shared filesystem visibility was not technically
-restricted. The current-main agent reported its exposure immediately and continued;
+restricted. The baseline-guidance agent reported its exposure immediately and continued;
 that attempt was retained, not replaced. These results establish neither a clean
 comparative advantage nor broad efficacy, and confer no production review credit.
 
 `fixtures/dependency-release-before.mjs` retains the original implementation.
 `fixtures/dependency-release.mjs` retains the revised-guidance first successor
-verbatim (SHA-256 `a4f5d035fba6b4ad6dc81f0a27c115e0285d38e40a8e7ce99c83f4832b531589`).
-Its condition-local decisions and source-required composition are visible in code.
-The current-main successor's SHA-256 was
-`a319b3b65cbe5b29bc60aaa4d082e61e176401030199d6425efa18a4c0d1c9fe`.
-The revised construction guidance's SHA-256 at dispatch was
-`1ed15b8b33818bba9e1b0b36ae52c04818ba0fc0fb197c2faab2cb52fba41e76`.
+verbatim. Its condition-local decisions and source-required composition are visible
+in code.
 
-Replay the disclosed artifact cases, not the model trial, with:
+Replay the disclosed artifact cases, not the model trial, from this skill's directory:
 
 ```sh
-node --test agents/skills/actuating/tests/test-dependency-construction.mjs
+node --test tests/test-dependency-construction.mjs
 ```
 
 The checked-in regression retains the frozen oracle's cases and completion method,
@@ -708,8 +706,10 @@ supplied callbacks.
 
 ### Deciding observations
 
+From this skill's directory:
+
 ```sh
-node --test agents/skills/actuating/tests/test-continuation-construction.mjs
+node --test tests/test-continuation-construction.mjs
 ```
 
 The ten disclosed scenarios cover ordinary and reversed delivery, equal payloads,
@@ -737,10 +737,8 @@ selected tasks and continuations for that claim.
 On November 15, 2026, a fresh-context subagent received the accepted task, the faulty
 source, and Actuating's construction guidance without the oracle, reference, or
 paired subjects. Its first successor passed all ten previously frozen scenarios
-and is stored in `fixtures/continuation-dispatcher.mjs`, SHA-256
-`006db2ae51b2a6b5d715a3902a22f350ee34abdf9322fcdaf7e8d67e0a37803b`.
-The pre-run oracle was `test-continuation-construction.mjs`, SHA-256
-`e2c834ba1b653fa49dfa607cc17e7b39fd2bba648497f172ed93d800e4a2c43c`.
+and is stored in `fixtures/continuation-dispatcher.mjs`.
+The pre-run oracle was `test-continuation-construction.mjs`.
 This observes one construction under the existing guidance. No matched instruction
 ablation, repeated model comparison, or end-to-end latency measurement was run.
 
@@ -787,6 +785,54 @@ Retain all attempts and distinguish structural validation, bounded transfer, and
 comparative efficacy. Existing review and completion requirements remain with
 their owners; this evaluation supplies no production review credit.
 
+## Composition of independently justified edits
+
+Status: **authored comparison; incremental efficacy unestablished**. This tests
+whether concrete edit triggers and an explicit premise-interference question
+improve construction beyond the existing compositional guidance. It adds no
+runtime stage, proof packet, production review credit, or delivery gate.
+
+| Arm | Frozen guidance |
+|---|---|
+| Control | Supplied guidance that requires compositional laws to cover admitted environments, callbacks, application, handlers, and joint observations, without the concrete edit triggers or explicit combined-edit premise check. |
+| Candidate | The same runtime sources with the concrete edit triggers, combined-edit premise check, and dependency-based reasoning reuse in Initial construction; freeze both delivered instruction bundles before dispatch. |
+
+Use the exposure, first-candidate freezing, matched endpoint, and whole-task cost
+rules above. Both arms receive the same accepted requirements, candidate code,
+baseline justifications, and ordinary verification access. Do not tell either
+arm which justification fails or which construction should replace it. An edit
+justified under the original premises is not necessarily justified after another
+edit changes those premises. Genuine contextual equivalences whose hypotheses
+hold under the admitted composition remain composable.
+
+These disclosed families are calibration material; choose fresh task instances
+and withhold the deciding continuations for an adoption claim.
+
+| Paired family | Source-required observation and calibration control |
+|---|---|
+| Memoization and a new live dependency | Change the live policy while immutable content and its validity stay fixed. Observe current authorization separately from cached validity; retain justified caching when only an unrelated display label changes. |
+| Parallel lanes and canonical identity | Interleave distinct names that resolve to one resource. Preserve each request's required result and effect, ordering within the canonical resource, and independence between different resources; preserve the adequate lane argument when inputs already carry canonical identity. |
+| Normalization and a later consumer | Continue equal normalized views into a required decision that depends on erased provenance. Pair with an intentionally lossy accepted contract whose continuations need no discarded distinction. |
+| Admitted commands and a changed interpreter | Observe the actual source-required effect after interpretation changes. Pair with a representation change already covered by an adequate correspondence argument. |
+| Shared preparation and mutable test state | Observe whether one test's use changes another's fixture or independent oracle. Pair with safely shared immutable preparation and fresh mutable sessions. |
+| Reused reasoning and required completion checks | Reopen an argument whose deciding dependency changed; retain an argument whose dependencies still hold. Neither reuse nor a passing predecessor check supplies a required check of the delivered candidate. |
+
+Score the first construction and justified no-change decisions before repair
+feedback. Inspect the actual dependency or identity boundary, required-valid
+behavior, unaffected reasoning retained, and any unnecessary deciding site or
+investigation. Merely naming composition, adding a type, rejecting all aliases,
+discarding every cache, serializing independent resources, or redoing every prior
+argument earns no credit. Keep source-required completion and review obligations
+equal in both arms.
+
+Predeclare repetitions, stopping rules, and useful quality or total-cost thresholds.
+Retain every attempt, including failures and incomplete runs. A bounded pilot can
+check feasibility and calibration; a tie or insufficient power leaves incremental
+efficacy unresolved. Do not add more instructions because a comparison is
+inconclusive. Prefer the smaller instruction when adequately powered comparisons
+show equivalent outcomes and cost. Source-contract mutations establish only the
+instruction boundaries they exercise.
+
 ## Simulation-first construction
 
 Status: **authored, not model-replayed**. This separate comparison tests the
@@ -798,8 +844,8 @@ comparison informs their revision, not their current force.
 
 | Arm | Frozen guidance | Result |
 |---|---|---|
-| Control: review-driven closeout | Dotfiles `5939b6c039478a5fb932459bab4c5c2bee5edd19`, before these rules. | Not run. |
-| Candidate: simulation-first | The exact candidate commit containing these rules and evaluator-only changes; bind its SHA before replay. | Not run. |
+| Control: review-driven closeout | Supplied construction and review guidance without the construction-rule, simulation-first, re-injection, and pre-epoch-screen bundle being evaluated. | Not run. |
+| Candidate: simulation-first | The same supplied guidance with that bundle; freeze both delivered instruction bundles before replay. | Not run. |
 
 | Task family | Deciding observation and nearby control |
 |---|---|

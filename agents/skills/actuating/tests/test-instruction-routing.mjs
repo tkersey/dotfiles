@@ -24,7 +24,7 @@ const section = (source, heading) => {
 };
 const coreHashes = {
   'Source binding': 'a08472adfb58b7540f832680acac69f92a87e7ee8e4086c9621134194aa4639d',
-  'Initial construction': 'c67c626334aa9b8c029c67b697a445d4ed4eaf1cd18a176c0f073bec3594547b',
+  'Initial construction': 'bc00d3ade6c4085c33253270b3911b48e0c7b31e37f00e8508ea4af6ff6bb531',
   'Proof acceptance': '8cefa9c1e82aa83b5c54737a9bbcb77d70d1442c916f434473d22679b82b0fc9',
   'Comments in code': '9dfab826dd63fbdd4ac448cbf0d7c690edef00145282604d9f0737c39edc39bf',
   'Realization and common proof obligations': '8f782e151a2c48cca2da1506830376ad597b689fde6985014f30c466f87be6e3',
@@ -59,7 +59,7 @@ function checkPremiseIntegration(src) {
   const comparison = normalized(section(src['tests/construction-comparison.md'],
     'Premise-guided Actuating integration'));
   for (const control of ['authored, not model-replayed',
-    '8df45b596459cd3d3d51ec3a3aefd0be99072055',
+    'without the two targeted Actuating links',
     'Both arms retain the same Universalist methods', 'fresh undisclosed task instances',
     'Freeze the first candidate, no-change decision, or unfinished attempt',
     'all attempts retained in the denominators', 'same correctness bar',

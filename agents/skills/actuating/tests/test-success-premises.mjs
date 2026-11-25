@@ -33,7 +33,7 @@ const successPremiseBoundaries = [
   ]],
   ['tests/construction-comparison.md', 'Success-premise preservation', [
     'authored, not model-replayed',
-    '910a9a5193fb57bf31989ee2df1a96c442560322',
+    'freeze both delivered instruction bundles before replay',
     'Do not substitute a pre-cleanup or patch-only control',
     'Hold the implementing model, effective reasoning effort',
     'Different reviewer settings are a separate detection comparison',

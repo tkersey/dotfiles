@@ -53,14 +53,12 @@ final-head obligations. Serial mode still adjudicates each request before the ne
 
 ## Deliver the exact assignment
 
-Standard uses the exact packaged [Codex rubric](upstream/codex-review-rubric.md)
-from `openai/codex` commit `970111f6cb62cc02fe36a82ea7d71b37a2889c97`, path
-`codex-rs/prompts/templates/review/rubric.md`, Git blob
-`85e89cb7eeadb97fa9e4868d2b9977c87225506d`. Its SHA-256 is pinned in the static
-contract; [LICENSE](upstream/codex-LICENSE) and [NOTICE](upstream/codex-NOTICE)
-retain upstream attribution. Use these bundled bytes, never a runtime fetch of
-moving `main`. Rubric updates require a newly bound campaign. Call the result a
-subagent standard review using the Codex rubric, not native/default Codex review.
+Standard uses the exact packaged [Codex rubric](upstream/codex-review-rubric.md).
+The static contract checks the bundled bytes; [LICENSE](upstream/codex-LICENSE)
+and [NOTICE](upstream/codex-NOTICE) retain upstream attribution. Use these bundled
+instructions rather than fetching a moving upstream version. Rubric updates
+require a newly bound campaign. Call the result a subagent standard review using
+the Codex rubric, not native/default Codex review.
 
 Build each request from this execution instruction block, the listed source
 segments, and one JSON assignment, separated by two newlines. Preserve source

@@ -28,7 +28,7 @@ const names = ['standard','soundness-skeptic','footgun-finder','invariant-ace','
 assert.equal(c.schema, 'actuating-review-contract/v23');
 assert.equal(c.contract_id, 'actuating-review-contract-v33');
 assert.equal(d.contract_version, 'SKDC-v1');
-assert.equal(d.skill.source_fingerprint, 'actuating-construction-core-v45');
+assert.equal(d.skill.source_fingerprint, 'actuating-construction-core-v46');
 // Owner-decided pre-epoch gate: it precedes every epoch, opens none, records its own
 // disposition, and earns no credit. The epoch opens on the first initial-inventory request.
 assert.deepEqual(c.pre_epoch_screen, {

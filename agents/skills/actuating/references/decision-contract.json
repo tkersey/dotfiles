@@ -4,7 +4,7 @@
     "skill": {
       "name": "actuating",
       "kind": "mixed",
-      "source_fingerprint": "actuating-construction-core-v45"
+      "source_fingerprint": "actuating-construction-core-v46"
     },
     "triggers": [
       {
@@ -178,7 +178,8 @@
           "local completion needs no review convergence or publication",
           "required relationships preserve authoritative facts, derived projections, and independently retained history",
           "required results and continuations determine native representations, algorithms, primitive operations, and lawful combinations; compared views retain or recover distinctions that decide justified next actions and claims",
-          "primitive meanings and their composition are established under the required observation or refinement relation, including admitted higher-order contexts and required joint observations",
+          "primitive meanings and their composition are established under the source-required observation or refinement relation when replacing, combining, reordering, sharing, or removing a construction, including admitted higher-order contexts and required joint observations",
+          "combined edits check whether one changes a premise used to justify another; affected reasoning is re-established on the assembled construction, while reasoning whose dependencies remain established is reused under existing proof-acceptance rules",
           "a difficult or repetitive proof can revise the representation, algorithm, or decomposition instead of adding per-case obligations",
           "a source argument or requirement-derived deciding observation establishes why the mechanism guarantee implies the required law",
           "source-derived operation coverage and required-content completeness remain separate obligations",
@@ -192,6 +193,8 @@
           "initial construction requires a speculative framework or a separate architecture packet",
           "requirement narration or a proof template substitutes for deriving and realizing the program",
           "lawful composition is credited as intended primitive meaning without establishing that meaning or closure over admitted environments and application",
+          "combined edits retain justifications whose deciding premises another edit changes, or reopen reasoning whose dependencies remain established solely because edits were combined",
+          "matching type names or isolated results alone are credited as interchangeability, or reused reasoning substitutes for required exact-head verification or completion credit",
           "isolated or marginal agreement substitutes for a required joint observation, or conflating captured values, fresh effect occurrences, and replay erases a source-required observable distinction",
           "agreement in a compared view is credited as preservation while an erased distinction changes a required subsequent decision",
           "a prescribed intermediate narrative or nomination is required before inquiry can begin",
