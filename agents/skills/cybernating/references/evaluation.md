@@ -28,6 +28,13 @@ text changed. Use [source investigation](source-investigation.md) to trace
 delivery. Unknown delivery limits source attribution; it also blocks a promotion
 claim that depends on that delivery.
 
+When an intervention shares, repeats, caches, batches, or resamples work and a
+required outcome depends on the relationship between those results, compare that
+joint behavior or the relevant continuation. Matching individual success rates
+or output distributions does not establish the joint claim. Preserve the task's
+permitted forms of reuse; require independence or distributional equality only
+when the accepted relationship calls for it.
+
 Hold relevant external conditions fixed: case, starting history/state, model
 settings, tools, runtime, and grader, except the declared intervention. Do not
 freeze downstream actions or history
