@@ -64,7 +64,8 @@ from pathlib import Path
 LEVEL = re.compile(r"`(\w+) effort\b")
 HEX = re.compile(r"[0-9a-f]{7,40}\Z")
 REF = re.compile(r"[\w@{}~^/.][\w@{}~^/.-]*\Z")
-HEAD_ANCESTOR = re.compile(r"HEAD(?:[~^][0-9]*)+\Z")
+HEAD_ANCESTOR = re.compile(r"HEAD(?:[~^](?:[1-9][0-9]*)?)+\Z")
+HEAD_ALIAS = re.compile(r"(?:HEAD|@)(?:[~^]0|@\{0\})*\Z")
 REFERENCE_TARGET = re.compile(r"[0-9a-f]{7,40}(?:\.\.HEAD)?\Z")
 EXIT_CODE = re.compile(r"\A\s*Exit code(?:\s*:\s*|\s+)(\d+)(?:\s|$)", re.IGNORECASE)
 PATCH_TEXT = re.compile(r"^diff --git ", re.MULTILINE)
@@ -426,7 +427,7 @@ def direct_diff(words: list[str], target: str) -> bool:
         # The current-diff recipe reads <ref>...HEAD, or HEAD~1 when it cannot tell the base;
         # `git diff HEAD` and pathspecs show no committed changes on the frozen subject.
         return head == "HEAD" and (bool(HEAD_ANCESTOR.fullmatch(base)) or
-                                   ranged and base != "HEAD" and bool(REF.fullmatch(base)))
+                                   ranged and not HEAD_ALIAS.fullmatch(base) and bool(REF.fullmatch(base)))
     return bool(HEX.fullmatch(base) and target.startswith(base) and head == "HEAD")
 
 
@@ -497,7 +498,7 @@ def reference_observed(content: str, reference: str | None) -> bool:
 
 
 def standard(events: list[dict], target: str, level: str, problems: list[str], followups=(),
-             reference: str | None = None) -> dict:
+             reference: str | None = None, unread_followups: bool = False) -> dict:
     terminal = next((i for i, e in enumerate(events) if e.get("type") == "result"), len(events))
     session = events[:terminal]
     # Reads and delivery stop at each stream's first result, which is the response being judged.
@@ -593,12 +594,14 @@ def standard(events: list[dict], target: str, level: str, problems: list[str], f
         # Follow-ups only add reads, so every hold recorded before this one survives them.
         remedy = ("other holds remain that a --followup cannot clear; do not resume for this read alone, "
                   "and apply the caller's existing recovery rules" if problems else
+                  "an unreadable --followup may hold this read: fix its path and rerun readback before resuming"
+                  if unread_followups else
                   f"resume the same session with the bound launch settings, complete a direct foreground "
                   f"{wanted} and dependent reassessment, then pass the separate stream with --followup")
         if any(read.get("unverified") for read in evidence["diff_reads"]):
             problems.append(f"no successful correlated `git diff` read against {scope}: the recognized read "
                             "precedes a `;`, so its completion is unverified; "
-                            + ("" if problems or reference is not None
+                            + ("" if problems or reference is not None or not REFERENCE_TARGET.fullmatch(target)
                                else "supply an authenticated --reference-patch, or ") + remedy)
         elif evidence["diff_reads"]:
             problems.append(f"no successful correlated `git diff` read against {scope}: every recognized "
@@ -620,10 +623,9 @@ def standard(events: list[dict], target: str, level: str, problems: list[str], f
     return evidence
 
 
-def transcript_path(sid: str) -> Path | None:
+def transcript_paths(sid: str) -> list[Path]:
     root = Path(os.environ.get("CLAUDE_CONFIG_DIR") or Path.home() / ".claude") / "projects"
-    matches = sorted(root.glob(f"*/{sid}.jsonl"))
-    return matches[0] if len(matches) == 1 else None
+    return sorted(root.glob(f"*/{sid}.jsonl"))
 
 
 def transcript(sid: str, problems: list[str],
@@ -634,16 +636,21 @@ def transcript(sid: str, problems: list[str],
     stream-json does not echo a piped prompt, so these are the delivery evidence.
     """
     try:
-        path = transcript_path(sid)
+        paths = transcript_paths(sid)
     except (OSError, ValueError) as exc:
         missing.append(f"cannot locate transcript: {exc}")
         return None
-    if path is None:
-        missing.append(f"no unique transcript for {sid}")
+    if len(paths) > 1:
+        problems.append(f"multiple transcripts for {sid}: session identity is ambiguous")
         return None
-    unread = len(missing)
-    records = load_events(path, problems, "transcript", missing)
-    if len(missing) > unread:
+    if not paths:
+        missing.append(f"no transcript found for {sid}")
+        return None
+    path = paths[0]
+    unreadable: list[str] = []
+    records = load_events(path, problems, "transcript", unreadable)
+    if unreadable:
+        missing.extend(unreadable)
         return None  # an unreadable transcript is unavailable evidence, not a session identity problem
     sessions = [r["sessionId"] for r in records if "sessionId" in r]
     if not sessions or any(session != sid for session in sessions):
@@ -759,7 +766,8 @@ def main() -> None:
         if reference_path is not None:
             report["reference_patch"], reference = load_reference_patch(Path(reference_path), target, argument)
         followups = followup_streams(followup_paths, kind, sid, model, problems, argument, report, prompts, located)
-        report.update(standard(events, target, level, problems, followups, reference))
+        unread = any(entry.get("runtime") == {} for entry in report.get("followups", []))
+        report.update(standard(events, target, level, problems, followups, reference, unread))
     else:
         try:
             prompt = Path(prompt_path).read_bytes()

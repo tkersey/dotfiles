@@ -229,10 +229,11 @@ follow-up route below. Do not introduce an unsandboxed replay or widen permissio
 For an explicitly bound current-diff review, omit the CLI target and pass `-` as
 the helper's target instead of `$base..HEAD`; the recipe then has no target line and
 is recognized by its effort header. Its read gate is unchanged except that the
-recipe's own reads qualify: a direct `git diff <ref>...HEAD` or `<ref>..HEAD` with a
-ref other than HEAD (the recipe reads `origin/HEAD...HEAD`), or `git diff HEAD~1`
-when it cannot tell the base. `git diff HEAD` and pathspecs show no committed change
-on the frozen subject and do not qualify. Judge whether the observed ref is the bound
+recipe's own reads qualify: a direct `git diff <ref>...HEAD`, `<ref>..HEAD` or
+`<ref> HEAD` whose ref is not a spelling of HEAD (the recipe reads
+`origin/HEAD...HEAD`), or an ancestor such as `git diff HEAD~1` when it cannot tell
+the base. `git diff HEAD`, spellings of HEAD such as `HEAD~0` or `@`, and pathspecs
+show no committed change on the frozen subject and do not qualify. Judge whether the observed ref is the bound
 current-diff scope.
 
 [readback.py](scripts/readback.py) writes the evidence and every problem, and
@@ -445,7 +446,9 @@ Confidence is not evidence.
   correlated reads of standard streams, and the `structured_output` of custom ones;
   it does not check a custom follow-up's reads. A missing or unreadable follow-up
   file, prompt file or (for standard) transcript is a caller-argument problem: fix it
-  and rerun readback. An undecodable capture is a session problem. It preserves the original `result`, every failed/unverified read, and
+  and rerun readback (an unreadable follow-up may hold the missing read, so do that
+  before resuming). An undecodable capture, a malformed transcript line, or several
+  transcripts for one session are session problems. It preserves the original `result`, every failed/unverified read, and
   supplemental results and denials under `followups`. Adjudicate all of them;
   successful readback does not establish adequate reassessment or erase a finding.
 - Compaction alone is not failure or a fresh review.

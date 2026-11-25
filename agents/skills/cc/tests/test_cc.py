@@ -675,7 +675,9 @@ def runtime_evidence(tmp):
     for command, error in [("git diff origin/HEAD...HEAD", None), ("git diff @{upstream}...HEAD", None),
                            ("git diff main...HEAD", None), ("git diff HEAD~1", None), ("git diff HEAD", held),
                            ("git diff .", held), ("git diff src/", held), ("git diff HEAD...HEAD", held),
-                           ("git diff origin/HEAD...HEAD; git diff HEAD", held),
+                           ("git diff origin/HEAD...HEAD; git diff HEAD", held), ("git diff HEAD^", None),
+                           ("git diff @~1...HEAD", None), ("git diff HEAD~0", held), ("git diff HEAD^0", held),
+                           ("git diff @...HEAD", held), ("git diff HEAD@{0}..HEAD", held), ("git diff HEAD~0..HEAD", held),
                            ("git diff --stat origin/HEAD...HEAD", held), ("git diff --output=/tmp/x HEAD", held),
                            ("ls -la", held)]:
         stream = standard_events(command=command)
@@ -683,6 +685,7 @@ def runtime_evidence(tmp):
         report = readback(tmp, "standard", stream, target="-")
         expect(report, error)
         assert error is None or "`git diff <upstream>...HEAD`" in report["problems"][-1], report
+        assert "--reference-patch" not in " ".join(report["problems"]), report
     for version, error in [("2.1.287", None), ("2.1.340+build.5", None), ("2.1.287-rc.0", "is not 2.1.287 or newer"),
                            ("2.1.300abc", "is not 2.1.287 or newer"), ("2.1.340-beta.1", None), ("2.1.200-rc.1", "is not 2.1.287 or newer"),
                            ("2.1.340.1", "is not 2.1.287 or newer"), ("v2.1.340", "is not 2.1.287 or newer")]:
@@ -743,6 +746,7 @@ def runtime_evidence(tmp):
                                     "permission_denials": [], "prompt_delivery": "unverified"}], report
     assert any(p.startswith("follow-up 1: cannot read follow-up events") for p in report["problems"]), report
     assert not any("cannot clear" in p or "expected one init" in p for p in report["problems"]), report
+    assert any("fix its path and rerun readback before resuming" in p for p in report["problems"]), report
     (tmp / "corrupt-followup.jsonl").write_bytes(b"\xff\xfe not utf-8\n")
     subprocess.run([sys.executable, "-I", str(SCRIPT), "standard", str(tmp / "gap.jsonl"), SID, MODEL, BASE, "high",
                     str(tmp / "gap.json"), "--followup", str(tmp / "corrupt-followup.jsonl")], capture_output=True)
@@ -762,7 +766,7 @@ def runtime_evidence(tmp):
     failed_followup[2]["message"]["content"][0]["is_error"] = True
     report = readback(tmp, "standard", standard_events(command="ls -la"), followups=[failed_followup],
                       followup_prompts=[b"prompt"])
-    expect(report, "no unique transcript")
+    expect(report, "no transcript found")
     assert any("resume the same session" in p for p in report["problems"]), report
     assert not any("cannot clear" in p or "later typed transcript" in p for p in report["problems"]), report
     empty = tmp / "empty-reference.patch"
@@ -1231,12 +1235,20 @@ def main():
                         followup_prompts=[ask2, ask]), "follow-up 1: the follow-up prompt is not a later typed")
         expect(readback(tmp, "custom", custom_events(), compacted, followups=[second], followup_prompts=[ask]),
                "follow-up 1: the follow-up prompt is not a later typed transcript message answered by this stream")
+        report = readback(tmp, "standard", standard_events(command="ls -la"), standard_typed, extra_transcript=True,
+                          followups=[answered(as_followup(standard_events()), "msg-a")], followup_prompts=[ask])
+        expect(report, "multiple transcripts")
+        # Finding 4: one bad transcript line is a session problem; the rest still verifies delivery.
+        damaged = readback(tmp, "custom", custom_events(), json_lines(typed) + "{bad JSON\n", followups=[first],
+                           followup_prompts=[ask])
+        expect(damaged, "invalid JSON")
+        assert "transcript" in damaged and damaged["followups"][0]["prompt_delivery"] == "verified", damaged
         foreign = standard_typed + [{"type": "user", "sessionId": "other", "message": {"content": "x"}}]
         expect(readback(tmp, "standard", standard_events(), foreign,
                         followups=[answered(as_followup(standard_events()), "msg-a")], followup_prompts=[ask]),
                "transcript mixes sessions")
         report = readback(tmp, "custom", custom_events(), None, followups=[custom_events()], followup_prompts=[ask])
-        assert sum("no unique transcript" in p for p in report["problems"]) == 1, report  # one transcript reader
+        assert sum("no transcript found" in p for p in report["problems"]) == 1, report  # one transcript reader
         malformed = [{"type": "user", "sessionId": SID, "message": "not an object"}] + transcript()[1:]
         expect(readback(tmp, "custom", custom_events(), malformed), "first transcript message is not the exact prompt")
         surrogate = [{"type": "user", "sessionId": SID, "message": {"content": "\ud83d prompt"}}]
@@ -1258,8 +1270,8 @@ def main():
         missing = custom_events()
         del missing[-1]["structured_output"]
         expect(readback(tmp, "custom", missing, transcript()), "no structured_output")
-        expect(readback(tmp, "custom", custom_events()), "no unique transcript")
-        expect(readback(tmp, "custom", custom_events(), transcript(), extra_transcript=True), "no unique transcript")
+        expect(readback(tmp, "custom", custom_events()), "no transcript found")
+        expect(readback(tmp, "custom", custom_events(), transcript(), extra_transcript=True), "multiple transcripts")
         mixed = transcript() + [{"type": "user", "sessionId": "other", "message": {"content": "x"}}]
         expect(readback(tmp, "custom", custom_events(), mixed), "transcript mixes sessions")
         expect(readback(tmp, "custom", custom_events(), "{bad JSON\n"), "invalid JSON")
