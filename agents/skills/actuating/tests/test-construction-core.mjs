@@ -10,7 +10,7 @@ import {fileURLToPath} from 'node:url';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const paths = ['SKILL.md', 'construction.md', 'architecture.md', 'counterexamples.md', 'recurrence.md',
-  'review-closeout.md',
+  'review-closeout.md', 'references/counterexample-guided-normalization.md',
   'agents/openai.yaml', 'references/review-contract.json',
   'references/decision-contract.json', 'universalist-composition.md',
   '../universalist/SKILL.md', '../universalist/README.md',
@@ -54,7 +54,14 @@ function check(src) {
   assert(core.includes('neither local-repair-first nor redesign is compulsory'));
   assert(core.includes('including `$universalist` for task-relevant semantic work'));
   assert(core.includes('independent evidence'));
-  assert(!/Protean|Horos|Kosmos/.test(core+architecture+adapter),'repository-specific construction policy');
+  // Skills carry no repository-specific content: no sentence opens with an all-caps
+  // project label such as "NAME:", and no link points at a particular repository's
+  // commits, pull requests, or issues.
+  const anecdote=/(^|[.!?]\s+)[A-Z][A-Z0-9-]{3,}:/m;
+  const repositoryLink=/github\.com\/[^\s/)]+\/[^\s/)]+\/(?:commit|pull|issues)\//;
+  for(const path of ['SKILL.md','construction.md','architecture.md','counterexamples.md','recurrence.md',
+    'review-closeout.md','universalist-composition.md','references/counterexample-guided-normalization.md'])
+    assert(!anecdote.test(src[path]) && !repositoryLink.test(src[path]),`repository-specific content: ${path}`);
   assert(architecture.includes('This pairing does not impose an order relative to Universalist'));
   assert(architecture.includes('apply `$glaze` then `$metanoetic` verbatim in one shared activation'));
   assert(adapter.includes('optional presentation, not required output'));
@@ -73,11 +80,6 @@ function check(src) {
 
   // Simulation-first correctness is an owner decision. These are source-contract checks,
   // not a simulator run or evidence that an agent builds or uses one.
-  // Skills carry no repository-specific history: no sentence opens with an all-caps
-  // project label such as "NAME:" in runtime guidance or the decision rationale.
-  const anecdote=/(^|[.!?]\s+)[A-Z][A-Z0-9-]{3,}:/m;
-  for(const path of ['SKILL.md','construction.md','counterexamples.md','recurrence.md','review-closeout.md'])
-    assert(!anecdote.test(src[path]),`repository-specific content: ${path}`);
   const simulation=normalized(section(skill,'Simulation-first correctness'));
   for(const rule of ['A law is trace-dependent when its truth depends on the order, interleaving, timing, or repetition',
     'durable state: data that outlives the process that wrote it',
@@ -242,6 +244,7 @@ const mutations=[
   ['baseline instruction leakage unchecked',src=>{src['tests/construction-comparison.md']=src['tests/construction-comparison.md'].replace('`AGENTS.md`','an unspecified file');}],
   ['first candidate unfrozen',src=>{src['tests/construction-comparison.md']=src['tests/construction-comparison.md'].replace('Freeze the first completed candidate','Score the final repaired result');}],
   ['repository history as policy',append('construction.md','\nPROJECTX: this project justified the rule.\n')],
+  ['repository commit link',append('references/counterexample-guided-normalization.md','\nSee [abc1234](https://github.com/example/project/commit/abc1234).\n')],
   ['repository history in rationale',decisionMutation(c=>{c.rationale+=' The simulator caught 3 of 4 defects there.';})],
   ['simulator made optional',swap('construction.md','the construction includes','the construction may include')],
   ['sweep made optional',swap('construction.md','Record each sweep','The fresh sweep is optional. Record each sweep')],

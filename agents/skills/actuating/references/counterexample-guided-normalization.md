@@ -235,15 +235,15 @@ not a new test quota or a mandatory plan abstraction.
 
 ### Derive the missing premise at its owner
 
-These historical Protean changes illustrate different adequate responses, not a
-requirement to add an owner, fence, or registry to unrelated work.
+These cases illustrate different adequate responses, not a requirement to add an
+owner, fence, or registry to unrelated work.
 
 **Postcommit cancellation.** A durable receipt does not establish that its required
 interruption has taken effect. After cancellation commits, a later error must not
 leave affected recovery dispatchable without that interruption. Before the commit,
-failed admission must retain its rollback and retry behavior. Protean's existing
-fail-stop owner and restart recovery made this scoped repair sufficient for the
-reported gap ([3444a70](https://github.com/tkersey/protean/commit/3444a70ab2ffd4750bbf66d26cb97ea9f33bdaa9)):
+failed admission must retain its rollback and retry behavior. Where an existing
+fail-stop owner and restart recovery already supply the generality, a scoped
+repair at the commit point suffices:
 
 ```zig
 try self.persist(value, previous, "task.cancel");
@@ -254,7 +254,7 @@ The placement derives from the phase-dependent consequence, not a list of error
 names. Subsequent error returns through that scope invoke the fence, including a
 new fallible step that propagates its error there. Swallowed errors, other scopes,
 and process crashes are not covered by this rule; justify their required behavior
-separately. The source test varies allocation failure across publication, checks
+separately. A deciding test varies allocation failure across publication, checks
 precommit retry and postcommit fencing, then reopens and checks receipt replay.
 It challenges the missing implication while the durable receipt still exists.
 A small correction is constructive when the native rule supplies the generality.
@@ -262,8 +262,8 @@ A small correction is constructive when the native rule supplies the generality.
 **Validation before projection.** A read snapshot alone does not establish reusable
 retention-validation facts. After import, callers could reach projection without
 those facts; reopening happened to restore them but was not required by the API.
-Protean gave `Store.project` the registry needed to establish missing cold facts
-before sealed projection ([b68778a](https://github.com/tkersey/protean/commit/b68778a41a9051319d6359cdaacad8b521c7096d)).
+An adequate repair gives the projection operation the registry it needs to
+establish missing cold facts before sealed projection.
 The condition binds those facts to transaction state, sealed generation, integrity
 epoch, and application identity. Transaction-scoped import/audit views still
 validate without minting reusable committed-state facts. Snapshot lifetime and
@@ -276,8 +276,8 @@ through import and repeated projection, observing required output and actual cac
 reuse. Zero ancestry bytes alone cannot distinguish reuse from bypassing the cache.
 
 Both examples select code from the missing premise while retaining different phase
-semantics and independent checks. Their source tests are inspectable evidence, not
-native runs performed by reading this guide or untouched evidence of skill efficacy.
+semantics and independent checks. They illustrate the argument; they are
+not native runs performed by reading this guide or untouched evidence of skill efficacy.
 
 ### Challenge the sufficiency of a local guarantee
 
