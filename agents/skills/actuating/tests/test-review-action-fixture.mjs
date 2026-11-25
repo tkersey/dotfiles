@@ -262,7 +262,7 @@ test('canonical admission is unchanged; effect and evaluation guidance remain bo
     'delegation, resumption, and compaction', 'including test expectations, check selection, compatibility, and completion claims',
     'no open review epoch', 'optional techniques, not an intervention quota or acceptance gate']) assert(normalized.includes(phrase), phrase);
   const comparison = readFileSync(resolve(here, 'construction-comparison.md'), 'utf8');
-  for (const phrase of ['authored, not model-replayed', '52f0cc9be529be647b80ccef21fc60b28ad502a2',
+  for (const phrase of ['authored, not model-replayed', 'First diagnose the supplied unchanged workflow',
     'Decision-to-effect fidelity', 'not a security sandbox', 'not untouched holdouts',
     'Do not rewrite CAS receipts', 'not evidence of model efficacy']) assert(comparison.includes(phrase), phrase);
 });

@@ -59,7 +59,7 @@ function checkPremiseIntegration(src) {
   const comparison = normalized(section(src['tests/construction-comparison.md'],
     'Premise-guided Actuating integration'));
   for (const control of ['authored, not model-replayed',
-    '8df45b596459cd3d3d51ec3a3aefd0be99072055',
+    'without the two targeted Actuating links',
     'Both arms retain the same Universalist methods', 'fresh undisclosed task instances',
     'Freeze the first candidate, no-change decision, or unfinished attempt',
     'all attempts retained in the denominators', 'same correctness bar',

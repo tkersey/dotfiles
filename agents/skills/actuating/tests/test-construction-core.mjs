@@ -262,13 +262,13 @@ function check(src) {
 
   const comparison=src['tests/construction-comparison.md'];
   for(const required of ['authored, not model-replayed','Control: current workflow','Candidate: active construction task',
-    '753569e0df6935a428ed8c509fb7fac5f23c008d',
+    'Supply the complete control and candidate instructions as accessible files',
     'Preserve its ability to discover the same relationship or choose the same task',
     'Give both arms the same requirements, evidence, suggested repairs, source and theory access',
     'Assignment','Continuation','Fresh context',
     'adequate-incumbent','direct-fix','false-allegation','wrong-oracle',
     'A: accumulated','B: reduced','C: protocol-free',
-    '5159d76f3b627fb334e2ecb89c5cccf1db9d2e07','AGENTS.md','compaction','memory',
+    'Do not substitute new inputs while relabeling historical receipts and results as a replay','AGENTS.md','compaction','memory',
     'required-valid','Freeze the first completed candidate','timeouts',
     'A tie or insufficient power is inconclusive','no permission for paid model runs']) {
     assert(normalized(comparison).includes(required),`lost comparison control: ${required}`);
@@ -276,7 +276,8 @@ function check(src) {
   assert.equal(policy.efficacy.comparison_ref,'agents/skills/actuating/tests/construction-comparison.md');
   assert.equal(policy.efficacy.held_out_requires_witness_not_supplied_to_implementing_run,true);
   const simulationComparison=normalized(section(comparison,'Simulation-first construction'));
-  for(const control of ['authored, not model-replayed','5939b6c039478a5fb932459bab4c5c2bee5edd19',
+  for(const control of ['authored, not model-replayed',
+    'Supplied construction and review guidance without the construction-rule, simulation-first, re-injection, and pre-epoch-screen bundle being evaluated',
     'informs their revision, not their current force','the implementing run never sees them',
     'Supply the complete accepted requirements to both arms',
     'two-way coverage must flag it before review',
