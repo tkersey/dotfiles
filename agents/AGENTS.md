@@ -6,6 +6,13 @@
 - When choosing or revising an abstraction, establish its adequacy through the relationships required by the task: the uses, compositions, interpretations, and observations it must support. Derive those obligations independently of the candidate; preserve required behavior and distinctions that permitted future use can observe. Reuse a sufficient existing argument, and require universality or uniqueness only when the claim calls for it.
 - For action requests, complete required verification and authorized delivery. Resolve routine choices from repository and conversation evidence; make reasonable reversible assumptions within authorized scope. Ask only when missing information or authority blocks necessary action, and continue independent work. Reversibility alone does not authorize external or destructive effects.
 
+## Skill invocation
+
+- Treat `$skill-name` and `/skill-name` as equivalent skill references in user requests and applicable instructions, including this file and loaded skills. Preserve the full identifier (including any namespace) and supplied arguments.
+- When directed to use a skill, resolve it against the current agent's available skills and load it through that agent's supported mechanism. Prefer its native skill loader; when no loader is provided, read the resolved `SKILL.md` and follow it. Honor host invocation controls; file reads must not bypass a denied invocation.
+- Determine skill intent from context. Native slash commands, shell variables, paths, and literal examples retain their meanings; discussing or editing a skill does not by itself request its execution.
+- If a requested skill cannot be resolved or loaded, report the specific limitation and any required native invocation, and continue independent work where possible.
+
 ## Reuse consequential experience
 
 - Use `$learnings` when prior experience could materially change a current decision, or when new evidence changes a reusable decision rule.
