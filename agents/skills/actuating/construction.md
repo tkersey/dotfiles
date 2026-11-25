@@ -176,14 +176,19 @@ result rather than state it reads back, such as a formatter or an artifact
 generator. A tool that resumes, retries, syncs, caches, or keeps a state file is
 stateful. Classify by these properties, not by repository, language, or size.
 [Recurring trace-dependent findings](recurrence.md#progress-before-another-iteration)
-in software classified as pure show that it is stateful.
+require reassessing the applicable generator or oracle and this classification.
+Input order alone does not establish any of these properties: a pure library's
+property tests can generate operation sequences. Reclassify it only when the
+evidence establishes a listed property that its earlier classification missed.
 
 For stateful or concurrent software, the construction includes:
 
 - **Executable laws.** Each invariant is a function that tests and the simulator
   call. It carries, as data, the accepted-source location it encodes, such as a
   requirement clause or user instruction, or the construction rule it enforces,
-  and its failure report names it.
+  and its failure report names it. A construction-rule assertion that gates code
+  also cites the required source law it protects and the conditions under which
+  violating the rule breaks that law. A rule alone grants no gating authority.
 - **Two-way law coverage.** Every trace-dependent law in the
   [source binding](#source-binding) is cited by an executable law the simulator
   checks, and every executable law cites a binding law or the
@@ -195,10 +200,18 @@ For stateful or concurrent software, the construction includes:
   checked, not that its check is adequate;
   [re-injection](counterexamples.md#re-inject-confirmed-defects) calibrates that.
 - **Lifecycle tables.** Each stored-state machine has an explicit table of its
-  states and [ordinary transitions](#construction-rules), with a mechanical check,
+  states, [ordinary transitions](#construction-rules), and enabling conditions,
+  with a mechanical check,
   at compile time where the language allows, that every state reaches rest through
-  ordinary inputs. The simulator asserts that every transition it observes is in
-  the table, so the table cannot drift from the code.
+  ordinary inputs under the stated source-required environment assumptions.
+  The simulator asserts that every transition it observes is in the table. This
+  checks observed membership only; it cannot establish that a declared exit is
+  implemented or its guard can be satisfied. Under
+  [proof acceptance](#proof-acceptance), establish that the real code implements
+  the exits and feasible guards on which the reachability check relies. Reuse
+  adequate native evidence or a shared authoritative representation of table and
+  implementation. Reachability establishes a possible exit; required eventual
+  progress needs the separate check below.
 - **A deterministic simulator over the real code**, as specified below.
 - **Oracles for optimizations.** Every optimization the Goal builds or changes
   keeps its slow, obviously correct counterpart as an oracle, compared on the
@@ -211,9 +224,14 @@ drivers, and daemons:
 
 - It owns every source of nondeterminism that code consumes: time, randomness
   (including runtime-seeded hashing), the scheduling of runnable actors, and
-  services outside the software. Storage the software embeds, such as its files or
-  an in-process database, runs for real in a per-run scratch area. A service in
-  another process, including a database server, is faked at its client seam; each
+  services outside the software. Run embedded storage code, including an
+  in-process database engine, for real in a per-run scratch area. Control its
+  filesystem or disk seam when source-required faults include lost unsynced
+  writes, torn or reordered writes, or power loss. Keep the real storage
+  implementation above that seam; a process restart with surviving operating
+  system caches does not establish power-loss durability. Choose the seam by the
+  required fault model, not process placement alone. A service in another process,
+  including a database server, is faked at its client seam; each
   fake produces the failures, delays, duplicates, reorderings, and isolation
   behavior its contract allows, checked against the real service. A fake that
   cannot produce a permitted behavior hides that behavior's defects.
@@ -221,9 +239,17 @@ drivers, and daemons:
   and faults, plus the other disturbances the requirements say the system
   survives, such as clock regression, configuration changes, or handoffs between
   owners. Running one seed twice yields the same event trace.
-- It checks every law after every event and, at quiescence, when inputs stop and
-  fake time passes every deadline, that every admitted obligation has reached
-  rest. An idle recurring schedule is at rest.
+- It checks safety laws after every event. Check required progress under the
+  source-required assumptions about future inputs, dependency availability,
+  recovery, and scheduling fairness. State and realize those premises in the
+  generated continuation. When the source requires admitted work to drain under
+  those conditions, stop new admissions, supply the required outstanding inputs,
+  settle faults as specified, and advance fake time through the relevant
+  deadlines; check that the admitted obligations reach rest. A source-permitted
+  wait for approval, a future input, or an unavailable dependency is valid while
+  its progress premise is absent. Do not invent a timeout or terminal disposition
+  to force it to rest. Also exercise the continuation where that premise holds,
+  so a missing required exit still fails. An idle recurring schedule is at rest.
 - It pins each failure as its seed and recorded event trace. The trace replays as
   a regression even after a generator change alters what the seed produces.
 

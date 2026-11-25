@@ -85,7 +85,7 @@ function check(src) {
     assert.equal(hash(section(review, heading)), digest, heading);
   // Pin the authorized pre-epoch screen and epoch-opening revision; the epoch, supersession,
   // and convergence sections stay hash-protected in test-composition-contract.sh.
-  assert.equal(blob(src['review-closeout.md']), 'cabc130f402caf6d6c9429d791d97fccfce2b1b3');
+  assert.equal(blob(src['review-closeout.md']), 'bb518b817e9368d8ea819633c9983ae9053549f1');
   assert.equal(blob(src['references/review-contract.json']), '919c8710140dd784fb841ae1df6819b699555aca');
   for (const route of ['(construction.md#construction-rules)',
     '(construction.md#simulation-first-correctness)',

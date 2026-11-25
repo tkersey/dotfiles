@@ -34,9 +34,8 @@ while preserving the history of unsuccessful approaches.
 ## Pre-epoch screen
 
 Before the first initial-inventory request on a reviewable head, run one changeset
-standard review of that exact head from the selected executor. A single complete
-reading of the patch is cheap and often finds what would invalidate the head, so
-an invalidated head need not consume the wide initial inventory. For stateful or
+standard review of that exact head from the selected executor. The screen tests
+whether the candidate should enter the wide initial inventory. For stateful or
 concurrent software, the head's reviewable proof already includes the
 [simulator](construction.md#simulation-first-correctness) results.
 
@@ -44,7 +43,8 @@ Adjudicate the screen with the
 [Review-credit admission](references/review-contract.md#review-credit-admission)
 predicate, but record `screen_disposition: pass | hold` with its basis, never
 `credit_disposition`; no standard count, obligation, or completion statement reads
-it. The screen must observe the complete base-to-head patch. A changeset standard
+it as review credit. The screen must observe the complete base-to-head patch. A
+changeset standard
 whose evidence shows only a summary, such as `--stat` output or recent commit
 messages, has missed its assigned inquiry; that holds the screen and every epoch
 standard alike until the observation is recovered. Recover a missing patch read
@@ -61,6 +61,11 @@ defect. The screen binds its exact head: a successor, or any other change before
 the first initial-inventory request, needs a new screen. A held screen blocks the
 epoch until recovered; an unrecoverable observation is the obstruction the epoch's
 own changeset standard would face, so report it.
+
+Retain screen findings, holds, and their corrections in the existing
+[attempt history](recurrence.md#progress-before-another-iteration). Screen-only
+repair cycles remain subject to its causal progress triggers; they open no epoch
+and do not advance the invalidated-epoch count.
 
 The screen awards no review credit and replaces no request. The epoch still runs
 its full initial inventory, including its own changeset standard, and requires

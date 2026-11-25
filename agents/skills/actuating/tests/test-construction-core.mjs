@@ -91,13 +91,25 @@ function check(src) {
     'So is a one-shot tool whose effects only fail fast',
     'A tool that resumes, retries, syncs, caches, or keeps a state file is stateful',
     'Classify by these properties, not by repository, language, or size',
+    'Input order alone does not establish any of these properties',
+    'Reclassify it only when the evidence establishes a listed property that its earlier classification missed',
     'For stateful or concurrent software, the construction includes',
     'every state reaches rest through ordinary inputs',
     'The simulator asserts that every transition it observes is in the table',
+    'checks observed membership only; it cannot establish that a declared exit is implemented or its guard can be satisfied',
+    'establish that the real code implements the exits and feasible guards on which the reachability check relies',
     'The oracle shares none of the deciding logic it checks',
     'the scheduling of runnable actors','checked against the real service',
-    'Running one seed twice yields the same event trace','It checks every law after every event',
-    'every admitted obligation has reached rest','It pins each failure as its seed and recorded event trace',
+    'Control its filesystem or disk seam when source-required faults include lost unsynced writes, torn or reordered writes, or power loss',
+    'Keep the real storage implementation above that seam',
+    'a process restart with surviving operating system caches does not establish power-loss durability',
+    'Running one seed twice yields the same event trace','It checks safety laws after every event',
+    'Check required progress under the source-required assumptions about future inputs, dependency availability, recovery, and scheduling fairness',
+    'State and realize those premises in the generated continuation',
+    'check that the admitted obligations reach rest',
+    'A source-permitted wait for approval, a future input, or an unavailable dependency is valid while its progress premise is absent',
+    'Also exercise the continuation where that premise holds, so a missing required exit still fails',
+    'It pins each failure as its seed and recorded event trace',
     'Pure libraries use property-based tests of their laws',
     'A one-shot tool also injects a failure at every effect seam','only the user can reduce them',
     'a sweep that never produces an event kind the changed code handles is incomplete',
@@ -110,6 +122,8 @@ function check(src) {
   // handing reviewers the simulator's law inventory.
   for(const rule of ['Every trace-dependent law in the [source binding](#source-binding) is cited by an executable law the simulator checks',
     'every executable law cites a binding law or the [construction rule](#construction-rules) it enforces',
+    'also cites the required source law it protects and the conditions under which violating the rule breaks that law',
+    'A rule alone grants no gating authority',
     'A binding law without one is missing required verification',
     'is a strengthening without source authority, which must not gate the code',
     'Where the accepted source has stable clause identifiers in the repository, make this check executable',
@@ -144,8 +158,12 @@ function check(src) {
   const progress=src['recurrence.md'].split('## Progress before another iteration\n')[1];
   const plateau=normalized(progress.slice(progress.indexOf('For [stateful or concurrent software]'),progress.indexOf('When an admitted defect lies')));
   assert(plateau.includes('that explicit assessment, and any earlier one prompted by recurring findings, includes simulator coverage'),'lost plateau simulator check');
-  assert(plateau.includes('reclassify it') && plateau.includes('Clean counts do not measure this coverage'));
-  // Obligations stay unconditional; only the separate behavioral model is optional.
+  for(const rule of ['extend the applicable property-test generator or oracle to expose recurring families, including operation sequences',
+    'Reclassify it only when evidence establishes a listed stateful or concurrent property',
+    'recurring trace-dependent findings alone do not establish one',
+    'Clean counts do not measure this coverage'])
+    assert(plateau.includes(rule),`lost recurrence boundary: ${rule}`);
+  assert(normalized(progress).includes('pre-epoch screens and their corrections'));
   const weakening=/\boptional(?!\s*\[executable behavioral model\])|\bmay (?:skip|omit|include)\b|best[- ]effort|where (?:practical|feasible)|if convenient/i;
   for(const [name,text] of [['simulation',simulation],['re-injection',reinjection],['plateau',plateau]])
     assert(!weakening.test(text),`weakened ${name} obligation`);
@@ -162,6 +180,8 @@ function check(src) {
     'The screen must observe the complete base-to-head patch',
     'that holds the screen and every epoch standard alike','The screen binds its exact head',
     'with no epoch open, it triggers no initial evidence barrier',
+    'Retain screen findings, holds, and their corrections in the existing [attempt history](recurrence.md#progress-before-another-iteration)',
+    'Screen-only repair cycles remain subject to its causal progress triggers; they open no epoch and do not advance the invalidated-epoch count',
     'The screen awards no review credit and replaces no request'])
     assert(screen.includes(rule),`lost screen rule: ${rule}`);
   const screenPolicy=policy.pre_epoch_screen;
@@ -180,7 +200,7 @@ function check(src) {
   assert.equal(policy.universalist_compilation.nomination_result_required,false);
   assert.equal(policy.universalist_compilation.nomination_is_executed_proof,false);
   assert.equal(policy.efficacy.policy_unit_tests_prove_model_efficacy,false);
-  assert.equal(contract.skill.source_fingerprint,'actuating-construction-core-v43');
+  assert.equal(contract.skill.source_fingerprint,'actuating-construction-core-v44');
   const clauses=Object.fromEntries(contract.clauses.map(c=>[c.clause_id,c]));
   assert(clauses['ACT-IMPLEMENT-ENTRY-001'].success_signals.some(s=>s.includes('without a fixed reasoning sequence')));
   assert(clauses['ACT-METANOETIC-ADMISSIBILITY-001'].success_signals.some(s=>s.includes('no required order relative to Universalist')));
@@ -198,7 +218,14 @@ function check(src) {
   assert(sim.required_artifacts.some(s=>s.includes('a pinned seed and trace that fail on the defective version and pass with the fix')));
   assert(sim.failure_signals.some(s=>s.includes('screen results are recorded as credit_disposition')));
   assert(sim.required_artifacts.some(s=>s.startsWith('two-way law coverage')),'lost law coverage artifact');
+  assert(sim.required_artifacts.some(s=>s.includes('evidence that real code implements the exits and feasible guards the reachability check relies on')));
+  assert(sim.required_artifacts.some(s=>s.includes('a gating construction-rule assertion also cites the required source law and the conditions under which violating the rule breaks that law')));
   assert(sim.failure_signals.some(s=>s.startsWith('a trace-dependent binding law has no executable law')));
+  for(const signal of ['recurring sequence-dependent findings alone reclassify pure software as stateful without evidence of a listed stateful or concurrent property',
+    'a valid wait is failed or forced to terminate while its source-required progress premise is absent, or the required exit remains unchecked when that premise holds',
+    'observed transition membership is treated as proof that a declared exit or its guard is implemented and feasible',
+    'a process restart with surviving operating system caches is credited as power-loss durability evidence, or source-required storage faults are left outside simulator control'])
+    assert(sim.failure_signals.includes(signal),`lost simulation boundary: ${signal}`);
   assert(!anecdote.test(sim.rationale) && !/\b\d+ of \d+\b/.test(sim.rationale),'repository-specific rationale');
   for(const c of contract.clauses) {
     for(const id of c.trigger_refs) assert(triggerIds.has(id),id);
@@ -228,9 +255,11 @@ function check(src) {
   const simulationComparison=normalized(section(comparison,'Simulation-first construction'));
   for(const control of ['authored, not model-replayed','5939b6c039478a5fb932459bab4c5c2bee5edd19',
     'informs their revision, not their current force','the implementing run never sees them',
+    'Supply the complete accepted requirements to both arms',
     'two-way coverage must flag it before review',
     'Retain all attempts in the denominators',
     'Report simulator construction, seed budget, and CI time separately from per-defect time to first detection',
+    'Report simulator, pre-epoch screen, and epoch-review detection separately',
     'A tie or underpowered result is inconclusive','adds no delivery gate or permission for paid model runs'])
     assert(simulationComparison.includes(control),`lost simulation comparison control: ${control}`);
   assert(!/\b\d+ of \d+\b/.test(simulationComparison),'repository-specific comparison evidence');
@@ -262,10 +291,13 @@ const mutations=[
   ['one-way law coverage',swap('construction.md',', and every executable law cites a binding law or the [construction rule](#construction-rules) it enforces','')],
   ['coverage gap tolerated',swap('construction.md','A binding law without one is missing required verification.','A binding law without one may be covered later.')],
   ['unauthorized law gates code',swap('construction.md','which must not gate the code','which may gate the code')],
+  ['construction-rule gate lacks source authority',swap('construction.md','also cites the required source law it protects and the conditions under which violating the rule breaks that law','needs only the construction rule it enforces')],
   ['coverage claimed as adequacy',swap('construction.md','Coverage shows that each law is checked, not that its check is adequate','Coverage shows that each check is adequate')],
   ['pure library laws uncovered',swap('construction.md','with the same two-way coverage against the binding, generators','with generators')],
   ['coverage artifact dropped',decisionMutation(c=>{c.required_artifacts=c.required_artifacts.filter(s=>!s.startsWith('two-way law coverage'));})],
   ['missing-law comparison dropped',swap('tests/construction-comparison.md','two-way coverage must flag it before review','reviewers may notice it')],
+  ['source requirement withheld',swap('tests/construction-comparison.md','Supply the complete accepted requirements to both arms','Withhold the deciding requirement from both arms')],
+  ['screen detection counted as simulation',swap('tests/construction-comparison.md','Report simulator, pre-epoch screen, and epoch-review detection separately','Count screen and simulator detection together')],
   ['simulator made optional',swap('construction.md','the construction includes','the construction may include')],
   ['sweep made optional',swap('construction.md','Record each sweep','The fresh sweep is optional. Record each sweep')],
   ['one-shot tools forced into simulation',swap('construction.md','So is a one-shot tool whose effects only fail fast','So is no one-shot tool, even one whose effects only fail fast')],
@@ -274,10 +306,18 @@ const mutations=[
   ['simulator scope widened past durable state',swap('construction.md','durable state: data that outlives the process that wrote it','retained state: memory that a later operation reads')],
   ['concurrency trigger dropped',swap('construction.md','- concurrency: actors such as threads, tasks, processes, or peers whose interleaving can change an observation;\n','')],
   ['classified by repository',swap('construction.md','Classify by these properties, not by repository, language, or size.','Classify by repository.')],
+  ['recurrence alone reclassifies pure code',swap('construction.md','Reclassify it only when the evidence establishes a listed property that its earlier classification missed.','Reclassify it whenever trace-dependent findings recur.')],
   ['scheduler left unowned',swap('construction.md','the scheduling of runnable actors, and','and')],
   ['fakes unchecked',swap('construction.md',', checked against the real service','')],
   ['nondeterministic replay tolerated',swap('construction.md',' Running one seed twice yields the same event trace.','')],
-  ['lifecycle table may drift',swap('construction.md','The simulator asserts that every transition it observes is in the table, so the table cannot drift from the code.','')],
+  ['lifecycle table may drift',swap('construction.md','The simulator asserts that every transition it observes is in the table.','')],
+  ['table membership proves exits',swap('construction.md','checks observed membership only; it cannot establish that a declared exit is implemented or its guard can be satisfied','proves every declared exit is implemented and its guard can be satisfied')],
+  ['lifecycle realization unchecked',swap('construction.md','establish that the real code implements the exits and feasible guards on which the reachability check relies','assume declared exits are implemented')],
+  ['progress premises invented',swap('construction.md','source-required assumptions about future inputs, dependency availability, recovery, and scheduling fairness','any assumptions that make the check pass')],
+  ['valid wait forced to terminate',swap('construction.md','A source-permitted wait for approval, a future input, or an unavailable dependency is valid while its progress premise is absent','Every wait must terminate after inputs stop')],
+  ['progress continuation unchecked',swap('construction.md','Also exercise the continuation where that premise holds, so a missing required exit still fails.','')],
+  ['required storage faults uncontrolled',swap('construction.md','Control its filesystem or disk seam when source-required faults include lost unsynced writes, torn or reordered writes, or power loss.','')],
+  ['restart credited as power loss',swap('construction.md','a process restart with surviving operating system caches does not establish power-loss durability','a process restart establishes power-loss durability')],
   ['oracle shares deciding logic',swap('construction.md','The oracle shares none of the deciding logic it checks','The oracle may reuse the deciding logic it checks')],
   ['unbounded simulator construction',swap('construction.md','build the smallest one','build a complete one')],
   ['changed helper forced into simulation',swap('construction.md','keeps its ordinary tests and runs in the simulator as real code','needs its own simulator')],
@@ -290,7 +330,9 @@ const mutations=[
   ['outside scope widened',swap('counterexamples.md','Only a defect whose wrong observation is not behavior of the running software','Any defect the current simulator does not reach')],
   ['second re-injection fallback',append('counterexamples.md','\nOnly the user can waive this control.\n')],
   ['plateau check optional',swap('recurrence.md','includes simulator coverage','optionally includes simulator coverage')],
+  ['plateau bypasses pure classification',swap('recurrence.md','Reclassify it only when evidence establishes a listed stateful or concurrent property','Reclassify it whenever these findings recur')],
   ['plateau keyed to clean counts',swap('recurrence.md','Clean counts do not measure this coverage.','Rising clean counts establish this coverage.')],
+  ['held-screen attempts forgotten',swap('review-closeout.md','Retain screen findings, holds, and their corrections in the existing [attempt history](recurrence.md#progress-before-another-iteration).','Discard screen-only repair history.')],
   ['epoch opens on any review request',swap('review-closeout.md','opens on the first initial-inventory request','opens on the first review request')],
   ['screen records credit',swap('review-closeout.md','never `credit_disposition`','as `credit_disposition`')],
   ['screen skips the complete patch',swap('review-closeout.md','The screen must observe the complete base-to-head patch.','')],

@@ -38,14 +38,16 @@ recovery does not require architectural reconsideration or a new code finding.
 Reassess the approach when the accumulated evidence no longer supports it.
 
 After a required verifier terminates unsuccessfully or inconclusively, and after
-an invalidated review epoch closes, compare the recent attempts with the last
+an invalidated review epoch closes or a pre-epoch screen returns to construction,
+compare the recent attempts with the last
 supported progress before another correction, broad retry, or successor review
 wave. On resumption, recover this history before repeating failed work. An
 admitted code liability or proved same-family recurrence is not required to
 question the investigation or approach; preserve Review Fold's classifications.
 
 Keep a compact history in the existing Working Set: closed review epochs (including
-superseded batches with incomplete inquiry) and
+superseded batches with incomplete inquiry), held or candidate-invalidating
+pre-epoch screens and their corrections, and
 relevant terminal verification attempts, the unresolved obligation or obstruction,
 each relevant intervention and its predicted versus observed result, the last
 supported progress, and the evidence basis of the latest shared activation. Use
@@ -58,7 +60,9 @@ delegation, and compaction. Reclassify applicability when the accepted source
 changes; preserve provenance and mark unavailable history unknown, never zero.
 
 Count a closed review epoch once, separately from its lenses, findings, and clean
-confirmations; retain which epochs were invalidated. Count comparable terminal
+confirmations; retain which epochs were invalidated. A pre-epoch screen counts as
+no epoch; its failed remedy predictions and recurring obstructions still trigger
+the causal assessment below. Count comparable terminal
 verification executions, not polls or observation timeouts on a live check.
 Group one matrix run's reports of the same obstruction as one attempt without
 discarding distinct evidence. A newly reached check or an experiment that resolves
@@ -82,15 +86,19 @@ skill, making a commit, or passing an unrelated check is not supported progress.
 
 For [stateful or concurrent software](construction.md#simulation-first-correctness),
 that explicit assessment, and any earlier one prompted by recurring findings,
-includes simulator coverage. When admitted findings across invalidated epochs keep
+includes simulator coverage. When admitted findings across screen corrections or
+invalidated epochs keep
 violating trace-dependent laws, appearing only under a particular sequence,
 interleaving, or timing of inputs, faults, restarts, or transfers, confirm that
 the simulator catches each such family on
 [re-injection](counterexamples.md#re-inject-confirmed-defects). Extend its
 generator or oracle for every family it misses, then sweep again, before selecting
-the next repair. Software classified as a pure library or one-shot tool that
-accumulates such findings is stateful; reclassify it. Clean counts do not measure
-this coverage.
+the next repair. For software classified as a pure library or one-shot tool,
+extend the applicable property-test generator or oracle to expose recurring
+families, including operation sequences, and reassess the classification.
+Reclassify it only when evidence establishes a listed stateful or concurrent
+property; recurring trace-dependent findings alone do not establish one. Clean
+counts do not measure this coverage.
 
 When an admitted defect lies in a deciding site an earlier intervention added,
 inspect that site's role and the argument that justified it. When a supported
