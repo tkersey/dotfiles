@@ -754,8 +754,6 @@ def delivery_git_report(tmp):
         write(name, "\n".join(lines))
     invalid = os.fsdecode(b"invalid-\xff.txt")
     quoted[invalid] = "invalid-byte filename retains its original identity"
-    with open(os.fsencode(repo) + b"/invalid-\xff.txt", "wb") as source:
-        source.write((quoted[invalid] + "\n").encode("utf-8"))
     (repo / empty).touch()
     (repo / mode).chmod(0o755)
     for name, destination in links.items():
@@ -765,12 +763,15 @@ def delivery_git_report(tmp):
     (repo / "old rename.txt").rename(repo / renamed)
     (repo / binary).write_bytes(b"after\0binary\n")
     git("add", "-A")
+    # APFS rejects non-UTF-8 names, so the raw-byte path exists only in Git objects.
+    blob = tmp / "invalid-blob"
+    blob.write_text(quoted[invalid] + "\n", encoding="utf-8")
+    git("update-index", "--add", "--cacheinfo", f"100644,{git('hash-object', '-w', str(blob)).strip()},{invalid}")
     git("commit", "-qm", "head")
 
-    def observe(label, reference_paths, supplied_paths, followups=(), prefixes=("a/", "b/")):
+    def observe(label, reference_paths, supplied_paths, followups=()):
         reference = tmp / f"delivery-{label}.patch"
-        reference.write_text(git("diff", f"--src-prefix={prefixes[0]}", f"--dst-prefix={prefixes[1]}",
-                                 target, "HEAD", "--", *reference_paths), encoding="utf-8")
+        reference.write_text(git("diff", target, "HEAD", "--", *reference_paths), encoding="utf-8")
         args = ["diff", target, "HEAD", "--", *supplied_paths]
         events = standard_events(target=target, command=shlex.join(["git", *args]), output=git(*args))
         report = readback(tmp, "standard", events, target=target, reference_patch=reference,
@@ -803,7 +804,7 @@ def delivery_git_report(tmp):
     # symlink target must not put that measured file into unmeasured as well.
     compare(observe("type-changes", links, links),
             expected({"type-long.txt": (2, 2), "type-short.txt": (1, 1)}))
-    quoted_args = ["grep", "-n", "--full-name", "-e", "filename retains", "--", *quoted]
+    quoted_args = ["grep", "--cached", "-n", "--full-name", "-e", "filename retains", "--", *quoted]
     quoted_followup = as_followup(standard_events(target=target, command=shlex.join(["git", *quoted_args]),
                                                   output=git(*quoted_args)))
     compare(observe("quoted-grep", quoted, ["same.txt"], [quoted_followup]),
@@ -820,6 +821,23 @@ def delivery_git_report(tmp):
     compare(observe("grep-after", grep_reference, ["same.txt"], [followup]),
             expected({name: (len(lines), len(lines) if name in grep_files else 0)
                       for name, lines in grep_reference.items()}))
+    # The Grep tool omits the path for a one-file search; absolute and ./ paths
+    # come from searches rooted at the session directory.
+    bare_args = ["grep", "-h", "-n", "-C1", "needle_match", "--", *grep_files]
+    bare_output = git(*bare_args)
+    assert bare_output.startswith("1-before_context_0"), bare_output
+    bare_followup = as_followup(standard_events(target=target, command=shlex.join(["git", *bare_args]),
+                                                output=bare_output))
+    compare(observe("grep-bare", grep_reference, ["same.txt"], [bare_followup]),
+            expected({name: (len(lines), len(lines) if name in grep_files else 0)
+                      for name, lines in grep_reference.items()}))
+    rooted = "\n".join(prefix + line for prefix, line in zip((f"{repo}/", "./", f"{repo}/"),
+                                                              git(*grep_args).split("\n")[:3]))
+    rooted_followup = as_followup(standard_events(target=target, command="rg -n -C1 needle_match", output=rooted))
+    rooted_followup[0]["cwd"] = str(repo)
+    compare(observe("grep-rooted", grep_reference, ["same.txt"], [rooted_followup]),
+            expected({name: (len(lines), len(lines) if name == "grep space.txt" else 0)
+                      for name, lines in grep_reference.items()}))
     ambiguous_args = ["grep", "-n", "-e", "prefix", "--", "ambiguity.txt"]
     ambiguous_followup = as_followup(standard_events(target=target,
         command=shlex.join(["git", *ambiguous_args]), output=git(*ambiguous_args)))
@@ -830,20 +848,26 @@ def delivery_git_report(tmp):
             expected({name: (1, 1) for name in ("twelve.txt", "twelve-padded.txt", "thirteen.txt")},
                      ["short.txt", "short-padded.txt"]))
 
-    # Caller capture flags must defeat Git's local prefix settings. Reviewer
-    # output still uses those settings and supplies the same changed-line text.
+    # The reference is captured under the reviewer's Git configuration, so a
+    # semicolon-hidden read still matches it byte for byte; delivery decodes
+    # diff.noprefix paths and retains other prefixes as unparsed sections.
     git("config", "diff.noprefix", "true")
     assert git("diff", target, "HEAD", "--", "same.txt").startswith("diff --git same.txt same.txt\n")
     compare(observe("no-prefix-config", separate, ["same.txt"]),
             expected({name: (1, int(name == "same.txt")) for name in separate}))
+    reference = tmp / "delivery-semicolon.patch"
+    reference.write_text(git("diff", f"{target}..HEAD", "--"), encoding="utf-8")
+    hidden = standard_events(target=f"{target}..HEAD", command=f"git diff {target}..HEAD; git status --short",
+                             output=git("diff", f"{target}..HEAD") + "\n")
+    report = readback(tmp, "standard", hidden, target=f"{target}..HEAD", reference_patch=reference, cwd=repo)
+    expect(report)
+    assert report["diff_reads"][0].get("reference_matched"), report
     git("config", "diff.noprefix", "false")
     git("config", "diff.srcPrefix", "old/")
     git("config", "diff.dstPrefix", "new/")
     assert git("diff", target, "HEAD", "--", "same.txt").startswith("diff --git old/same.txt new/same.txt\n")
-    compare(observe("custom-prefix-config", separate, ["same.txt"]),
-            expected({name: (1, int(name == "same.txt")) for name in separate}))
-    unknown = observe("unknown-prefix", ["same.txt"], ["same.txt"], prefixes=("old/", "new/"))
-    header = (tmp / "delivery-unknown-prefix.patch").read_text(encoding="utf-8").split("\n", 1)[0]
+    unknown = observe("custom-prefix-config", ["same.txt"], ["same.txt"])
+    header = (tmp / "delivery-custom-prefix-config.patch").read_text(encoding="utf-8").split("\n", 1)[0]
     compare(unknown, {**expected({}), "unparsed_headers": [header]})
 
 

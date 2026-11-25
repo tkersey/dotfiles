@@ -74,6 +74,8 @@ INVENTORY = {"standard": {"Read", "Grep", "Glob", "Bash", "Agent", "Task"},
 DISTINCTIVE = 12
 READ_PREFIX = re.compile(r"\s*\d+[\t→]")
 GREP_PREFIX = re.compile(r"(?=(:[0-9]+:|-[0-9]+-))")
+# The Grep tool omits the path when it searches one file (observed: about half of real Grep lines).
+BARE_PREFIX = re.compile(r"[0-9]+[:-]")
 GIT_ESCAPE = re.compile(rb'\\([0-3][0-7]{2}|[abfnrtv\\"])')
 GIT_ESCAPES = dict(zip(b'abfnrtv\\"', b'\a\b\f\n\r\t\v\\"'))
 
@@ -203,10 +205,12 @@ def patch_files(reference: str) -> list[dict]:
             names = line[len("diff --git "):]
             middle = len(names) // 2
             old, new = git_path(names[:middle]), git_path(names[middle + 1:])
-            # Unchanged names have equally long rendered fields, even when quoted.
-            # Renames/copies resolve below; splitting on ' b/' loses valid names.
-            path = (old[2:] if names[middle:middle + 1] == " " and old.startswith("a/")
-                    and new == "b/" + old[2:] else None)
+            # Unchanged names have equally long rendered fields, even when quoted;
+            # diff.noprefix renders them identically. Renames/copies resolve below;
+            # splitting on ' b/' loses valid names.
+            symmetric = names[middle:middle + 1] == " "
+            path = (old[2:] if symmetric and old.startswith("a/") and new == "b/" + old[2:]
+                    else old if symmetric and old == new else None)
             current = {"path": path, "lines": [], "aliases": {path} if path is not None else set(),
                        "header": line}
             files.append(current)
@@ -239,15 +243,20 @@ def output_text(line: str, paths: set[str]) -> tuple[str, ...]:
     candidates = [(match.start(), match.start() + len(match[1]))
                   for match in GREP_PREFIX.finditer(line) if match.start()]
     known = [(start, end) for start, end in candidates if git_path(line[:start]) in paths]
-    choices = known or candidates
-    return (line, line[choices[0][1]:]) if len(choices) == 1 else (line,)
+    if known:
+        return (line, line[known[0][1]:]) if len(known) == 1 else (line,)
+    bare = BARE_PREFIX.match(line)
+    if bare:
+        return line, line[bare.end():]
+    return (line, line[candidates[0][1]:]) if len(candidates) == 1 else (line,)
 
 
 def delivery(reference: str, streams: list[list[dict]]) -> dict:
     """Count distinctive changed reference lines whose text appears in any tool result.
 
     Text presence is not attention or reasoning, and identical text elsewhere also
-    matches. Read line numbers, grep match/context prefixes and diff markers are removed.
+    matches. Read line numbers, grep match/context prefixes (with or without a path)
+    and diff markers are removed.
     """
     sections = patch_files(reference)
     files = {}
