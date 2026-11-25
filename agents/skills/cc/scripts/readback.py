@@ -63,6 +63,7 @@ from pathlib import Path
 
 LEVEL = re.compile(r"`(\w+) effort\b")
 HEX = re.compile(r"[0-9a-f]{7,40}\Z")
+REF = re.compile(r"[\w@{}~^/.][\w@{}~^/.-]*\Z")
 REFERENCE_TARGET = re.compile(r"[0-9a-f]{7,40}(?:\.\.HEAD)?\Z")
 EXIT_CODE = re.compile(r"\A\s*Exit code(?:\s*:\s*|\s+)(\d+)(?:\s|$)", re.IGNORECASE)
 PATCH_TEXT = re.compile(r"^diff --git ", re.MULTILINE)
@@ -83,6 +84,7 @@ READ_PREFIX = re.compile(r"\s*\d+[\t→]")
 GREP_PREFIX = re.compile(r"(?=(:[0-9]+:|-[0-9]+-))")
 # The Grep tool omits the path when it searches one file (observed: about half of real Grep lines).
 BARE_PREFIX = re.compile(r"[0-9]+[:-]")
+NUMBERED = {":": re.compile(r"[0-9]+:"), "-": re.compile(r"[0-9]+-")}
 GIT_ESCAPE = re.compile(rb'\\([0-3][0-7]{2}|[abfnrtv\\"])')
 GIT_ESCAPES = dict(zip(b'abfnrtv\\"', b'\a\b\f\n\r\t\v\\"'))
 
@@ -108,11 +110,11 @@ def parts_of(event: dict) -> list[dict]:
     return [part for part in content if isinstance(part, dict)] if isinstance(content, list) else []
 
 
-def load_events(path: Path, problems: list[str], label="events") -> list[dict]:
+def load_events(path: Path, problems: list[str], label="events", unreadable: list[str] | None = None) -> list[dict]:
     try:
         lines = path.read_text(encoding="utf-8").splitlines()
     except (OSError, UnicodeError) as exc:
-        problems.append(f"cannot read {label}: {exc}")
+        (problems if unreadable is None else unreadable).append(f"cannot read {label}: {exc}")
         return []
     events = []
     for number, line in enumerate(lines, 1):
@@ -250,7 +252,7 @@ def output_text(line: str, paths: set[str]) -> tuple[str, ...]:
     if read:
         return line, line[read.end():]
     # A grep line names a changed file, then ':' or '-', then an optional line number.
-    known = [number.end() if (number := BARE_PREFIX.match(line, index + 1)) else index + 1
+    known = [number.end() if (number := NUMBERED[char].match(line, index + 1)) else index + 1
              for index, char in enumerate(line) if char in ":-" and index and git_path(line[:index]) in paths]
     if known:
         return (line, line[known[0]:]) if len(known) == 1 else (line,)
@@ -410,6 +412,9 @@ def direct_diff(words: list[str], target: str) -> bool:
     if len(operands) != 2:
         return False
     base, head = operands
+    if target == "-":
+        # A current-diff recipe names no range; it reads a ref such as origin/HEAD against HEAD.
+        return bool(REF.fullmatch(base)) and head == "HEAD"
     return bool(HEX.fullmatch(base) and target.startswith(base) and head == "HEAD")
 
 
@@ -521,79 +526,78 @@ def standard(events: list[dict], target: str, level: str, problems: list[str], f
             problems.append(f"recipe ran at {observed_level} effort, bound level is {level}")
         if target != "-" and f"Review target: `{target}`" not in recipe:
             problems.append(f"recipe target is not {target}")
-    if target != "-":
-        requests = [(source, i, p) for source, stream in enumerate(sessions)
-                    for i, e in enumerate(stream) if e.get("type") == "assistant"
-                    for p in parts_of(e) if p.get("type") == "tool_use"]
-        others = []
-        for source, index, request in requests:
-            inputs = request.get("input")
-            command = inputs.get("command") if isinstance(inputs, dict) else None
-            observation = diff_read(command, target) if request.get("name") == "Bash" and isinstance(command, str) else None
-            if observation is None:
-                if request.get("name") == "Bash" and isinstance(command, str):
-                    others.append({"tool_use_id": request.get("id"), "command": command,
-                                   **({"followup": source} if source else {}),
-                                   **({"outside": reason} if (reason := outside(source, index)) else {})})
-                continue
-            shape, completion_bound, difference_exit = observation
-            tool_id = request.get("id")
-            read = {"tool_use_id": tool_id, "command": command, "shape": shape, "ok": False}
-            if not completion_bound:
-                read["completion_status"] = "unknown"
-            if source:
-                read["followup"] = source
-            evidence["diff_reads"].append(read)
-            if reason := outside(source, index):
-                read["reason"] = reason
-                continue
-            if inputs.get("run_in_background"):
-                read["reason"] = "background request does not establish completed diff observation"
-                continue
-            if not isinstance(tool_id, str) or not tool_id or sum(p.get("id") == tool_id for _, _, p in requests) != 1:
-                read["reason"] = "missing or duplicate tool_use ID"
-                continue
-            matches = [(i, p, e) for i, e in enumerate(sessions[source]) if e.get("type") == "user"
-                       for p in parts_of(e) if p.get("type") == "tool_result" and p.get("tool_use_id") == tool_id]
-            if len(matches) != 1 or matches[0][0] <= index:
-                read["reason"] = "no unique later correlated tool_result"
-                continue
-            _, part, event = matches[0]
-            read["ok"], read["reason"] = tool_result_status(part, event, difference_exit)
-            details = event.get("tool_use_result")
-            if ((isinstance(details, dict) and details.get("persistedOutputPath"))
-                    or text_of(part.get("content")).startswith("<persisted-output>")):
-                read["persisted_output"] = True
-            if read["ok"] and not completion_bound:
-                if reference_observed(text_of(part.get("content")), reference):
-                    read.update(reference_matched=True, reason="target diff precedes a semicolon; completion remains "
-                                "unknown, but the observed output contains the whole caller-supplied reference patch")
-                else:
-                    read.update(ok=False, unverified=True,
-                                reason="target diff precedes a semicolon; its completion status is unavailable")
-        if not any(read["ok"] for read in evidence["diff_reads"]):
-            # Follow-ups only add reads, so every hold recorded before this one survives them.
-            remedy = ("other holds remain that a --followup cannot clear; do not resume for this read alone, "
-                      "and apply the caller's existing recovery rules" if problems else
-                      "resume the same session with the bound launch settings, complete a direct foreground "
-                      "target diff read and dependent reassessment, then pass the separate stream with --followup")
-            if any(read.get("unverified") for read in evidence["diff_reads"]):
-                problems.append(f"no successful correlated `git diff` read against {target}: the recognized read "
-                                "precedes a `;`, so its completion is unverified; "
-                                + ("" if problems or reference is not None
-                                   else "supply an authenticated --reference-patch, or ") + remedy)
-            elif evidence["diff_reads"]:
-                problems.append(f"no successful correlated `git diff` read against {target}: every recognized "
-                                "read failed, lacks a unique later result, or did not reach the reviewer "
-                                f"(see diff_reads); {remedy}")
-            elif others:
-                problems.append(f"no successful correlated `git diff` read against {target}: "
-                                "other Bash requests did not establish a target patch read (see other_bash_requests); "
-                                f"{remedy}")
+    requests = [(source, i, p) for source, stream in enumerate(sessions)
+                for i, e in enumerate(stream) if e.get("type") == "assistant"
+                for p in parts_of(e) if p.get("type") == "tool_use"]
+    others = []
+    for source, index, request in requests:
+        inputs = request.get("input")
+        command = inputs.get("command") if isinstance(inputs, dict) else None
+        observation = diff_read(command, target) if request.get("name") == "Bash" and isinstance(command, str) else None
+        if observation is None:
+            if request.get("name") == "Bash" and isinstance(command, str):
+                others.append({"tool_use_id": request.get("id"), "command": command,
+                               **({"followup": source} if source else {}),
+                               **({"outside": reason} if (reason := outside(source, index)) else {})})
+            continue
+        shape, completion_bound, difference_exit = observation
+        tool_id = request.get("id")
+        read = {"tool_use_id": tool_id, "command": command, "shape": shape, "ok": False}
+        if not completion_bound:
+            read["completion_status"] = "unknown"
+        if source:
+            read["followup"] = source
+        evidence["diff_reads"].append(read)
+        if reason := outside(source, index):
+            read["reason"] = reason
+            continue
+        if inputs.get("run_in_background"):
+            read["reason"] = "background request does not establish completed diff observation"
+            continue
+        if not isinstance(tool_id, str) or not tool_id or sum(p.get("id") == tool_id for _, _, p in requests) != 1:
+            read["reason"] = "missing or duplicate tool_use ID"
+            continue
+        matches = [(i, p, e) for i, e in enumerate(sessions[source]) if e.get("type") == "user"
+                   for p in parts_of(e) if p.get("type") == "tool_result" and p.get("tool_use_id") == tool_id]
+        if len(matches) != 1 or matches[0][0] <= index:
+            read["reason"] = "no unique later correlated tool_result"
+            continue
+        _, part, event = matches[0]
+        read["ok"], read["reason"] = tool_result_status(part, event, difference_exit)
+        details = event.get("tool_use_result")
+        if ((isinstance(details, dict) and details.get("persistedOutputPath"))
+                or text_of(part.get("content")).startswith("<persisted-output>")):
+            read["persisted_output"] = True
+        if read["ok"] and not completion_bound:
+            if reference_observed(text_of(part.get("content")), reference):
+                read.update(reference_matched=True, reason="target diff precedes a semicolon; completion remains "
+                            "unknown, but the observed output contains the whole caller-supplied reference patch")
             else:
-                problems.append(f"no successful correlated `git diff` read against {target}: "
-                                f"no recognized target diff request was found; {remedy}")
-            evidence["other_bash_requests"] = others
+                read.update(ok=False, unverified=True,
+                            reason="target diff precedes a semicolon; its completion status is unavailable")
+    if not any(read["ok"] for read in evidence["diff_reads"]):
+        # Follow-ups only add reads, so every hold recorded before this one survives them.
+        remedy = ("other holds remain that a --followup cannot clear; do not resume for this read alone, "
+                  "and apply the caller's existing recovery rules" if problems else
+                  "resume the same session with the bound launch settings, complete a direct foreground "
+                  "target diff read and dependent reassessment, then pass the separate stream with --followup")
+        if any(read.get("unverified") for read in evidence["diff_reads"]):
+            problems.append(f"no successful correlated `git diff` read against {target}: the recognized read "
+                            "precedes a `;`, so its completion is unverified; "
+                            + ("" if problems or reference is not None
+                               else "supply an authenticated --reference-patch, or ") + remedy)
+        elif evidence["diff_reads"]:
+            problems.append(f"no successful correlated `git diff` read against {target}: every recognized "
+                            "read failed, lacks a unique later result, or did not reach the reviewer "
+                            f"(see diff_reads); {remedy}")
+        elif others:
+            problems.append(f"no successful correlated `git diff` read against {target}: "
+                            "other Bash requests did not establish a target patch read (see other_bash_requests); "
+                            f"{remedy}")
+        else:
+            problems.append(f"no successful correlated `git diff` read against {target}: "
+                            f"no recognized target diff request was found; {remedy}")
+        evidence["other_bash_requests"] = others
     if reference is not None:
         # Count only what reached the reviewer; each stream keeps its init for the session directory.
         evidence["delivery"] = delivery(reference, [
@@ -608,7 +612,7 @@ def transcript_path(sid: str) -> Path | None:
     return matches[0] if len(matches) == 1 else None
 
 
-def transcript(sid: str, problems: list[str]) -> tuple[str, list[str]] | None:
+def transcript(sid: str, problems: list[str], missing: list[str]) -> tuple[str, list[str]] | None:
     """The session transcript and its typed user messages in order, from the launch prompt on.
 
     stream-json does not echo a piped prompt, so these are the delivery evidence.
@@ -616,12 +620,12 @@ def transcript(sid: str, problems: list[str]) -> tuple[str, list[str]] | None:
     try:
         path = transcript_path(sid)
     except (OSError, ValueError) as exc:
-        problems.append(f"cannot locate transcript: {exc}")
+        missing.append(f"cannot locate transcript: {exc}")
         return None
     if path is None:
-        problems.append(f"no unique transcript for {sid}")
+        missing.append(f"no unique transcript for {sid}")
         return None
-    records = load_events(path, problems, "transcript")
+    records = load_events(path, problems, "transcript", missing)
     sessions = [r["sessionId"] for r in records if "sessionId" in r]
     if not sessions or any(session != sid for session in sessions):
         problems.append("transcript mixes sessions or has no session identity")
@@ -644,16 +648,22 @@ def custom(result: dict, prompt: bytes, located: tuple[str, list[str]] | None, p
     return evidence
 
 
-def followup_streams(paths: list[str], kind: str, sid: str, model: str, problems: list[str], report: dict,
-                     prompts: list[bytes | None], located: tuple[str, list[str]] | None) -> list[list[dict]]:
+def followup_streams(paths: list[str], kind: str, sid: str, model: str, problems: list[str], argument: list[str],
+                     report: dict, prompts: list[bytes | None],
+                     located: tuple[str, list[str]] | None) -> list[list[dict]]:
     """Check each same-session follow-up stream on its own and report it under followups."""
     # Each prompt is a later typed message than the previous one; runtime records such as
     # compaction summaries may sit between them.
     typed, position = (located[1] if located else []), 0
     streams = []
     for path in paths:
-        issues = []
-        stream = load_events(Path(path), issues, "follow-up events")
+        issues, unreadable = [], []
+        stream = load_events(Path(path), issues, "follow-up events", unreadable)
+        if unreadable:
+            argument.extend(f"follow-up {len(streams) + 1}: {issue}" for issue in unreadable)
+            streams.append(stream)
+            report.setdefault("followups", []).append({"events": path, "prompt_delivery": "unverified"})
+            continue
         supplemental = common(stream, sid, model, issues)
         entry = {"events": path, "runtime": launch_runtime(stream, kind, issues), **result_evidence(supplemental)}
         if kind == "custom":
@@ -706,14 +716,15 @@ def main() -> None:
     result = common(events, sid, model, problems)
     report = {"kind": kind, "session_id": sid, "model": model,
               "runtime": launch_runtime(events, kind, problems), **result_evidence(result)}
-    located = transcript(sid, problems) if kind == "custom" or prompt_paths else None
+    located = (transcript(sid, problems, problems if kind == "custom" else argument)
+               if kind == "custom" or prompt_paths else None)
     if kind == "standard":
         if not isinstance(result.get("result"), str) or not result["result"].strip():
             problems.append("no nonempty native result text in the terminal result")
         reference = None
         if reference_path is not None:
             report["reference_patch"], reference = load_reference_patch(Path(reference_path), target, argument)
-        followups = followup_streams(followup_paths, kind, sid, model, problems, report, prompts, located)
+        followups = followup_streams(followup_paths, kind, sid, model, problems, argument, report, prompts, located)
         report.update(standard(events, target, level, problems, followups, reference))
     else:
         try:
@@ -722,7 +733,7 @@ def main() -> None:
             prompt = b""
             problems.append(f"cannot read prompt: {exc}")
         report.update(custom(result, prompt, located, problems))
-        followup_streams(followup_paths, kind, sid, model, problems, report, prompts, located)
+        followup_streams(followup_paths, kind, sid, model, problems, argument, report, prompts, located)
     problems.extend(argument)
     report.update(ok=not problems, problems=problems)
     Path(out).write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8", errors="backslashreplace")

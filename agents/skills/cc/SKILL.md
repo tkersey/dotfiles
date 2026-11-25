@@ -228,7 +228,10 @@ follow-up route below. Do not introduce an unsandboxed replay or widen permissio
 
 For an explicitly bound current-diff review, omit the CLI target and pass `-` as
 the helper's target instead of `$base..HEAD`; the recipe then has no target line and
-is recognized by its effort header.
+is recognized by its effort header. Its read gate is unchanged except that a direct
+`git diff <ref>...HEAD`, `<ref>..HEAD`, or `<ref>` read of any ref against HEAD
+qualifies (the recipe reads `origin/HEAD...HEAD`); judge whether that observed
+scope is the bound current diff.
 
 [readback.py](scripts/readback.py) writes the evidence and every problem, and
 exits nonzero (hold) unless all of these hold:
@@ -435,8 +438,11 @@ Confidence is not evidence.
   invocation is the only delivery evidence.
 
   Repeat `--followup` in execution order only within the caller's recovery budget.
-  The helper checks each stream's session, model, terminal result and correlated
-  reads. It preserves the original `result`, every failed/unverified read, and
+  The helper checks each stream's session, model, runtime and terminal result, the
+  correlated reads of standard streams, and the `structured_output` of custom ones;
+  it does not check a custom follow-up's reads. An unreadable follow-up file, prompt
+  file or (for standard) transcript is a caller-argument problem: fix it and rerun
+  readback. It preserves the original `result`, every failed/unverified read, and
   supplemental results and denials under `followups`. Adjudicate all of them;
   successful readback does not establish adequate reassessment or erase a finding.
 - Compaction alone is not failure or a fresh review.

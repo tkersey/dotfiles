@@ -660,6 +660,12 @@ def runtime_evidence(tmp):
     report = readback(tmp, "standard", current, target="-")
     expect(report)
     assert report["observed_level"] == "high" and report["recipe_parent_tool_use_id"] == FORK, report
+    for command, error in [("git diff origin/HEAD...HEAD", None), ("git diff @{upstream}...HEAD", None),
+                           ("git diff HEAD", None), ("git diff --stat origin/HEAD...HEAD", "no successful correlated"),
+                           ("git diff --output=/tmp/x HEAD", "no successful correlated"), ("ls -la", "no successful correlated")]:
+        stream = standard_events(command=command)
+        stream[1]["message"]["content"][0]["text"] = current[1]["message"]["content"][0]["text"]
+        expect(readback(tmp, "standard", stream, target="-"), error)
     for version, error in [("2.1.287", None), ("2.1.340+build.5", None), ("2.1.287-rc.0", "is not 2.1.287 or newer"),
                            ("2.1.300abc", "is not 2.1.287 or newer"), ("2.1.340-beta.1", None), ("2.1.200-rc.1", "is not 2.1.287 or newer"),
                            ("2.1.340.1", "is not 2.1.287 or newer"), ("v2.1.340", "is not 2.1.287 or newer")]:
@@ -708,6 +714,19 @@ def runtime_evidence(tmp):
     report = readback(tmp, "standard", standard_events(command="ls -la"), followups=[as_followup(standard_events())],
                       followup_prompts=[tmp / "missing-prompt.txt"])
     expect(report, "cannot read follow-up prompt")
+    assert not any("cannot clear" in p for p in report["problems"]), report
+    # readback() writes every follow-up it is given, so call the helper directly with a missing path.
+    (tmp / "gap.jsonl").write_text(json_lines(standard_events(command="ls -la")), encoding="utf-8")
+    unreadable = subprocess.run([sys.executable, "-I", str(SCRIPT), "standard", str(tmp / "gap.jsonl"), SID, MODEL, BASE,
+                                 "high", str(tmp / "gap.json"), "--followup", str(tmp / "missing-followup.jsonl")],
+                                capture_output=True, text=True)
+    report = json.loads((tmp / "gap.json").read_text(encoding="utf-8"))
+    assert unreadable.returncode != 0 and "Traceback" not in unreadable.stderr, unreadable.stderr
+    assert any(p.startswith("follow-up 1: cannot read follow-up events") for p in report["problems"]), report
+    assert not any("cannot clear" in p or "expected one init" in p for p in report["problems"]), report
+    report = readback(tmp, "standard", standard_events(command="ls -la"), followups=[as_followup(standard_events())],
+                      followup_prompts=[b"prompt"])
+    expect(report, "no unique transcript")
     assert not any("cannot clear" in p for p in report["problems"]), report
     empty = tmp / "empty-reference.patch"
     empty.write_bytes(b"")
@@ -834,6 +853,7 @@ def delivery_git_report(tmp):
         write(name, content)
     write("a/foo.txt", "top-level a folder payload after the change")
     write("docs/01-intro.md", "numbered chapter needle stays identifiable")
+    write("dated.txt", "2024-01-01 release cutoff moved to the second quarter")
     write("b/new.txt", "top-level b folder payload is newly added")
     folders = ["a/foo.txt", "b/new.txt"]
     for name, lines in {**grep_files, **suffixes}.items():
@@ -924,6 +944,10 @@ def delivery_git_report(tmp):
     compare(observe("grep-unnumbered", grep_reference, ["same.txt"], [plain]),
             expected({name: (len(lines), len(lines) if name in grep_files else 0)
                       for name, lines in grep_reference.items()}))
+    dated_args = ["grep", "-e", "release cutoff", "--", "dated.txt"]
+    assert git(*dated_args).startswith("dated.txt:2024-01-01 release cutoff")
+    dated = as_followup(standard_events(target=target, command=shlex.join(["git", *dated_args]), output=git(*dated_args)))
+    compare(observe("grep-dated", ["dated.txt"], ["same.txt"], [dated]), expected({"dated.txt": (1, 1)}))
     rooted = "\n".join(prefix + line for prefix, line in zip((f"{repo}/", "./", f"{repo}/"),
                                                               git(*grep_args).split("\n")[:3]))
     rooted_followup = as_followup(standard_events(target=target, command="rg -n -C1 needle_match", output=rooted))
