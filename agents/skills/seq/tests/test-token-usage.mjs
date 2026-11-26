@@ -463,6 +463,24 @@ try {
     [claudeId(9), [authored('msg_k', qa, 0)]],
   ]).result, { verdict: 'unavailable', total_tokens: null, unresolved_ownership_observation_count: 1 });
 
+  // A copy never affects the verdict of the session that holds it, whatever its counters say.
+  for (const [label, copiedEntry] of [
+    ['replayed-incomplete', (at) => copied('msg_m', qb, at, { dropOutput: true })],
+    ['replayed-invalid', (at) => copied('msg_m', claudeUsage(5, 0, 0, -1), at)],
+  ]) {
+    const holder = perRequest(label, [[claudeId(20), [copiedEntry(0), authored('msg_c1', qc, 70)]]]);
+    expectRequests(`${label}-path`, observe(['--path', holder.paths[0]]),
+      { verdict: 'valid', request_count: 1, total_tokens: 72, replayed_observation_count: 1,
+        missing_core_observation_count: 0, invalid_observation_count: 0 });
+  }
+  expectRequests('provisional-incomplete', perRequest('provisional-incomplete', [[claudeId(21),
+    [authored('msg_a', qa, 0), authored('msg_q', qb, 10, { final: false, dropOutput: true })]]]).result,
+    { verdict: 'valid', request_count: 1, total_tokens: 50, provisional_observation_count: 1, missing_core_observation_count: 0 });
+  expectRequests('copies-disagree-on-time', perRequest('copies-disagree-on-time', [
+    [claudeId(22), [copied('msg_t', qa, 0)]],
+    [claudeId(23), [copied('msg_t', qa, 30)]],
+  ]).result, { verdict: 'unavailable', total_tokens: null, ambiguous_observation_count: 1 });
+
   expectRequests('provisional', perRequest('provisional', [[claudeId(10), [authored('msg_a', qa, 0), authored('msg_q', qb, 10, { final: false })]]]).result,
     { verdict: 'valid', request_count: 1, total_tokens: 50, provisional_observation_count: 1 });
   expectRequests('only-provisional', perRequest('only-provisional', [[claudeId(11), [authored('msg_q', qb, 0, { final: false })]]]).result,

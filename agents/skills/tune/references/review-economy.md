@@ -140,8 +140,8 @@ quality, latency, and observed usage. A later substantive reply can invalidate a
 finding without changing the head; preserve observation times and refresh current
 evidence under the existing discussion contract.
 
-Measure actual lineage-owned token deltas through Seq's owning token-usage
-projection when available. Do not multiply inherited context size by worker count
+Measure actual owned token usage through Seq's owning token-usage projection
+when available. Do not multiply inherited context size by worker count
 or sum raw turn/session totals to invent a bill. Distinguish billed/observed usage,
 cached input, unobserved usage, and elapsed time; neither shared ancestry nor equal
 brief digests proves epistemic independence. Evaluate warm/cold cache conditions

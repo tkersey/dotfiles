@@ -229,13 +229,16 @@ summing `turns` or `sessions` token fields.
 
 `token-usage.json` owns token accounting for every adapter that emits
 `token_events` and returns `seq-token-usage-result/v3`. Route each row by the
-evidence it carries, never by adapter name: rows asserting cumulative totals use
-cumulative lineage accounting, and rows declaring `usage_model: "per-request"`
-use per-request accounting. Both feed one result:
+evidence it carries, never by adapter name: rows declaring
+`usage_model: "per-request"` use per-request accounting, and every other row
+uses cumulative lineage accounting. Both feed one result:
 `usage_count = transition_count + request_count`, shared totals, one verdict, and
-`usage_scope: "observed-owned-usage"`. An adapter whose token events Seq refuses
-(Pi returns `PiCumulativeTokenEventsUnavailable`) is an obstruction; report it
-rather than substituting another sum.
+`usage_scope: "observed-owned-usage"`. The definition reads `token_events`
+fields first released in Seq 1.5.0; require Seq 1.5.0 or newer and report an
+older executable's rejection of the definition as an upgrade obstruction. An
+adapter whose token events Seq refuses (Pi returns
+`PiCumulativeTokenEventsUnavailable`) is an obstruction; report it rather than
+substituting another sum.
 
 Every accounting model reports the same quantities. `input_tokens` includes
 cache reads and cache writes, `cached_input_tokens` is cache reads,
@@ -255,10 +258,15 @@ do not certify that every request or selected session recorded usage. Preserve
 the diagnostic counts alongside the totals. Require a timestamp to assign usage
 to a bounded window.
 
-`--session-id` and `--path` are tree-inclusive: they count the selected session
-and its control descendants. `control_parent_session_id` selects workers;
-`parent_session_id` records history ancestry. They may differ legitimately.
-Workers without recorded linkage are not included; report worker inclusion. For
+`--session-id` and `--path` select a seed session. The definition counts the seed
+and every descendant Seq read, following `control_parent_session_id` and falling
+back to `parent_session_id` when no control parent is recorded. The control
+parent selects workers and the history parent records ancestry; they may differ
+legitimately. Which descendants Seq reads depends on the adapter and selector:
+Codex reads the selected lineage for either selector, a Claude `--session-id`
+also reads its linked workers, and a Claude `--path` reads only that transcript.
+Workers without recorded linkage are never included. Report worker inclusion
+from the sessions actually read (`corpus.sessions`), not from the selector. For
 an exact-session question, use a checked variant that selects only the seed
 after ownership; do not silently present a tree total as the selected session
 alone. `--repo` excludes evidence outside that repository. Use a broader source
@@ -311,20 +319,24 @@ its `usage_finality` is `final`, it has a key, and its owner is in the
 selection. History ancestry does not apply: request identity, not counter
 equality, removes replayed history.
 
-Ownership comes from `request_record`. `here` proves the source issued the
-request; `elsewhere` proves a copy, which never owns usage and is reported as
-replayed. A key without a proven author (`unplaced` or null) counts once only
-when the selection is the whole read corpus. A `--session-id`, `--path`, or
-`--repo` selection cannot read copies held elsewhere, so such keys leave
-ownership unresolved. Two sessions that both claim to have issued one key, or
-copies of one key with different usage profiles, are unresolved or ambiguous.
+Each per-request row receives exactly one class, in this precedence. A copy
+(`request_record: elsewhere`) is replayed: it never owns usage and never affects
+the verdict. Impossible counters (a declared invalid quantity, negative cache
+writes, or cache reads plus writes above input) are invalid. A row without
+asserted usage (unanswered, or a response with no usage) is no-usage. An
+unfinished request is provisional, reported without being counted even when its
+partial usage is incomplete. Asserted but unreadable usage of a finished request
+is missing core evidence, and a finished, usable request without a key is
+unkeyed. Every other row is eligible. Per-request rows never enter cumulative
+accounting, even when they also carry running totals.
 
-A request without asserted usage (unanswered, or a response with no usage) is a
-no-usage observation. A provisional request has not finished; report it without
-counting it. Asserted but unreadable usage is missing core evidence, a usable
-request without a key is unkeyed, and impossible counters (a declared invalid
-quantity, negative cache writes, or cache reads plus writes above input) are
-invalid. Apply the time window to the owning record's timestamp.
+Ownership of eligible rows comes from `request_record`. `here` proves the source
+issued the request. A key without a proven author (`unplaced` or null) counts
+once only when the selection is the whole read corpus. A `--session-id`,
+`--path`, or `--repo` selection cannot read copies held elsewhere, so such keys
+leave ownership unresolved. Two sessions that both claim to have issued one key
+are unresolved. Copies of one key must agree on usage and timestamp; otherwise
+the key is ambiguous. Apply the time window to the owning record's timestamp.
 
 Adapters differ only in the evidence they supply. Claude transcripts with
 request records mark `here`, `elsewhere`, or `unplaced`; older transcripts
