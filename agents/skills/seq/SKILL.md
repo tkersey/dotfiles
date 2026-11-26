@@ -69,9 +69,9 @@ Ordinary text excludes thinking, redacted thinking, and signatures. Tool-use and
 tool-result blocks retain call identity; a tool-result wrapper is not another
 human request. Keep all retained result parts and distinguish reported tool
 errors from process exit status. Only recorded worker linkage supports worker
-attribution. Claude token rows are per-request; account for them with
-`token-usage.json`, never by summing message or turn counters. Missing token
-counters remain unknown.
+attribution. Claude token rows declare `usage_model: "per-request"`; account
+for them with `token-usage.json`, never by summing message or turn counters.
+Missing token counters remain unknown.
 
 ### Pi and OpenCode
 
@@ -233,9 +233,11 @@ evidence it carries, never by adapter name: rows declaring
 `usage_model: "per-request"` use per-request accounting, and every other row
 uses cumulative lineage accounting. Within one observation both feed one
 result: `usage_count = transition_count + request_count`, shared totals, one
-verdict, and `usage_scope: "observed-owned-usage"`. `candidate_count` counts
-the selected sessions' token records, copies included, inside the window by
-each record's own timestamp; an untimed record counts as inside a bounded
+verdict, and `usage_scope: "observed-owned-usage"`: each counted transition is
+attributed once to its lineage owner, and each counted request to its author
+or, when no row proves an author, to the whole read corpus. `candidate_count`
+counts the selected sessions' token records, copies included, inside the window
+by each record's own timestamp; an untimed record counts as inside a bounded
 window. It leaves out a cumulative record that repeats an earlier record's
 recorded total input, output, and total tokens in its session with the same
 `has_total_usage` and `has_last_usage`, and one excluded as a replayed ancestor
@@ -259,8 +261,9 @@ Return `invalid` for inconsistent counters and `unavailable` when missing fields
 ambiguous or unresolved ownership, total-only legacy snapshots, unresolved time
 or ancestry, or no counted usage prevent accounting. Both verdicts carry null
 token totals and diagnostic counts. A `valid` verdict means the observed counters
-are consistent and owned, not that corpus coverage is complete: numeric results
-do not certify that every request or selected session recorded usage. Preserve
+are consistent and attributed as `usage_scope` states, not that corpus coverage
+is complete: numeric results do not certify that every request or selected
+session recorded usage. Preserve
 the diagnostic counts alongside the totals. Require a timestamp to assign usage
 to a bounded window.
 
@@ -360,10 +363,11 @@ whole read corpus. Every evidence row of a counted key that carries usage (the
 author's rows, or every row of an unowned key) must agree on usage; otherwise
 the key is ambiguous. The request counts when any of those rows shows it
 finished, and is reported as provisional or no-usage only when none does. A
-request's time is the earliest timestamp among those evidence rows in the read
-corpus, because a copy made on resume can carry a later one; when the original
-transcript is not in the read corpus, a re-stamped copy places the request at
-its copy time. A `--session-id`, `--path`, or `--repo`
+request's time is the earliest timestamp among the author's rows, or every row
+of an unowned key, in the read corpus, because a copy made on resume can carry
+a later one; when the original transcript is not in the read corpus, a
+re-stamped copy places the request at its copy time. A `--session-id`,
+`--path`, or `--repo`
 selection cannot read copies held elsewhere, so unowned keys leave ownership
 unresolved. An explicit `--root` is the whole read corpus for this rule, so
 totals from partial or overlapping roots of one adapter must not be added. Two
