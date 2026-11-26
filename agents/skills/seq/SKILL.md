@@ -234,8 +234,10 @@ evidence it carries, never by adapter name: rows declaring
 uses cumulative lineage accounting. Within one observation both feed one
 result: `usage_count = transition_count + request_count`, shared totals, one
 verdict, and `usage_scope: "observed-owned-usage"`. `candidate_count` counts
-token records in the selected sessions inside the window by each record's own
-timestamp (records, not requests), so it can exceed `usage_count`. The
+the selected sessions' token records inside the window by each record's own
+timestamp, except a cumulative record that repeats an earlier total in its
+session or is excluded as a replayed ancestor transition. It counts records,
+not requests, so it can exceed `usage_count`. The
 definition reads `token_events` fields first released in Seq 1.5.0; require
 Seq 1.5.0 or newer and report an older executable's rejection of the definition
 as an upgrade obstruction. An adapter whose token events Seq refuses (Pi returns

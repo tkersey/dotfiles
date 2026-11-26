@@ -494,7 +494,7 @@ try {
   }
   // A response written as several content-block records is one request.
   expectRequests('multi-block', perRequest('multi-block', [[claudeId(33), [authored('msg_a', qa, 0, { blocks: 3 }), authored('msg_b', qb, 20)]]]).result,
-    { verdict: 'valid', request_count: 2, total_tokens: 112, ambiguous_observation_count: 0, provisional_observation_count: 0 });
+    { verdict: 'valid', candidate_count: 2, request_count: 2, total_tokens: 112, ambiguous_observation_count: 0, provisional_observation_count: 0, inferred_final_observation_count: 0 });
   expectRequests('multi-block-unlinked', perRequest('multi-block-unlinked', [[claudeId(34), [authored('msg_a', qa, 0, { blocks: 3, linked: false })]]]).result,
     { verdict: 'valid', request_count: 1, total_tokens: 50, ambiguous_observation_count: 0 });
   // Ambiguity counts requests, not extra profiles.
