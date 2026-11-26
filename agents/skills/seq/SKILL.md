@@ -2,7 +2,7 @@
 name: seq
 description: "Reconstruct bounded, provenance-preserving observations from supported native sessions and explicit input relations with Seq 1.x. Use for `$seq`, session, tool, and message forensics, token accounting, worker attribution, or historical evidence reports."
 metadata:
-  version: "2.4.0"
+  version: "3.0.0"
 ---
 
 # Seq
@@ -51,8 +51,8 @@ Codex session, and bind that ID to a definition's exclusion parameter.
 ### Claude Code
 
 Require `claude-code-transcript-jsonl/v1` in `source_adapters`. Select a
-transcript with `--path <session.jsonl>` or a known session directory with
-`--root`; do not feed
+transcript with `--path <session.jsonl>`, a known session directory with
+`--root`, or the default Claude corpus with `--source claude-code`; do not feed
 Claude transcripts to an executable that lacks the adapter. Resolve the actual
 configured source location; an encoded project directory name is not reliable
 repository identity. Explicit selection does not change the default Codex corpus.
@@ -69,8 +69,9 @@ Ordinary text excludes thinking, redacted thinking, and signatures. Tool-use and
 tool-result blocks retain call identity; a tool-result wrapper is not another
 human request. Keep all retained result parts and distinguish reported tool
 errors from process exit status. Only recorded worker linkage supports worker
-attribution. Missing token counters remain unknown; do not apply Codex cumulative
-token accounting to Claude messages.
+attribution. Claude token rows declare `usage_model: "per-request"`; account
+for them with `token-usage.json`, never by summing message or turn counters.
+Missing token counters remain unknown.
 
 ### Pi and OpenCode
 
@@ -181,7 +182,7 @@ CLI access. Seq owns reusable physical analyses under:
 | `message-search.json`, `tool-search.json` | `path`, `root`, `session-id`, `repo`, `since`, `until`, `last` | `rows`; `rows-raw` for necessary payloads |
 | `session-summary.json`, `turn-report.json` | `path` only; resolve an ID through `find-session` first | `rows` |
 | `turn-metrics.json` | `path`, `root`, `session-id`, `repo`, `since`, `until`, `last` | `summary` |
-| `token-usage.json` | `path`, `root`, `session-id`, `repo`, `since`, `until` | `summary` |
+| `token-usage.json` | `path`, `root`, `session-id`, `repo`, `since`, `until`; `--source` picks the adapter corpus | `summary` |
 
 Both searches require `needle` and an explicit `exclude_session_id`. Bind the
 verified current identity for historical audits; bind an empty string only for
@@ -218,16 +219,72 @@ reported evidence, not independent proof of execution; quoted examples and
 stdout from reading an earlier result do not establish another execution.
 
 `turn-metrics.json` reports raw sums over the selected physical `turns` rows.
-Its `selected_turn_*_sum` fields are not lineage-owned token usage and must not
-answer session-tree, worker-inclusive, billing-style, or corpus token totals.
-Each token sum is partial unless its matching `selected_turn_*_count` equals
-`turn_count`; a zero sum with a zero count means unobserved data, not zero use.
-Those questions require an owning passive definition over lineage-owned token
-deltas; if the installed Seq ABI does not expose that relation or operator,
-report obstruction rather than summing `turns` or `sessions` token fields.
+Its `selected_turn_*_sum` fields are not owned token usage and must not answer
+session-tree, worker-inclusive, billing-style, or corpus token totals. Each token
+sum is partial unless its matching `selected_turn_*_count` equals `turn_count`;
+a zero sum with a zero count means unobserved data, not zero use. Answer those
+questions with `token-usage.json`; if the installed executable cannot emit
+`token_events` for the selected adapter, report that obstruction rather than
+summing `turns` or `sessions` token fields.
 
-`token-usage.json` owns Codex lineage accounting and emits
-`seq-token-usage-result/v2`. For a complete modern tuple, the transition is
+`token-usage.json` owns token accounting for every adapter that emits
+`token_events` and returns `seq-token-usage-result/v3`. Route each row by the
+evidence it carries, never by adapter name: rows declaring
+`usage_model: "per-request"` use per-request accounting, and every other row
+uses cumulative lineage accounting. Within one observation both feed one
+result: `usage_count = transition_count + request_count`, shared totals, one
+verdict, and `usage_scope: "observed-owned-usage"`: each counted transition is
+attributed once to its lineage owner, and each counted request to its author
+or, when no row proves an author, to the whole read corpus. `candidate_count`
+counts the selected sessions' token records, copies included, inside the window
+by each record's own timestamp; an untimed record counts as inside a bounded
+window. It leaves out a cumulative record that repeats an earlier record's
+recorded total input, output, and total tokens in its session with the same
+`has_total_usage` and `has_last_usage`, and one excluded as a replayed ancestor
+transition. It counts records, not requests, so it can exceed `usage_count`. The
+definition reads `token_events` fields first released in Seq 1.5.0; require
+Seq 1.5.0 or newer and report an older executable's rejection of the definition
+as an upgrade obstruction. An adapter whose token events Seq refuses (Pi returns
+`PiCumulativeTokenEventsUnavailable`) is an obstruction; report it rather than
+substituting another sum.
+
+Every accounting model reports the same quantities. `input_tokens` includes
+cache reads and cache writes, `cached_input_tokens` is cache reads,
+`cache_creation_input_tokens` is cache writes, `output_tokens` includes
+reasoning, and `total_tokens = input_tokens + output_tokens`. A field total is
+null when any counted unit lacks that field: cumulative counters report no cache
+writes, and an adapter may omit reasoning. Unknown is not zero. Compute cached
+percentage as `cached_input_tokens / input_tokens * 100`; leave it null for zero
+or unknown input.
+
+Return `invalid` for inconsistent counters and `unavailable` when missing fields,
+ambiguous or unresolved ownership, total-only legacy snapshots, unresolved time
+or ancestry, or no counted usage prevent accounting. Both verdicts carry null
+token totals and diagnostic counts. A `valid` verdict means the observed counters
+are consistent and attributed as `usage_scope` states, not that corpus coverage
+is complete: numeric results do not certify that every request or selected
+session recorded usage. Preserve
+the diagnostic counts alongside the totals. Require a timestamp to assign usage
+to a bounded window.
+
+`--session-id` and `--path` select a seed session. The definition counts the seed
+and every descendant Seq read, following `control_parent_session_id` and falling
+back to `parent_session_id` when no control parent is recorded. The control
+parent selects workers and the history parent records ancestry; they may differ
+legitimately. Which descendants Seq reads depends on the adapter and selector:
+Codex reads the selected lineage for either selector. With the Claude corpus
+selected (`--source claude-code` or a Claude `--root`; Seq's default corpus is
+Codex), a Claude `--session-id` also reads its linked workers, and a Claude
+`--path` reads only that transcript.
+Workers without recorded linkage are never included. Report worker inclusion
+from the sessions actually read (`corpus.sessions`), not from the selector. For
+an exact-session question, use a checked variant that selects only the seed
+after ownership; do not silently present a tree total as the selected session
+alone. `--repo` excludes evidence outside that repository. Use a broader source
+scope without a repository filter when the question requires complete ownership.
+
+**Cumulative accounting.** A cumulative row asserts running totals. For a
+complete modern tuple, the transition is
 `(total_token_usage - last_token_usage) -> total_token_usage`, and the counted
 delta is `last_token_usage`. Validate nonnegative counters, cached/input and
 reasoning/output subsets, reported totals, and the implied predecessor before
@@ -248,27 +305,13 @@ retains proven child work even when an ancestor later records the same tuple.
 A fork-linked record with unknown ordinal/boundary, an unobserved initial
 baseline, or unmatched inherited usage leaves attribution unavailable. Older
 logs without those facts no longer receive a confident total from counter
-equality alone. Retain sibling and independent-root usage. Apply session and time
-selection after ownership, preserving unresolved ancestry even when the selected
-child or window omits the ancestor. Require a timestamp to assign usage to a
-bounded window.
+equality alone. Retain sibling and independent-root usage. Apply session and
+time selection after ownership, preserving unresolved ancestry even when the
+selected child or window omits the ancestor. Tree-inclusive selection loads
+history ancestors for ownership; an ancestor outside the selected control tree
+is read without counting its work. Under `--repo`, an in-repository child of an
+out-of-repository ancestor can therefore be unavailable.
 
-This definition makes `--session-id` and `--path` tree-inclusive: they count the
-selected session and its control descendants, while loading history ancestors
-for ownership. `control_parent_session_id` selects workers;
-`parent_session_id` records history ancestry. They may differ legitimately.
-An ancestor outside the selected control tree is read without counting its work.
-Use it for that requested scope and report worker inclusion. For an exact-session
-question, use a checked variant that selects only the seed after ownership; do
-not silently present a tree total as the selected session alone. A `valid` verdict
-means the observed counters are consistent, not that corpus coverage is complete.
-`--repo` excludes evidence outside that repository, including history ancestors;
-an in-repository child can therefore be unavailable. Use a broader source scope
-without that repository filter when the question requires complete ownership.
-
-Return `invalid` for inconsistent counters and `unavailable` when missing fields,
-ambiguous ownership, total-only legacy snapshots, or unresolved time/ancestry
-prevent accounting. Both verdicts carry null token totals and diagnostic counts.
 Missing cached/reasoning fields are unknown, not observed zero; they can prevent
 exact lineage attribution without making the source malformed. Do not sum
 cumulative legacy snapshots or infer unsupported increments from their order.
@@ -277,43 +320,95 @@ tuples, also leaves descendant ownership unavailable under this attribution rule
 `token_usage_observation_count` measures asserted records before replay removal;
 replayed counters and observed zero remain evidence. Neutral records alone do not
 establish an ancestor's usage baseline, though neutral leaves remain harmless.
-
 Retain genuinely observed zero-token transitions as valid zero usage. Null-info
-events are neutral observations without a usage tuple; count them separately
-without treating them as zero-token transitions or invalidating otherwise known
-usage. With no observed transition, return unavailable rather than valid zero.
-The `usage_scope` is `observed-lineage-owned-transitions`: numeric results do not
-certify that every request or selected session recorded usage. Preserve the
-diagnostic counts alongside the totals. Compute cached percentage as
-`cached_input_tokens / input_tokens * 100`; leave it null for zero input.
+events are neutral observations without a usage tuple; count them as no-usage
+observations without treating them as zero-token transitions.
 
-Do not apply that Codex cumulative-counter definition to Pi corpus or billing
-questions; requests for Pi cumulative token events fail with
-`PiCumulativeTokenEventsUnavailable`. Pi normalizes each assistant message's
-usage as `input_tokens = input + cacheRead + cacheWrite`,
-`cached_input_tokens = cacheRead`, and `output_tokens = output`; reported
-`reasoning` is already included in `output`, and `totalTokens` supplies the
-reported total. Use observed Pi session/turn totals only for the selected
-assistant requests with usage, and label the scope. These sums may be partial
-when other assistant requests omit usage; turn counts do not prove request-level
-usage completeness. If no usage was observed, totals remain null.
-Standalone compaction/summary usage remains raw and is excluded from these
-totals. These sums do not establish deduplicated fork/worker usage or billing.
+**Per-request accounting.** A per-request row reports one request's own usage,
+identified by `request_key`. A request counts at most once, as the class
+precedence and ownership rules below decide. History ancestry does not apply:
+request identity, not counter equality, removes replayed history.
+
+Each per-request row receives exactly one class, in this precedence. A copy
+(`request_record: elsewhere`) is replayed: it never owns usage and never affects
+the verdict. Impossible counters (a declared invalid quantity, a negative
+counter, cache reads, cache writes, or both above input, reasoning above output,
+or a total other than input plus output) are invalid. A row without
+asserted usage (unanswered, or a response with no usage) is no-usage. A row
+whose `usage_finality` is `provisional` is provisional. A keyed provisional
+request whose usage is `usable` with input, output, and total counters counts
+and is reported as inferred final: older transcripts record no stop reason on
+most finished responses, so without this rule their history would be silently
+undercounted. Its recorded usage is the best available record and a lower
+bound, because a request that was interrupted, or that is still streaming in a
+live session, can understate output. A keyless provisional row, or a keyed one
+without those counters, is reported without being counted. Report
+`inferred_final_observation_count` with the totals. Unknown finality, usage not
+declared `usable`, or asserted but unreadable usage is missing core evidence,
+and a final, usable request without a key is unkeyed. Every other row is
+eligible. A row's class depends only on its own request evidence. Per-request
+rows never enter cumulative accounting, even when they also carry running
+totals.
+
+Ownership precedes these diagnostics. A row without a key cannot be matched to
+other rows of its request, so its own class applies; a declared `elsewhere` copy
+stays replayed. For a keyed request, a `here` row proves its source issued the
+request, whatever that row's class: the author's rows decide the request's
+class, and every other row of that key is a copy, replayed and never counted or
+verdict-changing whatever its own counters say. A key with no `here` row
+(`unplaced` or null authorship) counts once only when the selection is the
+whole read corpus. Every evidence row of a counted key that carries usage (the
+author's rows, or every row of an unowned key) must agree on usage; otherwise
+the key is ambiguous. The request counts when any of those rows is eligible or
+inferred final, and is reported as provisional or no-usage only when none is. A
+request's time is the earliest timestamp among the author's rows, or every row
+of an unowned key, in the read corpus, because a copy made on resume can carry
+a later one; when the original transcript is not in the read corpus, a
+re-stamped copy places the request at its copy time. A `--session-id`,
+`--path`, or `--repo`
+selection cannot read copies held elsewhere, so unowned keys leave ownership
+unresolved. An explicit `--root` is the whole read corpus for this rule, so
+totals from partial or overlapping roots of one adapter must not be added. Two
+sessions that both claim to have issued one key are unresolved.
+Apply the time window to the request's time, not to each copy; the replayed
+count and `candidate_count` are record diagnostics that place each record by its
+own timestamp, with an untimed record inside a bounded window. Ownership,
+agreement, and time are resolved only for a request that could count or change
+the verdict (eligible, invalid, or missing core evidence); a no-usage or
+provisional request is reported without ever making the result unavailable.
+In a bounded window, a
+missing timestamp leaves time unresolved for a request that would count or
+change the verdict, while a no-usage request is reported as unplaced, as in
+cumulative accounting.
+
+Adapters differ only in the evidence they supply. Claude transcripts with
+request records mark `here`, `elsewhere`, or `unplaced`; older transcripts
+without them leave authorship null.
 
 ```bash
 seq_definition_root="$seq_skill_root/definitions/seq"
-seq observe \
-  --definition "$seq_definition_root/token-usage.json" \
-  --since 2026-11-01T00:00:00-07:00 \
-  --until 2026-11-08T00:00:00-08:00 \
-  --projection summary \
-  --format json
+for source in codex claude-code; do
+  seq observe \
+    --definition "$seq_definition_root/token-usage.json" \
+    --source "$source" \
+    --since 2026-11-01T00:00:00-07:00 \
+    --until 2026-11-08T00:00:00-08:00 \
+    --projection summary \
+    --format json
+done
 ```
 
-The omitted root uses both default Codex directories. Replace these example
-bounds with the requested window and its actual timezone offsets. An explicit
-root must contain every relevant session and ancestor, not just session starts
-inside the window.
+One observation reads one adapter's corpus. `--source codex|claude-code` selects
+that adapter's default root; without one Seq reads the Codex corpus, which
+includes both default Codex directories. For usage across agents, run once per
+source as above, report each source's verdict and scope, and add totals only
+when every verdict is `valid`. Seq 1.6.1 rejects a whole Claude corpus that
+contains Claude Code workflow `journal.jsonl` files (`UnclassifiedSessionFormat`)
+for every observation, while `--session-id` and `--path` selections still read;
+report that obstruction for a whole-corpus Claude question rather than
+substituting another sum. Replace these example bounds with the requested
+window and its actual timezone offsets. An explicit root must contain every
+relevant session and ancestor, not just session starts inside the window.
 
 Example for deliberate inspection of one supported file:
 
@@ -415,7 +510,7 @@ audit corpus. Preserve suspected and unresolved contamination in the report.
 - Preserve evidence provenance and definition identity.
 - `observe` accepts one projection. Design one projection carrying the needed
   evidence when a shared scan matters; separate invocations perform separate work.
-- Never treat raw `turns` or `sessions` token sums as lineage-owned corpus usage.
+- Never treat raw `turns` or `sessions` token sums as owned corpus usage.
 - Do not validate SKDC, SDR, DCP, EPG, or another durable artifact with Seq;
   use its canonical Ledger definition.
 - Do not read a Ledger store or memory root implicitly.

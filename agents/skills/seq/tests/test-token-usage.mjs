@@ -48,9 +48,9 @@ function session(directory, id, observations, parent = null, metadata = {}, toke
 
 function observe(selectors) {
   const result = run(['observe', '--definition', definition, '--projection', 'summary', '--format', 'json', ...selectors]);
-  assert.equal(result.data.schema, 'seq-token-usage-result/v2');
+  assert.equal(result.data.schema, 'seq-token-usage-result/v3');
   assert.equal(result.data.rows.length, 1);
-  assert.equal(result.data.rows[0].usage_scope, 'observed-lineage-owned-transitions');
+  assert.equal(result.data.rows[0].usage_scope, 'observed-owned-usage');
   return result.data.rows[0];
 }
 
@@ -122,7 +122,7 @@ try {
 
   check('legacy-increasing', [{ total_token_usage: usage(10, 0, 0, 0) }, { total_token_usage: usage(30, 0, 0, 0) }], { ...unavailable, legacy_observation_count: 2 });
   check('legacy-exact-repeats', [{ total_token_usage: usage(10, 0, 0, 0) }, { total_token_usage: usage(10, 0, 0, 0) }], { ...unavailable, legacy_observation_count: 1 });
-  check('legacy-modern-same-total', [{ total_token_usage: usage(100, 20, 50, 10) }, modern()], { ...unavailable, legacy_observation_count: 1, transition_count: 1 });
+  check('legacy-modern-same-total', [{ total_token_usage: usage(100, 20, 50, 10) }, modern()], { ...unavailable, candidate_count: 2, legacy_observation_count: 1, transition_count: 1 });
 
   const timelessPath = session(join(temporary, 'cases'), 'timeless', [modern()]);
   const timelessRows = readFileSync(timelessPath, 'utf8').trim().split('\n').map(line => JSON.parse(line));
@@ -148,6 +148,7 @@ try {
     assert.equal(neutral.unresolved_time_observation_count, 0);
     assert.equal(neutral.no_usage_observation_count, 0, 'unknown-time metadata is not asserted to lie in the selected window');
     assert.equal(neutral.unplaced_no_usage_observation_count, 1);
+    assert.equal(neutral.candidate_count, 2, 'an untimed record counts as inside a bounded window');
   }
   checks += 2;
 
@@ -360,6 +361,260 @@ try {
     assert.ok(childOnly.unresolved_ancestry_observation_count > 0);
   }
   checks += 3;
+
+  // Per-request accounting (Claude Code transcripts): each request reports its own usage and is
+  // owned by the transcript that recorded its request; copies never own usage.
+  const claudeVersion = '2.1.325';
+  const claudeStamp = (second) => `2026-11-01T10:${String(Math.floor(second / 60)).padStart(2, '0')}:${String(second % 60).padStart(2, '0')}.000Z`;
+  const claudeUsage = (input, read, write, output) => ({ input, read, write, output });
+  function claudeSession(directory, id, entries, version = claudeVersion, cwd = '/claude-fixture') {
+    const project = join(directory, '-claude-fixture');
+    mkdirSync(project, { recursive: true });
+    const rows = [];
+    let parent = null;
+    for (const entry of entries) {
+      const at = entry.at;
+      if (entry.unanswered) {
+        rows.push({ type: 'api-request', id: `rq-${entry.key}`, sessionId: id, timestamp: claudeStamp(at), querySource: 'sdk', requestDigest: `dg-${entry.key}`, version });
+        continue;
+      }
+      const common = { isSidechain: false, sessionId: id, cwd, gitBranch: 'main', userType: 'external', version };
+      rows.push({ type: 'user', uuid: `u-${entry.key}`, parentUuid: parent, ...common, timestamp: claudeStamp(at), message: { role: 'user', content: 'Do the task.' }, turnOrigin: 'human' });
+      if (entry.authored) {
+        rows.push({ type: 'api-request', id: `rq-${entry.key}`, sessionId: id, timestamp: claudeStamp(at + 1), querySource: 'sdk', requestDigest: `dg-${entry.key}`, version });
+      }
+      const message = { model: 'claude-test-model', type: 'message', role: 'assistant', id: entry.key, stop_reason: entry.final === false ? null : 'end_turn', stop_sequence: null, content: [{ type: 'text', text: 'Done.' }] };
+      if (entry.noMessageId) delete message.id;
+      if (entry.usage) {
+        const { input, read, write, output } = entry.usage;
+        const counters = { input_tokens: input, cache_read_input_tokens: read, cache_creation_input_tokens: write, output_tokens: output };
+        message.usage = { ...counters, service_tier: 'standard', iterations: [{ type: 'message', ...counters }] };
+        if (entry.dropOutput) {
+          delete message.usage.output_tokens;
+          delete message.usage.iterations[0].output_tokens;
+        }
+      }
+      // Claude Code writes one assistant record per content block; earlier blocks carry no stop reason.
+      let blockParent = `u-${entry.key}`;
+      for (let block = 0; block < (entry.blocks ?? 1); block += 1) {
+        const last = block === (entry.blocks ?? 1) - 1;
+        const uuid = last ? `a-${entry.key}` : `a-${entry.key}-${block}`;
+        rows.push({ type: 'assistant', uuid, parentUuid: blockParent, ...common, ...(entry.untimed ? {} : { timestamp: claudeStamp(at + 2 + block) }),
+          message: last ? message : { ...message, stop_reason: null },
+          ...(entry.linked === false ? {} : { requestRef: `rq-${entry.key}`, requestId: `req_rq-${entry.key}`, apiBlockIndex: block }) });
+        blockParent = uuid;
+      }
+      parent = `a-${entry.key}`;
+    }
+    const path = join(project, `${id}.jsonl`);
+    writeFileSync(path, rows.map(row => JSON.stringify(row)).join('\n') + '\n');
+    return path;
+  }
+  const claudeId = (n) => `c${String(n).padStart(7, '0')}-0000-4000-8000-000000000000`;
+  const qa = claudeUsage(4, 0, 40, 6);    // input 44, cached 0, cache writes 40, total 50
+  const qb = claudeUsage(5, 40, 8, 9);    // input 53, cached 40, cache writes 8, total 62
+  const qc = claudeUsage(6, 53, 9, 4);    // input 68, cached 53, cache writes 9, total 72
+  const authored = (key, usage, at, extra = {}) => ({ key, usage, at, authored: true, ...extra });
+  const copied = (key, usage, at, extra = {}) => ({ key, usage, at, authored: false, ...extra });
+  function perRequest(name, sessions, selectors = []) {
+    const directory = join(temporary, 'claude', name);
+    const paths = sessions.map(([id, entries]) => claudeSession(directory, id, entries));
+    return { paths, result: observe(['--root', directory, ...selectors]) };
+  }
+  function expectRequests(name, actual, expected) {
+    for (const [field, value] of Object.entries(expected)) {
+      assert.deepEqual(actual[field], value, `${name}: ${field}\n${JSON.stringify(actual)}`);
+    }
+    checks += 1;
+  }
+
+  const single = perRequest('authored', [[claudeId(1), [authored('msg_a', qa, 0), authored('msg_b', qb, 10)]]]).result;
+  expectRequests('authored', single, {
+    verdict: 'valid', usage_count: 2, request_count: 2, transition_count: 0,
+    input_tokens: 97, cached_input_tokens: 40, cache_creation_input_tokens: 48, output_tokens: 15, total_tokens: 112,
+    cached_percentage: 40 / 97 * 100, unresolved_ancestry_observation_count: 0, unanchored_observation_count: 0,
+  });
+
+  const forkSessions = [
+    [claudeId(2), [authored('msg_p1', qa, 0), authored('msg_p2', qb, 10)]],
+    [claudeId(3), [copied('msg_p1', qa, 0), copied('msg_p2', qb, 10), authored('msg_c1', qc, 70)]],
+  ];
+  const fork = perRequest('fork', forkSessions);
+  expectRequests('fork-root', fork.result, { verdict: 'valid', request_count: 3, total_tokens: 184, replayed_observation_count: 2 });
+  expectRequests('fork-child-path', observe(['--path', fork.paths[1]]),
+    { verdict: 'valid', request_count: 1, total_tokens: 72, replayed_observation_count: 2, unresolved_ancestry_observation_count: 0 });
+  expectRequests('fork-parent-path', observe(['--path', fork.paths[0]]), { verdict: 'valid', request_count: 2, total_tokens: 112 });
+  expectRequests('fork-child-alone', perRequest('fork-child-alone', [forkSessions[1]]).result,
+    { verdict: 'valid', request_count: 1, total_tokens: 72, replayed_observation_count: 2 });
+  expectRequests('fork-window', perRequest('fork-window', forkSessions, ['--since', claudeStamp(60)]).result,
+    { verdict: 'valid', request_count: 1, total_tokens: 72 });
+  expectRequests('fork-until', perRequest('fork-until', forkSessions, ['--until', claudeStamp(12)]).result,
+    { verdict: 'valid', request_count: 1, total_tokens: 50, candidate_count: 2, replayed_observation_count: 1 });
+
+  for (const [label, extra] of [['unplaced', {}], ['unlinked', { linked: false }]]) {
+    const shared = [
+      [claudeId(4), [copied('msg_u', qa, 0, extra)]],
+      [claudeId(5), [copied('msg_u', qa, 0, extra)]],
+    ];
+    const copies = perRequest(`${label}-copies`, shared);
+    expectRequests(`${label}-copies-root`, copies.result, { verdict: 'valid', request_count: 1, total_tokens: 50 });
+    expectRequests(`${label}-copies-split`, observe(['--root', join(temporary, 'claude', `${label}-copies`), '--session-id', claudeId(4)]),
+      { verdict: 'unavailable', total_tokens: null, unresolved_ownership_observation_count: 1 });
+    expectRequests(`${label}-copies-path`, observe(['--path', copies.paths[1]]),
+      { verdict: 'unavailable', total_tokens: null, unresolved_ownership_observation_count: 1 });
+    expectRequests(`${label}-conflicting-copies`, perRequest(`${label}-conflict`, [
+      [claudeId(6), [copied('msg_v', qa, 0, extra)]],
+      [claudeId(7), [copied('msg_v', qb, 0, extra)]],
+    ]).result, { verdict: 'unavailable', total_tokens: null, ambiguous_observation_count: 1 });
+  }
+
+  expectRequests('two-authors', perRequest('two-authors', [
+    [claudeId(8), [authored('msg_k', qa, 0)]],
+    [claudeId(9), [authored('msg_k', qa, 0)]],
+  ]).result, { verdict: 'unavailable', total_tokens: null, unresolved_ownership_observation_count: 1 });
+
+  // A copy never affects the verdict of the session that holds it, whatever its counters say.
+  for (const [label, copiedEntry] of [
+    ['replayed-incomplete', (at) => copied('msg_m', qb, at, { dropOutput: true })],
+    ['replayed-invalid', (at) => copied('msg_m', claudeUsage(5, 0, 0, -1), at)],
+  ]) {
+    const holder = perRequest(label, [[claudeId(20), [copiedEntry(0), authored('msg_c1', qc, 70)]]]);
+    expectRequests(`${label}-path`, observe(['--path', holder.paths[0]]),
+      { verdict: 'valid', request_count: 1, total_tokens: 72, replayed_observation_count: 1,
+        missing_core_observation_count: 0, invalid_observation_count: 0 });
+  }
+  expectRequests('provisional-incomplete', perRequest('provisional-incomplete', [[claudeId(21),
+    [authored('msg_a', qa, 0), authored('msg_q', qb, 10, { final: false, dropOutput: true })]]]).result,
+    { verdict: 'valid', request_count: 1, total_tokens: 50, provisional_observation_count: 1, missing_core_observation_count: 0 });
+  // Once a key has an author, other rows of that key are copies, whatever their own counters say.
+  for (const [label, extra] of [['unplaced', {}], ['unlinked', { linked: false }]]) {
+    expectRequests(`authored-key-bad-${label}-copy`, perRequest(`authored-key-bad-${label}-copy`, [
+      [claudeId(28), [authored('msg_k', qa, 0)]],
+      [claudeId(29), [copied('msg_k', claudeUsage(4, 0, 40, -1), 0, extra)]],
+    ]).result, { verdict: 'valid', request_count: 1, total_tokens: 50, replayed_observation_count: 1, invalid_observation_count: 0 });
+  }
+  // A response written as several content-block records is one request.
+  expectRequests('multi-block', perRequest('multi-block', [[claudeId(33), [authored('msg_a', qa, 0, { blocks: 3 }), authored('msg_b', qb, 20)]]]).result,
+    { verdict: 'valid', candidate_count: 2, request_count: 2, total_tokens: 112, ambiguous_observation_count: 0, provisional_observation_count: 0, inferred_final_observation_count: 0 });
+  expectRequests('multi-block-unlinked', perRequest('multi-block-unlinked', [[claudeId(34), [authored('msg_a', qa, 0, { blocks: 3, linked: false })]]]).result,
+    { verdict: 'valid', request_count: 1, total_tokens: 50, ambiguous_observation_count: 0 });
+  // Ambiguity counts requests, not extra profiles.
+  expectRequests('three-disagreeing-copies', perRequest('three-disagreeing-copies', [
+    [claudeId(35), [copied('msg_v', qa, 0)]],
+    [claudeId(36), [copied('msg_v', qb, 0)]],
+    [claudeId(37), [copied('msg_v', qc, 0)]],
+  ]).result, { verdict: 'unavailable', total_tokens: null, ambiguous_observation_count: 1 });
+  // A request that could neither count nor change the verdict never leaves ownership or agreement unresolved.
+  const narrowedNoUsage = perRequest('narrowed-unowned-no-usage', [[claudeId(39), [authored('msg_a', qa, 0), copied('msg_n', null, 10)]]]);
+  expectRequests('narrowed-unowned-no-usage', observe(['--path', narrowedNoUsage.paths[0]]),
+    { verdict: 'valid', request_count: 1, total_tokens: 50, unresolved_ownership_observation_count: 0, no_usage_observation_count: 1 });
+  // Countable provisional copies of an unowned key must agree like any other evidence.
+  expectRequests('provisional-copies-disagree', perRequest('provisional-copies-disagree', [
+    [claudeId(40), [authored('msg_a', qa, 0)]],
+    [claudeId(41), [copied('msg_p', qa, 10, { final: false })]],
+    [claudeId(42), [copied('msg_p', qb, 10, { final: false })]],
+  ]).result, { verdict: 'unavailable', total_tokens: null, ambiguous_observation_count: 1 });
+  expectRequests('incomplete-provisional-copies-disagree', perRequest('incomplete-provisional-copies-disagree', [
+    [claudeId(55), [authored('msg_a', qa, 0)]],
+    [claudeId(56), [copied('msg_p', qa, 10, { final: false, dropOutput: true })]],
+    [claudeId(57), [copied('msg_p', qb, 10, { final: false, dropOutput: true })]],
+  ]).result, { verdict: 'valid', request_count: 1, total_tokens: 50, ambiguous_observation_count: 0, provisional_observation_count: 1 });
+  expectRequests('no-usage-two-authors', perRequest('no-usage-two-authors', [
+    [claudeId(43), [authored('msg_a', qa, 0), authored('msg_d', null, 10)]],
+    [claudeId(44), [authored('msg_d', null, 10)]],
+  ]).result, { verdict: 'valid', request_count: 1, total_tokens: 50, unresolved_ownership_observation_count: 0 });
+  // Key-level diagnostics count every class a key's rows show, whatever their order.
+  expectRequests('mixed-non-counting-copies', perRequest('mixed-non-counting-copies', [
+    [claudeId(45), [authored('msg_a', qa, 0)]],
+    [claudeId(46), [copied('msg_m', qb, 10, { final: false, dropOutput: true })]],
+    [claudeId(47), [copied('msg_m', null, 10)]],
+  ]).result, { verdict: 'valid', request_count: 1, total_tokens: 50, provisional_observation_count: 1, no_usage_observation_count: 1 });
+  // A keyless row that changes the verdict also reports unresolved time, as in cumulative accounting.
+  expectRequests('untimed-keyless-invalid', perRequest('untimed-keyless-invalid', [[claudeId(38), [authored('msg_a', qa, 0), authored('msg_z', qb, 10, { noMessageId: true, untimed: true })]]],
+    ['--since', claudeStamp(0)]).result,
+    { verdict: 'invalid', total_tokens: null, unresolved_time_observation_count: 1 });
+  // In a bounded window, a missing timestamp blocks only a request that would count or change the verdict.
+  expectRequests('untimed-no-usage', perRequest('untimed-no-usage', [[claudeId(30), [authored('msg_a', qa, 0), authored('msg_n', null, 10, { untimed: true })]]],
+    ['--since', claudeStamp(0)]).result,
+    { verdict: 'valid', request_count: 1, total_tokens: 50, unresolved_time_observation_count: 0, unplaced_no_usage_observation_count: 1, no_usage_observation_count: 0 });
+  expectRequests('untimed-provisional', perRequest('untimed-provisional', [[claudeId(31), [authored('msg_a', qa, 0), authored('msg_q', qb, 10, { final: false, dropOutput: true, untimed: true })]]],
+    ['--since', claudeStamp(0)]).result,
+    { verdict: 'valid', request_count: 1, total_tokens: 50, unresolved_time_observation_count: 0, provisional_observation_count: 1 });
+  expectRequests('untimed-eligible', perRequest('untimed-eligible', [[claudeId(32), [authored('msg_a', qa, 0), authored('msg_u', qb, 10, { untimed: true })]]],
+    ['--since', claudeStamp(0)]).result,
+    { verdict: 'unavailable', total_tokens: null, unresolved_time_observation_count: 1 });
+  // Authorship comes from every keyed "here" row, whatever its class.
+  expectRequests('provisional-author', perRequest('provisional-author', [
+    [claudeId(24), [authored('msg_a', qb, 0), authored('msg_k', qa, 10, { final: false, dropOutput: true })]],
+    [claudeId(25), [copied('msg_k', qa, 10)]],
+  ]).result, { verdict: 'valid', request_count: 1, total_tokens: 62, provisional_observation_count: 1 });
+  expectRequests('ineligible-second-author', perRequest('ineligible-second-author', [
+    [claudeId(26), [authored('msg_d', qa, 0)]],
+    [claudeId(27), [authored('msg_d', qa, 0, { final: false })]],
+  ]).result, { verdict: 'unavailable', total_tokens: null, unresolved_ownership_observation_count: 1 });
+  // A copy made on resume can carry a later timestamp: the request's time is its earliest record.
+  const restamped = [
+    [claudeId(22), [copied('msg_t', qa, 0)]],
+    [claudeId(23), [copied('msg_t', qa, 30)]],
+    [claudeId(48), [authored('msg_a', qb, 60)]],
+  ];
+  expectRequests('restamped-copies', perRequest('restamped-copies', restamped).result,
+    { verdict: 'valid', request_count: 2, total_tokens: 112, ambiguous_observation_count: 0 });
+  expectRequests('restamped-copies-window', perRequest('restamped-copies-window', restamped, ['--since', claudeStamp(20)]).result,
+    { verdict: 'valid', request_count: 1, total_tokens: 62, candidate_count: 2 });
+  // Position does not decide finality: a provisional request followed by a later request counts the same way.
+  expectRequests('superseded-provisional', perRequest('superseded-provisional', [[claudeId(49), [authored('msg_q', qb, 0, { final: false }), authored('msg_a', qa, 10)]]]).result,
+    { verdict: 'valid', request_count: 2, total_tokens: 112, inferred_final_observation_count: 1, provisional_observation_count: 0 });
+  // A narrowed selection places an unowned request in time by its own record.
+  const narrowedOld = perRequest('narrowed-unowned-outside-window', [[claudeId(53), [copied('msg_old', qa, 0, { linked: false }), authored('msg_new', qb, 60)]]]);
+  expectRequests('narrowed-unowned-outside-window',
+    observe(['--root', join(temporary, 'claude', 'narrowed-unowned-outside-window'), '--session-id', claudeId(53), '--since', claudeStamp(30)]),
+    { verdict: 'valid', request_count: 1, total_tokens: 62, unresolved_ownership_observation_count: 0 });
+  expectRequests('narrowed-unowned-inside-window', observe(['--path', narrowedOld.paths[0]]),
+    { verdict: 'unavailable', total_tokens: null, unresolved_ownership_observation_count: 1 });
+  expectRequests('superseded-by-unanswered', perRequest('superseded-by-unanswered', [[claudeId(52), [authored('msg_q', qb, 0, { final: false }), { key: 'msg_x', at: 10, unanswered: true }]]]).result,
+    { verdict: 'valid', request_count: 1, total_tokens: 62, inferred_final_observation_count: 1, provisional_observation_count: 0, no_usage_observation_count: 1 });
+  expectRequests('resumed-copy-finishes-provisional', perRequest('resumed-copy-finishes-provisional', [
+    [claudeId(50), [copied('msg_x', qa, 0, { final: false, linked: false })]],
+    [claudeId(51), [copied('msg_x', qa, 0, { final: false, linked: false }), copied('msg_y', qb, 30, { linked: false })]],
+  ]).result, { verdict: 'valid', request_count: 2, total_tokens: 112, inferred_final_observation_count: 1, provisional_observation_count: 0, ambiguous_observation_count: 0 });
+
+  // A provisional request with complete counters counts as inferred final, even as its session's last request.
+  expectRequests('provisional', perRequest('provisional', [[claudeId(10), [authored('msg_a', qa, 0), authored('msg_q', qb, 10, { final: false })]]]).result,
+    { verdict: 'valid', request_count: 2, total_tokens: 112, inferred_final_observation_count: 1, provisional_observation_count: 0 });
+  expectRequests('only-provisional', perRequest('only-provisional', [[claudeId(11), [authored('msg_q', qb, 0, { final: false })]]]).result,
+    { verdict: 'valid', usage_count: 1, total_tokens: 62, inferred_final_observation_count: 1, provisional_observation_count: 0 });
+  expectRequests('only-provisional-incomplete', perRequest('only-provisional-incomplete', [[claudeId(54), [authored('msg_q', qb, 0, { final: false, dropOutput: true })]]]).result,
+    { verdict: 'unavailable', usage_count: 0, total_tokens: null, provisional_observation_count: 1, missing_core_observation_count: 0 });
+  expectRequests('no-usage', perRequest('no-usage', [[claudeId(12), [authored('msg_a', qa, 0), authored('msg_n', null, 10)]]]).result,
+    { verdict: 'valid', request_count: 1, total_tokens: 50, no_usage_observation_count: 1 });
+  expectRequests('unanswered', perRequest('unanswered', [[claudeId(13), [authored('msg_a', qa, 0), { key: 'msg_x', at: 10, unanswered: true }]]]).result,
+    { verdict: 'valid', request_count: 1, total_tokens: 50, no_usage_observation_count: 1 });
+  expectRequests('incomplete-usage', perRequest('incomplete-usage', [[claudeId(14), [authored('msg_a', qa, 0), authored('msg_m', qb, 10, { dropOutput: true })]]]).result,
+    { verdict: 'unavailable', total_tokens: null, missing_core_observation_count: 1 });
+  expectRequests('invalid-usage', perRequest('invalid-usage', [[claudeId(15), [authored('msg_a', qa, 0), authored('msg_i', claudeUsage(5, 0, 0, -1), 10)]]]).result,
+    { verdict: 'invalid', total_tokens: null, invalid_observation_count: 1 });
+  expectRequests('empty-claude', perRequest('empty-claude', [[claudeId(16), [{ key: 'msg_x', at: 0, unanswered: true }]]]).result,
+    { verdict: 'unavailable', usage_count: 0, total_tokens: null });
+
+  const claudeRepo = join(temporary, 'claude-repo');
+  mkdirSync(claudeRepo);
+  const repoRoot = join(temporary, 'claude', 'repo-scope');
+  claudeSession(repoRoot, claudeId(17), [authored('msg_r', qa, 0)], claudeVersion, claudeRepo);
+  claudeSession(repoRoot, claudeId(18), [authored('msg_s', qb, 0)]);
+  expectRequests('repo-authored', observe(['--root', repoRoot, '--repo', claudeRepo]), { verdict: 'valid', request_count: 1, total_tokens: 50 });
+  claudeSession(repoRoot, claudeId(19), [copied('msg_w', qc, 0)], claudeVersion, claudeRepo);
+  expectRequests('repo-unplaced', observe(['--root', repoRoot, '--repo', claudeRepo]),
+    { verdict: 'unavailable', total_tokens: null, unresolved_ownership_observation_count: 1 });
+  expectRequests('root-unplaced', observe(['--root', repoRoot]), { verdict: 'valid', request_count: 3, total_tokens: 184 });
+
+  const codexOnly = observe(['--root', tree]);
+  assert.deepEqual(observe(['--source', 'codex']), codexOnly, '--source selects the adapter corpus for this definition');
+  checks += 1;
+  assert.equal(codexOnly.cache_creation_input_tokens, null, 'cumulative counters do not report cache writes; unknown is not zero');
+  assert.equal(codexOnly.request_count, 0);
+  assert.equal(codexOnly.usage_count, codexOnly.transition_count);
+  checks += 1;
 
   console.log(`Passed ${checks} token-usage regression cases.`);
 } finally {
