@@ -392,7 +392,7 @@ try {
           delete message.usage.iterations[0].output_tokens;
         }
       }
-      rows.push({ type: 'assistant', uuid: `a-${entry.key}`, parentUuid: `u-${entry.key}`, ...common, timestamp: claudeStamp(at + 2), message,
+      rows.push({ type: 'assistant', uuid: `a-${entry.key}`, parentUuid: `u-${entry.key}`, ...common, ...(entry.untimed ? {} : { timestamp: claudeStamp(at + 2) }), message,
         ...(entry.linked === false ? {} : { requestRef: `rq-${entry.key}`, requestId: `req_rq-${entry.key}`, apiBlockIndex: 0 }) });
       parent = `a-${entry.key}`;
     }
@@ -483,6 +483,16 @@ try {
       [claudeId(29), [copied('msg_k', claudeUsage(4, 0, 40, -1), 0, extra)]],
     ]).result, { verdict: 'valid', request_count: 1, total_tokens: 50, replayed_observation_count: 1, invalid_observation_count: 0 });
   }
+  // In a bounded window, a missing timestamp blocks only a request that would count or change the verdict.
+  expectRequests('untimed-no-usage', perRequest('untimed-no-usage', [[claudeId(30), [authored('msg_a', qa, 0), authored('msg_n', null, 10, { untimed: true })]]],
+    ['--since', claudeStamp(0)]).result,
+    { verdict: 'valid', request_count: 1, total_tokens: 50, unresolved_time_observation_count: 0, unplaced_no_usage_observation_count: 1, no_usage_observation_count: 0 });
+  expectRequests('untimed-provisional', perRequest('untimed-provisional', [[claudeId(31), [authored('msg_a', qa, 0), authored('msg_q', qb, 10, { final: false, untimed: true })]]],
+    ['--since', claudeStamp(0)]).result,
+    { verdict: 'valid', request_count: 1, total_tokens: 50, unresolved_time_observation_count: 0, provisional_observation_count: 1 });
+  expectRequests('untimed-eligible', perRequest('untimed-eligible', [[claudeId(32), [authored('msg_a', qa, 0), authored('msg_u', qb, 10, { untimed: true })]]],
+    ['--since', claudeStamp(0)]).result,
+    { verdict: 'unavailable', total_tokens: null, unresolved_time_observation_count: 1 });
   // Authorship comes from every keyed "here" row, whatever its class.
   expectRequests('provisional-author', perRequest('provisional-author', [
     [claudeId(24), [authored('msg_a', qb, 0), authored('msg_k', qa, 10, { final: false })]],

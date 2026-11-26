@@ -335,17 +335,22 @@ is eligible. A row's class depends only on its own request quantity, and
 per-request rows never enter cumulative accounting, even when they also carry
 running totals.
 
-Ownership precedes these diagnostics. A row without a key cannot be a copy, so
-its own class applies. For a keyed request, a `here` row proves its source
-issued the request, whatever that row's class: the author's row decides the
-request's class, and every other row of that key is a copy, replayed and never
-counted or verdict-changing whatever its own counters say. A key with no `here`
-row (`unplaced` or null authorship) counts once only when the selection is the
-whole read corpus, and its copies must agree on class, usage, and timestamp;
+Ownership precedes these diagnostics. A row without a key cannot be matched to
+other rows of its request, so its own class applies; a declared `elsewhere` copy
+stays replayed. For a keyed request, a `here` row proves its source issued the
+request, whatever that row's class: the author's rows decide the request's
+class, and every other row of that key is a copy, replayed and never counted or
+verdict-changing whatever its own counters say. A key with no `here` row
+(`unplaced` or null authorship) counts once only when the selection is the
+whole read corpus. Every evidence row of a counted key (the author's rows, or
+every row of an unowned key) must agree on class, usage, and timestamp;
 otherwise the key is ambiguous. A `--session-id`, `--path`, or `--repo`
-selection cannot read copies held elsewhere, so such keys leave ownership
+selection cannot read copies held elsewhere, so unowned keys leave ownership
 unresolved. Two sessions that both claim to have issued one key are unresolved.
-Apply the time window to the owning record's timestamp.
+Apply the time window to the owning record's timestamp. In a bounded window, a
+missing timestamp leaves time unresolved for a request that would count or
+change the verdict, while a no-usage request is reported as unplaced, as in
+cumulative accounting.
 
 Adapters differ only in the evidence they supply. Claude transcripts with
 request records mark `here`, `elsewhere`, or `unplaced`; older transcripts
@@ -368,7 +373,11 @@ One observation reads one adapter's corpus. `--source codex|claude-code` selects
 that adapter's default root; without one Seq reads the Codex corpus, which
 includes both default Codex directories. For usage across agents, run once per
 source as above, report each source's verdict and scope, and add totals only
-when every verdict is `valid`. Replace these example bounds with the requested
+when every verdict is `valid`. Seq 1.6.1 rejects a whole Claude corpus that
+contains Claude Code workflow `journal.jsonl` files (`UnclassifiedSessionFormat`)
+for every observation, while `--session-id` and `--path` selections still read;
+report that obstruction for a whole-corpus Claude question rather than
+substituting another sum. Replace these example bounds with the requested
 window and its actual timezone offsets. An explicit root must contain every
 relevant session and ancestor, not just session starts inside the window.
 
