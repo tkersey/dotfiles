@@ -508,11 +508,17 @@ try {
   const narrowedNoUsage = perRequest('narrowed-unowned-no-usage', [[claudeId(39), [authored('msg_a', qa, 0), copied('msg_n', null, 10)]]]);
   expectRequests('narrowed-unowned-no-usage', observe(['--path', narrowedNoUsage.paths[0]]),
     { verdict: 'valid', request_count: 1, total_tokens: 50, unresolved_ownership_observation_count: 0, no_usage_observation_count: 1 });
+  // Countable provisional copies of an unowned key must agree like any other evidence.
   expectRequests('provisional-copies-disagree', perRequest('provisional-copies-disagree', [
     [claudeId(40), [authored('msg_a', qa, 0)]],
     [claudeId(41), [copied('msg_p', qa, 10, { final: false })]],
     [claudeId(42), [copied('msg_p', qb, 10, { final: false })]],
-  ]).result, { verdict: 'valid', request_count: 1, total_tokens: 50, ambiguous_observation_count: 0 });
+  ]).result, { verdict: 'unavailable', total_tokens: null, ambiguous_observation_count: 1 });
+  expectRequests('incomplete-provisional-copies-disagree', perRequest('incomplete-provisional-copies-disagree', [
+    [claudeId(55), [authored('msg_a', qa, 0)]],
+    [claudeId(56), [copied('msg_p', qa, 10, { final: false, dropOutput: true })]],
+    [claudeId(57), [copied('msg_p', qb, 10, { final: false, dropOutput: true })]],
+  ]).result, { verdict: 'valid', request_count: 1, total_tokens: 50, ambiguous_observation_count: 0, provisional_observation_count: 1 });
   expectRequests('no-usage-two-authors', perRequest('no-usage-two-authors', [
     [claudeId(43), [authored('msg_a', qa, 0), authored('msg_d', null, 10)]],
     [claudeId(44), [authored('msg_d', null, 10)]],
@@ -520,7 +526,7 @@ try {
   // Key-level diagnostics count every class a key's rows show, whatever their order.
   expectRequests('mixed-non-counting-copies', perRequest('mixed-non-counting-copies', [
     [claudeId(45), [authored('msg_a', qa, 0)]],
-    [claudeId(46), [copied('msg_m', qb, 10, { final: false })]],
+    [claudeId(46), [copied('msg_m', qb, 10, { final: false, dropOutput: true })]],
     [claudeId(47), [copied('msg_m', null, 10)]],
   ]).result, { verdict: 'valid', request_count: 1, total_tokens: 50, provisional_observation_count: 1, no_usage_observation_count: 1 });
   // A keyless row that changes the verdict also reports unresolved time, as in cumulative accounting.
@@ -531,7 +537,7 @@ try {
   expectRequests('untimed-no-usage', perRequest('untimed-no-usage', [[claudeId(30), [authored('msg_a', qa, 0), authored('msg_n', null, 10, { untimed: true })]]],
     ['--since', claudeStamp(0)]).result,
     { verdict: 'valid', request_count: 1, total_tokens: 50, unresolved_time_observation_count: 0, unplaced_no_usage_observation_count: 1, no_usage_observation_count: 0 });
-  expectRequests('untimed-provisional', perRequest('untimed-provisional', [[claudeId(31), [authored('msg_a', qa, 0), authored('msg_q', qb, 10, { final: false, untimed: true })]]],
+  expectRequests('untimed-provisional', perRequest('untimed-provisional', [[claudeId(31), [authored('msg_a', qa, 0), authored('msg_q', qb, 10, { final: false, dropOutput: true, untimed: true })]]],
     ['--since', claudeStamp(0)]).result,
     { verdict: 'valid', request_count: 1, total_tokens: 50, unresolved_time_observation_count: 0, provisional_observation_count: 1 });
   expectRequests('untimed-eligible', perRequest('untimed-eligible', [[claudeId(32), [authored('msg_a', qa, 0), authored('msg_u', qb, 10, { untimed: true })]]],
@@ -539,7 +545,7 @@ try {
     { verdict: 'unavailable', total_tokens: null, unresolved_time_observation_count: 1 });
   // Authorship comes from every keyed "here" row, whatever its class.
   expectRequests('provisional-author', perRequest('provisional-author', [
-    [claudeId(24), [authored('msg_a', qb, 0), authored('msg_k', qa, 10, { final: false })]],
+    [claudeId(24), [authored('msg_a', qb, 0), authored('msg_k', qa, 10, { final: false, dropOutput: true })]],
     [claudeId(25), [copied('msg_k', qa, 10)]],
   ]).result, { verdict: 'valid', request_count: 1, total_tokens: 62, provisional_observation_count: 1 });
   expectRequests('ineligible-second-author', perRequest('ineligible-second-author', [
@@ -556,7 +562,7 @@ try {
     { verdict: 'valid', request_count: 2, total_tokens: 112, ambiguous_observation_count: 0 });
   expectRequests('restamped-copies-window', perRequest('restamped-copies-window', restamped, ['--since', claudeStamp(20)]).result,
     { verdict: 'valid', request_count: 1, total_tokens: 62, candidate_count: 2 });
-  // A provisional request followed by a later request in its session has finished.
+  // Position does not decide finality: a provisional request followed by a later request counts the same way.
   expectRequests('superseded-provisional', perRequest('superseded-provisional', [[claudeId(49), [authored('msg_q', qb, 0, { final: false }), authored('msg_a', qa, 10)]]]).result,
     { verdict: 'valid', request_count: 2, total_tokens: 112, inferred_final_observation_count: 1, provisional_observation_count: 0 });
   // A narrowed selection places an unowned request in time by its own record.
@@ -573,10 +579,13 @@ try {
     [claudeId(51), [copied('msg_x', qa, 0, { final: false, linked: false }), copied('msg_y', qb, 30, { linked: false })]],
   ]).result, { verdict: 'valid', request_count: 2, total_tokens: 112, inferred_final_observation_count: 1, provisional_observation_count: 0, ambiguous_observation_count: 0 });
 
+  // A provisional request with complete counters counts as inferred final, even as its session's last request.
   expectRequests('provisional', perRequest('provisional', [[claudeId(10), [authored('msg_a', qa, 0), authored('msg_q', qb, 10, { final: false })]]]).result,
-    { verdict: 'valid', request_count: 1, total_tokens: 50, provisional_observation_count: 1 });
+    { verdict: 'valid', request_count: 2, total_tokens: 112, inferred_final_observation_count: 1, provisional_observation_count: 0 });
   expectRequests('only-provisional', perRequest('only-provisional', [[claudeId(11), [authored('msg_q', qb, 0, { final: false })]]]).result,
-    { verdict: 'unavailable', usage_count: 0, total_tokens: null, provisional_observation_count: 1 });
+    { verdict: 'valid', usage_count: 1, total_tokens: 62, inferred_final_observation_count: 1, provisional_observation_count: 0 });
+  expectRequests('only-provisional-incomplete', perRequest('only-provisional-incomplete', [[claudeId(54), [authored('msg_q', qb, 0, { final: false, dropOutput: true })]]]).result,
+    { verdict: 'unavailable', usage_count: 0, total_tokens: null, provisional_observation_count: 1, missing_core_observation_count: 0 });
   expectRequests('no-usage', perRequest('no-usage', [[claudeId(12), [authored('msg_a', qa, 0), authored('msg_n', null, 10)]]]).result,
     { verdict: 'valid', request_count: 1, total_tokens: 50, no_usage_observation_count: 1 });
   expectRequests('unanswered', perRequest('unanswered', [[claudeId(13), [authored('msg_a', qa, 0), { key: 'msg_x', at: 10, unanswered: true }]]]).result,

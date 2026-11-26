@@ -334,23 +334,21 @@ Each per-request row receives exactly one class, in this precedence. A copy
 the verdict. Impossible counters (a declared invalid quantity, a negative
 counter, cache reads, cache writes, or both above input, reasoning above output,
 or a total other than input plus output) are invalid. A row without
-asserted usage (unanswered, or a response with no usage) is no-usage. A request
-whose `usage_finality` is `provisional` and that is the last request of its
-session may not have finished; it is reported without being counted even when
-its partial usage is incomplete. A keyed provisional request followed by a later
-request in the same session has finished: its recorded usage counts, and it is
-reported as inferred final (older transcripts often record no stop reason, so
-without this rule their history would be silently undercounted). Its recorded
-usage is the best available record; a request that was interrupted rather than
-merely missing a stop reason can understate output, so inferred-final usage is a
-lower bound. Report `inferred_final_observation_count` with the totals. Unknown
-finality, usage not declared `usable`, or asserted but unreadable usage is
-missing core evidence, and a final, usable request without a key is unkeyed.
-Every other row
-is eligible. A row's class depends only on its own request evidence and, for a
-keyed request, on whether any later request, answered or not, follows it in the
-same session; a keyless row keeps its own class. Per-request rows never enter
-cumulative accounting, even when they also carry running totals.
+asserted usage (unanswered, or a response with no usage) is no-usage. A row
+whose `usage_finality` is `provisional` is provisional. A keyed provisional
+request whose usage is `usable` with input, output, and total counters counts
+and is reported as inferred final: older transcripts record no stop reason on
+most finished responses, so without this rule their history would be silently
+undercounted. Its recorded usage is the best available record and a lower
+bound, because a request that was interrupted, or that is still streaming in a
+live session, can understate output. A keyless provisional row, or a keyed one
+without those counters, is reported without being counted. Report
+`inferred_final_observation_count` with the totals. Unknown finality, usage not
+declared `usable`, or asserted but unreadable usage is missing core evidence,
+and a final, usable request without a key is unkeyed. Every other row is
+eligible. A row's class depends only on its own request evidence. Per-request
+rows never enter cumulative accounting, even when they also carry running
+totals.
 
 Ownership precedes these diagnostics. A row without a key cannot be matched to
 other rows of its request, so its own class applies; a declared `elsewhere` copy
@@ -361,8 +359,8 @@ verdict-changing whatever its own counters say. A key with no `here` row
 (`unplaced` or null authorship) counts once only when the selection is the
 whole read corpus. Every evidence row of a counted key that carries usage (the
 author's rows, or every row of an unowned key) must agree on usage; otherwise
-the key is ambiguous. The request counts when any of those rows shows it
-finished, and is reported as provisional or no-usage only when none does. A
+the key is ambiguous. The request counts when any of those rows is eligible or
+inferred final, and is reported as provisional or no-usage only when none is. A
 request's time is the earliest timestamp among the author's rows, or every row
 of an unowned key, in the read corpus, because a copy made on resume can carry
 a later one; when the original transcript is not in the read corpus, a
