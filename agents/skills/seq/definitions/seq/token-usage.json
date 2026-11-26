@@ -976,6 +976,24 @@
         },
         {"name":"unowned","type":"boolean","nullable":false,"expr":{"op":"and","args":[{"op":"not","args":[{"field":"copy"}]},{"op":"not","args":[{"field":"request_here"}]}]}},
         {
+          "name": "affects",
+          "type": "boolean",
+          "nullable": false,
+          "expr": {
+            "op": "or",
+            "args": [
+              {
+                "op": "or",
+                "args": [
+                  {"op":"coalesce","args":[{"op":"eq","args":[{"field":"request_class"},"eligible"]},false]},
+                  {"op":"coalesce","args":[{"op":"eq","args":[{"field":"request_class"},"invalid"]},false]}
+                ]
+              },
+              {"op":"coalesce","args":[{"op":"eq","args":[{"field":"request_class"},"missing-core"]},false]}
+            ]
+          }
+        },
+        {
           "name": "candidate",
           "type": "boolean",
           "nullable": false,
@@ -988,15 +1006,21 @@
                 "args": [
                   {"field":"unowned"},
                   {
-                    "op": "not",
+                    "op": "or",
                     "args": [
                       {
-                        "op": "or",
+                        "op": "not",
                         "args": [
-                          {"op":"or","args":[{"op":"not","args":[{"op":"is-null","args":[{"selector":"session-id"}]}]},{"op":"not","args":[{"op":"is-null","args":[{"selector":"path"}]}]}]},
-                          {"op":"not","args":[{"op":"is-null","args":[{"selector":"repo"}]}]}
+                          {
+                            "op": "or",
+                            "args": [
+                              {"op":"or","args":[{"op":"not","args":[{"op":"is-null","args":[{"selector":"session-id"}]}]},{"op":"not","args":[{"op":"is-null","args":[{"selector":"path"}]}]}]},
+                              {"op":"not","args":[{"op":"is-null","args":[{"selector":"repo"}]}]}
+                            ]
+                          }
                         ]
-                      }
+                      },
+                      {"op":"not","args":[{"field":"affects"}]}
                     ]
                   }
                 ]
@@ -1011,14 +1035,20 @@
           "expr": {
             "op": "and",
             "args": [
-              {"field":"unowned"},
               {
-                "op": "or",
+                "op": "and",
                 "args": [
-                  {"op":"or","args":[{"op":"not","args":[{"op":"is-null","args":[{"selector":"session-id"}]}]},{"op":"not","args":[{"op":"is-null","args":[{"selector":"path"}]}]}]},
-                  {"op":"not","args":[{"op":"is-null","args":[{"selector":"repo"}]}]}
+                  {"field":"unowned"},
+                  {
+                    "op": "or",
+                    "args": [
+                      {"op":"or","args":[{"op":"not","args":[{"op":"is-null","args":[{"selector":"session-id"}]}]},{"op":"not","args":[{"op":"is-null","args":[{"selector":"path"}]}]}]},
+                      {"op":"not","args":[{"op":"is-null","args":[{"selector":"repo"}]}]}
+                    ]
+                  }
                 ]
-              }
+              },
+              {"field":"affects"}
             ]
           }
         },
@@ -1089,32 +1119,7 @@
           "name": "unresolved_time_count",
           "type": "integer",
           "nullable": false,
-          "expr": {
-            "op": "if",
-            "args": [
-              {
-                "op": "and",
-                "args": [
-                  {"op":"and","args":[{"field":"candidate"},{"field":"untimed"}]},
-                  {
-                    "op": "or",
-                    "args": [
-                      {
-                        "op": "or",
-                        "args": [
-                          {"op":"coalesce","args":[{"op":"eq","args":[{"field":"request_class"},"eligible"]},false]},
-                          {"op":"coalesce","args":[{"op":"eq","args":[{"field":"request_class"},"invalid"]},false]}
-                        ]
-                      },
-                      {"op":"coalesce","args":[{"op":"eq","args":[{"field":"request_class"},"missing-core"]},false]}
-                    ]
-                  }
-                ]
-              },
-              1,
-              0
-            ]
-          }
+          "expr": {"op":"if","args":[{"op":"and","args":[{"op":"and","args":[{"field":"candidate"},{"field":"untimed"}]},{"field":"affects"}]},1,0]}
         },
         {
           "name": "unplaced_no_usage_count",
@@ -1155,6 +1160,8 @@
     {"op":"filter","input":"keyed_flags","as":"windowed_keyed","where":[{"field":"in_window","op":"exact","value":true}]},
     {"op":"filter","input":"windowed_keyed","as":"candidate_rows","where":[{"field":"candidate","op":"exact","value":true}]},
     {"op":"distinct","input":"candidate_rows","as":"key_representatives","keys":["request_key"]},
+    {"op":"filter","input":"candidate_rows","as":"affecting_rows","where":[{"field":"affects","op":"exact","value":true}]},
+    {"op":"distinct","input":"affecting_rows","as":"affecting_keys","keys":["request_key"]},
     {"op":"filter","input":"candidate_rows","as":"invalid_evidence_rows","where":[{"field":"request_class","op":"exact","value":"invalid"}]},
     {"op":"distinct","input":"invalid_evidence_rows","as":"invalid_evidence_keys","keys":["request_key"]},
     {"op":"filter","input":"candidate_rows","as":"missing_core_evidence_rows","where":[{"field":"request_class","op":"exact","value":"missing-core"}]},
@@ -1163,7 +1170,7 @@
     {"op":"distinct","input":"split_rows","as":"split_keys","keys":["request_key"]},
     {
       "op": "join",
-      "inputs": ["author_conflicts","key_representatives"],
+      "inputs": ["author_conflicts","affecting_keys"],
       "as": "conflicted_rows",
       "on": {"kind":"semi","keys":[{"left":"request_key","right":"request_key"}]},
       "fields": [{"source":0,"field":"request_key","name":"request_key","type":"string","nullable":true}]
@@ -1224,7 +1231,14 @@
       },
       "fields": [{"source":0,"field":"request_key","name":"request_key","type":"string","nullable":true}]
     },
-    {"op":"distinct","input":"disagreeing_profiles","as":"ambiguous_keys","keys":["request_key"]},
+    {
+      "op": "join",
+      "inputs": ["disagreeing_profiles","affecting_keys"],
+      "as": "affecting_disagreements",
+      "on": {"kind":"semi","keys":[{"left":"request_key","right":"request_key"}]},
+      "fields": [{"source":0,"field":"request_key","name":"request_key","type":"string","nullable":true}]
+    },
+    {"op":"distinct","input":"affecting_disagreements","as":"ambiguous_keys","keys":["request_key"]},
     {
       "op": "aggregate",
       "input": "key_representatives",

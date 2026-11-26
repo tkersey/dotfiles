@@ -503,6 +503,19 @@ try {
     [claudeId(36), [copied('msg_v', qb, 0)]],
     [claudeId(37), [copied('msg_v', qc, 0)]],
   ]).result, { verdict: 'unavailable', total_tokens: null, ambiguous_observation_count: 1 });
+  // A request that could neither count nor change the verdict never leaves ownership or agreement unresolved.
+  const narrowedNoUsage = perRequest('narrowed-unowned-no-usage', [[claudeId(39), [authored('msg_a', qa, 0), copied('msg_n', null, 10)]]]);
+  expectRequests('narrowed-unowned-no-usage', observe(['--path', narrowedNoUsage.paths[0]]),
+    { verdict: 'valid', request_count: 1, total_tokens: 50, unresolved_ownership_observation_count: 0, no_usage_observation_count: 1 });
+  expectRequests('provisional-copies-disagree', perRequest('provisional-copies-disagree', [
+    [claudeId(40), [authored('msg_a', qa, 0)]],
+    [claudeId(41), [copied('msg_p', qa, 10, { final: false })]],
+    [claudeId(42), [copied('msg_p', qb, 10, { final: false })]],
+  ]).result, { verdict: 'valid', request_count: 1, total_tokens: 50, ambiguous_observation_count: 0 });
+  expectRequests('no-usage-two-authors', perRequest('no-usage-two-authors', [
+    [claudeId(43), [authored('msg_a', qa, 0), authored('msg_d', null, 10)]],
+    [claudeId(44), [authored('msg_d', null, 10)]],
+  ]).result, { verdict: 'valid', request_count: 1, total_tokens: 50, unresolved_ownership_observation_count: 0 });
   // A keyless row that changes the verdict also reports unresolved time, as in cumulative accounting.
   expectRequests('untimed-keyless-invalid', perRequest('untimed-keyless-invalid', [[claudeId(38), [authored('msg_a', qa, 0), authored('msg_z', qb, 10, { noMessageId: true, untimed: true })]]],
     ['--since', claudeStamp(0)]).result,

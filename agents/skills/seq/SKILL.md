@@ -347,7 +347,10 @@ every row of an unowned key) must agree on class, usage, and timestamp;
 otherwise the key is ambiguous. A `--session-id`, `--path`, or `--repo`
 selection cannot read copies held elsewhere, so unowned keys leave ownership
 unresolved. Two sessions that both claim to have issued one key are unresolved.
-Apply the time window to the owning record's timestamp. In a bounded window, a
+Apply the time window to the owning record's timestamp. Ownership, agreement,
+and time are resolved only for a request that could count or change the verdict
+(eligible, invalid, or missing core evidence); a no-usage or provisional request
+is reported without ever making the result unavailable. In a bounded window, a
 missing timestamp leaves time unresolved for a request that would count or
 change the verdict, while a no-usage request is reported as unplaced, as in
 cumulative accounting.
