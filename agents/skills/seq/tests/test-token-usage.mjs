@@ -48,9 +48,9 @@ function session(directory, id, observations, parent = null, metadata = {}, toke
 
 function observe(selectors) {
   const result = run(['observe', '--definition', definition, '--projection', 'summary', '--format', 'json', ...selectors]);
-  assert.equal(result.data.schema, 'seq-token-usage-result/v2');
+  assert.equal(result.data.schema, 'seq-token-usage-result/v3');
   assert.equal(result.data.rows.length, 1);
-  assert.equal(result.data.rows[0].usage_scope, 'observed-lineage-owned-transitions');
+  assert.equal(result.data.rows[0].usage_scope, 'observed-owned-usage');
   return result.data.rows[0];
 }
 
@@ -360,6 +360,166 @@ try {
     assert.ok(childOnly.unresolved_ancestry_observation_count > 0);
   }
   checks += 3;
+
+  // Per-request accounting (Claude Code transcripts): each request reports its own usage and is
+  // owned by the transcript that recorded its request; copies never own usage.
+  const claudeVersion = '2.1.325';
+  const claudeStamp = (second) => `2026-11-01T10:${String(Math.floor(second / 60)).padStart(2, '0')}:${String(second % 60).padStart(2, '0')}.000Z`;
+  const claudeUsage = (input, read, write, output) => ({ input, read, write, output });
+  function claudeSession(directory, id, entries, version = claudeVersion, cwd = '/claude-fixture') {
+    const project = join(directory, '-claude-fixture');
+    mkdirSync(project, { recursive: true });
+    const rows = [];
+    let parent = null;
+    for (const entry of entries) {
+      const at = entry.at;
+      if (entry.unanswered) {
+        rows.push({ type: 'api-request', id: `rq-${entry.key}`, sessionId: id, timestamp: claudeStamp(at), querySource: 'sdk', requestDigest: `dg-${entry.key}`, version });
+        continue;
+      }
+      const common = { isSidechain: false, sessionId: id, cwd, gitBranch: 'main', userType: 'external', version };
+      rows.push({ type: 'user', uuid: `u-${entry.key}`, parentUuid: parent, ...common, timestamp: claudeStamp(at), message: { role: 'user', content: 'Do the task.' }, turnOrigin: 'human' });
+      if (entry.authored) {
+        rows.push({ type: 'api-request', id: `rq-${entry.key}`, sessionId: id, timestamp: claudeStamp(at + 1), querySource: 'sdk', requestDigest: `dg-${entry.key}`, version });
+      }
+      const message = { model: 'claude-test-model', type: 'message', role: 'assistant', id: entry.key, stop_reason: entry.final === false ? null : 'end_turn', stop_sequence: null, content: [{ type: 'text', text: 'Done.' }] };
+      if (entry.usage) {
+        const { input, read, write, output } = entry.usage;
+        const counters = { input_tokens: input, cache_read_input_tokens: read, cache_creation_input_tokens: write, output_tokens: output };
+        message.usage = { ...counters, service_tier: 'standard', iterations: [{ type: 'message', ...counters }] };
+        if (entry.dropOutput) {
+          delete message.usage.output_tokens;
+          delete message.usage.iterations[0].output_tokens;
+        }
+      }
+      rows.push({ type: 'assistant', uuid: `a-${entry.key}`, parentUuid: `u-${entry.key}`, ...common, timestamp: claudeStamp(at + 2), message,
+        ...(entry.linked === false ? {} : { requestRef: `rq-${entry.key}`, requestId: `req_rq-${entry.key}`, apiBlockIndex: 0 }) });
+      parent = `a-${entry.key}`;
+    }
+    const path = join(project, `${id}.jsonl`);
+    writeFileSync(path, rows.map(row => JSON.stringify(row)).join('\n') + '\n');
+    return path;
+  }
+  const claudeId = (n) => `c${String(n).padStart(7, '0')}-0000-4000-8000-000000000000`;
+  const qa = claudeUsage(4, 0, 40, 6);    // input 44, cached 0, cache writes 40, total 50
+  const qb = claudeUsage(5, 40, 8, 9);    // input 53, cached 40, cache writes 8, total 62
+  const qc = claudeUsage(6, 53, 9, 4);    // input 68, cached 53, cache writes 9, total 72
+  const authored = (key, usage, at, extra = {}) => ({ key, usage, at, authored: true, ...extra });
+  const copied = (key, usage, at, extra = {}) => ({ key, usage, at, authored: false, ...extra });
+  function perRequest(name, sessions, selectors = []) {
+    const directory = join(temporary, 'claude', name);
+    const paths = sessions.map(([id, entries]) => claudeSession(directory, id, entries));
+    return { paths, result: observe(['--root', directory, ...selectors]) };
+  }
+  function expectRequests(name, actual, expected) {
+    for (const [field, value] of Object.entries(expected)) {
+      assert.deepEqual(actual[field], value, `${name}: ${field}\n${JSON.stringify(actual)}`);
+    }
+    checks += 1;
+  }
+
+  const single = perRequest('authored', [[claudeId(1), [authored('msg_a', qa, 0), authored('msg_b', qb, 10)]]]).result;
+  expectRequests('authored', single, {
+    verdict: 'valid', usage_count: 2, request_count: 2, transition_count: 0,
+    input_tokens: 97, cached_input_tokens: 40, cache_creation_input_tokens: 48, output_tokens: 15, total_tokens: 112,
+    cached_percentage: 40 / 97 * 100, unresolved_ancestry_observation_count: 0, unanchored_observation_count: 0,
+  });
+
+  const forkSessions = [
+    [claudeId(2), [authored('msg_p1', qa, 0), authored('msg_p2', qb, 10)]],
+    [claudeId(3), [copied('msg_p1', qa, 0), copied('msg_p2', qb, 10), authored('msg_c1', qc, 70)]],
+  ];
+  const fork = perRequest('fork', forkSessions);
+  expectRequests('fork-root', fork.result, { verdict: 'valid', request_count: 3, total_tokens: 184, replayed_observation_count: 2 });
+  expectRequests('fork-child-path', observe(['--path', fork.paths[1]]),
+    { verdict: 'valid', request_count: 1, total_tokens: 72, replayed_observation_count: 2, unresolved_ancestry_observation_count: 0 });
+  expectRequests('fork-parent-path', observe(['--path', fork.paths[0]]), { verdict: 'valid', request_count: 2, total_tokens: 112 });
+  expectRequests('fork-child-alone', perRequest('fork-child-alone', [forkSessions[1]]).result,
+    { verdict: 'valid', request_count: 1, total_tokens: 72, replayed_observation_count: 2 });
+  expectRequests('fork-window', perRequest('fork-window', forkSessions, ['--since', claudeStamp(60)]).result,
+    { verdict: 'valid', request_count: 1, total_tokens: 72 });
+  expectRequests('fork-until', perRequest('fork-until', forkSessions, ['--until', claudeStamp(12)]).result,
+    { verdict: 'valid', request_count: 1, total_tokens: 50 });
+
+  for (const [label, extra] of [['unplaced', {}], ['unlinked', { linked: false }]]) {
+    const shared = [
+      [claudeId(4), [copied('msg_u', qa, 0, extra)]],
+      [claudeId(5), [copied('msg_u', qa, 0, extra)]],
+    ];
+    const copies = perRequest(`${label}-copies`, shared);
+    expectRequests(`${label}-copies-root`, copies.result, { verdict: 'valid', request_count: 1, total_tokens: 50 });
+    expectRequests(`${label}-copies-split`, observe(['--root', join(temporary, 'claude', `${label}-copies`), '--session-id', claudeId(4)]),
+      { verdict: 'unavailable', total_tokens: null, unresolved_ownership_observation_count: 1 });
+    expectRequests(`${label}-copies-path`, observe(['--path', copies.paths[1]]),
+      { verdict: 'unavailable', total_tokens: null, unresolved_ownership_observation_count: 1 });
+    expectRequests(`${label}-conflicting-copies`, perRequest(`${label}-conflict`, [
+      [claudeId(6), [copied('msg_v', qa, 0, extra)]],
+      [claudeId(7), [copied('msg_v', qb, 0, extra)]],
+    ]).result, { verdict: 'unavailable', total_tokens: null, ambiguous_observation_count: 1 });
+  }
+
+  expectRequests('two-authors', perRequest('two-authors', [
+    [claudeId(8), [authored('msg_k', qa, 0)]],
+    [claudeId(9), [authored('msg_k', qa, 0)]],
+  ]).result, { verdict: 'unavailable', total_tokens: null, unresolved_ownership_observation_count: 1 });
+
+  expectRequests('provisional', perRequest('provisional', [[claudeId(10), [authored('msg_a', qa, 0), authored('msg_q', qb, 10, { final: false })]]]).result,
+    { verdict: 'valid', request_count: 1, total_tokens: 50, provisional_observation_count: 1 });
+  expectRequests('only-provisional', perRequest('only-provisional', [[claudeId(11), [authored('msg_q', qb, 0, { final: false })]]]).result,
+    { verdict: 'unavailable', usage_count: 0, total_tokens: null, provisional_observation_count: 1 });
+  expectRequests('no-usage', perRequest('no-usage', [[claudeId(12), [authored('msg_a', qa, 0), authored('msg_n', null, 10)]]]).result,
+    { verdict: 'valid', request_count: 1, total_tokens: 50, no_usage_observation_count: 1 });
+  expectRequests('unanswered', perRequest('unanswered', [[claudeId(13), [authored('msg_a', qa, 0), { key: 'msg_x', at: 10, unanswered: true }]]]).result,
+    { verdict: 'valid', request_count: 1, total_tokens: 50, no_usage_observation_count: 1 });
+  expectRequests('incomplete-usage', perRequest('incomplete-usage', [[claudeId(14), [authored('msg_a', qa, 0), authored('msg_m', qb, 10, { dropOutput: true })]]]).result,
+    { verdict: 'unavailable', total_tokens: null, missing_core_observation_count: 1 });
+  expectRequests('invalid-usage', perRequest('invalid-usage', [[claudeId(15), [authored('msg_a', qa, 0), authored('msg_i', claudeUsage(5, 0, 0, -1), 10)]]]).result,
+    { verdict: 'invalid', total_tokens: null, invalid_observation_count: 1 });
+  expectRequests('empty-claude', perRequest('empty-claude', [[claudeId(16), [{ key: 'msg_x', at: 0, unanswered: true }]]]).result,
+    { verdict: 'unavailable', usage_count: 0, total_tokens: null });
+
+  const claudeRepo = join(temporary, 'claude-repo');
+  mkdirSync(claudeRepo);
+  const repoRoot = join(temporary, 'claude', 'repo-scope');
+  claudeSession(repoRoot, claudeId(17), [authored('msg_r', qa, 0)], claudeVersion, claudeRepo);
+  claudeSession(repoRoot, claudeId(18), [authored('msg_s', qb, 0)]);
+  expectRequests('repo-authored', observe(['--root', repoRoot, '--repo', claudeRepo]), { verdict: 'valid', request_count: 1, total_tokens: 50 });
+  claudeSession(repoRoot, claudeId(19), [copied('msg_w', qc, 0)], claudeVersion, claudeRepo);
+  expectRequests('repo-unplaced', observe(['--root', repoRoot, '--repo', claudeRepo]),
+    { verdict: 'unavailable', total_tokens: null, unresolved_ownership_observation_count: 1 });
+  expectRequests('root-unplaced', observe(['--root', repoRoot]), { verdict: 'valid', request_count: 3, total_tokens: 184 });
+
+  // Per-request accounting (Pi sessions): Pi records no request-side authorship, so a forked or imported
+  // copy keeps its key; corpus totals deduplicate by key while narrowed selections stay unresolved.
+  const piRoot = join(temporary, 'pi');
+  const piEntry = (id, second, usage, extra = {}) => ({ type: 'message', id, parentId: null, timestamp: `2026-11-01T10:00:${String(second).padStart(2, '0')}Z`,
+    message: { role: 'assistant', content: [{ type: 'text', text: 'Done.' }], provider: 'fixture', model: 'fixture-model', usage, stopReason: 'stop', ...extra } });
+  const piUsage = (input, output, cacheRead, cacheWrite) => ({ input, output, cacheRead, cacheWrite, totalTokens: input + output + cacheRead + cacheWrite });
+  function piSession(name, entries, header = {}) {
+    mkdirSync(piRoot, { recursive: true });
+    const path = join(piRoot, `${name}.jsonl`);
+    const rows = [{ type: 'session', version: 3, id: name, timestamp: '2026-11-01T10:00:00Z', cwd: '/pi-fixture', ...header }, ...entries];
+    writeFileSync(path, rows.map(row => JSON.stringify(row)).join('\n') + '\n');
+    return path;
+  }
+  const piOriginal = piSession('pi-original', [piEntry('p1', 1, piUsage(10, 4, 2, 3)), piEntry('p2', 2, piUsage(20, 5, 0, 0))]);
+  piSession('pi-fork', [piEntry('p1', 1, piUsage(10, 4, 2, 3)), piEntry('f1', 9, piUsage(30, 6, 0, 0))], { parentSession: piOriginal });
+  const piProbe = spawnSync(binary, ['observe', '--definition', definition, '--projection', 'summary', '--format', 'json', '--root', piRoot], { env, encoding: 'utf8', timeout: 15000 });
+  const piError = piProbe.status === 0 ? null : JSON.parse(piProbe.stdout).code;
+  if (piError === 'PiCumulativeTokenEventsUnavailable') {
+    console.log('Skipped Pi per-request cases: this Seq does not emit Pi token events.');
+  } else {
+    expectRequests('pi-corpus', observe(['--root', piRoot]),
+      { verdict: 'valid', request_count: 3, input_tokens: 15 + 20 + 30, cached_input_tokens: 2, cache_creation_input_tokens: 3, output_tokens: 15, total_tokens: 80 });
+    expectRequests('pi-window', observe(['--root', piRoot, '--since', '2026-11-01T10:00:05Z']), { verdict: 'valid', request_count: 1, total_tokens: 36 });
+    expectRequests('pi-path', observe(['--path', piOriginal]), { verdict: 'unavailable', total_tokens: null, unresolved_ownership_observation_count: 2 });
+  }
+
+  const codexOnly = observe(['--root', tree]);
+  assert.equal(codexOnly.cache_creation_input_tokens, null, 'cumulative counters do not report cache writes; unknown is not zero');
+  assert.equal(codexOnly.request_count, 0);
+  assert.equal(codexOnly.usage_count, codexOnly.transition_count);
+  checks += 1;
 
   console.log(`Passed ${checks} token-usage regression cases.`);
 } finally {
