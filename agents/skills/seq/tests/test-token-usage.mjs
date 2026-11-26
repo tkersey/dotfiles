@@ -392,8 +392,16 @@ try {
           delete message.usage.iterations[0].output_tokens;
         }
       }
-      rows.push({ type: 'assistant', uuid: `a-${entry.key}`, parentUuid: `u-${entry.key}`, ...common, ...(entry.untimed ? {} : { timestamp: claudeStamp(at + 2) }), message,
-        ...(entry.linked === false ? {} : { requestRef: `rq-${entry.key}`, requestId: `req_rq-${entry.key}`, apiBlockIndex: 0 }) });
+      // Claude Code writes one assistant record per content block; earlier blocks carry no stop reason.
+      let blockParent = `u-${entry.key}`;
+      for (let block = 0; block < (entry.blocks ?? 1); block += 1) {
+        const last = block === (entry.blocks ?? 1) - 1;
+        const uuid = last ? `a-${entry.key}` : `a-${entry.key}-${block}`;
+        rows.push({ type: 'assistant', uuid, parentUuid: blockParent, ...common, ...(entry.untimed ? {} : { timestamp: claudeStamp(at + 2 + block) }),
+          message: last ? message : { ...message, stop_reason: null },
+          ...(entry.linked === false ? {} : { requestRef: `rq-${entry.key}`, requestId: `req_rq-${entry.key}`, apiBlockIndex: block }) });
+        blockParent = uuid;
+      }
       parent = `a-${entry.key}`;
     }
     const path = join(project, `${id}.jsonl`);
@@ -483,6 +491,9 @@ try {
       [claudeId(29), [copied('msg_k', claudeUsage(4, 0, 40, -1), 0, extra)]],
     ]).result, { verdict: 'valid', request_count: 1, total_tokens: 50, replayed_observation_count: 1, invalid_observation_count: 0 });
   }
+  // A response written as several content-block records is one request.
+  expectRequests('multi-block', perRequest('multi-block', [[claudeId(33), [authored('msg_a', qa, 0, { blocks: 3 }), authored('msg_b', qb, 20)]]]).result,
+    { verdict: 'valid', request_count: 2, total_tokens: 112, ambiguous_observation_count: 0, provisional_observation_count: 0 });
   // In a bounded window, a missing timestamp blocks only a request that would count or change the verdict.
   expectRequests('untimed-no-usage', perRequest('untimed-no-usage', [[claudeId(30), [authored('msg_a', qa, 0), authored('msg_n', null, 10, { untimed: true })]]],
     ['--since', claudeStamp(0)]).result,
@@ -534,6 +545,8 @@ try {
   expectRequests('root-unplaced', observe(['--root', repoRoot]), { verdict: 'valid', request_count: 3, total_tokens: 184 });
 
   const codexOnly = observe(['--root', tree]);
+  assert.deepEqual(observe(['--source', 'codex']), codexOnly, '--source selects the adapter corpus for this definition');
+  checks += 1;
   assert.equal(codexOnly.cache_creation_input_tokens, null, 'cumulative counters do not report cache writes; unknown is not zero');
   assert.equal(codexOnly.request_count, 0);
   assert.equal(codexOnly.usage_count, codexOnly.transition_count);
