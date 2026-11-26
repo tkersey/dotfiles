@@ -122,7 +122,7 @@ try {
 
   check('legacy-increasing', [{ total_token_usage: usage(10, 0, 0, 0) }, { total_token_usage: usage(30, 0, 0, 0) }], { ...unavailable, legacy_observation_count: 2 });
   check('legacy-exact-repeats', [{ total_token_usage: usage(10, 0, 0, 0) }, { total_token_usage: usage(10, 0, 0, 0) }], { ...unavailable, legacy_observation_count: 1 });
-  check('legacy-modern-same-total', [{ total_token_usage: usage(100, 20, 50, 10) }, modern()], { ...unavailable, legacy_observation_count: 1, transition_count: 1 });
+  check('legacy-modern-same-total', [{ total_token_usage: usage(100, 20, 50, 10) }, modern()], { ...unavailable, candidate_count: 2, legacy_observation_count: 1, transition_count: 1 });
 
   const timelessPath = session(join(temporary, 'cases'), 'timeless', [modern()]);
   const timelessRows = readFileSync(timelessPath, 'utf8').trim().split('\n').map(line => JSON.parse(line));
@@ -148,6 +148,7 @@ try {
     assert.equal(neutral.unresolved_time_observation_count, 0);
     assert.equal(neutral.no_usage_observation_count, 0, 'unknown-time metadata is not asserted to lie in the selected window');
     assert.equal(neutral.unplaced_no_usage_observation_count, 1);
+    assert.equal(neutral.candidate_count, 2, 'an untimed record counts as inside a bounded window');
   }
   checks += 2;
 
@@ -448,7 +449,7 @@ try {
   expectRequests('fork-window', perRequest('fork-window', forkSessions, ['--since', claudeStamp(60)]).result,
     { verdict: 'valid', request_count: 1, total_tokens: 72 });
   expectRequests('fork-until', perRequest('fork-until', forkSessions, ['--until', claudeStamp(12)]).result,
-    { verdict: 'valid', request_count: 1, total_tokens: 50 });
+    { verdict: 'valid', request_count: 1, total_tokens: 50, candidate_count: 2, replayed_observation_count: 1 });
 
   for (const [label, extra] of [['unplaced', {}], ['unlinked', { linked: false }]]) {
     const shared = [
@@ -554,7 +555,7 @@ try {
   expectRequests('restamped-copies', perRequest('restamped-copies', restamped).result,
     { verdict: 'valid', request_count: 2, total_tokens: 112, ambiguous_observation_count: 0 });
   expectRequests('restamped-copies-window', perRequest('restamped-copies-window', restamped, ['--since', claudeStamp(20)]).result,
-    { verdict: 'valid', request_count: 1, total_tokens: 62 });
+    { verdict: 'valid', request_count: 1, total_tokens: 62, candidate_count: 2 });
   // A provisional request followed by a later request in its session has finished.
   expectRequests('superseded-provisional', perRequest('superseded-provisional', [[claudeId(49), [authored('msg_q', qb, 0, { final: false }), authored('msg_a', qa, 10)]]]).result,
     { verdict: 'valid', request_count: 2, total_tokens: 112, inferred_final_observation_count: 1, provisional_observation_count: 0 });

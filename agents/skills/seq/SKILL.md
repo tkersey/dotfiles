@@ -234,10 +234,12 @@ evidence it carries, never by adapter name: rows declaring
 uses cumulative lineage accounting. Within one observation both feed one
 result: `usage_count = transition_count + request_count`, shared totals, one
 verdict, and `usage_scope: "observed-owned-usage"`. `candidate_count` counts
-the selected sessions' token records inside the window by each record's own
-timestamp, except a cumulative record that repeats an earlier total in its
-session or is excluded as a replayed ancestor transition. It counts records,
-not requests, so it can exceed `usage_count`. The
+the selected sessions' token records, copies included, inside the window by
+each record's own timestamp; an untimed record counts as inside a bounded
+window. It leaves out a cumulative record that repeats an earlier record's
+recorded total input, output, and total tokens in its session with the same
+`has_total_usage` and `has_last_usage`, and one excluded as a replayed ancestor
+transition. It counts records, not requests, so it can exceed `usage_count`. The
 definition reads `token_events` fields first released in Seq 1.5.0; require
 Seq 1.5.0 or newer and report an older executable's rejection of the definition
 as an upgrade obstruction. An adapter whose token events Seq refuses (Pi returns
@@ -320,10 +322,9 @@ events are neutral observations without a usage tuple; count them as no-usage
 observations without treating them as zero-token transitions.
 
 **Per-request accounting.** A per-request row reports one request's own usage,
-identified by `request_key`. Count a request once when its usage is `usable`,
-its `usage_finality` is `final`, it has a key, and its owner is in the
-selection. History ancestry does not apply: request identity, not counter
-equality, removes replayed history.
+identified by `request_key`. A request counts at most once, as the class
+precedence and ownership rules below decide. History ancestry does not apply:
+request identity, not counter equality, removes replayed history.
 
 Each per-request row receives exactly one class, in this precedence. A copy
 (`request_record: elsewhere`) is replayed: it never owns usage and never affects
@@ -367,8 +368,9 @@ selection cannot read copies held elsewhere, so unowned keys leave ownership
 unresolved. An explicit `--root` is the whole read corpus for this rule, so
 totals from partial or overlapping roots of one adapter must not be added. Two
 sessions that both claim to have issued one key are unresolved.
-Apply the time window to the request's time, not to each copy; only the
-replayed diagnostic counts each copy by its own timestamp. Ownership,
+Apply the time window to the request's time, not to each copy; the replayed
+count and `candidate_count` are record diagnostics that place each record by its
+own timestamp, with an untimed record inside a bounded window. Ownership,
 agreement, and time are resolved only for a request that could count or change
 the verdict (eligible, invalid, or missing core evidence); a no-usage or
 provisional request is reported without ever making the result unavailable.
