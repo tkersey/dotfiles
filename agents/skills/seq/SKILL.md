@@ -2,7 +2,7 @@
 name: seq
 description: "Reconstruct bounded, provenance-preserving observations from supported native sessions and explicit input relations with Seq 1.x. Use for `$seq`, session, tool, and message forensics, token accounting, worker attribution, or historical evidence reports."
 metadata:
-  version: "3.0.1"
+  version: "3.1.0"
 ---
 
 # Seq
@@ -242,9 +242,10 @@ window. It leaves out a cumulative record that repeats an earlier record's
 recorded total input, output, and total tokens in its session with the same
 `has_total_usage` and `has_last_usage`, and one excluded as a replayed ancestor
 transition. It counts records, not requests, so it can exceed `usage_count`. The
-definition reads `token_events` fields first released in Seq 1.5.0; require
-Seq 1.5.0 or newer and report an older executable's rejection of the definition
-as an upgrade obstruction. An adapter whose token events Seq refuses (Pi returns
+definition reads `token_events` fields first released in Seq 1.5.0 and merges its
+cumulative and per-request rows with the `union` operator first released in Seq
+1.7.0; require Seq 1.7.0 or newer and report an older executable's rejection of
+the definition as an upgrade obstruction. An adapter whose token events Seq refuses (Pi returns
 `PiCumulativeTokenEventsUnavailable`) is an obstruction; report it rather than
 substituting another sum.
 
