@@ -50,6 +50,7 @@
   "skipDangerousModePermissionPrompt": true,
   "theme": "dark-daltonized",
   "preferredNotifChannel": "ghostty",
+  "prefersReducedMotion": true,
   "feedbackSurveyState": {
     "lastShownTime": 1754083542456
   }
