@@ -182,7 +182,7 @@ CLI access. Seq owns reusable physical analyses under:
 | `message-search.json`, `tool-search.json` | `path`, `root`, `session-id`, `repo`, `since`, `until`, `last` | `rows`; `rows-raw` for necessary payloads |
 | `session-summary.json`, `turn-report.json` | `path` only; resolve an ID through `find-session` first | `rows` |
 | `turn-metrics.json` | `path`, `root`, `session-id`, `repo`, `since`, `until`, `last` | `summary` |
-| `token-usage.json` | `path`, `root`, `session-id`, `repo`, `since`, `until` | `summary` |
+| `token-usage.json` | `path`, `root`, `session-id`, `repo`, `since`, `until`; `--source` picks the adapter corpus | `summary` |
 
 Both searches require `needle` and an explicit `exclude_session_id`. Bind the
 verified current identity for historical audits; bind an empty string only for
@@ -361,7 +361,8 @@ selection cannot read copies held elsewhere, so unowned keys leave ownership
 unresolved. An explicit `--root` is the whole read corpus for this rule, so
 totals from partial or overlapping roots of one adapter must not be added. Two
 sessions that both claim to have issued one key are unresolved.
-Apply the time window to the request's time, not to each copy. Ownership,
+Apply the time window to the request's time, not to each copy; only the
+replayed diagnostic counts each copy by its own timestamp. Ownership,
 agreement, and time are resolved only for a request that could count or change
 the verdict (eligible, invalid, or missing core evidence); a no-usage or
 provisional request is reported without ever making the result unavailable.
