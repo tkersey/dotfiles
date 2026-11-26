@@ -233,10 +233,12 @@ evidence it carries, never by adapter name: rows declaring
 `usage_model: "per-request"` use per-request accounting, and every other row
 uses cumulative lineage accounting. Within one observation both feed one
 result: `usage_count = transition_count + request_count`, shared totals, one
-verdict, and `usage_scope: "observed-owned-usage"`. The definition reads
-`token_events` fields first released in Seq 1.5.0; require Seq 1.5.0 or newer
-and report an older executable's rejection of the definition as an upgrade
-obstruction. An adapter whose token events Seq refuses (Pi returns
+verdict, and `usage_scope: "observed-owned-usage"`. `candidate_count` counts
+token records in the selected sessions inside the window by each record's own
+timestamp (records, not requests), so it can exceed `usage_count`. The
+definition reads `token_events` fields first released in Seq 1.5.0; require
+Seq 1.5.0 or newer and report an older executable's rejection of the definition
+as an upgrade obstruction. An adapter whose token events Seq refuses (Pi returns
 `PiCumulativeTokenEventsUnavailable`) is an obstruction; report it rather than
 substituting another sum.
 
@@ -329,7 +331,7 @@ or a total other than input plus output) are invalid. A row without
 asserted usage (unanswered, or a response with no usage) is no-usage. A request
 whose `usage_finality` is `provisional` and that is the last request of its
 session may not have finished; it is reported without being counted even when
-its partial usage is incomplete. A provisional request followed by a later
+its partial usage is incomplete. A keyed provisional request followed by a later
 request in the same session has finished: its recorded usage counts, and it is
 reported as inferred final (older transcripts often record no stop reason, so
 without this rule their history would be silently undercounted). Its recorded
@@ -339,10 +341,10 @@ lower bound. Report `inferred_final_observation_count` with the totals. Unknown
 finality, usage not declared `usable`, or asserted but unreadable usage is
 missing core evidence, and a final, usable request without a key is unkeyed.
 Every other row
-is eligible. A row's class depends only on its own request evidence and on
-whether any later request, answered or not, follows it in the same session;
-per-request rows never enter cumulative accounting, even when they also carry
-running totals.
+is eligible. A row's class depends only on its own request evidence and, for a
+keyed request, on whether any later request, answered or not, follows it in the
+same session; a keyless row keeps its own class. Per-request rows never enter
+cumulative accounting, even when they also carry running totals.
 
 Ownership precedes these diagnostics. A row without a key cannot be matched to
 other rows of its request, so its own class applies; a declared `elsewhere` copy
@@ -355,8 +357,10 @@ whole read corpus. Every evidence row of a counted key that carries usage (the
 author's rows, or every row of an unowned key) must agree on usage; otherwise
 the key is ambiguous. The request counts when any of those rows shows it
 finished, and is reported as provisional or no-usage only when none does. A
-request's time is its earliest recorded timestamp, because a copy made on resume
-can carry a later one. A `--session-id`, `--path`, or `--repo`
+request's time is the earliest timestamp among those evidence rows in the read
+corpus, because a copy made on resume can carry a later one; when the original
+transcript is not in the read corpus, a re-stamped copy places the request at
+its copy time. A `--session-id`, `--path`, or `--repo`
 selection cannot read copies held elsewhere, so unowned keys leave ownership
 unresolved. An explicit `--root` is the whole read corpus for this rule, so
 totals from partial or overlapping roots of one adapter must not be added. Two
