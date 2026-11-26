@@ -476,6 +476,13 @@ try {
   expectRequests('provisional-incomplete', perRequest('provisional-incomplete', [[claudeId(21),
     [authored('msg_a', qa, 0), authored('msg_q', qb, 10, { final: false, dropOutput: true })]]]).result,
     { verdict: 'valid', request_count: 1, total_tokens: 50, provisional_observation_count: 1, missing_core_observation_count: 0 });
+  // Once a key has an author, other rows of that key are copies, whatever their own counters say.
+  for (const [label, extra] of [['unplaced', {}], ['unlinked', { linked: false }]]) {
+    expectRequests(`authored-key-bad-${label}-copy`, perRequest(`authored-key-bad-${label}-copy`, [
+      [claudeId(28), [authored('msg_k', qa, 0)]],
+      [claudeId(29), [copied('msg_k', claudeUsage(4, 0, 40, -1), 0, extra)]],
+    ]).result, { verdict: 'valid', request_count: 1, total_tokens: 50, replayed_observation_count: 1, invalid_observation_count: 0 });
+  }
   // Authorship comes from every keyed "here" row, whatever its class.
   expectRequests('provisional-author', perRequest('provisional-author', [
     [claudeId(24), [authored('msg_a', qb, 0), authored('msg_k', qa, 10, { final: false })]],

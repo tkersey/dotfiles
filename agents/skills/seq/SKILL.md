@@ -263,8 +263,10 @@ and every descendant Seq read, following `control_parent_session_id` and falling
 back to `parent_session_id` when no control parent is recorded. The control
 parent selects workers and the history parent records ancestry; they may differ
 legitimately. Which descendants Seq reads depends on the adapter and selector:
-Codex reads the selected lineage for either selector, a Claude `--session-id`
-also reads its linked workers, and a Claude `--path` reads only that transcript.
+Codex reads the selected lineage for either selector. With the Claude corpus
+selected (`--source claude-code` or a Claude `--root`; Seq's default corpus is
+Codex), a Claude `--session-id` also reads its linked workers, and a Claude
+`--path` reads only that transcript.
 Workers without recorded linkage are never included. Report worker inclusion
 from the sessions actually read (`corpus.sessions`), not from the selector. For
 an exact-session question, use a checked variant that selects only the seed
@@ -321,25 +323,29 @@ equality, removes replayed history.
 
 Each per-request row receives exactly one class, in this precedence. A copy
 (`request_record: elsewhere`) is replayed: it never owns usage and never affects
-the verdict. Impossible counters (a declared invalid quantity, negative cache
-writes, or cache reads plus writes above input) are invalid. A row without
-asserted usage (unanswered, or a response with no usage) is no-usage. An
-unfinished request is provisional, reported without being counted even when its
-partial usage is incomplete. Asserted but unreadable usage of a finished request
-is missing core evidence, and a finished, usable request without a key is
-unkeyed. Every other row is eligible. A row's class depends only on its own
-request quantity, and per-request rows never enter cumulative accounting, even
-when they also carry running totals.
+the verdict. Impossible counters (a declared invalid quantity, a negative
+counter, cache reads or reads plus writes above input, reasoning above output,
+or a total other than input plus output) are invalid. A row without
+asserted usage (unanswered, or a response with no usage) is no-usage. A request
+whose `usage_finality` is `provisional` has not finished; it is reported without
+being counted even when its partial usage is incomplete. Unknown finality, usage
+not declared `usable`, or asserted but unreadable usage is missing core
+evidence, and a final, usable request without a key is unkeyed. Every other row
+is eligible. A row's class depends only on its own request quantity, and
+per-request rows never enter cumulative accounting, even when they also carry
+running totals.
 
-Ownership comes from `request_record`. A `here` row proves its source issued the
-request, whatever that row's class: the author's own row decides whether the
-request counts, and copies elsewhere never substitute for it. A key with no
-`here` row (`unplaced` or null authorship) counts once only when the selection
-is the whole read corpus. A `--session-id`,
-`--path`, or `--repo` selection cannot read copies held elsewhere, so such keys
-leave ownership unresolved. Two sessions that both claim to have issued one key
-are unresolved. Copies of one key must agree on usage and timestamp; otherwise
-the key is ambiguous. Apply the time window to the owning record's timestamp.
+Ownership precedes these diagnostics. A row without a key cannot be a copy, so
+its own class applies. For a keyed request, a `here` row proves its source
+issued the request, whatever that row's class: the author's row decides the
+request's class, and every other row of that key is a copy, replayed and never
+counted or verdict-changing whatever its own counters say. A key with no `here`
+row (`unplaced` or null authorship) counts once only when the selection is the
+whole read corpus, and its copies must agree on class, usage, and timestamp;
+otherwise the key is ambiguous. A `--session-id`, `--path`, or `--repo`
+selection cannot read copies held elsewhere, so such keys leave ownership
+unresolved. Two sessions that both claim to have issued one key are unresolved.
+Apply the time window to the owning record's timestamp.
 
 Adapters differ only in the evidence they supply. Claude transcripts with
 request records mark `here`, `elsewhere`, or `unplaced`; older transcripts
