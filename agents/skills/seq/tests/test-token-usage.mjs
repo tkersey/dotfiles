@@ -383,6 +383,7 @@ try {
         rows.push({ type: 'api-request', id: `rq-${entry.key}`, sessionId: id, timestamp: claudeStamp(at + 1), querySource: 'sdk', requestDigest: `dg-${entry.key}`, version });
       }
       const message = { model: 'claude-test-model', type: 'message', role: 'assistant', id: entry.key, stop_reason: entry.final === false ? null : 'end_turn', stop_sequence: null, content: [{ type: 'text', text: 'Done.' }] };
+      if (entry.noMessageId) delete message.id;
       if (entry.usage) {
         const { input, read, write, output } = entry.usage;
         const counters = { input_tokens: input, cache_read_input_tokens: read, cache_creation_input_tokens: write, output_tokens: output };
@@ -494,6 +495,18 @@ try {
   // A response written as several content-block records is one request.
   expectRequests('multi-block', perRequest('multi-block', [[claudeId(33), [authored('msg_a', qa, 0, { blocks: 3 }), authored('msg_b', qb, 20)]]]).result,
     { verdict: 'valid', request_count: 2, total_tokens: 112, ambiguous_observation_count: 0, provisional_observation_count: 0 });
+  expectRequests('multi-block-unlinked', perRequest('multi-block-unlinked', [[claudeId(34), [authored('msg_a', qa, 0, { blocks: 3, linked: false })]]]).result,
+    { verdict: 'valid', request_count: 1, total_tokens: 50, ambiguous_observation_count: 0 });
+  // Ambiguity counts requests, not extra profiles.
+  expectRequests('three-disagreeing-copies', perRequest('three-disagreeing-copies', [
+    [claudeId(35), [copied('msg_v', qa, 0)]],
+    [claudeId(36), [copied('msg_v', qb, 0)]],
+    [claudeId(37), [copied('msg_v', qc, 0)]],
+  ]).result, { verdict: 'unavailable', total_tokens: null, ambiguous_observation_count: 1 });
+  // A keyless row that changes the verdict also reports unresolved time, as in cumulative accounting.
+  expectRequests('untimed-keyless-invalid', perRequest('untimed-keyless-invalid', [[claudeId(38), [authored('msg_a', qa, 0), authored('msg_z', qb, 10, { noMessageId: true, untimed: true })]]],
+    ['--since', claudeStamp(0)]).result,
+    { verdict: 'invalid', total_tokens: null, unresolved_time_observation_count: 1 });
   // In a bounded window, a missing timestamp blocks only a request that would count or change the verdict.
   expectRequests('untimed-no-usage', perRequest('untimed-no-usage', [[claudeId(30), [authored('msg_a', qa, 0), authored('msg_n', null, 10, { untimed: true })]]],
     ['--since', claudeStamp(0)]).result,

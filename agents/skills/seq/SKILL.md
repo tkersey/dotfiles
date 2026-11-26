@@ -2,7 +2,7 @@
 name: seq
 description: "Reconstruct bounded, provenance-preserving observations from supported native sessions and explicit input relations with Seq 1.x. Use for `$seq`, session, tool, and message forensics, token accounting, worker attribution, or historical evidence reports."
 metadata:
-  version: "2.4.0"
+  version: "3.0.0"
 ---
 
 # Seq
@@ -324,7 +324,7 @@ equality, removes replayed history.
 Each per-request row receives exactly one class, in this precedence. A copy
 (`request_record: elsewhere`) is replayed: it never owns usage and never affects
 the verdict. Impossible counters (a declared invalid quantity, a negative
-counter, cache reads or reads plus writes above input, reasoning above output,
+counter, cache reads, cache writes, or both above input, reasoning above output,
 or a total other than input plus output) are invalid. A row without
 asserted usage (unanswered, or a response with no usage) is no-usage. A request
 whose `usage_finality` is `provisional` has not finished; it is reported without
