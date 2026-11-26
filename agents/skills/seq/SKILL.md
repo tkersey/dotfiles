@@ -51,8 +51,8 @@ Codex session, and bind that ID to a definition's exclusion parameter.
 ### Claude Code
 
 Require `claude-code-transcript-jsonl/v1` in `source_adapters`. Select a
-transcript with `--path <session.jsonl>` or a known session directory with
-`--root`; do not feed
+transcript with `--path <session.jsonl>`, a known session directory with
+`--root`, or the default Claude corpus with `--source claude-code`; do not feed
 Claude transcripts to an executable that lacks the adapter. Resolve the actual
 configured source location; an encoded project directory name is not reliable
 repository identity. Explicit selection does not change the default Codex corpus.
@@ -346,7 +346,9 @@ whole read corpus. Every evidence row of a counted key (the author's rows, or
 every row of an unowned key) must agree on class, usage, and timestamp;
 otherwise the key is ambiguous. A `--session-id`, `--path`, or `--repo`
 selection cannot read copies held elsewhere, so unowned keys leave ownership
-unresolved. Two sessions that both claim to have issued one key are unresolved.
+unresolved. An explicit `--root` is the whole read corpus for this rule, so
+totals from partial or overlapping roots of one adapter must not be added. Two
+sessions that both claim to have issued one key are unresolved.
 Apply the time window to the owning record's timestamp. Ownership, agreement,
 and time are resolved only for a request that could count or change the verdict
 (eligible, invalid, or missing core evidence); a no-usage or provisional request

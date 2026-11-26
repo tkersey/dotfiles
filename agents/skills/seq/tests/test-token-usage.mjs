@@ -516,6 +516,12 @@ try {
     [claudeId(43), [authored('msg_a', qa, 0), authored('msg_d', null, 10)]],
     [claudeId(44), [authored('msg_d', null, 10)]],
   ]).result, { verdict: 'valid', request_count: 1, total_tokens: 50, unresolved_ownership_observation_count: 0 });
+  // Key-level diagnostics count every class a key's rows show, whatever their order.
+  expectRequests('mixed-non-counting-copies', perRequest('mixed-non-counting-copies', [
+    [claudeId(45), [authored('msg_a', qa, 0)]],
+    [claudeId(46), [copied('msg_m', qb, 10, { final: false })]],
+    [claudeId(47), [copied('msg_m', null, 10)]],
+  ]).result, { verdict: 'valid', request_count: 1, total_tokens: 50, provisional_observation_count: 1, no_usage_observation_count: 1 });
   // A keyless row that changes the verdict also reports unresolved time, as in cumulative accounting.
   expectRequests('untimed-keyless-invalid', perRequest('untimed-keyless-invalid', [[claudeId(38), [authored('msg_a', qa, 0), authored('msg_z', qb, 10, { noMessageId: true, untimed: true })]]],
     ['--since', claudeStamp(0)]).result,
