@@ -136,7 +136,7 @@
           "analysis forbids new semantic captures while automatic corpus preparation precedes projection without separate approval, subject to explicit file/custody-maintenance constraints",
           "current applicability and closure are derived from owner evidence; useful conditional arguments remain with existing owners, not a separate Actuating store",
           "direct source binding preserves outcomes, non-goals, scope, compatibility, migration, and deciding observations",
-          "source-fixed requirements remain distinct from proposed means and execution authority; consequential restrictions recover their accepted authority, while agent-selected boundaries remain revisable unless the source adopted them",
+          "source-fixed requirements remain distinct from proposed means and execution authority; consequential restrictions recover their accepted authority, while agent-selected boundaries remain revisable unless the source adopted them; a restriction whose authority cannot be recovered or whose adoption is unclear stays binding and is reported unresolved",
           "source revisions reclassify applicable evidence without erasing unresolved provenance",
           "adequate bindings reuse the Working Set and existing owner formats without a separate Goal Contract packet",
           "the next construction assignment preserves the source-required relationship, required-valid behavior, and deciding uncertainty through selection, delegation, resumption, and compaction",
@@ -154,7 +154,8 @@
           "a summary, digest, prior plan, or implementation broadens source authority",
           "an unobservable required law is silently waived or unrelated authorized work is blocked",
           "finding locations, proposed edits, or completed subtasks silently replace the broader source-required assignment",
-          "an unavailable capability or agent-selected restriction is promoted into a source non-goal, or reconsidering it silently grants additional effects or resources"
+          "an unavailable capability or agent-selected restriction is promoted into a source non-goal, or reconsidering it silently grants additional effects or resources",
+          "a restriction whose authority cannot be recovered is presumed agent-selected and revised"
         ],
         "rationale": "Evidence ownership is not transferred by a packet or workflow label."
       },
@@ -176,6 +177,7 @@
         ],
         "success_signals": [
           "initial implementation may mutate without review dispatch",
+          "existing evidence may inform implementation without opening review",
           "initial work enters the canonical construction decision directly from the Goal; substantive returns use the same decision without requiring a finding, advance alternative, completed diagnosis, or review dispatch",
           "local completion needs no review convergence or publication",
           "required relationships preserve authoritative facts, derived projections, and independently retained history",
@@ -552,7 +554,7 @@
           "a defect the simulator cannot be extended to express receives the ordinary control and leaves that law's simulation evidence unresolved, blocking dependent reviewability and completion until the simulator expresses it or the user accepts the gap",
           "the pre-epoch screen observes the complete patch, records screen_disposition, binds its exact head, opens no epoch, and earns no credit; the initial inventory and five-clean convergence are unchanged; a summary-only patch observation holds every changeset standard",
           "recurring sequence- or trace-dependent findings calibrate the applicable simulator or property-test generator and oracle; pure software is reclassified only when evidence establishes a previously missed stateful or concurrent property",
-          "candidate-invalidating screen returns count toward construction progress while observation-only holds retain recovery history and applicable causal triggers; neither counts as a review epoch or earns review credit",
+          "candidate-invalidating screen returns count toward construction progress while observation-only holds retain recovery history and applicable causal triggers; neither counts as a review epoch or earns review credit; each hold basis states whether an admitted finding invalidated the candidate",
           "analyze classifies and judges against these rules without building, extending, or running mutating controls",
           "an observation-only hold requires evidence recovery rather than successor mutation; findings independently supported by partial inquiry still undergo admission on their own evidence"
         ],

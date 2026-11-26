@@ -20,9 +20,10 @@ broaden source authority.
 
 When a restriction excludes a material alternative, recover its accepted authority.
 An agent-selected boundary remains revisable unless the accepted source adopted
-it. An unavailable capability constrains current execution; it does not make an
-authorized capability change inadmissible. Reconsidering a restriction grants no
-additional effects or resources.
+it. When that authority cannot be recovered or adoption is unclear, keep the
+restriction binding and report it as unresolved. An unavailable capability
+constrains current execution; it does not make an authorized capability change
+inadmissible. Reconsidering a restriction grants no additional effects or resources.
 
 Keep semantic requirements distinct from execution authority. Bind mutation,
 validation, publication, and review posture to the accepted source and selected
@@ -50,15 +51,17 @@ including accepted findings, failed verification, screens, closed review epochs,
 and changed source evidence. Recover the source-bound assignment and full applicable
 evidence through the [Working Set](#construction-working-set); use the
 [progress assessment](recurrence.md#progress-before-another-iteration) when its
-triggers apply. Each entry route retains its admission, recovery, and freeze rules.
+triggers apply. Each entry route retains its evidence, admission, recovery, freeze,
+and review-credit rules.
 No finding, advance alternative, or completed diagnosis is required to begin.
 
 Treat the incumbent and proposed remedies as candidates, not requirements.
 Representations, algorithms, operation boundaries, decomposition, and agent-selected
 restrictions remain design variables wherever the [source permits](#source-binding).
-Keep required observations and effect authority fixed; revise model-owned
-assumptions or evaluation methods from evidence, never expectations merely to agree
-with a candidate. A liability establishes a required discrepancy, not its remedy.
+Keep the accepted Goal, required observations, and effect authority fixed; revise
+model-owned assumptions or evaluation methods from evidence, never expectations
+merely to agree with a candidate. A liability establishes a required discrepancy,
+not its remedy.
 
 Decide correctness liability and construction opportunity separately. Rejecting an
 allegation does not erase independently supported evidence useful to authorized

@@ -38,7 +38,9 @@ Adjudicate the screen with the
 [Review-credit admission](references/review-contract.md#review-credit-admission)
 predicate, but record `screen_disposition: pass | hold` with its basis, never
 `credit_disposition`; no standard count, obligation, or completion statement reads
-it as review credit. The screen must observe the complete base-to-head patch. A
+it as review credit. A `hold` basis states whether an admitted finding invalidated
+the candidate; any other hold is observation-only. The screen must observe the
+complete base-to-head patch. A
 changeset standard
 whose evidence shows only a summary, such as `--stat` output or recent commit
 messages, has missed its assigned inquiry; that holds the screen and every epoch

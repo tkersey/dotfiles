@@ -23,8 +23,8 @@ const section = (source, heading) => {
   return source.split('## ' + heading + '\n')[1].split('\n## ')[0];
 };
 const coreHashes = {
-  'Source binding': '0ce580c9d1999f6f65d90044e7e053e75c6379dfb97e09178d37c2cbbd0a8b4d',
-  'Construction decision': '34f6441feb19645295c81e388ee1dbb99a18ee7e8977a5718a8275dfab8dadf7',
+  'Source binding': '660e5ed6a07454e5559ceb583b62137f66d52ef94558018f9e6b111e7a3c2518',
+  'Construction decision': '5fbb1a428ddb8b0a5e690db25a561efd22e7154bb7d0b36840149230f8ba1322',
   'Proof acceptance': '8cefa9c1e82aa83b5c54737a9bbcb77d70d1442c916f434473d22679b82b0fc9',
   'Comments in code': '9dfab826dd63fbdd4ac448cbf0d7c690edef00145282604d9f0737c39edc39bf',
   'Realization and common proof obligations': '8f782e151a2c48cca2da1506830376ad597b689fde6985014f30c466f87be6e3',
@@ -97,9 +97,9 @@ function check(src) {
     `unrouted construction decision: ${path} / ${heading}`);
   for (const [heading, digest] of Object.entries(reviewHashes))
     assert.equal(hash(section(review, heading)), digest, heading);
-  // Pin the authorized construction-return routing; the epoch, supersession,
-  // and convergence sections stay hash-protected in test-composition-contract.sh.
-  assert.equal(blob(src['review-closeout.md']), 'cc9d37aeb3c85e85546a8a210fc0b8d11359790c');
+  // Pin the authorized construction-return routing and screen-hold basis; the epoch,
+  // supersession, and convergence sections stay hash-protected in test-composition-contract.sh.
+  assert.equal(blob(src['review-closeout.md']), '70cbd17719fa6bd7d10451d6f57c05f7e6c48d67');
   assert.equal(blob(src['references/review-contract.json']), '919c8710140dd784fb841ae1df6819b699555aca');
   for (const route of ['(construction.md#construction-rules)',
     '(construction.md#simulation-first-correctness)',

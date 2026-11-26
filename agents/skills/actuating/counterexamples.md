@@ -62,7 +62,8 @@ requirement, compatibility promise, or release posture needs explicit authority.
 ## Compile the first loss of guarantee
 
 Return through the [construction decision](construction.md#construction-decision)
-from the full admitted basis. Carry every admitted liability into the root's
+from the full admitted basis. Combine current and applicable historical witnesses
+under the source-required law. Carry every admitted liability into the root's
 [automatic construction reconsideration](SKILL.md#mission). Reuse inquiry
 across witnesses only when the same supported causal mechanism covers them; account
 for each new witness and reopen the explanation when it adds a causal distinction.

@@ -80,12 +80,15 @@ read them when a binding, audit, or evaluation needs them.
 
 ## Construction selection
 
-Initial work and substantive returns from verification, screens, closed epochs,
-or changed source evidence use one [construction decision](construction.md#construction-decision).
+Initial work and substantive returns from accepted findings, failed verification,
+screens, closed epochs, or changed source evidence use one
+[construction decision](construction.md#construction-decision).
 Recover the [assignment](construction.md#construction-working-set) and material
 [attempt history](recurrence.md#progress-before-another-iteration) before selecting
-a successor. Specialized routes retain their evidence, admission, recovery, and
-review-credit rules; none prescribes the patch or grants new effect authority.
+a successor; missing narration alone does not require repeating an adequate
+execution or argument. Specialized routes retain their evidence, admission,
+recovery, freeze, and review-credit rules; none prescribes the patch or grants new
+effect authority.
 
 ## Section links
 

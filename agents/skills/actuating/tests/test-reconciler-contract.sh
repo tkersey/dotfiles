@@ -342,7 +342,7 @@ assert(rootStep.includes('Reuse applicable findings rather than reinjecting the 
 assert(rootStep.includes('Encouragement changes neither admissibility nor the proof bar'));
 assert(rootStep.includes('Add no separate Glaze report or adjudication stage'));
 assert(text('construction.md').includes('No fixed order of'));
-assert(constructionDecision.includes('Keep required observations and effect authority fixed'));
+assert(constructionDecision.includes('Keep the accepted Goal, required observations, and effect authority fixed'));
 assert(rootStep.includes('Use `$universalist` within initial construction or subsequent task-relevant semantic inquiry'));
 assert(rootStep.includes('An unknown owner or typed hole is investigable, not an admission failure'));
 assert(rootStep.includes('mechanical realization alone needs no renewed invocation'));
