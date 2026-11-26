@@ -545,10 +545,23 @@ try {
     [claudeId(26), [authored('msg_d', qa, 0)]],
     [claudeId(27), [authored('msg_d', qa, 0, { final: false })]],
   ]).result, { verdict: 'unavailable', total_tokens: null, unresolved_ownership_observation_count: 1 });
-  expectRequests('copies-disagree-on-time', perRequest('copies-disagree-on-time', [
+  // A copy made on resume can carry a later timestamp: the request's time is its earliest record.
+  const restamped = [
     [claudeId(22), [copied('msg_t', qa, 0)]],
     [claudeId(23), [copied('msg_t', qa, 30)]],
-  ]).result, { verdict: 'unavailable', total_tokens: null, ambiguous_observation_count: 1 });
+    [claudeId(48), [authored('msg_a', qb, 60)]],
+  ];
+  expectRequests('restamped-copies', perRequest('restamped-copies', restamped).result,
+    { verdict: 'valid', request_count: 2, total_tokens: 112, ambiguous_observation_count: 0 });
+  expectRequests('restamped-copies-window', perRequest('restamped-copies-window', restamped, ['--since', claudeStamp(20)]).result,
+    { verdict: 'valid', request_count: 1, total_tokens: 62 });
+  // A provisional request followed by a later request in its session has finished.
+  expectRequests('superseded-provisional', perRequest('superseded-provisional', [[claudeId(49), [authored('msg_q', qb, 0, { final: false }), authored('msg_a', qa, 10)]]]).result,
+    { verdict: 'valid', request_count: 2, total_tokens: 112, inferred_final_observation_count: 1, provisional_observation_count: 0 });
+  expectRequests('resumed-copy-finishes-provisional', perRequest('resumed-copy-finishes-provisional', [
+    [claudeId(50), [copied('msg_x', qa, 0, { final: false, linked: false })]],
+    [claudeId(51), [copied('msg_x', qa, 0, { final: false, linked: false }), copied('msg_y', qb, 30, { linked: false })]],
+  ]).result, { verdict: 'valid', request_count: 2, total_tokens: 112, inferred_final_observation_count: 1, provisional_observation_count: 0, ambiguous_observation_count: 0 });
 
   expectRequests('provisional', perRequest('provisional', [[claudeId(10), [authored('msg_a', qa, 0), authored('msg_q', qb, 10, { final: false })]]]).result,
     { verdict: 'valid', request_count: 1, total_tokens: 50, provisional_observation_count: 1 });

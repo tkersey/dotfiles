@@ -327,8 +327,13 @@ the verdict. Impossible counters (a declared invalid quantity, a negative
 counter, cache reads, cache writes, or both above input, reasoning above output,
 or a total other than input plus output) are invalid. A row without
 asserted usage (unanswered, or a response with no usage) is no-usage. A request
-whose `usage_finality` is `provisional` has not finished; it is reported without
-being counted even when its partial usage is incomplete. Unknown finality, usage
+whose `usage_finality` is `provisional` and that is the last request of its
+session may not have finished; it is reported without being counted even when
+its partial usage is incomplete. A provisional request followed by a later
+request in the same session has finished: its recorded usage counts, and it is
+reported as inferred final (older transcripts often record no stop reason, so
+without this rule their history would be silently undercounted). Unknown
+finality, usage
 not declared `usable`, or asserted but unreadable usage is missing core
 evidence, and a final, usable request without a key is unkeyed. Every other row
 is eligible. A row's class depends only on its own request quantity, and
@@ -342,17 +347,21 @@ request, whatever that row's class: the author's rows decide the request's
 class, and every other row of that key is a copy, replayed and never counted or
 verdict-changing whatever its own counters say. A key with no `here` row
 (`unplaced` or null authorship) counts once only when the selection is the
-whole read corpus. Every evidence row of a counted key (the author's rows, or
-every row of an unowned key) must agree on class, usage, and timestamp;
-otherwise the key is ambiguous. A `--session-id`, `--path`, or `--repo`
+whole read corpus. Every evidence row of a counted key that carries usage (the
+author's rows, or every row of an unowned key) must agree on usage; otherwise
+the key is ambiguous. The request counts when any of those rows shows it
+finished, and is reported as provisional or no-usage only when none does. A
+request's time is its earliest recorded timestamp, because a copy made on resume
+can carry a later one. A `--session-id`, `--path`, or `--repo`
 selection cannot read copies held elsewhere, so unowned keys leave ownership
 unresolved. An explicit `--root` is the whole read corpus for this rule, so
 totals from partial or overlapping roots of one adapter must not be added. Two
 sessions that both claim to have issued one key are unresolved.
-Apply the time window to the owning record's timestamp. Ownership, agreement,
-and time are resolved only for a request that could count or change the verdict
-(eligible, invalid, or missing core evidence); a no-usage or provisional request
-is reported without ever making the result unavailable. In a bounded window, a
+Apply the time window to the request's time, not to each copy. Ownership,
+agreement, and time are resolved only for a request that could count or change
+the verdict (eligible, invalid, or missing core evidence); a no-usage or
+provisional request is reported without ever making the result unavailable.
+In a bounded window, a
 missing timestamp leaves time unresolved for a request that would count or
 change the verdict, while a no-usage request is reported as unplaced, as in
 cumulative accounting.
