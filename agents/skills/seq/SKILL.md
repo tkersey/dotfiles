@@ -233,9 +233,9 @@ evidence it carries, never by adapter name: rows asserting cumulative totals use
 cumulative lineage accounting, and rows declaring `usage_model: "per-request"`
 use per-request accounting. Both feed one result:
 `usage_count = transition_count + request_count`, shared totals, one verdict, and
-`usage_scope: "observed-owned-usage"`. An executable that refuses an adapter's
-token events (older Seq returns `PiCumulativeTokenEventsUnavailable` for Pi) is
-an obstruction; upgrade it rather than substituting another sum.
+`usage_scope: "observed-owned-usage"`. An adapter whose token events Seq refuses
+(Pi returns `PiCumulativeTokenEventsUnavailable`) is an obstruction; report it
+rather than substituting another sum.
 
 Every accounting model reports the same quantities. `input_tokens` includes
 cache reads and cache writes, `cached_input_tokens` is cache reads,
@@ -328,10 +328,7 @@ invalid. Apply the time window to the owning record's timestamp.
 
 Adapters differ only in the evidence they supply. Claude transcripts with
 request records mark `here`, `elsewhere`, or `unplaced`; older transcripts
-without them leave authorship null. Pi records no request authorship, so Pi
-totals are available for a whole-corpus selection but not for a session, path,
-or repository selection. Compaction and summary usage is not a request and
-produces no request row.
+without them leave authorship null.
 
 ```bash
 seq_definition_root="$seq_skill_root/definitions/seq"
@@ -344,7 +341,7 @@ seq observe \
   --format json
 ```
 
-`--source codex|claude-code|pi` selects that adapter's default root; Seq's
+`--source codex|claude-code` selects that adapter's default root; Seq's
 default without one is the Codex corpus, which includes both default Codex
 directories. Replace these example bounds with the requested window and its
 actual timezone offsets. An explicit root must contain every relevant session

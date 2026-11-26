@@ -489,32 +489,6 @@ try {
     { verdict: 'unavailable', total_tokens: null, unresolved_ownership_observation_count: 1 });
   expectRequests('root-unplaced', observe(['--root', repoRoot]), { verdict: 'valid', request_count: 3, total_tokens: 184 });
 
-  // Per-request accounting (Pi sessions): Pi records no request-side authorship, so a forked or imported
-  // copy keeps its key; corpus totals deduplicate by key while narrowed selections stay unresolved.
-  const piRoot = join(temporary, 'pi');
-  const piEntry = (id, second, usage, extra = {}) => ({ type: 'message', id, parentId: null, timestamp: `2026-11-01T10:00:${String(second).padStart(2, '0')}Z`,
-    message: { role: 'assistant', content: [{ type: 'text', text: 'Done.' }], provider: 'fixture', model: 'fixture-model', usage, stopReason: 'stop', ...extra } });
-  const piUsage = (input, output, cacheRead, cacheWrite) => ({ input, output, cacheRead, cacheWrite, totalTokens: input + output + cacheRead + cacheWrite });
-  function piSession(name, entries, header = {}) {
-    mkdirSync(piRoot, { recursive: true });
-    const path = join(piRoot, `${name}.jsonl`);
-    const rows = [{ type: 'session', version: 3, id: name, timestamp: '2026-11-01T10:00:00Z', cwd: '/pi-fixture', ...header }, ...entries];
-    writeFileSync(path, rows.map(row => JSON.stringify(row)).join('\n') + '\n');
-    return path;
-  }
-  const piOriginal = piSession('pi-original', [piEntry('p1', 1, piUsage(10, 4, 2, 3)), piEntry('p2', 2, piUsage(20, 5, 0, 0))]);
-  piSession('pi-fork', [piEntry('p1', 1, piUsage(10, 4, 2, 3)), piEntry('f1', 9, piUsage(30, 6, 0, 0))], { parentSession: piOriginal });
-  const piProbe = spawnSync(binary, ['observe', '--definition', definition, '--projection', 'summary', '--format', 'json', '--root', piRoot], { env, encoding: 'utf8', timeout: 15000 });
-  const piError = piProbe.status === 0 ? null : JSON.parse(piProbe.stdout).code;
-  if (piError === 'PiCumulativeTokenEventsUnavailable') {
-    console.log('Skipped Pi per-request cases: this Seq does not emit Pi token events.');
-  } else {
-    expectRequests('pi-corpus', observe(['--root', piRoot]),
-      { verdict: 'valid', request_count: 3, input_tokens: 15 + 20 + 30, cached_input_tokens: 2, cache_creation_input_tokens: 3, output_tokens: 15, total_tokens: 80 });
-    expectRequests('pi-window', observe(['--root', piRoot, '--since', '2026-11-01T10:00:05Z']), { verdict: 'valid', request_count: 1, total_tokens: 36 });
-    expectRequests('pi-path', observe(['--path', piOriginal]), { verdict: 'unavailable', total_tokens: null, unresolved_ownership_observation_count: 2 });
-  }
-
   const codexOnly = observe(['--root', tree]);
   assert.equal(codexOnly.cache_creation_input_tokens, null, 'cumulative counters do not report cache writes; unknown is not zero');
   assert.equal(codexOnly.request_count, 0);
