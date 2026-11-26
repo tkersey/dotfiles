@@ -264,8 +264,74 @@
                   {
                     "op": "or",
                     "args": [
-                      {"op":"coalesce","args":[{"op":"eq","args":[{"field":"quantity_state"},"invalid"]},false]},
-                      {"op":"and","args":[{"op":"not","args":[{"op":"is-null","args":[{"field":"cache_creation_input_tokens"}]}]},{"op":"lt","args":[{"field":"cache_creation_input_tokens"},0]}]}
+                      {
+                        "op": "or",
+                        "args": [
+                          {
+                            "op": "or",
+                            "args": [
+                              {
+                                "op": "or",
+                                "args": [
+                                  {
+                                    "op": "or",
+                                    "args": [
+                                      {
+                                        "op": "or",
+                                        "args": [
+                                          {
+                                            "op": "or",
+                                            "args": [
+                                              {
+                                                "op": "or",
+                                                "args": [
+                                                  {
+                                                    "op": "or",
+                                                    "args": [
+                                                      {"op":"coalesce","args":[{"op":"eq","args":[{"field":"quantity_state"},"invalid"]},false]},
+                                                      {"op":"and","args":[{"op":"not","args":[{"op":"is-null","args":[{"field":"last_input_tokens"}]}]},{"op":"lt","args":[{"field":"last_input_tokens"},0]}]}
+                                                    ]
+                                                  },
+                                                  {"op":"and","args":[{"op":"not","args":[{"op":"is-null","args":[{"field":"last_cached_input_tokens"}]}]},{"op":"lt","args":[{"field":"last_cached_input_tokens"},0]}]}
+                                                ]
+                                              },
+                                              {
+                                                "op": "and",
+                                                "args": [
+                                                  {"op":"not","args":[{"op":"is-null","args":[{"field":"cache_creation_input_tokens"}]}]},
+                                                  {"op":"lt","args":[{"field":"cache_creation_input_tokens"},0]}
+                                                ]
+                                              }
+                                            ]
+                                          },
+                                          {"op":"and","args":[{"op":"not","args":[{"op":"is-null","args":[{"field":"last_output_tokens"}]}]},{"op":"lt","args":[{"field":"last_output_tokens"},0]}]}
+                                        ]
+                                      },
+                                      {"op":"and","args":[{"op":"not","args":[{"op":"is-null","args":[{"field":"last_reasoning_output_tokens"}]}]},{"op":"lt","args":[{"field":"last_reasoning_output_tokens"},0]}]}
+                                    ]
+                                  },
+                                  {"op":"and","args":[{"op":"not","args":[{"op":"is-null","args":[{"field":"last_total_tokens"}]}]},{"op":"lt","args":[{"field":"last_total_tokens"},0]}]}
+                                ]
+                              },
+                              {"op":"and","args":[{"op":"and","args":[{"op":"not","args":[{"op":"is-null","args":[{"field":"last_cached_input_tokens"}]}]},{"op":"not","args":[{"op":"is-null","args":[{"field":"last_input_tokens"}]}]}]},{"op":"gt","args":[{"field":"last_cached_input_tokens"},{"field":"last_input_tokens"}]}]}
+                            ]
+                          },
+                          {
+                            "op": "and",
+                            "args": [
+                              {
+                                "op": "and",
+                                "args": [
+                                  {"op":"not","args":[{"op":"is-null","args":[{"op":"add","args":[{"field":"last_cached_input_tokens"},{"field":"cache_creation_input_tokens"}]}]}]},
+                                  {"op":"not","args":[{"op":"is-null","args":[{"field":"last_input_tokens"}]}]}
+                                ]
+                              },
+                              {"op":"gt","args":[{"op":"add","args":[{"field":"last_cached_input_tokens"},{"field":"cache_creation_input_tokens"}]},{"field":"last_input_tokens"}]}
+                            ]
+                          }
+                        ]
+                      },
+                      {"op":"and","args":[{"op":"and","args":[{"op":"not","args":[{"op":"is-null","args":[{"field":"last_reasoning_output_tokens"}]}]},{"op":"not","args":[{"op":"is-null","args":[{"field":"last_output_tokens"}]}]}]},{"op":"gt","args":[{"field":"last_reasoning_output_tokens"},{"field":"last_output_tokens"}]}]}
                     ]
                   },
                   {
@@ -276,15 +342,12 @@
                         "args": [
                           {
                             "op": "and",
-                            "args": [
-                              {"op":"not","args":[{"op":"is-null","args":[{"field":"cache_creation_input_tokens"}]}]},
-                              {"op":"not","args":[{"op":"is-null","args":[{"field":"last_cached_input_tokens"}]}]}
-                            ]
+                            "args": [{"op":"not","args":[{"op":"is-null","args":[{"field":"last_input_tokens"}]}]},{"op":"not","args":[{"op":"is-null","args":[{"field":"last_output_tokens"}]}]}]
                           },
-                          {"op":"not","args":[{"op":"is-null","args":[{"field":"last_input_tokens"}]}]}
+                          {"op":"not","args":[{"op":"is-null","args":[{"field":"last_total_tokens"}]}]}
                         ]
                       },
-                      {"op":"gt","args":[{"op":"add","args":[{"field":"last_cached_input_tokens"},{"field":"cache_creation_input_tokens"}]},{"field":"last_input_tokens"}]}
+                      {"op":"ne","args":[{"op":"subtract","args":[{"field":"last_total_tokens"},{"field":"last_input_tokens"}]},{"field":"last_output_tokens"}]}
                     ]
                   }
                 ]
@@ -304,10 +367,10 @@
       "transitions": [{"state":"previous_input_tokens","expr":{"op":"if","args":[{"op":"and","args":[{"op":"or","args":[{"field":"has_total_usage"},{"field":"has_last_usage"}]},{"op":"not","args":[{"field":"per_request"}]}]},{"op":"if","args":[{"op":"and","args":[{"op":"and","args":[{"field":"complete_core"},{"field":"complete_details"}]},{"op":"not","args":[{"field":"invalid_tuple"}]}]},{"field":"total_input_tokens"},null]},{"state":"previous_input_tokens"}]}},{"state":"previous_cached_input_tokens","expr":{"op":"if","args":[{"op":"and","args":[{"op":"or","args":[{"field":"has_total_usage"},{"field":"has_last_usage"}]},{"op":"not","args":[{"field":"per_request"}]}]},{"op":"if","args":[{"op":"and","args":[{"op":"and","args":[{"field":"complete_core"},{"field":"complete_details"}]},{"op":"not","args":[{"field":"invalid_tuple"}]}]},{"field":"total_cached_input_tokens"},null]},{"state":"previous_cached_input_tokens"}]}},{"state":"previous_output_tokens","expr":{"op":"if","args":[{"op":"and","args":[{"op":"or","args":[{"field":"has_total_usage"},{"field":"has_last_usage"}]},{"op":"not","args":[{"field":"per_request"}]}]},{"op":"if","args":[{"op":"and","args":[{"op":"and","args":[{"field":"complete_core"},{"field":"complete_details"}]},{"op":"not","args":[{"field":"invalid_tuple"}]}]},{"field":"total_output_tokens"},null]},{"state":"previous_output_tokens"}]}},{"state":"previous_reasoning_output_tokens","expr":{"op":"if","args":[{"op":"and","args":[{"op":"or","args":[{"field":"has_total_usage"},{"field":"has_last_usage"}]},{"op":"not","args":[{"field":"per_request"}]}]},{"op":"if","args":[{"op":"and","args":[{"op":"and","args":[{"field":"complete_core"},{"field":"complete_details"}]},{"op":"not","args":[{"field":"invalid_tuple"}]}]},{"field":"total_reasoning_output_tokens"},null]},{"state":"previous_reasoning_output_tokens"}]}},{"state":"previous_total_tokens","expr":{"op":"if","args":[{"op":"and","args":[{"op":"or","args":[{"field":"has_total_usage"},{"field":"has_last_usage"}]},{"op":"not","args":[{"field":"per_request"}]}]},{"op":"if","args":[{"op":"and","args":[{"op":"and","args":[{"field":"complete_core"},{"field":"complete_details"}]},{"op":"not","args":[{"field":"invalid_tuple"}]}]},{"field":"total_total_tokens"},null]},{"state":"previous_total_tokens"}]}},{"state":"progress_proven","expr":{"op":"and","args":[{"op":"and","args":[{"op":"and","args":[{"op":"and","args":[{"op":"and","args":[{"op":"and","args":[{"op":"and","args":[{"field":"complete_core"},{"field":"complete_details"}]},{"op":"not","args":[{"field":"invalid_tuple"}]}]},{"op":"and","args":[{"op":"not","args":[{"op":"is-null","args":[{"state":"previous_input_tokens"}]}]},{"op":"eq","args":[{"op":"subtract","args":[{"field":"total_input_tokens"},{"field":"last_input_tokens"}]},{"state":"previous_input_tokens"}]}]}]},{"op":"and","args":[{"op":"not","args":[{"op":"is-null","args":[{"state":"previous_cached_input_tokens"}]}]},{"op":"eq","args":[{"op":"subtract","args":[{"field":"total_cached_input_tokens"},{"field":"last_cached_input_tokens"}]},{"state":"previous_cached_input_tokens"}]}]}]},{"op":"and","args":[{"op":"not","args":[{"op":"is-null","args":[{"state":"previous_output_tokens"}]}]},{"op":"eq","args":[{"op":"subtract","args":[{"field":"total_output_tokens"},{"field":"last_output_tokens"}]},{"state":"previous_output_tokens"}]}]}]},{"op":"and","args":[{"op":"not","args":[{"op":"is-null","args":[{"state":"previous_reasoning_output_tokens"}]}]},{"op":"eq","args":[{"op":"subtract","args":[{"field":"total_reasoning_output_tokens"},{"field":"last_reasoning_output_tokens"}]},{"state":"previous_reasoning_output_tokens"}]}]}]},{"op":"and","args":[{"op":"not","args":[{"op":"is-null","args":[{"state":"previous_total_tokens"}]}]},{"op":"eq","args":[{"op":"subtract","args":[{"field":"total_total_tokens"},{"field":"last_total_tokens"}]},{"state":"previous_total_tokens"}]}]}]}}],
       "emit": [{"name":"session_id","type":"string","nullable":true,"expr":{"field":"session_id"}},{"name":"timestamp_ms","type":"integer","nullable":true,"expr":{"field":"timestamp_ms"}},{"name":"source_ordinal","type":"integer","nullable":false,"expr":{"field":"source_ordinal"}},{"name":"has_total_usage","type":"boolean","nullable":false,"expr":{"field":"has_total_usage"}},{"name":"has_last_usage","type":"boolean","nullable":false,"expr":{"field":"has_last_usage"}},{"name":"total_input_tokens","type":"integer","nullable":true,"expr":{"field":"total_input_tokens"}},{"name":"total_cached_input_tokens","type":"integer","nullable":true,"expr":{"field":"total_cached_input_tokens"}},{"name":"total_output_tokens","type":"integer","nullable":true,"expr":{"field":"total_output_tokens"}},{"name":"total_reasoning_output_tokens","type":"integer","nullable":true,"expr":{"field":"total_reasoning_output_tokens"}},{"name":"total_total_tokens","type":"integer","nullable":true,"expr":{"field":"total_total_tokens"}},{"name":"last_input_tokens","type":"integer","nullable":true,"expr":{"field":"last_input_tokens"}},{"name":"last_cached_input_tokens","type":"integer","nullable":true,"expr":{"field":"last_cached_input_tokens"}},{"name":"last_output_tokens","type":"integer","nullable":true,"expr":{"field":"last_output_tokens"}},{"name":"last_reasoning_output_tokens","type":"integer","nullable":true,"expr":{"field":"last_reasoning_output_tokens"}},{"name":"last_total_tokens","type":"integer","nullable":true,"expr":{"field":"last_total_tokens"}},{"name":"persisted_ordinal","type":"integer","nullable":true,"expr":{"field":"persisted_ordinal"}},{"name":"subagent_history_start_ordinal","type":"integer","nullable":true,"expr":{"field":"subagent_history_start_ordinal"}},{"name":"parent_session_id","type":"string","nullable":true,"expr":{"field":"parent_session_id"}},{"name":"unanchored_ordinal","type":"integer","nullable":false,"expr":{"field":"unanchored_ordinal"}},{"name":"invalid_tuple","type":"boolean","nullable":false,"expr":{"field":"invalid_tuple"}},{"name":"complete_core","type":"boolean","nullable":false,"expr":{"field":"complete_core"}},{"name":"complete_details","type":"boolean","nullable":false,"expr":{"field":"complete_details"}},{"name":"progress_proven","type":"boolean","nullable":false,"expr":{"state":"progress_proven"}},{"name":"per_request","type":"boolean","nullable":false,"expr":{"field":"per_request"}},{"name":"request_key","type":"string","nullable":true,"expr":{"field":"request_key"}},{"name":"request_record","type":"string","nullable":true,"expr":{"field":"request_record"}},{"name":"usage_finality","type":"string","nullable":true,"expr":{"field":"usage_finality"}},{"name":"quantity_state","type":"string","nullable":true,"expr":{"field":"quantity_state"}},{"name":"cache_creation_input_tokens","type":"integer","nullable":true,"expr":{"field":"cache_creation_input_tokens"}},{"name":"request_invalid","type":"boolean","nullable":false,"expr":{"field":"request_invalid"}}]
     },
-    {"op":"distinct","input":"progress_rows","as":"unique_rows","keys":["session_id","has_total_usage","has_last_usage","total_input_tokens","total_cached_input_tokens","total_output_tokens","total_reasoning_output_tokens","total_total_tokens","last_input_tokens","last_cached_input_tokens","last_output_tokens","last_reasoning_output_tokens","last_total_tokens","unanchored_ordinal"]},
-    {"op":"distinct","input":"unique_rows","as":"first_total_rows","keys":["session_id","has_total_usage","has_last_usage","total_input_tokens","total_output_tokens","total_total_tokens","unanchored_ordinal"]},
+    {"op":"distinct","input":"progress_rows","as":"unique_rows","keys":["session_id","has_total_usage","has_last_usage","total_input_tokens","total_cached_input_tokens","total_output_tokens","total_reasoning_output_tokens","total_total_tokens","last_input_tokens","last_cached_input_tokens","last_output_tokens","last_reasoning_output_tokens","last_total_tokens","unanchored_ordinal","request_key"]},
+    {"op":"distinct","input":"unique_rows","as":"first_total_rows","keys":["session_id","has_total_usage","has_last_usage","total_input_tokens","total_output_tokens","total_total_tokens","unanchored_ordinal","request_key"]},
     {"op":"filter","input":"unique_rows","as":"invalid_rows","where":[{"field":"invalid_tuple","op":"exact","value":true}]},
-    {"op":"distinct","input":"invalid_rows","as":"invalid_totals","keys":["session_id","has_total_usage","has_last_usage","total_input_tokens","total_output_tokens","total_total_tokens","unanchored_ordinal"]},
+    {"op":"distinct","input":"invalid_rows","as":"invalid_totals","keys":["session_id","has_total_usage","has_last_usage","total_input_tokens","total_output_tokens","total_total_tokens","unanchored_ordinal","request_key"]},
     {
       "op": "join",
       "inputs": ["unique_rows","first_total_rows"],
@@ -322,7 +385,8 @@
           {"left":"total_output_tokens","right":"total_output_tokens","nulls_equal":true},
           {"left":"total_total_tokens","right":"total_total_tokens","nulls_equal":true},
           {"left":"unanchored_ordinal","right":"unanchored_ordinal","nulls_equal":true},
-          {"left":"source_ordinal","right":"source_ordinal","op":"gt"}
+          {"left":"source_ordinal","right":"source_ordinal","op":"gt"},
+          {"left":"request_key","right":"request_key","nulls_equal":true}
         ]
       },
       "fields": [
@@ -358,7 +422,7 @@
         {"source":0,"field":"request_invalid","name":"request_invalid","type":"boolean","nullable":false}
       ]
     },
-    {"op":"distinct","input":"variant_rows","as":"ambiguous_totals","keys":["session_id","has_total_usage","has_last_usage","total_input_tokens","total_output_tokens","total_total_tokens","unanchored_ordinal"]},
+    {"op":"distinct","input":"variant_rows","as":"ambiguous_totals","keys":["session_id","has_total_usage","has_last_usage","total_input_tokens","total_output_tokens","total_total_tokens","unanchored_ordinal","request_key"]},
     {
       "op": "join",
       "inputs": ["first_total_rows","invalid_totals"],
@@ -372,7 +436,8 @@
           {"left":"total_input_tokens","right":"total_input_tokens","nulls_equal":true},
           {"left":"total_output_tokens","right":"total_output_tokens","nulls_equal":true},
           {"left":"total_total_tokens","right":"total_total_tokens","nulls_equal":true},
-          {"left":"unanchored_ordinal","right":"unanchored_ordinal","nulls_equal":true}
+          {"left":"unanchored_ordinal","right":"unanchored_ordinal","nulls_equal":true},
+          {"left":"request_key","right":"request_key","nulls_equal":true}
         ]
       },
       "fields": [
@@ -422,7 +487,8 @@
           {"left":"total_input_tokens","right":"total_input_tokens","nulls_equal":true},
           {"left":"total_output_tokens","right":"total_output_tokens","nulls_equal":true},
           {"left":"total_total_tokens","right":"total_total_tokens","nulls_equal":true},
-          {"left":"unanchored_ordinal","right":"unanchored_ordinal","nulls_equal":true}
+          {"left":"unanchored_ordinal","right":"unanchored_ordinal","nulls_equal":true},
+          {"left":"request_key","right":"request_key","nulls_equal":true}
         ]
       },
       "fields": [
@@ -506,7 +572,7 @@
                   {
                     "op": "if",
                     "args": [
-                      {"op":"or","args":[{"op":"coalesce","args":[{"field":"group_invalid"},false]},{"field":"request_invalid"}]},
+                      {"field":"request_invalid"},
                       "invalid",
                       {
                         "op": "if",
@@ -555,7 +621,7 @@
           }
         },
         {"name":"invalid_count","type":"integer","nullable":false,"expr":{"op":"if","args":[{"op":"if","args":[{"field":"per_request"},{"op":"coalesce","args":[{"op":"eq","args":[{"field":"request_class"},"invalid"]},false]},{"op":"coalesce","args":[{"field":"group_invalid"},false]}]},1,0]}},
-        {"name":"ambiguous_count","type":"integer","nullable":false,"expr":{"op":"if","args":[{"op":"is-null","args":[{"field":"variant_ordinal"}]},0,1]}},
+        {"name":"ambiguous_count","type":"integer","nullable":false,"expr":{"op":"if","args":[{"field":"per_request"},0,{"op":"if","args":[{"op":"is-null","args":[{"field":"variant_ordinal"}]},0,1]}]}},
         {"name":"missing_core_count","type":"integer","nullable":false,"expr":{"op":"if","args":[{"op":"if","args":[{"field":"per_request"},{"op":"coalesce","args":[{"op":"eq","args":[{"field":"request_class"},"missing-core"]},false]},{"op":"and","args":[{"field":"has_total_usage"},{"op":"and","args":[{"field":"has_last_usage"},{"op":"not","args":[{"field":"complete_core"}]}]}]}]},1,0]}},
         {"name":"missing_detail_count","type":"integer","nullable":false,"expr":{"op":"if","args":[{"op":"if","args":[{"field":"per_request"},false,{"op":"and","args":[{"field":"has_total_usage"},{"op":"and","args":[{"field":"has_last_usage"},{"op":"not","args":[{"field":"complete_details"}]}]}]}]},1,0]}},
         {"name":"legacy_count","type":"integer","nullable":false,"expr":{"op":"if","args":[{"op":"if","args":[{"field":"per_request"},false,{"op":"and","args":[{"field":"has_total_usage"},{"op":"not","args":[{"field":"has_last_usage"}]}]}]},1,0]}},
@@ -767,7 +833,7 @@
       ]
     },
     {"op":"filter","input":"owned_transitions","as":"request_rows","where":[{"field":"request_eligible","op":"exact","value":true}]},
-    {"op":"filter","input":"request_rows","as":"authored_rows","where":[{"field":"request_here","op":"exact","value":true}]},
+    {"op":"filter","input":"owned_transitions","as":"authored_rows","where":[{"field":"request_here","op":"exact","value":true},{"field":"request_key","op":"not-equal","value":null}]},
     {"op":"distinct","input":"authored_rows","as":"authored_keys","keys":["request_key"]},
     {"op":"distinct","input":"authored_rows","as":"authored_pairs","keys":["request_key","session_id"]},
     {

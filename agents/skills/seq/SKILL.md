@@ -231,12 +231,12 @@ summing `turns` or `sessions` token fields.
 `token_events` and returns `seq-token-usage-result/v3`. Route each row by the
 evidence it carries, never by adapter name: rows declaring
 `usage_model: "per-request"` use per-request accounting, and every other row
-uses cumulative lineage accounting. Both feed one result:
-`usage_count = transition_count + request_count`, shared totals, one verdict, and
-`usage_scope: "observed-owned-usage"`. The definition reads `token_events`
-fields first released in Seq 1.5.0; require Seq 1.5.0 or newer and report an
-older executable's rejection of the definition as an upgrade obstruction. An
-adapter whose token events Seq refuses (Pi returns
+uses cumulative lineage accounting. Within one observation both feed one
+result: `usage_count = transition_count + request_count`, shared totals, one
+verdict, and `usage_scope: "observed-owned-usage"`. The definition reads
+`token_events` fields first released in Seq 1.5.0; require Seq 1.5.0 or newer
+and report an older executable's rejection of the definition as an upgrade
+obstruction. An adapter whose token events Seq refuses (Pi returns
 `PiCumulativeTokenEventsUnavailable`) is an obstruction; report it rather than
 substituting another sum.
 
@@ -327,12 +327,15 @@ asserted usage (unanswered, or a response with no usage) is no-usage. An
 unfinished request is provisional, reported without being counted even when its
 partial usage is incomplete. Asserted but unreadable usage of a finished request
 is missing core evidence, and a finished, usable request without a key is
-unkeyed. Every other row is eligible. Per-request rows never enter cumulative
-accounting, even when they also carry running totals.
+unkeyed. Every other row is eligible. A row's class depends only on its own
+request quantity, and per-request rows never enter cumulative accounting, even
+when they also carry running totals.
 
-Ownership of eligible rows comes from `request_record`. `here` proves the source
-issued the request. A key without a proven author (`unplaced` or null) counts
-once only when the selection is the whole read corpus. A `--session-id`,
+Ownership comes from `request_record`. A `here` row proves its source issued the
+request, whatever that row's class: the author's own row decides whether the
+request counts, and copies elsewhere never substitute for it. A key with no
+`here` row (`unplaced` or null authorship) counts once only when the selection
+is the whole read corpus. A `--session-id`,
 `--path`, or `--repo` selection cannot read copies held elsewhere, so such keys
 leave ownership unresolved. Two sessions that both claim to have issued one key
 are unresolved. Copies of one key must agree on usage and timestamp; otherwise
@@ -344,20 +347,24 @@ without them leave authorship null.
 
 ```bash
 seq_definition_root="$seq_skill_root/definitions/seq"
-seq observe \
-  --definition "$seq_definition_root/token-usage.json" \
-  --source claude-code \
-  --since 2026-11-01T00:00:00-07:00 \
-  --until 2026-11-08T00:00:00-08:00 \
-  --projection summary \
-  --format json
+for source in codex claude-code; do
+  seq observe \
+    --definition "$seq_definition_root/token-usage.json" \
+    --source "$source" \
+    --since 2026-11-01T00:00:00-07:00 \
+    --until 2026-11-08T00:00:00-08:00 \
+    --projection summary \
+    --format json
+done
 ```
 
-`--source codex|claude-code` selects that adapter's default root; Seq's
-default without one is the Codex corpus, which includes both default Codex
-directories. Replace these example bounds with the requested window and its
-actual timezone offsets. An explicit root must contain every relevant session
-and ancestor, not just session starts inside the window.
+One observation reads one adapter's corpus. `--source codex|claude-code` selects
+that adapter's default root; without one Seq reads the Codex corpus, which
+includes both default Codex directories. For usage across agents, run once per
+source as above, report each source's verdict and scope, and add totals only
+when every verdict is `valid`. Replace these example bounds with the requested
+window and its actual timezone offsets. An explicit root must contain every
+relevant session and ancestor, not just session starts inside the window.
 
 Example for deliberate inspection of one supported file:
 

@@ -476,6 +476,15 @@ try {
   expectRequests('provisional-incomplete', perRequest('provisional-incomplete', [[claudeId(21),
     [authored('msg_a', qa, 0), authored('msg_q', qb, 10, { final: false, dropOutput: true })]]]).result,
     { verdict: 'valid', request_count: 1, total_tokens: 50, provisional_observation_count: 1, missing_core_observation_count: 0 });
+  // Authorship comes from every keyed "here" row, whatever its class.
+  expectRequests('provisional-author', perRequest('provisional-author', [
+    [claudeId(24), [authored('msg_a', qb, 0), authored('msg_k', qa, 10, { final: false })]],
+    [claudeId(25), [copied('msg_k', qa, 10)]],
+  ]).result, { verdict: 'valid', request_count: 1, total_tokens: 62, provisional_observation_count: 1 });
+  expectRequests('ineligible-second-author', perRequest('ineligible-second-author', [
+    [claudeId(26), [authored('msg_d', qa, 0)]],
+    [claudeId(27), [authored('msg_d', qa, 0, { final: false })]],
+  ]).result, { verdict: 'unavailable', total_tokens: null, unresolved_ownership_observation_count: 1 });
   expectRequests('copies-disagree-on-time', perRequest('copies-disagree-on-time', [
     [claudeId(22), [copied('msg_t', qa, 0)]],
     [claudeId(23), [copied('msg_t', qa, 30)]],
