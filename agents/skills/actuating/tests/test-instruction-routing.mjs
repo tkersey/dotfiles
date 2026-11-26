@@ -6,7 +6,7 @@ import {dirname, resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const paths = ['SKILL.md', 'construction.md', 'agents/openai.yaml',
+const paths = ['SKILL.md', 'construction.md', 'architecture.md', 'counterexamples.md', 'agents/openai.yaml',
   'review-closeout.md', 'references/review-contract.md',
   'references/review-contract.json', 'references/closure.md', 'recurrence.md',
   '../universalist/references/claim-appropriate-proof.md',
@@ -23,12 +23,12 @@ const section = (source, heading) => {
   return source.split('## ' + heading + '\n')[1].split('\n## ')[0];
 };
 const coreHashes = {
-  'Source binding': 'a08472adfb58b7540f832680acac69f92a87e7ee8e4086c9621134194aa4639d',
-  'Initial construction': 'bc00d3ade6c4085c33253270b3911b48e0c7b31e37f00e8508ea4af6ff6bb531',
+  'Source binding': '0ce580c9d1999f6f65d90044e7e053e75c6379dfb97e09178d37c2cbbd0a8b4d',
+  'Construction decision': '34f6441feb19645295c81e388ee1dbb99a18ee7e8977a5718a8275dfab8dadf7',
   'Proof acceptance': '8cefa9c1e82aa83b5c54737a9bbcb77d70d1442c916f434473d22679b82b0fc9',
   'Comments in code': '9dfab826dd63fbdd4ac448cbf0d7c690edef00145282604d9f0737c39edc39bf',
   'Realization and common proof obligations': '8f782e151a2c48cca2da1506830376ad597b689fde6985014f30c466f87be6e3',
-  'Construction Working Set': 'a700fdc90b29b61e05f7520f2e36ffaebf35baa668c8a7bfb0bb055550ff7b45',
+  'Construction Working Set': 'cb4b5c0f65ef2e97170cd10f6abdd141d683786eec2c6f47fb37f4a45c8bd0a1',
   'Completion': 'dc56a54f2fd79d07f4d801b030cbf5b5a1ec6758be7a8c72eae0e8c2f630f58f'
 };
 // Pin the authorized recovery/epoch revision; unchanged construction and acceptance remain protected.
@@ -81,11 +81,25 @@ function check(src) {
     assert(entry.includes('<a id="' + anchor + '"></a>'), 'missing compatibility anchor: ' + anchor);
     assert(entry.includes('(construction.md#' + anchor + ')'), 'unrouted owner: ' + anchor);
   }
+  assert(core.includes('<a id="initial-construction"></a>'), 'missing initial-construction compatibility alias');
+  assert(entry.includes('<a id="initial-construction"></a>'), 'missing initial-construction entry alias');
+  assert(entry.includes('(construction.md#initial-construction)'), 'unrouted initial-construction compatibility alias');
+  assert(entry.includes('<a id="epoch-close"></a>'), 'missing epoch-close compatibility alias');
+  for (const [path, heading] of [
+    ['SKILL.md', 'Public routes'],
+    ['SKILL.md', 'Construction selection'],
+    ['architecture.md', 'Architecture compilation'],
+    ['counterexamples.md', 'Compile the first loss of guarantee'],
+    ['recurrence.md', 'Progress before another iteration'],
+    ['review-closeout.md', 'Review-epoch immutability and evidence acquisition'],
+    ['review-closeout.md', 'Pre-epoch screen']
+  ]) assert(section(src[path], heading).includes('(construction.md#construction-decision)'),
+    `unrouted construction decision: ${path} / ${heading}`);
   for (const [heading, digest] of Object.entries(reviewHashes))
     assert.equal(hash(section(review, heading)), digest, heading);
-  // Pin the authorized pre-epoch screen and epoch-opening revision; the epoch, supersession,
+  // Pin the authorized construction-return routing; the epoch, supersession,
   // and convergence sections stay hash-protected in test-composition-contract.sh.
-  assert.equal(blob(src['review-closeout.md']), '5176d751618dd383d33d3a91cd0eb4e5d6725132');
+  assert.equal(blob(src['review-closeout.md']), 'cc9d37aeb3c85e85546a8a210fc0b8d11359790c');
   assert.equal(blob(src['references/review-contract.json']), '919c8710140dd784fb841ae1df6819b699555aca');
   for (const route of ['(construction.md#construction-rules)',
     '(construction.md#simulation-first-correctness)',
@@ -127,6 +141,10 @@ function check(src) {
 
 check(sources);
 const mutations = [
+  ['initial decision route lost', 'SKILL.md', 'Initial work enters the [construction decision](construction.md#construction-decision)', 'Initial work enters the [construction decision](construction.md#missing)'],
+  ['closed-epoch decision route lost', 'review-closeout.md', 'After closing an invalidated epoch, return through the\n[construction decision](construction.md#construction-decision)', 'After closing an invalidated epoch, return through the\n[construction decision](construction.md#missing)'],
+  ['screen decision route lost', 'review-closeout.md', 'invalidates the candidate and returns through the\n[construction decision](construction.md#construction-decision)', 'invalidates the candidate and returns through the\n[construction decision](construction.md#missing)'],
+  ['counterexample decision route lost', 'counterexamples.md', 'Return through the [construction decision](construction.md#construction-decision)', 'Return through the [construction decision](construction.md#missing)'],
   ['correspondence link lost', 'construction.md', '#claim-directed-correspondence)', '#missing-correspondence)'],
   ['premise link lost', 'recurrence.md', '#premise-guided-investigation)', '#missing-investigation)'],
   ['canonical method missing', '../universalist/references/claim-appropriate-proof.md', '## Premise-guided investigation\n', '## Missing method\n'],

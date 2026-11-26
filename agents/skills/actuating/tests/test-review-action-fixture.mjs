@@ -250,13 +250,13 @@ test('CLI distinguishes a failing artifact from an invocation error', () => {
   assert.equal(invalid.status, 2);
 });
 
-test('canonical admission is unchanged; effect and evaluation guidance remain bounded', () => {
+test('canonical admission and construction routing keep effect and evaluation guidance bounded', () => {
   const counter = readFileSync(resolve(here, '../counterexamples.md'), 'utf8');
   const start = counter.indexOf('Before counterexample-driven selection,');
   const end = counter.indexOf('\n## Compile the first loss of guarantee');
   assert(start >= 0 && end > start);
   assert.equal(createHash('sha256').update(counter.slice(start, end)).digest('hex'),
-    '565fc772892c5d343f778cf96706610aa545d965c1f5d08105b2bf6c07d370a5');
+    '81bde09e7b0e74e521ea72849c03cae3e8252682058090f8c4223b946e0d484d');
   const normalized = counter.replace(/\s+/g, ' ');
   for (const phrase of ['independently established evidence', 'separately supported, authorized obligation',
     'delegation, resumption, and compaction', 'including test expectations, check selection, compatibility, and completion claims',

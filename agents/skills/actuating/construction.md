@@ -18,6 +18,12 @@ demote an explicit requirement. Source binding records obligations; Actuating
 chooses source-permitted means. A plan, review, or prior implementation cannot
 broaden source authority.
 
+When a restriction excludes a material alternative, recover its accepted authority.
+An agent-selected boundary remains revisable unless the accepted source adopted
+it. An unavailable capability constrains current execution; it does not make an
+authorized capability change inadmissible. Reconsidering a restriction grants no
+additional effects or resources.
+
 Keep semantic requirements distinct from execution authority. Bind mutation,
 validation, publication, and review posture to the accepted source and selected
 route; permission to work neither authorizes every effect nor proves completion.
@@ -35,20 +41,44 @@ Reuse an adequate binding in the Working Set and existing downstream owner forma
 No separate skill invocation, mandatory Goal Contract packet, durable record, or new
 identity is required. A summary or digest never replaces the source or proves completion.
 
-## Initial construction
+<a id="initial-construction"></a>
 
-This is the construction core for initial work and accepted counterexample repair.
-Treat representations, algorithms, operation boundaries, and decomposition as
-design variables wherever the source permits. Use mathematical and domain knowledge
-to derive the construction, including `$universalist` for task-relevant semantic
-work; a named defect, owner, axis, or typed hole is not a prerequisite. Reuse
-adequate derivations rather than running a duplicate pass.
+## Construction decision
+
+Use this decision for initial work and every substantive return to construction,
+including accepted findings, failed verification, screens, closed review epochs,
+and changed source evidence. Recover the source-bound assignment and full applicable
+evidence through the [Working Set](#construction-working-set); use the
+[progress assessment](recurrence.md#progress-before-another-iteration) when its
+triggers apply. Each entry route retains its admission, recovery, and freeze rules.
+No finding, advance alternative, or completed diagnosis is required to begin.
+
+Treat the incumbent and proposed remedies as candidates, not requirements.
+Representations, algorithms, operation boundaries, decomposition, and agent-selected
+restrictions remain design variables wherever the [source permits](#source-binding).
+Keep required observations and effect authority fixed; revise model-owned
+assumptions or evaluation methods from evidence, never expectations merely to agree
+with a candidate. A liability establishes a required discrepancy, not its remedy.
+
+Decide correctness liability and construction opportunity separately. Rejecting an
+allegation does not erase independently supported evidence useful to authorized
+construction. Retain that evidence and its premises without importing the rejected
+requirement or semantic change. An opportunity remains nonblocking unless its
+realization is part of the accepted task or an accepted obligation is violated;
+neither repetition nor a preferred design supplies that authority.
 
 Work directly between required observations, concrete code, and deciding evidence.
 Choose the next inspection, derivation, or authorized experiment because it resolves
 an actual uncertainty or establishes a required relationship. No fixed order of
 diagnosis, algebraic derivation, prototyping, or proof attempts is required. This
 freedom changes neither effect authority nor the proof required for acceptance.
+An observation gap calls for evidence recovery, not an assumed construction defect;
+recovery can justify continuing the unchanged candidate.
+
+Use mathematical and domain knowledge to derive the construction, including
+`$universalist` for task-relevant semantic work; a named owner, axis, or typed hole
+is not a prerequisite. Reuse adequate derivations rather than running a duplicate
+pass. No alternatives quota, comparison packet, or new stage is required.
 
 Missing proof is not a witnessed defect. A counterexample can challenge the
 implementation, its model, an oracle, or a claimed justification; establish which
@@ -483,6 +513,9 @@ unresolved work in the active thread or accepted implementation
 specification. Reuse owner evidence rather than re-expressing it in another packet.
 These are working facts, not a report template or durable Actuating store. Surface
 only material decisions and limitations; preserve historical witness provenance.
+Retain decision-relevant opportunity evidence and the authority of consequential
+restrictions; a rejected liability or inherited summary must not silently discard
+the former or promote an agent's choice into the latter.
 
 Carry the [recent attempt history](recurrence.md#progress-before-another-iteration)
 with these facts through successor heads, delegation, and resumption, including

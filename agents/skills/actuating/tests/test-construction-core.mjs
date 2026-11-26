@@ -27,33 +27,57 @@ function check(src) {
   const skill=src['SKILL.md']+'\n'+src['construction.md'];
   assert(normalized(section(src['SKILL.md'],'Public routes')).includes(
     'It may acquire evidence about an existing candidate but cannot mutate, publish, grant closure credit, or claim completion'));
-  const core=normalized(section(skill,'Initial construction'));
+  const core=normalized(section(skill,'Construction decision'));
   const architecture=normalized(src['architecture.md']);
   const counter=src['counterexamples.md'];
   const adapter=normalized(src['universalist-composition.md']);
   const policy=JSON.parse(src['references/review-contract.json']);
   assert.equal(policy.standard_convergence.required_consecutive_clean_attempts,5);
   const contract=JSON.parse(src['references/decision-contract.json']).skill_decision_contract;
-  // Byte-bound safeguards from fc82de2d26052ff2b20f0fe9d4ebae289965091d.
-  // Their source authority is unchanged by the construction experiment.
+  // Pin the authorized source-binding and assignment changes while preserving
+  // the unchanged realization and completion obligations.
   for (const [h,digest] of Object.entries({
-    'Source binding':'a08472adfb58b7540f832680acac69f92a87e7ee8e4086c9621134194aa4639d',
+    'Source binding':'0ce580c9d1999f6f65d90044e7e053e75c6379dfb97e09178d37c2cbbd0a8b4d',
     'Realization and common proof obligations':'8f782e151a2c48cca2da1506830376ad597b689fde6985014f30c466f87be6e3',
     'Completion':'dc56a54f2fd79d07f4d801b030cbf5b5a1ec6758be7a8c72eae0e8c2f630f58f'
   })) assert.equal(hash(section(skill,h)),digest,`changed acceptance/authority section: ${h}`);
   assert.equal(hash(section(skill,'Construction Working Set')),
-    'a700fdc90b29b61e05f7520f2e36ffaebf35baa668c8a7bfb0bb055550ff7b45','changed construction assignment binding');
+    'cb4b5c0f65ef2e97170cd10f6abdd141d683786eec2c6f47fb37f4a45c8bd0a1','changed construction assignment binding');
   const admissionStart=counter.indexOf('Before counterexample-driven selection,');
   const admissionEnd=counter.indexOf('\n## Compile the first loss of guarantee');
   assert(admissionStart>=0 && admissionEnd>admissionStart);
   assert.equal(hash(counter.slice(admissionStart,admissionEnd)),
-    '565fc772892c5d343f778cf96706610aa545d965c1f5d08105b2bf6c07d370a5','changed witness admission');
+    '81bde09e7b0e74e521ea72849c03cae3e8252682058090f8c4223b946e0d484d','changed witness admission');
 
   assert(core.includes('No fixed order of diagnosis, algebraic derivation, prototyping, or proof attempts is required'));
   assert(core.includes('Missing proof is not a witnessed defect'));
   assert(core.includes('neither local-repair-first nor redesign is compulsory'));
   assert(core.includes('including `$universalist` for task-relevant semantic work'));
   assert(core.includes('independent evidence'));
+  const sourceBinding=normalized(section(skill,'Source binding'));
+  const workingSet=normalized(section(skill,'Construction Working Set'));
+  for(const rule of [
+    'Use this decision for initial work and every substantive return to construction',
+    'Each entry route retains its admission, recovery, and freeze rules',
+    'No finding, advance alternative, or completed diagnosis is required to begin',
+    'Treat the incumbent and proposed remedies as candidates, not requirements',
+    'Keep required observations and effect authority fixed',
+    'Decide correctness liability and construction opportunity separately',
+    'Rejecting an allegation does not erase independently supported evidence useful to authorized construction',
+    'Retain that evidence and its premises without importing the rejected requirement or semantic change',
+    'An opportunity remains nonblocking unless its realization is part of the accepted task or an accepted obligation is violated',
+    'neither repetition nor a preferred design supplies that authority',
+    'An observation gap calls for evidence recovery, not an assumed construction defect',
+    'recovery can justify continuing the unchanged candidate',
+    'No alternatives quota, comparison packet, or new stage is required'
+  ]) assert(core.includes(rule),`lost construction-decision boundary: ${rule}`);
+  for(const rule of [
+    'When a restriction excludes a material alternative, recover its accepted authority',
+    'An agent-selected boundary remains revisable unless the accepted source adopted it',
+    'An unavailable capability constrains current execution; it does not make an authorized capability change inadmissible',
+    'Reconsidering a restriction grants no additional effects or resources'
+  ]) assert(sourceBinding.includes(rule),`lost restriction authority: ${rule}`);
+  assert(workingSet.includes('Retain decision-relevant opportunity evidence and the authority of consequential restrictions'));
   for(const boundary of [
     'When replacing, combining, reordering, sharing, or removing a construction',
     'use the accepted source to determine which inputs, observations, and continuations the affected construction must support',
@@ -180,6 +204,13 @@ function check(src) {
     'Clean counts do not measure this coverage'])
     assert(plateau.includes(rule),`lost recurrence boundary: ${rule}`);
   assert(normalized(progress).includes('pre-epoch screens and their corrections'));
+  for(const rule of [
+    'count each candidate-invalidating return from a screen or closed epoch once',
+    'Observation-only holds are recovery attempts, not candidate invalidations',
+    'A pre-epoch screen counts as no epoch and earns no review credit',
+    'each third candidate-invalidating return from a screen or closed review epoch',
+    'These are attention thresholds, not proof of stagnation, automatic passage reinjection, a redesign requirement, or round limits'
+  ]) assert(normalized(progress).includes(rule),`lost construction-progress boundary: ${rule}`);
   const weakening=/\boptional(?!\s*\[executable behavioral model\])|\bmay (?:skip|omit|include)\b|best[- ]effort|where (?:practical|feasible)|if convenient/i;
   for(const [name,text] of [['simulation',simulation],['re-injection',reinjection],['plateau',plateau]])
     assert(!weakening.test(text),`weakened ${name} obligation`);
@@ -197,7 +228,11 @@ function check(src) {
     'that holds the screen and every epoch standard alike','The screen binds its exact head',
     'with no epoch open, it triggers no initial evidence barrier',
     'Retain screen findings, holds, and their corrections in the existing [attempt history](recurrence.md#progress-before-another-iteration)',
-    'Screen-only repair cycles remain subject to its causal progress triggers; they open no epoch and do not advance the invalidated-epoch count',
+    'Candidate-invalidating screen returns count toward its construction progress backstop',
+    'holds retain their recovery history and applicable causal triggers',
+    'Screens open no epoch and do not advance the invalidated-epoch count',
+    'An observation-only hold requires recovery, not a successor mutation',
+    'Findings already supported by partial inquiry still undergo admission on their own evidence',
     'The screen awards no review credit and replaces no request'])
     assert(screen.includes(rule),`lost screen rule: ${rule}`);
   const screenPolicy=policy.pre_epoch_screen;
@@ -216,10 +251,14 @@ function check(src) {
   assert.equal(policy.universalist_compilation.nomination_result_required,false);
   assert.equal(policy.universalist_compilation.nomination_is_executed_proof,false);
   assert.equal(policy.efficacy.policy_unit_tests_prove_model_efficacy,false);
-  assert.equal(contract.skill.source_fingerprint,'actuating-construction-core-v46');
+  assert.equal(contract.skill.source_fingerprint,'actuating-construction-core-v47');
   const clauses=Object.fromEntries(contract.clauses.map(c=>[c.clause_id,c]));
   assert(clauses['ACT-IMPLEMENT-ENTRY-001'].success_signals.some(s=>s.includes('without a fixed reasoning sequence')));
   const initial=clauses['ACT-IMPLEMENT-ENTRY-001'];
+  assert(initial.success_signals.includes('initial work enters the canonical construction decision directly from the Goal; substantive returns use the same decision without requiring a finding, advance alternative, completed diagnosis, or review dispatch'));
+  assert(clauses['ACT-OWNER-FACTS-001'].success_signals.some(s=>s.includes('agent-selected boundaries remain revisable unless the source adopted them')));
+  assert(clauses['ACT-LAW-AUTHORITY-001'].success_signals.includes('correctness liability and construction opportunity are decided separately; rejecting an allegation retains independently supported evidence and its premises for authorized selection without importing the rejected requirement or semantic change'));
+  assert(clauses['ACT-METANOETIC-ADMISSIBILITY-001'].success_signals.some(s=>s.includes('each third candidate-invalidating return from a screen or closed review epoch')));
   assert(initial.success_signals.includes('primitive meanings and their composition are established under the source-required observation or refinement relation when replacing, combining, reordering, sharing, or removing a construction, including admitted higher-order contexts and required joint observations'));
   assert(initial.success_signals.includes('combined edits check whether one changes a premise used to justify another; affected reasoning is re-established on the assembled construction, while reasoning whose dependencies remain established is reused under existing proof-acceptance rules'));
   assert(initial.failure_signals.includes('combined edits retain justifications whose deciding premises another edit changes, or reopen reasoning whose dependencies remain established solely because edits were combined'));
@@ -238,6 +277,7 @@ function check(src) {
   assert(sim.success_signals.some(s=>s.includes('every re-injected defect pins a seed and trace')),'pinning limited to misses');
   assert(sim.required_artifacts.some(s=>s.includes('a pinned seed and trace that fail on the defective version and pass with the fix')));
   assert(sim.failure_signals.some(s=>s.includes('screen results are recorded as credit_disposition')));
+  assert(sim.success_signals.includes('an observation-only hold requires evidence recovery rather than successor mutation; findings independently supported by partial inquiry still undergo admission on their own evidence'));
   assert(sim.required_artifacts.some(s=>s.startsWith('two-way law coverage')),'lost law coverage artifact');
   assert(sim.required_artifacts.some(s=>s.includes('evidence that real code implements the exits and feasible guards the reachability check relies on')));
   assert(sim.required_artifacts.some(s=>s.includes('a gating construction-rule assertion also cites the required source law and the conditions under which violating the rule breaks that law')));
@@ -287,6 +327,14 @@ function check(src) {
     'A tie or underpowered result is inconclusive','adds no delivery gate or permission for paid model runs'])
     assert(simulationComparison.includes(control),`lost simulation comparison control: ${control}`);
   assert(!/\b\d+ of \d+\b/.test(simulationComparison),'repository-specific comparison evidence');
+  const constructionComparison=normalized(section(comparison,'One source-bound construction decision'));
+  for(const control of ['authored, not executed',
+    "Keep both arms' required verification, immutable review subjects, full inventory, and five-clean gate unchanged",
+    'Neither arm receives an extra solution or a deliberately weakened construction assignment',
+    'Freeze the first construction, justified no-change decision, or unfinished attempt before later feedback',
+    'A correct liability classification does not establish good construction selection',
+    'source-contract checks do not execute this comparison or establish model efficacy'])
+    assert(constructionComparison.includes(control),`lost construction-decision comparison control: ${control}`);
 }
 
 check(sources);
@@ -299,6 +347,16 @@ const append=(path,text)=>src=>{src[path]+=text;};
 const decisionMutation=fn=>jsonMutation('references/decision-contract.json',p=>fn(p.skill_decision_contract.clauses.find(c=>c.clause_id==='ACT-SIMULATION-001')));
 const initialMutation=fn=>jsonMutation('references/decision-contract.json',p=>fn(p.skill_decision_contract.clauses.find(c=>c.clause_id==='ACT-IMPLEMENT-ENTRY-001')));
 const mutations=[
+  ['construction opportunity discarded',swap('construction.md','Rejecting an allegation does not erase independently supported evidence useful to authorized construction','Rejecting an allegation discards every construction opportunity it suggested')],
+  ['rejected requirement imported',swap('construction.md','without importing the rejected requirement or semantic change','by importing the rejected requirement and semantic change')],
+  ['repetition grants opportunity authority',swap('construction.md','neither repetition nor a preferred design supplies that authority','repetition or a preferred design supplies that authority')],
+  ['agent-selected boundary becomes law',swap('construction.md','An agent-selected boundary remains revisable unless the accepted source adopted it','An agent-selected boundary is fixed after it appears in a summary')],
+  ['restriction reconsideration expands effects',swap('construction.md','Reconsidering a restriction grants no additional effects or resources','Reconsidering a restriction grants additional effects and resources')],
+  ['observation gap forces construction',swap('construction.md','An observation gap calls for evidence recovery, not an assumed construction defect','An observation gap establishes a construction defect requiring repair')],
+  ['screen invalidations escape progress',swap('recurrence.md','each third candidate-invalidating return from a screen or closed review epoch','each third closed invalidated review epoch')],
+  ['observation holds inflate invalidations',swap('recurrence.md','Observation-only holds are recovery attempts, not candidate invalidations','Observation-only holds are candidate invalidations')],
+  ['partial inquiry discards supported findings',swap('review-closeout.md','Findings already supported by partial inquiry still undergo admission on their own evidence','Incomplete inquiry discards every finding it contains')],
+  ['canonical decision signal dropped',initialMutation(c=>{c.success_signals=c.success_signals.filter(s=>!s.startsWith('initial work enters the canonical construction decision'));})],
   ['concrete composition trigger lost',swap('construction.md','When replacing, combining, reordering, sharing, or removing a construction','When explicitly asked about composition')],
   ['candidate chooses supported context',swap('construction.md','use the accepted source to determine which inputs, observations, and continuations','use the candidate to determine which inputs, observations, and continuations')],
   ['incumbent observations become requirements',swap('construction.md','Establish the required relationships in the actual admitted environments','Preserve every incumbent observation in the actual admitted environments')],
@@ -320,7 +378,7 @@ const mutations=[
   ['false efficacy credit',jsonMutation('references/review-contract.json',p=>p.efficacy.policy_unit_tests_prove_model_efficacy=true)],
   ['weakened proof',src=>{src['construction.md']=src['construction.md'].replace('required-valid behavior and observations preserved','optional valid behavior');}],
   ['lost read-only route',src=>{src['SKILL.md']=src['SKILL.md'].replace('It may acquire evidence','It may mutate evidence');}],
-  ['lost mathematical capability',src=>{src['construction.md']=src['construction.md'].replace('including `$universalist` for task-relevant semantic','excluding mathematical');}],
+  ['lost mathematical capability',swap('construction.md','including `$universalist` for task-relevant semantic','excluding mathematical')],
   ['duplicate acceptance rule',src=>{src['counterexamples.md']+='\nBefore accepting validation for local completion or reviewability\n';}],
   ['baseline instruction leakage unchecked',src=>{src['tests/construction-comparison.md']=src['tests/construction-comparison.md'].replace('`AGENTS.md`','an unspecified file');}],
   ['first candidate unfrozen',src=>{src['tests/construction-comparison.md']=src['tests/construction-comparison.md'].replace('Freeze the first completed candidate','Score the final repaired result');}],

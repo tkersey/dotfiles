@@ -19,7 +19,7 @@ const skill = text('SKILL.md');
 const protectedSections = {
   "Invalidated-batch supersession": "05369fc6e853f1c5f85011b6ac7aac81273460482c9091ed7a097a1178030cfd",
   // Authorized revision: the epoch opens on the first initial-inventory request, after the pre-epoch screen.
-  "Review-epoch immutability and evidence acquisition": "0728304273086c4b91cc6573d90cba6a8db4b868d6f2fbbf473782e3593d3a1e",
+  "Review-epoch immutability and evidence acquisition": "220346ad808d9cae2b2df31cdf2f6cf39a719594d8159ddda804f1f6a53e76c7",
   "Review and closure": "7c13facdb3d36c9df88190a5cfecac3cdab23299f6ec02e95348c56e391a3aaa",
   // Apply the same proof bar to initial construction; witnesses are conditional.
   "Realization and common proof obligations": "8f782e151a2c48cca2da1506830376ad597b689fde6985014f30c466f87be6e3"

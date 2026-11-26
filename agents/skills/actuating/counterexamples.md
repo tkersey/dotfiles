@@ -37,8 +37,11 @@ evidence, never changed expectations merely to agree with the candidate. Unresol
 premises justify authorized investigation, not an invented repair. Acceptance of
 a witness proves neither the proposed fix nor its claimed causal family.
 
-Only current accepted witnesses authorize counterexample response. Duplicate
-observations add provenance, not independent failures. Historical absence cannot
+Only current accepted witnesses establish the need for counterexample response;
+admission neither selects a remedy nor expands effect authority. Use the
+[construction decision](construction.md#construction-decision) to retain useful
+nonblocking evidence separately from liability. Duplicate observations add
+provenance, not independent failures. Historical absence cannot
 prove first occurrence, disjointness, or elimination under an incomplete horizon.
 Review Fold captures newly accepted independent witnesses only with enclosing
 corpus-write authority. Pass `corpus_write_authorized` on every handoff: true when
@@ -58,12 +61,9 @@ requirement, compatibility promise, or release posture needs explicit authority.
 
 ## Compile the first loss of guarantee
 
-Use [initial construction](SKILL.md#initial-construction) for the repair; there is
-no separate construction pipeline. On returning to construction, form the
-[next assignment](SKILL.md#construction-working-set) from the accepted source and
-the full admitted basis. Combine current and applicable historical witnesses under
-the source-required law. Carry every admitted liability into the
-root's [automatic construction reconsideration](SKILL.md#mission). Reuse inquiry
+Return through the [construction decision](construction.md#construction-decision)
+from the full admitted basis. Carry every admitted liability into the root's
+[automatic construction reconsideration](SKILL.md#mission). Reuse inquiry
 across witnesses only when the same supported causal mechanism covers them; account
 for each new witness and reopen the explanation when it adds a causal distinction.
 A shared reviewer, file, owner, or law alone does not establish a common cause.
