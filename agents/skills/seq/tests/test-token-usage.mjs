@@ -558,6 +558,13 @@ try {
   // A provisional request followed by a later request in its session has finished.
   expectRequests('superseded-provisional', perRequest('superseded-provisional', [[claudeId(49), [authored('msg_q', qb, 0, { final: false }), authored('msg_a', qa, 10)]]]).result,
     { verdict: 'valid', request_count: 2, total_tokens: 112, inferred_final_observation_count: 1, provisional_observation_count: 0 });
+  // A narrowed selection places an unowned request in time by its own record.
+  const narrowedOld = perRequest('narrowed-unowned-outside-window', [[claudeId(53), [copied('msg_old', qa, 0, { linked: false }), authored('msg_new', qb, 60)]]]);
+  expectRequests('narrowed-unowned-outside-window',
+    observe(['--root', join(temporary, 'claude', 'narrowed-unowned-outside-window'), '--session-id', claudeId(53), '--since', claudeStamp(30)]),
+    { verdict: 'valid', request_count: 1, total_tokens: 62, unresolved_ownership_observation_count: 0 });
+  expectRequests('narrowed-unowned-inside-window', observe(['--path', narrowedOld.paths[0]]),
+    { verdict: 'unavailable', total_tokens: null, unresolved_ownership_observation_count: 1 });
   expectRequests('superseded-by-unanswered', perRequest('superseded-by-unanswered', [[claudeId(52), [authored('msg_q', qb, 0, { final: false }), { key: 'msg_x', at: 10, unanswered: true }]]]).result,
     { verdict: 'valid', request_count: 1, total_tokens: 62, inferred_final_observation_count: 1, provisional_observation_count: 0, no_usage_observation_count: 1 });
   expectRequests('resumed-copy-finishes-provisional', perRequest('resumed-copy-finishes-provisional', [

@@ -1264,7 +1264,7 @@
           "expr": {
             "op": "if",
             "args": [
-              {"op":"and","args":[{"field":"candidate"},{"op":"not","args":[{"op":"is-null","args":[{"field":"timestamp_ms"}]}]}]},
+              {"op":"and","args":[{"op":"or","args":[{"field":"candidate"},{"field":"split"}]},{"op":"not","args":[{"op":"is-null","args":[{"field":"timestamp_ms"}]}]}]},
               {
                 "op": "if",
                 "args": [

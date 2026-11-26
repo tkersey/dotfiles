@@ -332,10 +332,13 @@ session may not have finished; it is reported without being counted even when
 its partial usage is incomplete. A provisional request followed by a later
 request in the same session has finished: its recorded usage counts, and it is
 reported as inferred final (older transcripts often record no stop reason, so
-without this rule their history would be silently undercounted). Unknown
-finality, usage
-not declared `usable`, or asserted but unreadable usage is missing core
-evidence, and a final, usable request without a key is unkeyed. Every other row
+without this rule their history would be silently undercounted). Its recorded
+usage is the best available record; a request that was interrupted rather than
+merely missing a stop reason can understate output, so inferred-final usage is a
+lower bound. Report `inferred_final_observation_count` with the totals. Unknown
+finality, usage not declared `usable`, or asserted but unreadable usage is
+missing core evidence, and a final, usable request without a key is unkeyed.
+Every other row
 is eligible. A row's class depends only on its own request evidence and on
 whether any later request, answered or not, follows it in the same session;
 per-request rows never enter cumulative accounting, even when they also carry
