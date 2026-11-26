@@ -2,7 +2,7 @@
 name: seq
 description: "Reconstruct bounded, provenance-preserving observations from supported native sessions and explicit input relations with Seq 1.x. Use for `$seq`, session, tool, and message forensics, token accounting, worker attribution, or historical evidence reports."
 metadata:
-  version: "3.0.0"
+  version: "3.0.1"
 ---
 
 # Seq
@@ -402,13 +402,15 @@ One observation reads one adapter's corpus. `--source codex|claude-code` selects
 that adapter's default root; without one Seq reads the Codex corpus, which
 includes both default Codex directories. For usage across agents, run once per
 source as above, report each source's verdict and scope, and add totals only
-when every verdict is `valid`. Seq 1.6.1 rejects a whole Claude corpus that
-contains Claude Code workflow `journal.jsonl` files (`UnclassifiedSessionFormat`)
-for every observation, while `--session-id` and `--path` selections still read;
-report that obstruction for a whole-corpus Claude question rather than
-substituting another sum. Replace these example bounds with the requested
-window and its actual timezone offsets. An explicit root must contain every
-relevant session and ancestor, not just session starts inside the window.
+when every verdict is `valid`. Seq 1.6.2 excludes Claude Code workflow
+`journal.jsonl` files from the Claude corpus; Seq 1.6.1 rejects a whole Claude
+corpus that contains them (`UnclassifiedSessionFormat`) for every observation,
+while `--session-id` and `--path` selections still read. Use Seq 1.6.2 or newer
+for a whole-corpus Claude question; on an older executable, report that
+obstruction rather than substituting another sum. Replace these example bounds
+with the requested window and its actual timezone offsets. An explicit root must
+contain every relevant session and ancestor, not just session starts inside the
+window.
 
 Example for deliberate inspection of one supported file:
 
