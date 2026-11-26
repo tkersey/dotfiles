@@ -1,7 +1,7 @@
 {
   "schema": "seq-observation-definition/v1",
   "id": "seq/token-usage",
-  "requires": {"abi":"seq-observation-abi/v1","operators":["aggregate","derive","distinct","filter","join","ordered-fold","project","reachability","scan"]},
+  "requires": {"abi":"seq-observation-abi/v1","operators":["aggregate","derive","distinct","filter","join","ordered-fold","project","reachability","scan","sort"]},
   "parameters": {},
   "selectors": ["path","root","session-id","repo","since","until"],
   "relations": [
@@ -893,19 +893,11 @@
     {"op":"filter","input":"owned_transitions","as":"keyed_rows","where":[{"field":"per_request","op":"exact","value":true},{"field":"request_key","op":"not-equal","value":null}]},
     {"op":"filter","input":"keyed_rows","as":"authored_rows","where":[{"field":"request_here","op":"exact","value":true}]},
     {"op":"distinct","input":"authored_rows","as":"authored_keys","keys":["request_key"]},
-    {"op":"distinct","input":"authored_rows","as":"authored_pairs","keys":["request_key","session_id"]},
-    {
-      "op": "join",
-      "inputs": ["authored_pairs","authored_pairs"],
-      "as": "author_conflicts",
-      "on": {"kind":"semi","keys":[{"left":"request_key","right":"request_key"},{"left":"session_id","right":"session_id","op":"gt"}]},
-      "fields": [{"source":0,"field":"request_key","name":"request_key","type":"string","nullable":true},{"source":0,"field":"session_id","name":"session_id","type":"string","nullable":false}]
-    },
     {
       "op": "join",
       "inputs": ["keyed_rows","selected_sessions"],
-      "as": "selected_keyed_rows",
-      "on": {"kind":"semi","keys":[{"left":"session_id","right":"session_id"}]},
+      "as": "keyed_selection",
+      "on": {"kind":"left","keys":[{"left":"session_id","right":"session_id"}]},
       "fields": [
         {"source":0,"field":"session_id","name":"session_id","type":"string","nullable":false},
         {"source":0,"field":"timestamp_ms","name":"timestamp_ms","type":"integer","nullable":true},
@@ -918,12 +910,13 @@
         {"source":0,"field":"cache_creation_input_tokens","name":"cache_creation_input_tokens","type":"integer","nullable":true},
         {"source":0,"field":"last_output_tokens","name":"last_output_tokens","type":"integer","nullable":true},
         {"source":0,"field":"last_reasoning_output_tokens","name":"last_reasoning_output_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"last_total_tokens","name":"last_total_tokens","type":"integer","nullable":true}
+        {"source":0,"field":"last_total_tokens","name":"last_total_tokens","type":"integer","nullable":true},
+        {"source":1,"field":"session_id","name":"selected_session","type":"string","nullable":true}
       ]
     },
     {
       "op": "join",
-      "inputs": ["selected_keyed_rows","authored_keys"],
+      "inputs": ["keyed_selection","authored_keys"],
       "as": "keyed_authors",
       "on": {"kind":"left","keys":[{"left":"request_key","right":"request_key"}]},
       "fields": [
@@ -939,13 +932,14 @@
         {"source":0,"field":"last_output_tokens","name":"last_output_tokens","type":"integer","nullable":true},
         {"source":0,"field":"last_reasoning_output_tokens","name":"last_reasoning_output_tokens","type":"integer","nullable":true},
         {"source":0,"field":"last_total_tokens","name":"last_total_tokens","type":"integer","nullable":true},
+        {"source":0,"field":"selected_session","name":"selected_session","type":"string","nullable":true},
         {"source":1,"field":"request_key","name":"author_key","type":"string","nullable":true}
       ]
     },
     {
       "op": "derive",
       "input": "keyed_authors",
-      "as": "keyed_flags",
+      "as": "keyed_roles",
       "sequential": true,
       "preserve_input": false,
       "fields": [
@@ -961,7 +955,7 @@
         {"name":"last_output_tokens","type":"integer","nullable":true,"expr":{"field":"last_output_tokens"}},
         {"name":"last_reasoning_output_tokens","type":"integer","nullable":true,"expr":{"field":"last_reasoning_output_tokens"}},
         {"name":"last_total_tokens","type":"integer","nullable":true,"expr":{"field":"last_total_tokens"}},
-        {"name":"author_key","type":"string","nullable":true,"expr":{"field":"author_key"}},
+        {"name":"selected","type":"boolean","nullable":false,"expr":{"op":"not","args":[{"op":"is-null","args":[{"field":"selected_session"}]}]}},
         {
           "name": "copy",
           "type": "boolean",
@@ -998,65 +992,41 @@
           "type": "boolean",
           "nullable": false,
           "expr": {
-            "op": "or",
+            "op": "and",
             "args": [
-              {"field":"request_here"},
+              {"field":"selected"},
               {
-                "op": "and",
+                "op": "or",
                 "args": [
-                  {"field":"unowned"},
+                  {"field":"request_here"},
                   {
-                    "op": "or",
+                    "op": "and",
                     "args": [
+                      {"field":"unowned"},
                       {
-                        "op": "not",
+                        "op": "or",
                         "args": [
                           {
-                            "op": "or",
+                            "op": "not",
                             "args": [
-                              {"op":"or","args":[{"op":"not","args":[{"op":"is-null","args":[{"selector":"session-id"}]}]},{"op":"not","args":[{"op":"is-null","args":[{"selector":"path"}]}]}]},
-                              {"op":"not","args":[{"op":"is-null","args":[{"selector":"repo"}]}]}
+                              {
+                                "op": "or",
+                                "args": [
+                                  {"op":"or","args":[{"op":"not","args":[{"op":"is-null","args":[{"selector":"session-id"}]}]},{"op":"not","args":[{"op":"is-null","args":[{"selector":"path"}]}]}]},
+                                  {"op":"not","args":[{"op":"is-null","args":[{"selector":"repo"}]}]}
+                                ]
+                              }
                             ]
-                          }
+                          },
+                          {"op":"not","args":[{"field":"affects"}]}
                         ]
-                      },
-                      {"op":"not","args":[{"field":"affects"}]}
+                      }
                     ]
                   }
                 ]
               }
             ]
           }
-        },
-        {
-          "name": "split",
-          "type": "boolean",
-          "nullable": false,
-          "expr": {
-            "op": "and",
-            "args": [
-              {
-                "op": "and",
-                "args": [
-                  {"field":"unowned"},
-                  {
-                    "op": "or",
-                    "args": [
-                      {"op":"or","args":[{"op":"not","args":[{"op":"is-null","args":[{"selector":"session-id"}]}]},{"op":"not","args":[{"op":"is-null","args":[{"selector":"path"}]}]}]},
-                      {"op":"not","args":[{"op":"is-null","args":[{"selector":"repo"}]}]}
-                    ]
-                  }
-                ]
-              },
-              {"field":"affects"}
-            ]
-          }
-        },
-        {
-          "name": "counted",
-          "type": "boolean",
-          "nullable": false,
-          "expr": {"op":"and","args":[{"field":"candidate"},{"op":"coalesce","args":[{"op":"eq","args":[{"field":"request_class"},"eligible"]},false]}]}
         },
         {
           "name": "in_window",
@@ -1076,236 +1046,414 @@
           "nullable": false,
           "expr": {"op":"and","args":[{"op":"or","args":[{"op":"not","args":[{"op":"is-null","args":[{"selector":"since"}]}]},{"op":"not","args":[{"op":"is-null","args":[{"selector":"until"}]}]}]},{"op":"is-null","args":[{"field":"timestamp_ms"}]}]}
         },
-        {"name":"copy_count","type":"integer","nullable":false,"expr":{"op":"if","args":[{"field":"copy"},1,0]}},
-        {"name":"eligible_count","type":"integer","nullable":false,"expr":{"op":"if","args":[{"field":"counted"},1,0]}},
+        {"name":"windowed_candidate","type":"boolean","nullable":false,"expr":{"op":"and","args":[{"field":"candidate"},{"field":"in_window"}]}},
         {
-          "name": "provisional_count",
-          "type": "integer",
-          "nullable": false,
-          "expr": {"op":"if","args":[{"op":"and","args":[{"field":"candidate"},{"op":"coalesce","args":[{"op":"eq","args":[{"field":"request_class"},"provisional"]},false]}]},1,0]}
-        },
-        {
-          "name": "invalid_count",
-          "type": "integer",
-          "nullable": false,
-          "expr": {"op":"if","args":[{"op":"and","args":[{"field":"candidate"},{"op":"coalesce","args":[{"op":"eq","args":[{"field":"request_class"},"invalid"]},false]}]},1,0]}
-        },
-        {
-          "name": "missing_core_count",
-          "type": "integer",
-          "nullable": false,
-          "expr": {"op":"if","args":[{"op":"and","args":[{"field":"candidate"},{"op":"coalesce","args":[{"op":"eq","args":[{"field":"request_class"},"missing-core"]},false]}]},1,0]}
-        },
-        {
-          "name": "no_usage_count",
-          "type": "integer",
+          "name": "split",
+          "type": "boolean",
           "nullable": false,
           "expr": {
-            "op": "if",
+            "op": "and",
             "args": [
               {
                 "op": "and",
                 "args": [
-                  {"op":"and","args":[{"field":"candidate"},{"op":"not","args":[{"field":"untimed"}]}]},
-                  {"op":"coalesce","args":[{"op":"eq","args":[{"field":"request_class"},"no-usage"]},false]}
+                  {
+                    "op": "and",
+                    "args": [
+                      {"op":"and","args":[{"field":"selected"},{"field":"unowned"}]},
+                      {
+                        "op": "or",
+                        "args": [
+                          {"op":"or","args":[{"op":"not","args":[{"op":"is-null","args":[{"selector":"session-id"}]}]},{"op":"not","args":[{"op":"is-null","args":[{"selector":"path"}]}]}]},
+                          {"op":"not","args":[{"op":"is-null","args":[{"selector":"repo"}]}]}
+                        ]
+                      }
+                    ]
+                  },
+                  {"field":"affects"}
                 ]
               },
-              1,
-              0
+              {"field":"in_window"}
             ]
           }
         },
         {
-          "name": "unresolved_time_count",
-          "type": "integer",
+          "name": "counted",
+          "type": "boolean",
           "nullable": false,
-          "expr": {"op":"if","args":[{"op":"and","args":[{"op":"and","args":[{"field":"candidate"},{"field":"untimed"}]},{"field":"affects"}]},1,0]}
+          "expr": {"op":"and","args":[{"field":"windowed_candidate"},{"op":"coalesce","args":[{"op":"eq","args":[{"field":"request_class"},"eligible"]},false]}]}
+        },
+        {"name":"copy_row","type":"integer","nullable":false,"expr":{"op":"if","args":[{"op":"and","args":[{"op":"and","args":[{"field":"selected"},{"field":"copy"}]},{"field":"in_window"}]},1,0]}},
+        {
+          "name": "missing_detail",
+          "type": "boolean",
+          "nullable": false,
+          "expr": {"op":"or","args":[{"op":"is-null","args":[{"field":"last_cached_input_tokens"}]},{"op":"is-null","args":[{"field":"last_reasoning_output_tokens"}]}]}
+        }
+      ]
+    },
+    {
+      "op": "ordered-fold",
+      "input": "keyed_roles",
+      "as": "key_fold",
+      "keys": ["request_key"],
+      "order_by": [{"field":"request_key","direction":"asc"},{"field":"request_here","direction":"desc"},{"field":"session_id","direction":"asc"},{"field":"source_ordinal","direction":"asc"}],
+      "state": [
+        {"name":"author_session","type":"string","nullable":true,"initial":null},
+        {"name":"author_conflict","type":"boolean","nullable":false,"initial":false},
+        {"name":"any_counted","type":"boolean","nullable":false,"initial":false},
+        {"name":"any_provisional","type":"boolean","nullable":false,"initial":false},
+        {"name":"any_no_usage","type":"boolean","nullable":false,"initial":false},
+        {"name":"any_unplaced_no_usage","type":"boolean","nullable":false,"initial":false},
+        {"name":"any_unresolved_time","type":"boolean","nullable":false,"initial":false},
+        {"name":"any_invalid","type":"boolean","nullable":false,"initial":false},
+        {"name":"any_missing_core","type":"boolean","nullable":false,"initial":false},
+        {"name":"any_affecting","type":"boolean","nullable":false,"initial":false},
+        {"name":"any_split","type":"boolean","nullable":false,"initial":false},
+        {"name":"copy_count","type":"integer","nullable":false,"initial":0},
+        {"name":"evidence_seen","type":"boolean","nullable":false,"initial":false},
+        {"name":"disagree","type":"boolean","nullable":false,"initial":false},
+        {"name":"first_request_class","type":"string","nullable":true,"initial":null},
+        {"name":"first_timestamp_ms","type":"integer","nullable":true,"initial":null},
+        {"name":"first_last_input_tokens","type":"integer","nullable":true,"initial":null},
+        {"name":"first_last_cached_input_tokens","type":"integer","nullable":true,"initial":null},
+        {"name":"first_cache_creation_input_tokens","type":"integer","nullable":true,"initial":null},
+        {"name":"first_last_output_tokens","type":"integer","nullable":true,"initial":null},
+        {"name":"first_last_reasoning_output_tokens","type":"integer","nullable":true,"initial":null},
+        {"name":"first_last_total_tokens","type":"integer","nullable":true,"initial":null},
+        {"name":"token_set","type":"boolean","nullable":false,"initial":false},
+        {"name":"token_missing_detail","type":"boolean","nullable":false,"initial":false},
+        {"name":"token_input","type":"integer","nullable":true,"initial":null},
+        {"name":"token_cached","type":"integer","nullable":true,"initial":null},
+        {"name":"token_cache_creation","type":"integer","nullable":true,"initial":null},
+        {"name":"token_output","type":"integer","nullable":true,"initial":null},
+        {"name":"token_reasoning","type":"integer","nullable":true,"initial":null}
+      ],
+      "transitions": [
+        {
+          "state": "author_session",
+          "expr": {"op":"if","args":[{"op":"and","args":[{"field":"request_here"},{"op":"is-null","args":[{"state":"author_session"}]}]},{"field":"session_id"},{"state":"author_session"}]}
         },
         {
-          "name": "unplaced_no_usage_count",
-          "type": "integer",
-          "nullable": false,
+          "state": "author_conflict",
           "expr": {
-            "op": "if",
+            "op": "or",
             "args": [
-              {"op":"and","args":[{"op":"and","args":[{"field":"candidate"},{"field":"untimed"}]},{"op":"coalesce","args":[{"op":"eq","args":[{"field":"request_class"},"no-usage"]},false]}]},
-              1,
-              0
-            ]
-          }
-        },
-        {
-          "name": "missing_detail_count",
-          "type": "integer",
-          "nullable": false,
-          "expr": {
-            "op": "if",
-            "args": [
+              {"state":"author_conflict"},
               {
                 "op": "and",
-                "args": [{"field":"counted"},{"op":"or","args":[{"op":"is-null","args":[{"field":"last_cached_input_tokens"}]},{"op":"is-null","args":[{"field":"last_reasoning_output_tokens"}]}]}]
-              },
-              1,
-              0
+                "args": [
+                  {"op":"and","args":[{"field":"request_here"},{"op":"not","args":[{"op":"is-null","args":[{"state":"author_session"}]}]}]},
+                  {"op":"ne","args":[{"field":"session_id"},{"state":"author_session"}]}
+                ]
+              }
             ]
           }
         },
-        {"name":"counted_input_tokens","type":"integer","nullable":true,"expr":{"op":"if","args":[{"field":"counted"},{"field":"last_input_tokens"},null]}},
-        {"name":"counted_cached_input_tokens","type":"integer","nullable":true,"expr":{"op":"if","args":[{"field":"counted"},{"field":"last_cached_input_tokens"},null]}},
-        {"name":"counted_cache_creation_input_tokens","type":"integer","nullable":true,"expr":{"op":"if","args":[{"field":"counted"},{"field":"cache_creation_input_tokens"},null]}},
-        {"name":"counted_output_tokens","type":"integer","nullable":true,"expr":{"op":"if","args":[{"field":"counted"},{"field":"last_output_tokens"},null]}},
-        {"name":"counted_reasoning_output_tokens","type":"integer","nullable":true,"expr":{"op":"if","args":[{"field":"counted"},{"field":"last_reasoning_output_tokens"},null]}}
+        {"state":"any_counted","expr":{"op":"or","args":[{"state":"any_counted"},{"field":"counted"}]}},
+        {
+          "state": "any_provisional",
+          "expr": {
+            "op": "or",
+            "args": [{"state":"any_provisional"},{"op":"and","args":[{"field":"windowed_candidate"},{"op":"coalesce","args":[{"op":"eq","args":[{"field":"request_class"},"provisional"]},false]}]}]
+          }
+        },
+        {
+          "state": "any_no_usage",
+          "expr": {
+            "op": "or",
+            "args": [
+              {"state":"any_no_usage"},
+              {
+                "op": "and",
+                "args": [
+                  {"op":"and","args":[{"field":"windowed_candidate"},{"op":"coalesce","args":[{"op":"eq","args":[{"field":"request_class"},"no-usage"]},false]}]},
+                  {"op":"not","args":[{"field":"untimed"}]}
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "state": "any_unplaced_no_usage",
+          "expr": {
+            "op": "or",
+            "args": [
+              {"state":"any_unplaced_no_usage"},
+              {"op":"and","args":[{"op":"and","args":[{"field":"windowed_candidate"},{"op":"coalesce","args":[{"op":"eq","args":[{"field":"request_class"},"no-usage"]},false]}]},{"field":"untimed"}]}
+            ]
+          }
+        },
+        {
+          "state": "any_unresolved_time",
+          "expr": {"op":"or","args":[{"state":"any_unresolved_time"},{"op":"and","args":[{"op":"and","args":[{"field":"windowed_candidate"},{"field":"affects"}]},{"field":"untimed"}]}]}
+        },
+        {
+          "state": "any_invalid",
+          "expr": {
+            "op": "or",
+            "args": [{"state":"any_invalid"},{"op":"and","args":[{"field":"windowed_candidate"},{"op":"coalesce","args":[{"op":"eq","args":[{"field":"request_class"},"invalid"]},false]}]}]
+          }
+        },
+        {
+          "state": "any_missing_core",
+          "expr": {
+            "op": "or",
+            "args": [{"state":"any_missing_core"},{"op":"and","args":[{"field":"windowed_candidate"},{"op":"coalesce","args":[{"op":"eq","args":[{"field":"request_class"},"missing-core"]},false]}]}]
+          }
+        },
+        {"state":"any_affecting","expr":{"op":"or","args":[{"state":"any_affecting"},{"op":"and","args":[{"field":"windowed_candidate"},{"field":"affects"}]}]}},
+        {"state":"any_split","expr":{"op":"or","args":[{"state":"any_split"},{"field":"split"}]}},
+        {"state":"copy_count","expr":{"op":"add","args":[{"state":"copy_count"},{"field":"copy_row"}]}},
+        {
+          "state": "disagree",
+          "expr": {
+            "op": "or",
+            "args": [
+              {"state":"disagree"},
+              {
+                "op": "and",
+                "args": [
+                  {"op":"and","args":[{"field":"candidate"},{"state":"evidence_seen"}]},
+                  {
+                    "op": "not",
+                    "args": [
+                      {
+                        "op": "and",
+                        "args": [
+                          {
+                            "op": "and",
+                            "args": [
+                              {
+                                "op": "and",
+                                "args": [
+                                  {
+                                    "op": "and",
+                                    "args": [
+                                      {
+                                        "op": "and",
+                                        "args": [
+                                          {
+                                            "op": "and",
+                                            "args": [
+                                              {
+                                                "op": "and",
+                                                "args": [
+                                                  {
+                                                    "op": "or",
+                                                    "args": [
+                                                      {"op":"and","args":[{"op":"is-null","args":[{"field":"request_class"}]},{"op":"is-null","args":[{"state":"first_request_class"}]}]},
+                                                      {"op":"coalesce","args":[{"op":"eq","args":[{"field":"request_class"},{"state":"first_request_class"}]},false]}
+                                                    ]
+                                                  },
+                                                  {
+                                                    "op": "or",
+                                                    "args": [
+                                                      {"op":"and","args":[{"op":"is-null","args":[{"field":"timestamp_ms"}]},{"op":"is-null","args":[{"state":"first_timestamp_ms"}]}]},
+                                                      {"op":"coalesce","args":[{"op":"eq","args":[{"field":"timestamp_ms"},{"state":"first_timestamp_ms"}]},false]}
+                                                    ]
+                                                  }
+                                                ]
+                                              },
+                                              {
+                                                "op": "or",
+                                                "args": [
+                                                  {"op":"and","args":[{"op":"is-null","args":[{"field":"last_input_tokens"}]},{"op":"is-null","args":[{"state":"first_last_input_tokens"}]}]},
+                                                  {"op":"coalesce","args":[{"op":"eq","args":[{"field":"last_input_tokens"},{"state":"first_last_input_tokens"}]},false]}
+                                                ]
+                                              }
+                                            ]
+                                          },
+                                          {
+                                            "op": "or",
+                                            "args": [
+                                              {"op":"and","args":[{"op":"is-null","args":[{"field":"last_cached_input_tokens"}]},{"op":"is-null","args":[{"state":"first_last_cached_input_tokens"}]}]},
+                                              {"op":"coalesce","args":[{"op":"eq","args":[{"field":"last_cached_input_tokens"},{"state":"first_last_cached_input_tokens"}]},false]}
+                                            ]
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "op": "or",
+                                        "args": [
+                                          {
+                                            "op": "and",
+                                            "args": [{"op":"is-null","args":[{"field":"cache_creation_input_tokens"}]},{"op":"is-null","args":[{"state":"first_cache_creation_input_tokens"}]}]
+                                          },
+                                          {"op":"coalesce","args":[{"op":"eq","args":[{"field":"cache_creation_input_tokens"},{"state":"first_cache_creation_input_tokens"}]},false]}
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "op": "or",
+                                    "args": [
+                                      {"op":"and","args":[{"op":"is-null","args":[{"field":"last_output_tokens"}]},{"op":"is-null","args":[{"state":"first_last_output_tokens"}]}]},
+                                      {"op":"coalesce","args":[{"op":"eq","args":[{"field":"last_output_tokens"},{"state":"first_last_output_tokens"}]},false]}
+                                    ]
+                                  }
+                                ]
+                              },
+                              {
+                                "op": "or",
+                                "args": [
+                                  {"op":"and","args":[{"op":"is-null","args":[{"field":"last_reasoning_output_tokens"}]},{"op":"is-null","args":[{"state":"first_last_reasoning_output_tokens"}]}]},
+                                  {"op":"coalesce","args":[{"op":"eq","args":[{"field":"last_reasoning_output_tokens"},{"state":"first_last_reasoning_output_tokens"}]},false]}
+                                ]
+                              }
+                            ]
+                          },
+                          {
+                            "op": "or",
+                            "args": [
+                              {"op":"and","args":[{"op":"is-null","args":[{"field":"last_total_tokens"}]},{"op":"is-null","args":[{"state":"first_last_total_tokens"}]}]},
+                              {"op":"coalesce","args":[{"op":"eq","args":[{"field":"last_total_tokens"},{"state":"first_last_total_tokens"}]},false]}
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "state": "first_request_class",
+          "expr": {"op":"if","args":[{"op":"and","args":[{"field":"candidate"},{"op":"not","args":[{"state":"evidence_seen"}]}]},{"field":"request_class"},{"state":"first_request_class"}]}
+        },
+        {
+          "state": "first_timestamp_ms",
+          "expr": {"op":"if","args":[{"op":"and","args":[{"field":"candidate"},{"op":"not","args":[{"state":"evidence_seen"}]}]},{"field":"timestamp_ms"},{"state":"first_timestamp_ms"}]}
+        },
+        {
+          "state": "first_last_input_tokens",
+          "expr": {"op":"if","args":[{"op":"and","args":[{"field":"candidate"},{"op":"not","args":[{"state":"evidence_seen"}]}]},{"field":"last_input_tokens"},{"state":"first_last_input_tokens"}]}
+        },
+        {
+          "state": "first_last_cached_input_tokens",
+          "expr": {
+            "op": "if",
+            "args": [{"op":"and","args":[{"field":"candidate"},{"op":"not","args":[{"state":"evidence_seen"}]}]},{"field":"last_cached_input_tokens"},{"state":"first_last_cached_input_tokens"}]
+          }
+        },
+        {
+          "state": "first_cache_creation_input_tokens",
+          "expr": {
+            "op": "if",
+            "args": [{"op":"and","args":[{"field":"candidate"},{"op":"not","args":[{"state":"evidence_seen"}]}]},{"field":"cache_creation_input_tokens"},{"state":"first_cache_creation_input_tokens"}]
+          }
+        },
+        {
+          "state": "first_last_output_tokens",
+          "expr": {"op":"if","args":[{"op":"and","args":[{"field":"candidate"},{"op":"not","args":[{"state":"evidence_seen"}]}]},{"field":"last_output_tokens"},{"state":"first_last_output_tokens"}]}
+        },
+        {
+          "state": "first_last_reasoning_output_tokens",
+          "expr": {
+            "op": "if",
+            "args": [
+              {"op":"and","args":[{"field":"candidate"},{"op":"not","args":[{"state":"evidence_seen"}]}]},
+              {"field":"last_reasoning_output_tokens"},
+              {"state":"first_last_reasoning_output_tokens"}
+            ]
+          }
+        },
+        {
+          "state": "first_last_total_tokens",
+          "expr": {"op":"if","args":[{"op":"and","args":[{"field":"candidate"},{"op":"not","args":[{"state":"evidence_seen"}]}]},{"field":"last_total_tokens"},{"state":"first_last_total_tokens"}]}
+        },
+        {"state":"evidence_seen","expr":{"op":"or","args":[{"state":"evidence_seen"},{"field":"candidate"}]}},
+        {"state":"token_input","expr":{"op":"if","args":[{"op":"and","args":[{"field":"counted"},{"op":"not","args":[{"state":"token_set"}]}]},{"field":"last_input_tokens"},{"state":"token_input"}]}},
+        {
+          "state": "token_cached",
+          "expr": {"op":"if","args":[{"op":"and","args":[{"field":"counted"},{"op":"not","args":[{"state":"token_set"}]}]},{"field":"last_cached_input_tokens"},{"state":"token_cached"}]}
+        },
+        {
+          "state": "token_cache_creation",
+          "expr": {"op":"if","args":[{"op":"and","args":[{"field":"counted"},{"op":"not","args":[{"state":"token_set"}]}]},{"field":"cache_creation_input_tokens"},{"state":"token_cache_creation"}]}
+        },
+        {
+          "state": "token_output",
+          "expr": {"op":"if","args":[{"op":"and","args":[{"field":"counted"},{"op":"not","args":[{"state":"token_set"}]}]},{"field":"last_output_tokens"},{"state":"token_output"}]}
+        },
+        {
+          "state": "token_reasoning",
+          "expr": {"op":"if","args":[{"op":"and","args":[{"field":"counted"},{"op":"not","args":[{"state":"token_set"}]}]},{"field":"last_reasoning_output_tokens"},{"state":"token_reasoning"}]}
+        },
+        {
+          "state": "token_missing_detail",
+          "expr": {"op":"if","args":[{"op":"and","args":[{"field":"counted"},{"op":"not","args":[{"state":"token_set"}]}]},{"field":"missing_detail"},{"state":"token_missing_detail"}]}
+        },
+        {"state":"token_set","expr":{"op":"or","args":[{"state":"token_set"},{"field":"counted"}]}}
+      ],
+      "emit": [
+        {"name":"request_key","type":"string","nullable":true,"expr":{"field":"request_key"}},
+        {"name":"request_here","type":"boolean","nullable":false,"expr":{"field":"request_here"}},
+        {"name":"session_id","type":"string","nullable":false,"expr":{"field":"session_id"}},
+        {"name":"source_ordinal","type":"integer","nullable":false,"expr":{"field":"source_ordinal"}},
+        {"name":"counted_key","type":"integer","nullable":false,"expr":{"op":"if","args":[{"state":"any_counted"},1,0]}},
+        {"name":"provisional_key","type":"integer","nullable":false,"expr":{"op":"if","args":[{"state":"any_provisional"},1,0]}},
+        {"name":"no_usage_key","type":"integer","nullable":false,"expr":{"op":"if","args":[{"state":"any_no_usage"},1,0]}},
+        {"name":"unplaced_no_usage_key","type":"integer","nullable":false,"expr":{"op":"if","args":[{"state":"any_unplaced_no_usage"},1,0]}},
+        {"name":"unresolved_time_key","type":"integer","nullable":false,"expr":{"op":"if","args":[{"state":"any_unresolved_time"},1,0]}},
+        {"name":"invalid_key","type":"integer","nullable":false,"expr":{"op":"if","args":[{"state":"any_invalid"},1,0]}},
+        {"name":"missing_core_key","type":"integer","nullable":false,"expr":{"op":"if","args":[{"state":"any_missing_core"},1,0]}},
+        {"name":"split_key","type":"integer","nullable":false,"expr":{"op":"if","args":[{"state":"any_split"},1,0]}},
+        {"name":"conflicted_key","type":"integer","nullable":false,"expr":{"op":"if","args":[{"op":"and","args":[{"state":"author_conflict"},{"state":"any_affecting"}]},1,0]}},
+        {"name":"ambiguous_key","type":"integer","nullable":false,"expr":{"op":"if","args":[{"op":"and","args":[{"state":"disagree"},{"state":"any_affecting"}]},1,0]}},
+        {"name":"copy_count","type":"integer","nullable":false,"expr":{"state":"copy_count"}},
+        {"name":"missing_detail_key","type":"integer","nullable":false,"expr":{"op":"if","args":[{"op":"and","args":[{"state":"token_set"},{"state":"token_missing_detail"}]},1,0]}},
+        {"name":"token_input","type":"integer","nullable":true,"expr":{"state":"token_input"}},
+        {"name":"token_cached","type":"integer","nullable":true,"expr":{"state":"token_cached"}},
+        {"name":"token_cache_creation","type":"integer","nullable":true,"expr":{"state":"token_cache_creation"}},
+        {"name":"token_output","type":"integer","nullable":true,"expr":{"state":"token_output"}},
+        {"name":"token_reasoning","type":"integer","nullable":true,"expr":{"state":"token_reasoning"}}
       ]
     },
-    {"op":"filter","input":"keyed_flags","as":"windowed_keyed","where":[{"field":"in_window","op":"exact","value":true}]},
-    {"op":"filter","input":"windowed_keyed","as":"candidate_rows","where":[{"field":"candidate","op":"exact","value":true}]},
-    {"op":"distinct","input":"candidate_rows","as":"key_representatives","keys":["request_key"]},
-    {"op":"filter","input":"candidate_rows","as":"affecting_rows","where":[{"field":"affects","op":"exact","value":true}]},
-    {"op":"distinct","input":"affecting_rows","as":"affecting_keys","keys":["request_key"]},
-    {"op":"filter","input":"candidate_rows","as":"invalid_evidence_rows","where":[{"field":"request_class","op":"exact","value":"invalid"}]},
-    {"op":"distinct","input":"invalid_evidence_rows","as":"invalid_evidence_keys","keys":["request_key"]},
-    {"op":"filter","input":"candidate_rows","as":"missing_core_evidence_rows","where":[{"field":"request_class","op":"exact","value":"missing-core"}]},
-    {"op":"distinct","input":"missing_core_evidence_rows","as":"missing_core_evidence_keys","keys":["request_key"]},
-    {"op":"filter","input":"windowed_keyed","as":"split_rows","where":[{"field":"split","op":"exact","value":true}]},
-    {"op":"distinct","input":"split_rows","as":"split_keys","keys":["request_key"]},
     {
-      "op": "join",
-      "inputs": ["author_conflicts","affecting_keys"],
-      "as": "conflicted_rows",
-      "on": {"kind":"semi","keys":[{"left":"request_key","right":"request_key"}]},
-      "fields": [{"source":0,"field":"request_key","name":"request_key","type":"string","nullable":true}]
+      "op": "sort",
+      "input": "key_fold",
+      "as": "key_fold_last_first",
+      "by": [{"field":"request_key","direction":"asc"},{"field":"request_here","direction":"asc"},{"field":"session_id","direction":"desc"},{"field":"source_ordinal","direction":"desc"}]
     },
-    {"op":"distinct","input":"conflicted_rows","as":"conflicted_keys","keys":["request_key"]},
-    {"op":"filter","input":"keyed_flags","as":"evidence_rows","where":[{"field":"candidate","op":"exact","value":true}]},
-    {
-      "op": "join",
-      "inputs": ["evidence_rows","key_representatives"],
-      "as": "evidence_copies",
-      "on": {"kind":"semi","keys":[{"left":"request_key","right":"request_key"}]},
-      "fields": [
-        {"source":0,"field":"request_key","name":"request_key","type":"string","nullable":true},
-        {"source":0,"field":"request_class","name":"request_class","type":"string","nullable":true},
-        {"source":0,"field":"timestamp_ms","name":"timestamp_ms","type":"integer","nullable":true},
-        {"source":0,"field":"last_input_tokens","name":"last_input_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"last_cached_input_tokens","name":"last_cached_input_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"cache_creation_input_tokens","name":"cache_creation_input_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"last_output_tokens","name":"last_output_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"last_reasoning_output_tokens","name":"last_reasoning_output_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"last_total_tokens","name":"last_total_tokens","type":"integer","nullable":true}
-      ]
-    },
-    {
-      "op": "distinct",
-      "input": "evidence_copies",
-      "as": "evidence_profiles",
-      "keys": [
-        "request_key",
-        "request_class",
-        "timestamp_ms",
-        "last_input_tokens",
-        "last_cached_input_tokens",
-        "cache_creation_input_tokens",
-        "last_output_tokens",
-        "last_reasoning_output_tokens",
-        "last_total_tokens"
-      ]
-    },
-    {"op":"distinct","input":"evidence_profiles","as":"first_evidence_profiles","keys":["request_key"]},
-    {
-      "op": "join",
-      "inputs": ["evidence_profiles","first_evidence_profiles"],
-      "as": "disagreeing_profiles",
-      "on": {
-        "kind": "anti",
-        "keys": [
-          {"left":"request_key","right":"request_key"},
-          {"left":"request_class","right":"request_class","nulls_equal":true},
-          {"left":"timestamp_ms","right":"timestamp_ms","nulls_equal":true},
-          {"left":"last_input_tokens","right":"last_input_tokens","nulls_equal":true},
-          {"left":"last_cached_input_tokens","right":"last_cached_input_tokens","nulls_equal":true},
-          {"left":"cache_creation_input_tokens","right":"cache_creation_input_tokens","nulls_equal":true},
-          {"left":"last_output_tokens","right":"last_output_tokens","nulls_equal":true},
-          {"left":"last_reasoning_output_tokens","right":"last_reasoning_output_tokens","nulls_equal":true},
-          {"left":"last_total_tokens","right":"last_total_tokens","nulls_equal":true}
-        ]
-      },
-      "fields": [{"source":0,"field":"request_key","name":"request_key","type":"string","nullable":true}]
-    },
-    {
-      "op": "join",
-      "inputs": ["disagreeing_profiles","affecting_keys"],
-      "as": "affecting_disagreements",
-      "on": {"kind":"semi","keys":[{"left":"request_key","right":"request_key"}]},
-      "fields": [{"source":0,"field":"request_key","name":"request_key","type":"string","nullable":true}]
-    },
-    {"op":"distinct","input":"affecting_disagreements","as":"ambiguous_keys","keys":["request_key"]},
+    {"op":"distinct","input":"key_fold_last_first","as":"key_states","keys":["request_key"]},
     {
       "op": "aggregate",
-      "input": "key_representatives",
+      "input": "key_states",
       "as": "key_totals",
       "metrics": [
-        {"name":"key_missing_detail_count","op":"sum","field":"missing_detail_count"},
-        {"name":"request_input_tokens","op":"sum","field":"counted_input_tokens"},
-        {"name":"request_cached_input_tokens","op":"sum","field":"counted_cached_input_tokens"},
-        {"name":"request_cached_input_count","op":"count","field":"counted_cached_input_tokens"},
-        {"name":"request_cache_creation_input_tokens","op":"sum","field":"counted_cache_creation_input_tokens"},
-        {"name":"request_cache_creation_input_count","op":"count","field":"counted_cache_creation_input_tokens"},
-        {"name":"request_output_tokens","op":"sum","field":"counted_output_tokens"},
-        {"name":"request_reasoning_output_tokens","op":"sum","field":"counted_reasoning_output_tokens"},
-        {"name":"request_reasoning_output_count","op":"count","field":"counted_reasoning_output_tokens"}
+        {"name":"request_count","op":"sum","field":"counted_key"},
+        {"name":"key_provisional_count","op":"sum","field":"provisional_key"},
+        {"name":"key_no_usage_count","op":"sum","field":"no_usage_key"},
+        {"name":"key_unplaced_no_usage_count","op":"sum","field":"unplaced_no_usage_key"},
+        {"name":"key_unresolved_time_count","op":"sum","field":"unresolved_time_key"},
+        {"name":"key_invalid_count","op":"sum","field":"invalid_key"},
+        {"name":"key_missing_core_count","op":"sum","field":"missing_core_key"},
+        {"name":"split_request_count","op":"sum","field":"split_key"},
+        {"name":"conflicted_request_count","op":"sum","field":"conflicted_key"},
+        {"name":"ambiguous_key_count","op":"sum","field":"ambiguous_key"},
+        {"name":"key_replayed_count","op":"sum","field":"copy_count"},
+        {"name":"key_missing_detail_count","op":"sum","field":"missing_detail_key"},
+        {"name":"request_input_tokens","op":"sum","field":"token_input"},
+        {"name":"request_cached_input_tokens","op":"sum","field":"token_cached"},
+        {"name":"request_cached_input_count","op":"count","field":"token_cached"},
+        {"name":"request_cache_creation_input_tokens","op":"sum","field":"token_cache_creation"},
+        {"name":"request_cache_creation_input_count","op":"count","field":"token_cache_creation"},
+        {"name":"request_output_tokens","op":"sum","field":"token_output"},
+        {"name":"request_reasoning_output_tokens","op":"sum","field":"token_reasoning"},
+        {"name":"request_reasoning_output_count","op":"count","field":"token_reasoning"}
       ]
     },
-    {"op":"filter","input":"candidate_rows","as":"eligible_evidence_rows","where":[{"field":"counted","op":"exact","value":true}]},
-    {"op":"distinct","input":"eligible_evidence_rows","as":"eligible_evidence_keys","keys":["request_key"]},
-    {"op":"aggregate","input":"eligible_evidence_keys","as":"eligible_key_totals","metrics":[{"name":"request_count","op":"count"}]},
-    {"op":"filter","input":"candidate_rows","as":"provisional_evidence_rows","where":[{"field":"request_class","op":"exact","value":"provisional"}]},
-    {"op":"distinct","input":"provisional_evidence_rows","as":"provisional_evidence_keys","keys":["request_key"]},
-    {"op":"aggregate","input":"provisional_evidence_keys","as":"provisional_key_totals","metrics":[{"name":"key_provisional_count","op":"count"}]},
-    {"op":"filter","input":"candidate_rows","as":"no_usage_evidence_rows","where":[{"field":"request_class","op":"exact","value":"no-usage"},{"field":"untimed","op":"exact","value":false}]},
-    {"op":"distinct","input":"no_usage_evidence_rows","as":"no_usage_evidence_keys","keys":["request_key"]},
-    {"op":"aggregate","input":"no_usage_evidence_keys","as":"no_usage_key_totals","metrics":[{"name":"key_no_usage_count","op":"count"}]},
-    {"op":"filter","input":"candidate_rows","as":"unplaced_no_usage_evidence_rows","where":[{"field":"request_class","op":"exact","value":"no-usage"},{"field":"untimed","op":"exact","value":true}]},
-    {"op":"distinct","input":"unplaced_no_usage_evidence_rows","as":"unplaced_no_usage_evidence_keys","keys":["request_key"]},
-    {"op":"aggregate","input":"unplaced_no_usage_evidence_keys","as":"unplaced_no_usage_key_totals","metrics":[{"name":"key_unplaced_no_usage_count","op":"count"}]},
-    {"op":"filter","input":"candidate_rows","as":"unresolved_time_evidence_rows","where":[{"field":"affects","op":"exact","value":true},{"field":"untimed","op":"exact","value":true}]},
-    {"op":"distinct","input":"unresolved_time_evidence_rows","as":"unresolved_time_evidence_keys","keys":["request_key"]},
-    {"op":"aggregate","input":"unresolved_time_evidence_keys","as":"unresolved_time_key_totals","metrics":[{"name":"key_unresolved_time_count","op":"count"}]},
-    {"op":"aggregate","input":"invalid_evidence_keys","as":"invalid_key_totals","metrics":[{"name":"key_invalid_count","op":"count"}]},
-    {"op":"aggregate","input":"missing_core_evidence_keys","as":"missing_core_key_totals","metrics":[{"name":"key_missing_core_count","op":"count"}]},
-    {"op":"aggregate","input":"windowed_keyed","as":"copy_totals","metrics":[{"name":"key_replayed_count","op":"sum","field":"copy_count"}]},
-    {"op":"aggregate","input":"ambiguous_keys","as":"ambiguous_key_totals","metrics":[{"name":"ambiguous_key_count","op":"count"}]},
-    {"op":"aggregate","input":"split_keys","as":"split_totals","metrics":[{"name":"split_request_count","op":"count"}]},
-    {"op":"aggregate","input":"conflicted_keys","as":"conflict_totals","metrics":[{"name":"conflicted_request_count","op":"count"}]},
     {"op":"derive","input":"usage_totals","as":"keyed_usage_totals","fields":[{"name":"aggregate_key","type":"integer","nullable":false,"expr":{"op":"if","args":[true,1,0]}}]},
     {"op":"derive","input":"key_totals","as":"keyed_key_totals","fields":[{"name":"aggregate_key","type":"integer","nullable":false,"expr":{"op":"if","args":[true,1,0]}}]},
-    {"op":"derive","input":"eligible_key_totals","as":"keyed_eligible_key_totals","fields":[{"name":"aggregate_key","type":"integer","nullable":false,"expr":{"op":"if","args":[true,1,0]}}]},
-    {"op":"derive","input":"provisional_key_totals","as":"keyed_provisional_key_totals","fields":[{"name":"aggregate_key","type":"integer","nullable":false,"expr":{"op":"if","args":[true,1,0]}}]},
-    {"op":"derive","input":"no_usage_key_totals","as":"keyed_no_usage_key_totals","fields":[{"name":"aggregate_key","type":"integer","nullable":false,"expr":{"op":"if","args":[true,1,0]}}]},
-    {
-      "op": "derive",
-      "input": "unplaced_no_usage_key_totals",
-      "as": "keyed_unplaced_no_usage_key_totals",
-      "fields": [{"name":"aggregate_key","type":"integer","nullable":false,"expr":{"op":"if","args":[true,1,0]}}]
-    },
-    {
-      "op": "derive",
-      "input": "unresolved_time_key_totals",
-      "as": "keyed_unresolved_time_key_totals",
-      "fields": [{"name":"aggregate_key","type":"integer","nullable":false,"expr":{"op":"if","args":[true,1,0]}}]
-    },
-    {"op":"derive","input":"invalid_key_totals","as":"keyed_invalid_key_totals","fields":[{"name":"aggregate_key","type":"integer","nullable":false,"expr":{"op":"if","args":[true,1,0]}}]},
-    {"op":"derive","input":"missing_core_key_totals","as":"keyed_missing_core_key_totals","fields":[{"name":"aggregate_key","type":"integer","nullable":false,"expr":{"op":"if","args":[true,1,0]}}]},
-    {"op":"derive","input":"copy_totals","as":"keyed_copy_totals","fields":[{"name":"aggregate_key","type":"integer","nullable":false,"expr":{"op":"if","args":[true,1,0]}}]},
-    {"op":"derive","input":"ambiguous_key_totals","as":"keyed_ambiguous_key_totals","fields":[{"name":"aggregate_key","type":"integer","nullable":false,"expr":{"op":"if","args":[true,1,0]}}]},
-    {"op":"derive","input":"split_totals","as":"keyed_split_totals","fields":[{"name":"aggregate_key","type":"integer","nullable":false,"expr":{"op":"if","args":[true,1,0]}}]},
-    {"op":"derive","input":"conflict_totals","as":"keyed_conflict_totals","fields":[{"name":"aggregate_key","type":"integer","nullable":false,"expr":{"op":"if","args":[true,1,0]}}]},
     {
       "op": "join",
       "inputs": ["keyed_usage_totals","keyed_key_totals"],
-      "as": "totals_join_1",
+      "as": "combined_totals",
       "on": {"kind":"inner","keys":[{"left":"aggregate_key","right":"aggregate_key"}]},
       "fields": [
-        {"source":0,"field":"aggregate_key","name":"aggregate_key","type":"integer","nullable":false},
         {"source":0,"field":"candidate_count","name":"candidate_count","type":"integer","nullable":false},
         {"source":0,"field":"transition_count","name":"transition_count","type":"integer","nullable":true},
         {"source":0,"field":"invalid_observation_count","name":"row_invalid_observation_count","type":"integer","nullable":true},
@@ -1326,6 +1474,17 @@
         {"source":0,"field":"provisional_observation_count","name":"row_provisional_observation_count","type":"integer","nullable":true},
         {"source":0,"field":"replayed_observation_count","name":"row_replayed_observation_count","type":"integer","nullable":true},
         {"source":0,"field":"unkeyed_observation_count","name":"unkeyed_observation_count","type":"integer","nullable":true},
+        {"source":1,"field":"request_count","name":"request_count","type":"integer","nullable":true},
+        {"source":1,"field":"key_provisional_count","name":"key_provisional_count","type":"integer","nullable":true},
+        {"source":1,"field":"key_no_usage_count","name":"key_no_usage_count","type":"integer","nullable":true},
+        {"source":1,"field":"key_unplaced_no_usage_count","name":"key_unplaced_no_usage_count","type":"integer","nullable":true},
+        {"source":1,"field":"key_unresolved_time_count","name":"key_unresolved_time_count","type":"integer","nullable":true},
+        {"source":1,"field":"key_invalid_count","name":"key_invalid_count","type":"integer","nullable":true},
+        {"source":1,"field":"key_missing_core_count","name":"key_missing_core_count","type":"integer","nullable":true},
+        {"source":1,"field":"split_request_count","name":"split_request_count","type":"integer","nullable":true},
+        {"source":1,"field":"conflicted_request_count","name":"conflicted_request_count","type":"integer","nullable":true},
+        {"source":1,"field":"ambiguous_key_count","name":"ambiguous_key_count","type":"integer","nullable":true},
+        {"source":1,"field":"key_replayed_count","name":"key_replayed_count","type":"integer","nullable":true},
         {"source":1,"field":"key_missing_detail_count","name":"key_missing_detail_count","type":"integer","nullable":true},
         {"source":1,"field":"request_input_tokens","name":"request_input_tokens","type":"integer","nullable":true},
         {"source":1,"field":"request_cached_input_tokens","name":"request_cached_input_tokens","type":"integer","nullable":true},
@@ -1335,490 +1494,6 @@
         {"source":1,"field":"request_output_tokens","name":"request_output_tokens","type":"integer","nullable":true},
         {"source":1,"field":"request_reasoning_output_tokens","name":"request_reasoning_output_tokens","type":"integer","nullable":true},
         {"source":1,"field":"request_reasoning_output_count","name":"request_reasoning_output_count","type":"integer","nullable":false}
-      ]
-    },
-    {
-      "op": "join",
-      "inputs": ["totals_join_1","keyed_eligible_key_totals"],
-      "as": "totals_join_2",
-      "on": {"kind":"inner","keys":[{"left":"aggregate_key","right":"aggregate_key"}]},
-      "fields": [
-        {"source":0,"field":"aggregate_key","name":"aggregate_key","type":"integer","nullable":false},
-        {"source":0,"field":"candidate_count","name":"candidate_count","type":"integer","nullable":false},
-        {"source":0,"field":"transition_count","name":"transition_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_invalid_observation_count","name":"row_invalid_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_ambiguous_observation_count","name":"row_ambiguous_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_missing_core_observation_count","name":"row_missing_core_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_missing_detail_observation_count","name":"row_missing_detail_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"legacy_observation_count","name":"legacy_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"unanchored_observation_count","name":"unanchored_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_no_usage_observation_count","name":"row_no_usage_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_unplaced_no_usage_observation_count","name":"row_unplaced_no_usage_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_unavailable_observation_count","name":"row_unavailable_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"unresolved_ancestry_observation_count","name":"unresolved_ancestry_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_unresolved_time_observation_count","name":"row_unresolved_time_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"raw_input_tokens","name":"raw_input_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"raw_cached_input_tokens","name":"raw_cached_input_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"raw_output_tokens","name":"raw_output_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"raw_reasoning_output_tokens","name":"raw_reasoning_output_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"row_provisional_observation_count","name":"row_provisional_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_replayed_observation_count","name":"row_replayed_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"unkeyed_observation_count","name":"unkeyed_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"key_missing_detail_count","name":"key_missing_detail_count","type":"integer","nullable":true},
-        {"source":0,"field":"request_input_tokens","name":"request_input_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"request_cached_input_tokens","name":"request_cached_input_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"request_cached_input_count","name":"request_cached_input_count","type":"integer","nullable":false},
-        {"source":0,"field":"request_cache_creation_input_tokens","name":"request_cache_creation_input_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"request_cache_creation_input_count","name":"request_cache_creation_input_count","type":"integer","nullable":false},
-        {"source":0,"field":"request_output_tokens","name":"request_output_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"request_reasoning_output_tokens","name":"request_reasoning_output_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"request_reasoning_output_count","name":"request_reasoning_output_count","type":"integer","nullable":false},
-        {"source":1,"field":"request_count","name":"request_count","type":"integer","nullable":false}
-      ]
-    },
-    {
-      "op": "join",
-      "inputs": ["totals_join_2","keyed_provisional_key_totals"],
-      "as": "totals_join_3",
-      "on": {"kind":"inner","keys":[{"left":"aggregate_key","right":"aggregate_key"}]},
-      "fields": [
-        {"source":0,"field":"aggregate_key","name":"aggregate_key","type":"integer","nullable":false},
-        {"source":0,"field":"candidate_count","name":"candidate_count","type":"integer","nullable":false},
-        {"source":0,"field":"transition_count","name":"transition_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_invalid_observation_count","name":"row_invalid_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_ambiguous_observation_count","name":"row_ambiguous_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_missing_core_observation_count","name":"row_missing_core_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_missing_detail_observation_count","name":"row_missing_detail_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"legacy_observation_count","name":"legacy_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"unanchored_observation_count","name":"unanchored_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_no_usage_observation_count","name":"row_no_usage_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_unplaced_no_usage_observation_count","name":"row_unplaced_no_usage_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_unavailable_observation_count","name":"row_unavailable_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"unresolved_ancestry_observation_count","name":"unresolved_ancestry_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_unresolved_time_observation_count","name":"row_unresolved_time_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"raw_input_tokens","name":"raw_input_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"raw_cached_input_tokens","name":"raw_cached_input_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"raw_output_tokens","name":"raw_output_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"raw_reasoning_output_tokens","name":"raw_reasoning_output_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"row_provisional_observation_count","name":"row_provisional_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_replayed_observation_count","name":"row_replayed_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"unkeyed_observation_count","name":"unkeyed_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"key_missing_detail_count","name":"key_missing_detail_count","type":"integer","nullable":true},
-        {"source":0,"field":"request_input_tokens","name":"request_input_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"request_cached_input_tokens","name":"request_cached_input_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"request_cached_input_count","name":"request_cached_input_count","type":"integer","nullable":false},
-        {"source":0,"field":"request_cache_creation_input_tokens","name":"request_cache_creation_input_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"request_cache_creation_input_count","name":"request_cache_creation_input_count","type":"integer","nullable":false},
-        {"source":0,"field":"request_output_tokens","name":"request_output_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"request_reasoning_output_tokens","name":"request_reasoning_output_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"request_reasoning_output_count","name":"request_reasoning_output_count","type":"integer","nullable":false},
-        {"source":0,"field":"request_count","name":"request_count","type":"integer","nullable":false},
-        {"source":1,"field":"key_provisional_count","name":"key_provisional_count","type":"integer","nullable":false}
-      ]
-    },
-    {
-      "op": "join",
-      "inputs": ["totals_join_3","keyed_no_usage_key_totals"],
-      "as": "totals_join_4",
-      "on": {"kind":"inner","keys":[{"left":"aggregate_key","right":"aggregate_key"}]},
-      "fields": [
-        {"source":0,"field":"aggregate_key","name":"aggregate_key","type":"integer","nullable":false},
-        {"source":0,"field":"candidate_count","name":"candidate_count","type":"integer","nullable":false},
-        {"source":0,"field":"transition_count","name":"transition_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_invalid_observation_count","name":"row_invalid_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_ambiguous_observation_count","name":"row_ambiguous_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_missing_core_observation_count","name":"row_missing_core_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_missing_detail_observation_count","name":"row_missing_detail_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"legacy_observation_count","name":"legacy_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"unanchored_observation_count","name":"unanchored_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_no_usage_observation_count","name":"row_no_usage_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_unplaced_no_usage_observation_count","name":"row_unplaced_no_usage_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_unavailable_observation_count","name":"row_unavailable_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"unresolved_ancestry_observation_count","name":"unresolved_ancestry_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_unresolved_time_observation_count","name":"row_unresolved_time_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"raw_input_tokens","name":"raw_input_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"raw_cached_input_tokens","name":"raw_cached_input_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"raw_output_tokens","name":"raw_output_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"raw_reasoning_output_tokens","name":"raw_reasoning_output_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"row_provisional_observation_count","name":"row_provisional_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_replayed_observation_count","name":"row_replayed_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"unkeyed_observation_count","name":"unkeyed_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"key_missing_detail_count","name":"key_missing_detail_count","type":"integer","nullable":true},
-        {"source":0,"field":"request_input_tokens","name":"request_input_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"request_cached_input_tokens","name":"request_cached_input_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"request_cached_input_count","name":"request_cached_input_count","type":"integer","nullable":false},
-        {"source":0,"field":"request_cache_creation_input_tokens","name":"request_cache_creation_input_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"request_cache_creation_input_count","name":"request_cache_creation_input_count","type":"integer","nullable":false},
-        {"source":0,"field":"request_output_tokens","name":"request_output_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"request_reasoning_output_tokens","name":"request_reasoning_output_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"request_reasoning_output_count","name":"request_reasoning_output_count","type":"integer","nullable":false},
-        {"source":0,"field":"request_count","name":"request_count","type":"integer","nullable":false},
-        {"source":0,"field":"key_provisional_count","name":"key_provisional_count","type":"integer","nullable":false},
-        {"source":1,"field":"key_no_usage_count","name":"key_no_usage_count","type":"integer","nullable":false}
-      ]
-    },
-    {
-      "op": "join",
-      "inputs": ["totals_join_4","keyed_unplaced_no_usage_key_totals"],
-      "as": "totals_join_5",
-      "on": {"kind":"inner","keys":[{"left":"aggregate_key","right":"aggregate_key"}]},
-      "fields": [
-        {"source":0,"field":"aggregate_key","name":"aggregate_key","type":"integer","nullable":false},
-        {"source":0,"field":"candidate_count","name":"candidate_count","type":"integer","nullable":false},
-        {"source":0,"field":"transition_count","name":"transition_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_invalid_observation_count","name":"row_invalid_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_ambiguous_observation_count","name":"row_ambiguous_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_missing_core_observation_count","name":"row_missing_core_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_missing_detail_observation_count","name":"row_missing_detail_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"legacy_observation_count","name":"legacy_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"unanchored_observation_count","name":"unanchored_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_no_usage_observation_count","name":"row_no_usage_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_unplaced_no_usage_observation_count","name":"row_unplaced_no_usage_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_unavailable_observation_count","name":"row_unavailable_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"unresolved_ancestry_observation_count","name":"unresolved_ancestry_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_unresolved_time_observation_count","name":"row_unresolved_time_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"raw_input_tokens","name":"raw_input_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"raw_cached_input_tokens","name":"raw_cached_input_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"raw_output_tokens","name":"raw_output_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"raw_reasoning_output_tokens","name":"raw_reasoning_output_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"row_provisional_observation_count","name":"row_provisional_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_replayed_observation_count","name":"row_replayed_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"unkeyed_observation_count","name":"unkeyed_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"key_missing_detail_count","name":"key_missing_detail_count","type":"integer","nullable":true},
-        {"source":0,"field":"request_input_tokens","name":"request_input_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"request_cached_input_tokens","name":"request_cached_input_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"request_cached_input_count","name":"request_cached_input_count","type":"integer","nullable":false},
-        {"source":0,"field":"request_cache_creation_input_tokens","name":"request_cache_creation_input_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"request_cache_creation_input_count","name":"request_cache_creation_input_count","type":"integer","nullable":false},
-        {"source":0,"field":"request_output_tokens","name":"request_output_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"request_reasoning_output_tokens","name":"request_reasoning_output_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"request_reasoning_output_count","name":"request_reasoning_output_count","type":"integer","nullable":false},
-        {"source":0,"field":"request_count","name":"request_count","type":"integer","nullable":false},
-        {"source":0,"field":"key_provisional_count","name":"key_provisional_count","type":"integer","nullable":false},
-        {"source":0,"field":"key_no_usage_count","name":"key_no_usage_count","type":"integer","nullable":false},
-        {"source":1,"field":"key_unplaced_no_usage_count","name":"key_unplaced_no_usage_count","type":"integer","nullable":false}
-      ]
-    },
-    {
-      "op": "join",
-      "inputs": ["totals_join_5","keyed_unresolved_time_key_totals"],
-      "as": "totals_join_6",
-      "on": {"kind":"inner","keys":[{"left":"aggregate_key","right":"aggregate_key"}]},
-      "fields": [
-        {"source":0,"field":"aggregate_key","name":"aggregate_key","type":"integer","nullable":false},
-        {"source":0,"field":"candidate_count","name":"candidate_count","type":"integer","nullable":false},
-        {"source":0,"field":"transition_count","name":"transition_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_invalid_observation_count","name":"row_invalid_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_ambiguous_observation_count","name":"row_ambiguous_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_missing_core_observation_count","name":"row_missing_core_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_missing_detail_observation_count","name":"row_missing_detail_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"legacy_observation_count","name":"legacy_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"unanchored_observation_count","name":"unanchored_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_no_usage_observation_count","name":"row_no_usage_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_unplaced_no_usage_observation_count","name":"row_unplaced_no_usage_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_unavailable_observation_count","name":"row_unavailable_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"unresolved_ancestry_observation_count","name":"unresolved_ancestry_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_unresolved_time_observation_count","name":"row_unresolved_time_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"raw_input_tokens","name":"raw_input_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"raw_cached_input_tokens","name":"raw_cached_input_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"raw_output_tokens","name":"raw_output_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"raw_reasoning_output_tokens","name":"raw_reasoning_output_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"row_provisional_observation_count","name":"row_provisional_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_replayed_observation_count","name":"row_replayed_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"unkeyed_observation_count","name":"unkeyed_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"key_missing_detail_count","name":"key_missing_detail_count","type":"integer","nullable":true},
-        {"source":0,"field":"request_input_tokens","name":"request_input_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"request_cached_input_tokens","name":"request_cached_input_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"request_cached_input_count","name":"request_cached_input_count","type":"integer","nullable":false},
-        {"source":0,"field":"request_cache_creation_input_tokens","name":"request_cache_creation_input_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"request_cache_creation_input_count","name":"request_cache_creation_input_count","type":"integer","nullable":false},
-        {"source":0,"field":"request_output_tokens","name":"request_output_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"request_reasoning_output_tokens","name":"request_reasoning_output_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"request_reasoning_output_count","name":"request_reasoning_output_count","type":"integer","nullable":false},
-        {"source":0,"field":"request_count","name":"request_count","type":"integer","nullable":false},
-        {"source":0,"field":"key_provisional_count","name":"key_provisional_count","type":"integer","nullable":false},
-        {"source":0,"field":"key_no_usage_count","name":"key_no_usage_count","type":"integer","nullable":false},
-        {"source":0,"field":"key_unplaced_no_usage_count","name":"key_unplaced_no_usage_count","type":"integer","nullable":false},
-        {"source":1,"field":"key_unresolved_time_count","name":"key_unresolved_time_count","type":"integer","nullable":false}
-      ]
-    },
-    {
-      "op": "join",
-      "inputs": ["totals_join_6","keyed_invalid_key_totals"],
-      "as": "totals_join_7",
-      "on": {"kind":"inner","keys":[{"left":"aggregate_key","right":"aggregate_key"}]},
-      "fields": [
-        {"source":0,"field":"aggregate_key","name":"aggregate_key","type":"integer","nullable":false},
-        {"source":0,"field":"candidate_count","name":"candidate_count","type":"integer","nullable":false},
-        {"source":0,"field":"transition_count","name":"transition_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_invalid_observation_count","name":"row_invalid_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_ambiguous_observation_count","name":"row_ambiguous_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_missing_core_observation_count","name":"row_missing_core_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_missing_detail_observation_count","name":"row_missing_detail_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"legacy_observation_count","name":"legacy_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"unanchored_observation_count","name":"unanchored_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_no_usage_observation_count","name":"row_no_usage_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_unplaced_no_usage_observation_count","name":"row_unplaced_no_usage_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_unavailable_observation_count","name":"row_unavailable_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"unresolved_ancestry_observation_count","name":"unresolved_ancestry_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_unresolved_time_observation_count","name":"row_unresolved_time_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"raw_input_tokens","name":"raw_input_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"raw_cached_input_tokens","name":"raw_cached_input_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"raw_output_tokens","name":"raw_output_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"raw_reasoning_output_tokens","name":"raw_reasoning_output_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"row_provisional_observation_count","name":"row_provisional_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_replayed_observation_count","name":"row_replayed_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"unkeyed_observation_count","name":"unkeyed_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"key_missing_detail_count","name":"key_missing_detail_count","type":"integer","nullable":true},
-        {"source":0,"field":"request_input_tokens","name":"request_input_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"request_cached_input_tokens","name":"request_cached_input_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"request_cached_input_count","name":"request_cached_input_count","type":"integer","nullable":false},
-        {"source":0,"field":"request_cache_creation_input_tokens","name":"request_cache_creation_input_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"request_cache_creation_input_count","name":"request_cache_creation_input_count","type":"integer","nullable":false},
-        {"source":0,"field":"request_output_tokens","name":"request_output_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"request_reasoning_output_tokens","name":"request_reasoning_output_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"request_reasoning_output_count","name":"request_reasoning_output_count","type":"integer","nullable":false},
-        {"source":0,"field":"request_count","name":"request_count","type":"integer","nullable":false},
-        {"source":0,"field":"key_provisional_count","name":"key_provisional_count","type":"integer","nullable":false},
-        {"source":0,"field":"key_no_usage_count","name":"key_no_usage_count","type":"integer","nullable":false},
-        {"source":0,"field":"key_unplaced_no_usage_count","name":"key_unplaced_no_usage_count","type":"integer","nullable":false},
-        {"source":0,"field":"key_unresolved_time_count","name":"key_unresolved_time_count","type":"integer","nullable":false},
-        {"source":1,"field":"key_invalid_count","name":"key_invalid_count","type":"integer","nullable":false}
-      ]
-    },
-    {
-      "op": "join",
-      "inputs": ["totals_join_7","keyed_missing_core_key_totals"],
-      "as": "totals_join_8",
-      "on": {"kind":"inner","keys":[{"left":"aggregate_key","right":"aggregate_key"}]},
-      "fields": [
-        {"source":0,"field":"aggregate_key","name":"aggregate_key","type":"integer","nullable":false},
-        {"source":0,"field":"candidate_count","name":"candidate_count","type":"integer","nullable":false},
-        {"source":0,"field":"transition_count","name":"transition_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_invalid_observation_count","name":"row_invalid_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_ambiguous_observation_count","name":"row_ambiguous_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_missing_core_observation_count","name":"row_missing_core_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_missing_detail_observation_count","name":"row_missing_detail_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"legacy_observation_count","name":"legacy_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"unanchored_observation_count","name":"unanchored_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_no_usage_observation_count","name":"row_no_usage_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_unplaced_no_usage_observation_count","name":"row_unplaced_no_usage_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_unavailable_observation_count","name":"row_unavailable_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"unresolved_ancestry_observation_count","name":"unresolved_ancestry_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_unresolved_time_observation_count","name":"row_unresolved_time_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"raw_input_tokens","name":"raw_input_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"raw_cached_input_tokens","name":"raw_cached_input_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"raw_output_tokens","name":"raw_output_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"raw_reasoning_output_tokens","name":"raw_reasoning_output_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"row_provisional_observation_count","name":"row_provisional_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_replayed_observation_count","name":"row_replayed_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"unkeyed_observation_count","name":"unkeyed_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"key_missing_detail_count","name":"key_missing_detail_count","type":"integer","nullable":true},
-        {"source":0,"field":"request_input_tokens","name":"request_input_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"request_cached_input_tokens","name":"request_cached_input_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"request_cached_input_count","name":"request_cached_input_count","type":"integer","nullable":false},
-        {"source":0,"field":"request_cache_creation_input_tokens","name":"request_cache_creation_input_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"request_cache_creation_input_count","name":"request_cache_creation_input_count","type":"integer","nullable":false},
-        {"source":0,"field":"request_output_tokens","name":"request_output_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"request_reasoning_output_tokens","name":"request_reasoning_output_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"request_reasoning_output_count","name":"request_reasoning_output_count","type":"integer","nullable":false},
-        {"source":0,"field":"request_count","name":"request_count","type":"integer","nullable":false},
-        {"source":0,"field":"key_provisional_count","name":"key_provisional_count","type":"integer","nullable":false},
-        {"source":0,"field":"key_no_usage_count","name":"key_no_usage_count","type":"integer","nullable":false},
-        {"source":0,"field":"key_unplaced_no_usage_count","name":"key_unplaced_no_usage_count","type":"integer","nullable":false},
-        {"source":0,"field":"key_unresolved_time_count","name":"key_unresolved_time_count","type":"integer","nullable":false},
-        {"source":0,"field":"key_invalid_count","name":"key_invalid_count","type":"integer","nullable":false},
-        {"source":1,"field":"key_missing_core_count","name":"key_missing_core_count","type":"integer","nullable":false}
-      ]
-    },
-    {
-      "op": "join",
-      "inputs": ["totals_join_8","keyed_copy_totals"],
-      "as": "totals_join_9",
-      "on": {"kind":"inner","keys":[{"left":"aggregate_key","right":"aggregate_key"}]},
-      "fields": [
-        {"source":0,"field":"aggregate_key","name":"aggregate_key","type":"integer","nullable":false},
-        {"source":0,"field":"candidate_count","name":"candidate_count","type":"integer","nullable":false},
-        {"source":0,"field":"transition_count","name":"transition_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_invalid_observation_count","name":"row_invalid_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_ambiguous_observation_count","name":"row_ambiguous_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_missing_core_observation_count","name":"row_missing_core_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_missing_detail_observation_count","name":"row_missing_detail_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"legacy_observation_count","name":"legacy_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"unanchored_observation_count","name":"unanchored_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_no_usage_observation_count","name":"row_no_usage_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_unplaced_no_usage_observation_count","name":"row_unplaced_no_usage_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_unavailable_observation_count","name":"row_unavailable_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"unresolved_ancestry_observation_count","name":"unresolved_ancestry_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_unresolved_time_observation_count","name":"row_unresolved_time_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"raw_input_tokens","name":"raw_input_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"raw_cached_input_tokens","name":"raw_cached_input_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"raw_output_tokens","name":"raw_output_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"raw_reasoning_output_tokens","name":"raw_reasoning_output_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"row_provisional_observation_count","name":"row_provisional_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_replayed_observation_count","name":"row_replayed_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"unkeyed_observation_count","name":"unkeyed_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"key_missing_detail_count","name":"key_missing_detail_count","type":"integer","nullable":true},
-        {"source":0,"field":"request_input_tokens","name":"request_input_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"request_cached_input_tokens","name":"request_cached_input_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"request_cached_input_count","name":"request_cached_input_count","type":"integer","nullable":false},
-        {"source":0,"field":"request_cache_creation_input_tokens","name":"request_cache_creation_input_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"request_cache_creation_input_count","name":"request_cache_creation_input_count","type":"integer","nullable":false},
-        {"source":0,"field":"request_output_tokens","name":"request_output_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"request_reasoning_output_tokens","name":"request_reasoning_output_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"request_reasoning_output_count","name":"request_reasoning_output_count","type":"integer","nullable":false},
-        {"source":0,"field":"request_count","name":"request_count","type":"integer","nullable":false},
-        {"source":0,"field":"key_provisional_count","name":"key_provisional_count","type":"integer","nullable":false},
-        {"source":0,"field":"key_no_usage_count","name":"key_no_usage_count","type":"integer","nullable":false},
-        {"source":0,"field":"key_unplaced_no_usage_count","name":"key_unplaced_no_usage_count","type":"integer","nullable":false},
-        {"source":0,"field":"key_unresolved_time_count","name":"key_unresolved_time_count","type":"integer","nullable":false},
-        {"source":0,"field":"key_invalid_count","name":"key_invalid_count","type":"integer","nullable":false},
-        {"source":0,"field":"key_missing_core_count","name":"key_missing_core_count","type":"integer","nullable":false},
-        {"source":1,"field":"key_replayed_count","name":"key_replayed_count","type":"integer","nullable":true}
-      ]
-    },
-    {
-      "op": "join",
-      "inputs": ["totals_join_9","keyed_ambiguous_key_totals"],
-      "as": "totals_join_10",
-      "on": {"kind":"inner","keys":[{"left":"aggregate_key","right":"aggregate_key"}]},
-      "fields": [
-        {"source":0,"field":"aggregate_key","name":"aggregate_key","type":"integer","nullable":false},
-        {"source":0,"field":"candidate_count","name":"candidate_count","type":"integer","nullable":false},
-        {"source":0,"field":"transition_count","name":"transition_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_invalid_observation_count","name":"row_invalid_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_ambiguous_observation_count","name":"row_ambiguous_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_missing_core_observation_count","name":"row_missing_core_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_missing_detail_observation_count","name":"row_missing_detail_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"legacy_observation_count","name":"legacy_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"unanchored_observation_count","name":"unanchored_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_no_usage_observation_count","name":"row_no_usage_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_unplaced_no_usage_observation_count","name":"row_unplaced_no_usage_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_unavailable_observation_count","name":"row_unavailable_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"unresolved_ancestry_observation_count","name":"unresolved_ancestry_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_unresolved_time_observation_count","name":"row_unresolved_time_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"raw_input_tokens","name":"raw_input_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"raw_cached_input_tokens","name":"raw_cached_input_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"raw_output_tokens","name":"raw_output_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"raw_reasoning_output_tokens","name":"raw_reasoning_output_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"row_provisional_observation_count","name":"row_provisional_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_replayed_observation_count","name":"row_replayed_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"unkeyed_observation_count","name":"unkeyed_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"key_missing_detail_count","name":"key_missing_detail_count","type":"integer","nullable":true},
-        {"source":0,"field":"request_input_tokens","name":"request_input_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"request_cached_input_tokens","name":"request_cached_input_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"request_cached_input_count","name":"request_cached_input_count","type":"integer","nullable":false},
-        {"source":0,"field":"request_cache_creation_input_tokens","name":"request_cache_creation_input_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"request_cache_creation_input_count","name":"request_cache_creation_input_count","type":"integer","nullable":false},
-        {"source":0,"field":"request_output_tokens","name":"request_output_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"request_reasoning_output_tokens","name":"request_reasoning_output_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"request_reasoning_output_count","name":"request_reasoning_output_count","type":"integer","nullable":false},
-        {"source":0,"field":"request_count","name":"request_count","type":"integer","nullable":false},
-        {"source":0,"field":"key_provisional_count","name":"key_provisional_count","type":"integer","nullable":false},
-        {"source":0,"field":"key_no_usage_count","name":"key_no_usage_count","type":"integer","nullable":false},
-        {"source":0,"field":"key_unplaced_no_usage_count","name":"key_unplaced_no_usage_count","type":"integer","nullable":false},
-        {"source":0,"field":"key_unresolved_time_count","name":"key_unresolved_time_count","type":"integer","nullable":false},
-        {"source":0,"field":"key_invalid_count","name":"key_invalid_count","type":"integer","nullable":false},
-        {"source":0,"field":"key_missing_core_count","name":"key_missing_core_count","type":"integer","nullable":false},
-        {"source":0,"field":"key_replayed_count","name":"key_replayed_count","type":"integer","nullable":true},
-        {"source":1,"field":"ambiguous_key_count","name":"ambiguous_key_count","type":"integer","nullable":false}
-      ]
-    },
-    {
-      "op": "join",
-      "inputs": ["totals_join_10","keyed_split_totals"],
-      "as": "totals_join_11",
-      "on": {"kind":"inner","keys":[{"left":"aggregate_key","right":"aggregate_key"}]},
-      "fields": [
-        {"source":0,"field":"aggregate_key","name":"aggregate_key","type":"integer","nullable":false},
-        {"source":0,"field":"candidate_count","name":"candidate_count","type":"integer","nullable":false},
-        {"source":0,"field":"transition_count","name":"transition_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_invalid_observation_count","name":"row_invalid_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_ambiguous_observation_count","name":"row_ambiguous_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_missing_core_observation_count","name":"row_missing_core_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_missing_detail_observation_count","name":"row_missing_detail_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"legacy_observation_count","name":"legacy_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"unanchored_observation_count","name":"unanchored_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_no_usage_observation_count","name":"row_no_usage_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_unplaced_no_usage_observation_count","name":"row_unplaced_no_usage_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_unavailable_observation_count","name":"row_unavailable_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"unresolved_ancestry_observation_count","name":"unresolved_ancestry_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_unresolved_time_observation_count","name":"row_unresolved_time_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"raw_input_tokens","name":"raw_input_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"raw_cached_input_tokens","name":"raw_cached_input_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"raw_output_tokens","name":"raw_output_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"raw_reasoning_output_tokens","name":"raw_reasoning_output_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"row_provisional_observation_count","name":"row_provisional_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_replayed_observation_count","name":"row_replayed_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"unkeyed_observation_count","name":"unkeyed_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"key_missing_detail_count","name":"key_missing_detail_count","type":"integer","nullable":true},
-        {"source":0,"field":"request_input_tokens","name":"request_input_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"request_cached_input_tokens","name":"request_cached_input_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"request_cached_input_count","name":"request_cached_input_count","type":"integer","nullable":false},
-        {"source":0,"field":"request_cache_creation_input_tokens","name":"request_cache_creation_input_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"request_cache_creation_input_count","name":"request_cache_creation_input_count","type":"integer","nullable":false},
-        {"source":0,"field":"request_output_tokens","name":"request_output_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"request_reasoning_output_tokens","name":"request_reasoning_output_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"request_reasoning_output_count","name":"request_reasoning_output_count","type":"integer","nullable":false},
-        {"source":0,"field":"request_count","name":"request_count","type":"integer","nullable":false},
-        {"source":0,"field":"key_provisional_count","name":"key_provisional_count","type":"integer","nullable":false},
-        {"source":0,"field":"key_no_usage_count","name":"key_no_usage_count","type":"integer","nullable":false},
-        {"source":0,"field":"key_unplaced_no_usage_count","name":"key_unplaced_no_usage_count","type":"integer","nullable":false},
-        {"source":0,"field":"key_unresolved_time_count","name":"key_unresolved_time_count","type":"integer","nullable":false},
-        {"source":0,"field":"key_invalid_count","name":"key_invalid_count","type":"integer","nullable":false},
-        {"source":0,"field":"key_missing_core_count","name":"key_missing_core_count","type":"integer","nullable":false},
-        {"source":0,"field":"key_replayed_count","name":"key_replayed_count","type":"integer","nullable":true},
-        {"source":0,"field":"ambiguous_key_count","name":"ambiguous_key_count","type":"integer","nullable":false},
-        {"source":1,"field":"split_request_count","name":"split_request_count","type":"integer","nullable":false}
-      ]
-    },
-    {
-      "op": "join",
-      "inputs": ["totals_join_11","keyed_conflict_totals"],
-      "as": "combined_totals",
-      "on": {"kind":"inner","keys":[{"left":"aggregate_key","right":"aggregate_key"}]},
-      "fields": [
-        {"source":0,"field":"aggregate_key","name":"aggregate_key","type":"integer","nullable":false},
-        {"source":0,"field":"candidate_count","name":"candidate_count","type":"integer","nullable":false},
-        {"source":0,"field":"transition_count","name":"transition_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_invalid_observation_count","name":"row_invalid_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_ambiguous_observation_count","name":"row_ambiguous_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_missing_core_observation_count","name":"row_missing_core_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_missing_detail_observation_count","name":"row_missing_detail_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"legacy_observation_count","name":"legacy_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"unanchored_observation_count","name":"unanchored_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_no_usage_observation_count","name":"row_no_usage_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_unplaced_no_usage_observation_count","name":"row_unplaced_no_usage_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_unavailable_observation_count","name":"row_unavailable_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"unresolved_ancestry_observation_count","name":"unresolved_ancestry_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_unresolved_time_observation_count","name":"row_unresolved_time_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"raw_input_tokens","name":"raw_input_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"raw_cached_input_tokens","name":"raw_cached_input_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"raw_output_tokens","name":"raw_output_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"raw_reasoning_output_tokens","name":"raw_reasoning_output_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"row_provisional_observation_count","name":"row_provisional_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"row_replayed_observation_count","name":"row_replayed_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"unkeyed_observation_count","name":"unkeyed_observation_count","type":"integer","nullable":true},
-        {"source":0,"field":"key_missing_detail_count","name":"key_missing_detail_count","type":"integer","nullable":true},
-        {"source":0,"field":"request_input_tokens","name":"request_input_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"request_cached_input_tokens","name":"request_cached_input_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"request_cached_input_count","name":"request_cached_input_count","type":"integer","nullable":false},
-        {"source":0,"field":"request_cache_creation_input_tokens","name":"request_cache_creation_input_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"request_cache_creation_input_count","name":"request_cache_creation_input_count","type":"integer","nullable":false},
-        {"source":0,"field":"request_output_tokens","name":"request_output_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"request_reasoning_output_tokens","name":"request_reasoning_output_tokens","type":"integer","nullable":true},
-        {"source":0,"field":"request_reasoning_output_count","name":"request_reasoning_output_count","type":"integer","nullable":false},
-        {"source":0,"field":"request_count","name":"request_count","type":"integer","nullable":false},
-        {"source":0,"field":"key_provisional_count","name":"key_provisional_count","type":"integer","nullable":false},
-        {"source":0,"field":"key_no_usage_count","name":"key_no_usage_count","type":"integer","nullable":false},
-        {"source":0,"field":"key_unplaced_no_usage_count","name":"key_unplaced_no_usage_count","type":"integer","nullable":false},
-        {"source":0,"field":"key_unresolved_time_count","name":"key_unresolved_time_count","type":"integer","nullable":false},
-        {"source":0,"field":"key_invalid_count","name":"key_invalid_count","type":"integer","nullable":false},
-        {"source":0,"field":"key_missing_core_count","name":"key_missing_core_count","type":"integer","nullable":false},
-        {"source":0,"field":"key_replayed_count","name":"key_replayed_count","type":"integer","nullable":true},
-        {"source":0,"field":"ambiguous_key_count","name":"ambiguous_key_count","type":"integer","nullable":false},
-        {"source":0,"field":"split_request_count","name":"split_request_count","type":"integer","nullable":false},
-        {"source":1,"field":"conflicted_request_count","name":"conflicted_request_count","type":"integer","nullable":false}
       ]
     },
     {
