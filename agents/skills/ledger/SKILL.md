@@ -244,7 +244,14 @@ physical path or implementing a second catalog resolver.
 For an opted-in owner's read, follow
 [owner access](references/canonical-custody.md#owner-access): start with
 `--read-only --definition --owner-manifest`, then project using the returned
-managed selector. An intact present owner needs no sibling discovery or archive
+managed selector. If the read returns `OwnerPreparationRequired` and maintenance
+is allowed, run `--ensure-owner` with the same inputs. On success, pass its
+`native_args` directly to `ledger project`. Preparation can verify empty
+sources while leaving the owner slot absent. In that case the projection can
+return zero records and a fresh `--read-only` can still return
+`OwnerPreparationRequired`. The projection completes the read.
+
+An intact present owner needs no sibling discovery or archive
 scan. Preserve the distinction between readable selected history, historical
 coverage, and current owner authority.
 

@@ -96,7 +96,10 @@ Handle only the returned condition:
 
 - `OwnerPreparationRequired`: when maintenance is allowed, run
   [automatic owner upgrade](automatic-migration.md#automatic-owner-upgrade) with
-  the same selection, definition, and manifest, then use its returned selector.
+  the same selection, definition, and manifest. On success, pass its
+  `native_args` directly to the requested projection. Skip a second context
+  check for this read. An empty source family can leave the slot absent, so a
+  fresh `--read-only` can still return `OwnerPreparationRequired`.
   A missing owner in an ID with workspace associations needs the actual workspace
   for source discovery. If direct-ID preparation returns
   `OwnerPreparationRequiresWorkspace`, preserve the ID and supply that workspace;
