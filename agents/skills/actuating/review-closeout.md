@@ -20,16 +20,11 @@ Fold it and already-live required owner observations; do not launch another
 auxiliary wave on the invalidated head. A clean epoch closes after convergence.
 Outside an open review epoch, review is not a prerequisite for implementation.
 
-After closing an invalidated epoch, resume the
-[source-required construction assignment](construction.md#construction-working-set)
-from the full admitted basis, preserving required-valid behavior, deciding evidence,
-and any prior remedy's predicted versus observed results. Recover missing
-decision-relevant context from existing owners. Use the
-[progress assessment](recurrence.md#progress-before-another-iteration) and
-[construction reconsideration](architecture.md) before selecting a successor.
-Count the closed epoch once; its requests and clean
-confirmations are not separate repair rounds. Reset review credit as required
-while preserving the history of unsuccessful approaches.
+After closing an invalidated epoch, return through the
+[construction decision](construction.md#construction-decision) from the full
+admitted basis and retained [attempt history](recurrence.md#progress-before-another-iteration).
+Count the closed epoch once; its requests and clean confirmations are not separate
+repair rounds. Reset review credit without erasing unsuccessful approaches.
 
 ## Pre-epoch screen
 
@@ -43,7 +38,9 @@ Adjudicate the screen with the
 [Review-credit admission](references/review-contract.md#review-credit-admission)
 predicate, but record `screen_disposition: pass | hold` with its basis, never
 `credit_disposition`; no standard count, obligation, or completion statement reads
-it as review credit. The screen must observe the complete base-to-head patch. A
+it as review credit. A `hold` basis states whether an admitted finding invalidated
+the candidate; any other hold is observation-only. The screen must observe the
+complete base-to-head patch. A
 changeset standard
 whose evidence shows only a summary, such as `--stat` output or recent commit
 messages, has missed its assigned inquiry; that holds the screen and every epoch
@@ -52,9 +49,12 @@ under the existing observation recovery; in `claude` mode that is
 `$cc`'s same-session follow-up for the unread paths, as the
 [binding](references/review-contract.md#binding-and-owner-authority) describes.
 Adjudicate the original and supplemental results together.
+An observation-only hold requires recovery, not a successor mutation. Findings
+already supported by partial inquiry still undergo admission on their own evidence.
 
 Fold screen findings through Review Fold. An admitted current material finding
-invalidates the candidate and returns to construction; with no epoch open, it
+invalidates the candidate and returns through the
+[construction decision](construction.md#construction-decision); with no epoch open, it
 triggers no initial evidence barrier. For stateful or concurrent software,
 [re-inject](counterexamples.md#re-inject-confirmed-defects) it like any confirmed
 defect. The screen binds its exact head: a successor, or any other change before
@@ -63,9 +63,10 @@ epoch until recovered; an unrecoverable observation is the obstruction the epoch
 own changeset standard would face, so report it.
 
 Retain screen findings, holds, and their corrections in the existing
-[attempt history](recurrence.md#progress-before-another-iteration). Screen-only
-repair cycles remain subject to its causal progress triggers; they open no epoch
-and do not advance the invalidated-epoch count.
+[attempt history](recurrence.md#progress-before-another-iteration). Candidate-invalidating
+screen returns count toward its construction progress backstop; holds retain their
+recovery history and applicable causal triggers. Screens open no epoch and do not
+advance the invalidated-epoch count.
 
 The screen awards no review credit and replaces no request. The epoch still runs
 its full initial inventory, including its own changeset standard, and requires

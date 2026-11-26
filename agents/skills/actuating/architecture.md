@@ -2,12 +2,8 @@
 
 ## Architecture compilation
 
-Use the [construction core](SKILL.md#initial-construction); this guide composes
-supporting capabilities, not a second design procedure. Keep the accepted Goal
-fixed. Model-owned assumptions, representations, explanations, and evaluation
-methods may change with evidence, never by changing expectations merely to agree
-with a candidate. Design opportunities remain nonblocking unless an accepted
-obligation is violated or their realization is part of the accepted task.
+Use the [construction decision](construction.md#construction-decision); this guide
+composes supporting capabilities, not a second selection procedure.
 
 Use `$universalist` within initial construction or subsequent task-relevant
 semantic inquiry. Its [Universalist composition](universalist-composition.md)

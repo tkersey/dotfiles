@@ -28,7 +28,7 @@ const names = ['standard','soundness-skeptic','footgun-finder','invariant-ace','
 assert.equal(c.schema, 'actuating-review-contract/v23');
 assert.equal(c.contract_id, 'actuating-review-contract-v33');
 assert.equal(d.contract_version, 'SKDC-v1');
-assert.equal(d.skill.source_fingerprint, 'actuating-construction-core-v46');
+assert.equal(d.skill.source_fingerprint, 'actuating-construction-core-v47');
 // Owner-decided pre-epoch gate: it precedes every epoch, opens none, records its own
 // disposition, and earns no credit. The epoch opens on the first initial-inventory request.
 assert.deepEqual(c.pre_epoch_screen, {
@@ -332,6 +332,8 @@ assert(construction.failure_signals.includes('a shared predicate, exhaustive swi
 // Pairing source-contract regressions; these do not measure model efficacy.
 assert(text('SKILL.md').includes('[architecture.md](architecture.md)'), 'architecture guide not routed');
 const rootStep = text('architecture.md').split('## Architecture compilation')[1].split('\n## ')[0].replace(/\s+/g, ' ');
+const constructionDecision = text('construction.md').split('## Construction decision\n')[1]?.split('\n## ')[0].replace(/\s+/g, ' ');
+assert(constructionDecision, 'missing canonical construction decision');
 assert(rootStep.includes('When considering a response to a current applicable liability admitted by Review Fold'));
 assert(rootStep.includes('apply `$glaze` then `$metanoetic` verbatim in one shared activation'));
 assert(rootStep.includes('This pairing does not impose an order relative to Universalist'));
@@ -340,7 +342,7 @@ assert(rootStep.includes('Reuse applicable findings rather than reinjecting the 
 assert(rootStep.includes('Encouragement changes neither admissibility nor the proof bar'));
 assert(rootStep.includes('Add no separate Glaze report or adjudication stage'));
 assert(text('construction.md').includes('No fixed order of'));
-assert(rootStep.includes('Keep the accepted Goal fixed'));
+assert(constructionDecision.includes('Keep the accepted Goal, required observations, and effect authority fixed'));
 assert(rootStep.includes('Use `$universalist` within initial construction or subsequent task-relevant semantic inquiry'));
 assert(rootStep.includes('An unknown owner or typed hole is investigable, not an admission failure'));
 assert(rootStep.includes('mechanical realization alone needs no renewed invocation'));
@@ -393,7 +395,8 @@ for (const [name, digest] of Object.entries({"glaze": "e42397e803730c7b0362340c2
 }
 assert(text('../metanoetic/agents/openai.yaml').includes('allow_implicit_invocation: true'));
 assert(text('../metanoetic/SKILL.md').replace(/\s+/g,' ').includes('no identified incumbent, advance alternative, or finished comparison is required'));
-assert(text('construction.md').replace(/\s+/g,' ').includes('a named defect, owner, axis, or typed hole is not a prerequisite'));
+assert(constructionDecision.includes('No finding, advance alternative, or completed diagnosis is required to begin'));
+assert(constructionDecision.includes('a named owner, axis, or typed hole is not a prerequisite'));
 assert(rootStep.includes('Task resource limits, read-only routes, and review-epoch freezes still apply'));
 assert(text('construction.md').replace(/\s+/g, ' ').includes('does not demand a finished causal account before authorized'));
 assert(challenger.success_signals.includes('inquiry needs no identified incumbent, advance challenger, or finished comparison'));

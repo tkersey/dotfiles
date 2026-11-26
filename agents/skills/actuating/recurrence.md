@@ -60,9 +60,12 @@ delegation, and compaction. Reclassify applicability when the accepted source
 changes; preserve provenance and mark unavailable history unknown, never zero.
 
 Count a closed review epoch once, separately from its lenses, findings, and clean
-confirmations; retain which epochs were invalidated. A pre-epoch screen counts as
-no epoch; its failed remedy predictions and recurring obstructions still trigger
-the causal assessment below. Count comparable terminal
+confirmations; retain which epochs were invalidated. For construction assessment,
+count each candidate-invalidating return from a screen or closed epoch once.
+Observation-only holds are recovery attempts, not candidate invalidations. A
+pre-epoch screen counts as no epoch and earns no review credit; its failed remedy
+predictions and recurring obstructions still trigger the causal assessment below.
+Count comparable terminal
 verification executions, not polls or observation timeouts on a live check.
 Group one matrix run's reports of the same obstruction as one attempt without
 discarding distinct evidence. A newly reached check or an experiment that resolves
@@ -77,7 +80,8 @@ the approach. Do not require a new defect identity or causal family to recognize
 that the earlier framing no longer justifies the next attempt.
 
 Use two relevant unsuccessful terminal verification attempts without deciding new
-evidence, and each third completed invalidated review epoch, as backstops for an
+evidence, and each third candidate-invalidating return from a screen or closed
+review epoch, as backstops for an
 explicit assessment of the accumulated attempts, even when symptoms differ or
 each local edit seems reasonable. These are attention thresholds, not proof of
 stagnation, automatic passage reinjection, a redesign requirement, or round limits.
@@ -110,9 +114,10 @@ law's owner, or retire or unify unnecessary interpretations under the
 reconstruction, preserving its evidence-backed direct-correction exception.
 Recent code origin alone does not require a separate context.
 
-Reconsider the implicated mechanism, assumptions, oracle, environment, verification
-arrangement, or task decomposition while keeping the accepted Goal fixed. Select
-a next step that changes a relevant intervention or resolves a stated uncertainty.
+Return through the [construction decision](construction.md#construction-decision)
+to reconsider the implicated mechanism, assumptions, oracle, environment,
+verification arrangement, or task decomposition. Select a next step that changes
+a relevant intervention or resolves a stated uncertainty.
 Use [premise-guided investigation](../universalist/references/claim-appropriate-proof.md#premise-guided-investigation)
 when an unsettled premise or omitted source-permitted behavior could change that choice.
 Retain the incumbent when evidence justifies continuing it. Reuse an earlier

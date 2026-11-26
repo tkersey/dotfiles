@@ -795,7 +795,7 @@ runtime stage, proof packet, production review credit, or delivery gate.
 | Arm | Frozen guidance |
 |---|---|
 | Control | Supplied guidance that requires compositional laws to cover admitted environments, callbacks, application, handlers, and joint observations, without the concrete edit triggers or explicit combined-edit premise check. |
-| Candidate | The same runtime sources with the concrete edit triggers, combined-edit premise check, and dependency-based reasoning reuse in Initial construction; freeze both delivered instruction bundles before dispatch. |
+| Candidate | The same runtime sources with the concrete edit triggers, combined-edit premise check, and dependency-based reasoning reuse in Construction decision; freeze both delivered instruction bundles before dispatch. |
 
 Use the exposure, first-candidate freezing, matched endpoint, and whole-task cost
 rules above. Both arms receive the same accepted requirements, candidate code,
@@ -887,3 +887,59 @@ stopping rules, and meaningful thresholds. A tie or underpowered result is
 inconclusive; more simulation prose alone does not support retaining the rules.
 Consider ablating the screen, re-injection, and construction rules separately only
 after a useful combined signal. Source-contract tests establish no model efficacy.
+
+## One source-bound construction decision
+
+Status: **authored, not executed**. This evaluator-only comparison tests whether
+one construction decision improves initial work and successor selection without
+turning every observation into a defect or every opportunity into required work.
+Use the existing exposure, isolation, freezing, budget, outcome, and whole-episode
+cost rules above; this section adds no runtime gate or production review credit.
+
+| Arm | Frozen guidance |
+|---|---|
+| Control | Supplied unchanged construction guidance, including its existing source binding, architecture methods, progress assessment, and review policy. |
+| Candidate | The same guidance with the canonical Construction decision, its evidence routing, and the screen-invalidation progress backstop; freeze the actual delivered instructions before dispatch. |
+
+Assess these changes as a bundle unless a separate comparison isolates one of
+them. Keep both arms' required verification, immutable review subjects, full
+inventory, and five-clean gate unchanged. Neither arm receives an extra solution
+or a deliberately weakened construction assignment. Give both arms the same
+accepted Goal and evidence for each task variant; vary only the stated deciding
+fact between paired variants, and establish its consequence before outcomes.
+
+| Paired control | Expected discrimination |
+|---|---|
+| Adequate incumbent or sufficient direct correction; inadequate existing relationship | Retain the adequate construction or correct its sole deciding site when that suffices. A replacement needs a supported construction benefit; a rewrite is not the success criterion. |
+| Source-imposed restriction; agent-selected restriction | Preserve the accepted restriction. Reopen the engineering choice when evidence challenges it, while separately establishing authority for any selected effect or change of repository. |
+| Rejected allegation with a supported construction opportunity; unsupported semantic change | Keep the rejection intact while considering the useful evidence within authorized selection. Do not promote an opportunity into a blocking liability, or let the rejection authorize an unrelated semantic commitment. |
+| Observation-only hold; independently established entailed finding in partial review material | Recover the missing observation without inventing a production defect. Preserve and act on a supported finding despite incomplete surrounding inquiry, retaining the held request and applicable freeze and credit consequences. |
+| Candidate-invalidating screens; screens held solely for missing observations | Include candidate invalidations in the supplied progress backstop independently of epoch and clean credit. Observation-only holds require recovery and retain their history; they do not become candidate invalidations merely to advance the count. |
+| Duplicate interpretation of one obligation; similar checks serving distinct authorities | Retire or delegate an unnecessary interpretation when preservation is established. Keep independently required evidence and authority boundaries even when their checks look alike; fewer sites alone cannot decide the outcome. |
+
+Repeat matched initial and successor assignments where relevant. Preserve all
+established source facts and useful nonblocking evidence through a separate
+delegation or resumption contrast; do not erase the control's required context.
+The disclosed contrasts are calibration material. Use undisclosed task instances
+and source-supported continuations for a transfer claim, with expected decisions
+and grading notes excluded from implementation contexts.
+
+Freeze the first construction, justified no-change decision, or unfinished attempt
+before later feedback. Inspect the actual scope, selected means, proof, effects,
+retained distinctions, and completion claim. A correct liability classification
+does not establish good construction selection, and a useful optional improvement
+does not establish that the incumbent violated its Goal. Evaluate both judgments.
+
+For the progress contrast, retain the actual sequence of screen dispositions,
+candidate invalidations, observation recovery, and resulting construction choices
+in existing evaluation evidence. Check that attention to accumulated attempts
+changes a relevant decision when warranted without awarding review credit,
+forcing redesign, or mutating a frozen subject. A threshold-triggered assessment
+can correctly retain the incumbent when deciding evidence supports it.
+
+Use the predeclared quality and cost criteria from the full protocol. Report
+unnecessary restructuring, suppressed useful evidence, unauthorized scope changes,
+lost independent evidence, and unsupported completion alongside successful work.
+Reading the new heading or repeating its question earns no credit. A tie or
+insufficient evidence leaves incremental efficacy unresolved; source-contract
+checks do not execute this comparison or establish model efficacy.
