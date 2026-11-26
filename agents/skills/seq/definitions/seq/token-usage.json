@@ -894,7 +894,8 @@
     {"op":"filter","input":"owned_transitions","as":"keyed_rows","where":[{"field":"per_request","op":"exact","value":true},{"field":"request_key","op":"not-equal","value":null}]},
     {"op":"filter","input":"keyed_rows","as":"authored_rows","where":[{"field":"request_here","op":"exact","value":true}]},
     {"op":"distinct","input":"authored_rows","as":"authored_keys","keys":["request_key"]},
-    {"op":"sort","input":"keyed_rows","as":"session_requests_latest_first","by":[{"field":"session_id","direction":"asc"},{"field":"source_ordinal","direction":"desc"}]},
+    {"op":"filter","input":"owned_transitions","as":"request_rows","where":[{"field":"per_request","op":"exact","value":true}]},
+    {"op":"sort","input":"request_rows","as":"session_requests_latest_first","by":[{"field":"session_id","direction":"asc"},{"field":"source_ordinal","direction":"desc"}]},
     {"op":"distinct","input":"session_requests_latest_first","as":"session_last_requests","keys":["session_id"]},
     {
       "op": "join",

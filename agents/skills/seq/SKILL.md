@@ -336,7 +336,8 @@ without this rule their history would be silently undercounted). Unknown
 finality, usage
 not declared `usable`, or asserted but unreadable usage is missing core
 evidence, and a final, usable request without a key is unkeyed. Every other row
-is eligible. A row's class depends only on its own request quantity, and
+is eligible. A row's class depends only on its own request evidence and on
+whether any later request, answered or not, follows it in the same session;
 per-request rows never enter cumulative accounting, even when they also carry
 running totals.
 

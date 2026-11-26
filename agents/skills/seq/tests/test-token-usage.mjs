@@ -558,6 +558,8 @@ try {
   // A provisional request followed by a later request in its session has finished.
   expectRequests('superseded-provisional', perRequest('superseded-provisional', [[claudeId(49), [authored('msg_q', qb, 0, { final: false }), authored('msg_a', qa, 10)]]]).result,
     { verdict: 'valid', request_count: 2, total_tokens: 112, inferred_final_observation_count: 1, provisional_observation_count: 0 });
+  expectRequests('superseded-by-unanswered', perRequest('superseded-by-unanswered', [[claudeId(52), [authored('msg_q', qb, 0, { final: false }), { key: 'msg_x', at: 10, unanswered: true }]]]).result,
+    { verdict: 'valid', request_count: 1, total_tokens: 62, inferred_final_observation_count: 1, provisional_observation_count: 0, no_usage_observation_count: 1 });
   expectRequests('resumed-copy-finishes-provisional', perRequest('resumed-copy-finishes-provisional', [
     [claudeId(50), [copied('msg_x', qa, 0, { final: false, linked: false })]],
     [claudeId(51), [copied('msg_x', qa, 0, { final: false, linked: false }), copied('msg_y', qb, 30, { linked: false })]],
