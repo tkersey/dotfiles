@@ -89,10 +89,15 @@ class ContractTests(unittest.TestCase):
 
     def test_other_skills_are_referenced_by_name(self):
         # Installed skills need not be siblings; resolve another skill by its $name.
+        # Exception: Claude Code reserves `ship` for its bundled /ship and does not
+        # load a user skill of that name, so Ship is linked by path.
+        path_linked = {"ship"}
         siblings = {path.name for path in ROOT.parent.iterdir() if path.is_dir() and path != ROOT}
         self.assertIn("actuating", siblings)
+        self.assertTrue((ROOT.parent / "ship" / "SKILL.md").is_file())
         for path in [ROOT / "SKILL.md", *sorted((ROOT / "references").glob("*.md"))]:
             linked = set(re.findall(r"\]\((?:\.\./)+([A-Za-z0-9_-]+)/", path.read_text())) & siblings
+            linked -= path_linked
             self.assertFalse(linked, f"{path.name} links into another skill by path: {sorted(linked)}")
 
 

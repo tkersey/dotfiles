@@ -26,7 +26,7 @@ It does not duplicate semantic owners:
 - `$review-fold` classifies a concern's authority and current applicability;
 - `$actuating review-closeout` repairs accepted current concerns, with its direct
   owner-local repair path available for an isolated mistake;
-- `$ship` publishes a validated successor head;
+- [Ship](../ship/SKILL.md) publishes a validated successor head;
 - `$land` proves the resulting disposition, resolves the GitHub thread, and
   restarts landing against the successor head.
 
@@ -43,7 +43,7 @@ Do not use `$land` merely to:
 - close or abandon an unmerged PR;
 - delete a branch or worktree without a merged-PR target;
 - synchronize ordinary local state;
-- open, update, or promote a PR; use `$ship`.
+- open, update, or promote a PR; use [Ship](../ship/SKILL.md).
 
 Invocation requires explicit user merge or land intent, including natural-language
 requests. Mentioning checks, branches, or PRs alone is insufficient.
@@ -111,7 +111,7 @@ A landing epoch is immutable in repository/PR/base/head identity. Any push,
 branch update, review repair, or other head mutation supersedes the current
 epoch rather than retargeting it.
 
-After `$ship` publishes successor head `H[n+1]`:
+After [Ship](../ship/SKILL.md) publishes successor head `H[n+1]`:
 
 ```text
 close epoch H[n] as superseded

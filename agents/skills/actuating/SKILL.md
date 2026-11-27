@@ -70,7 +70,7 @@ adequate evidence. Do not load every guide at entry or impose a reasoning sequen
 | Materially costly verification, slow qualification, or broad retry while cost impedes the Goal | [verification.md](verification.md); ordinary cheap validation needs no extra workflow. |
 | Unsuccessful required verification, invalidated review, repeated correction, falsified elimination, unresolved broader Goal after narrow repair, or efficacy assessment | [recurrence.md](recurrence.md) before another correction, broad retry, successor wave, or retained claim. |
 | Review-closeout or bare Actuating reaching review | [review-closeout.md](review-closeout.md) before dispatch, beginning with its [pre-epoch screen](review-closeout.md#pre-epoch-screen); it routes inventory, convergence, executor, scheduling, and recovery. |
-| Authorized publication or a review-closeout terminal decision | `$ship` for public effects; [closure.md](references/closure.md) for closure. Publication alone does not complete review-closeout. |
+| Authorized publication or a review-closeout terminal decision | [Ship](../ship/SKILL.md) for public effects; [closure.md](references/closure.md) for closure. Publication alone does not complete review-closeout. |
 
 The review contract's JSON is checked-in policy, not workflow state. The decision
 contract and `tests/` are audit/evaluation material, not another runtime itinerary;
