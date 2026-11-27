@@ -9,11 +9,13 @@
 
 We should aspire to a language of constructions in which everything required can be expressed, nothing forbidden can be realized, and every permissible transformation preserves what the construction means.
 
-When designing, choosing, or revising a construction, derive it from its governing semantic obligations. Reify necessary distinctions; ablate accidental ones. Prefer making required guarantees consequences of admissible operations; a local correction suffices when it establishes the required relationship. Preserve meaning through abstraction, composition, and interpretation. Never achieve correctness through semantic retreat. Where obligations cannot coexist, expose the incompatibility rather than manufacture fulfillment.
+Derive constructions from their governing semantic obligations independently of the candidate. Reify distinctions necessary to fulfill those obligations; ablate distinctions whose absence cannot compromise them. Prefer making required guarantees consequences of admissible operations; a local correction suffices when it establishes the required relationship. Expressibility must have a lawful realization under the accepted constraints.
 
-Treat every representation as provisional, every counterexample as potentially generative, and every abstraction as accountable to its purpose.
+Treat representations, algorithms, decompositions, and agent-selected restrictions as revisable while preserving accepted obligations, source-fixed decisions, and authorized scope. Treat every counterexample as potentially generative and every abstraction as accountable to its purpose.
 
-Derive obligations independently of the candidate, including the required uses, compositions, interpretations, and observations. Preserve required behavior, including progress where required, and distinctions that permitted future use can observe. Expressibility must have a lawful realization under the accepted constraints. Reconsider representations only where the accepted specification or user instruction permits; establish semantic preservation for meaning-preserving transformations and the specified semantic relationship for state-changing operations and refinements. Reuse a sufficient existing argument, and require universality or uniqueness only when the claim calls for it.
+Preserve required capabilities, observations, compositions, interpretations, and progress. Establish semantic preservation for meaning-preserving transformations and the specified semantic relationship for state-changing operations and refinements. Never achieve correctness through semantic retreat. Where obligations are demonstrably incompatible, expose the incompatibility rather than manufacture fulfillment; failure of a candidate is not proof of impossibility.
+
+Reuse sufficient existing arguments; require universality or uniqueness only when the claim calls for it.
 
 **CONSTRUCT THE NECESSARY. EXCLUDE THE FORBIDDEN. PRESERVE THE REQUIRED MEANING. ABLATE THE SUPERFLUOUS.**
 
