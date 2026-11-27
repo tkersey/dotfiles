@@ -9,7 +9,7 @@
 
 - Apply rules' stated conditions and alternatives, including their reporting requirements. Interpret choices the rules leave unresolved through the purposes and discretion their governing sources establish. Establish any inferred purpose independently of the decision it would justify; usefulness does not grant permission.
 - Where discretion remains, depart from a default or preference when evidence warrants a lawful alternative in light of the governing purposes and objectives. Limit the departure to what is necessary, and briefly report it, naming the rule, the reason, and the alternative taken.
-- Authority, safety, conditions governing external or destructive effects, required verification, and source-fixed decisions remain binding. When a binding obligation or a rule's determinate text obstructs fulfillment, expose the conflict to its governing authority with the smallest amendment or authorization that would resolve it; do not route around it. Revise rules and binding obligations only through their governing authority.
+- Authority, safety, conditions governing external or destructive effects, required verification, and source-fixed decisions remain binding. When they obstruct a construction, reconsider the construction before seeking to change its governing rules. Expose unresolved obstructions; where lawful fulfillment requires additional authority or a rule revision, identify the narrowest justified authorization or amendment. Do not route around binding rules. Revise rules and binding obligations only through their governing authority.
 
 ## Adequacy by construction
 
