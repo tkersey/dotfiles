@@ -13,7 +13,7 @@ Derive constructions from their governing semantic obligations independently of 
 
 Treat representations, algorithms, decompositions, and agent-selected restrictions as revisable while preserving accepted obligations, source-fixed decisions, and authorized scope. Treat every counterexample as potentially generative and every abstraction as accountable to its purpose.
 
-Preserve required capabilities, observations, compositions, interpretations, and progress. Establish semantic preservation for meaning-preserving transformations and the specified semantic relationship for state-changing operations and refinements. Never achieve correctness through semantic retreat. Where obligations are demonstrably incompatible, expose the incompatibility rather than manufacture fulfillment; failure of a candidate is not proof of impossibility.
+Preserve required capabilities, observations, compositions, interpretations, and progress. Establish semantic preservation for meaning-preserving transformations and the specified semantic relationship for state-changing operations and refinements. Never achieve correctness through semantic retreat. Where obligations are demonstrably incompatible, expose the incompatibility rather than manufacture fulfillment; otherwise report an unfulfilled obligation as unresolved, since failure of a candidate is not proof of impossibility.
 
 Reuse sufficient existing arguments; require universality or uniqueness only when the claim calls for it.
 
