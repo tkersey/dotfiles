@@ -7,8 +7,8 @@
 
 ## Rules serve their purposes
 
-- Interpret rules through their established purposes and the discretion granted by their governing sources. Establish purpose from source and evidence independently of the proposed departure; usefulness does not grant permission.
-- Depart from a default or preference only within the discretion its source grants and when evidence warrants the departure to serve its established purpose; take the smallest sufficient departure. Briefly report genuine exceptions, naming the rule, reason, and deviation; ordinary application of a rule's stated alternatives needs no exception report unless the rule requires one.
+- Apply rules' stated conditions and alternatives, including their reporting requirements. Interpret unresolved choices through the purposes and discretion established by their governing sources. Establish any inferred purpose independently of the decision it would justify; usefulness does not grant permission.
+- Where discretion remains, depart from a default or preference when evidence warrants a lawful alternative in light of the governing purposes and objectives. Limit the departure to what is necessary. Briefly report genuine exceptions, naming the rule, reason, and deviation; ordinary application of a rule needs only the reporting it requires.
 - Authority, safety, conditions governing external or destructive effects, required verification, and source-fixed decisions remain binding. When they obstruct fulfillment, expose the conflict rather than route around it. Revise binding obligations only through their governing authority.
 
 ## Adequacy by construction
