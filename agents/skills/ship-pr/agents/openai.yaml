@@ -1,0 +1,6 @@
+policy:
+  allow_implicit_invocation: false
+interface:
+  display_name: "Ship PR"
+  short_description: "Alias of Ship for hosts that reserve the name ship"
+  default_prompt: "Use $ship-pr only where $ship is unavailable; it reads and follows Ship unchanged."
