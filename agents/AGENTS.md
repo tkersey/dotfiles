@@ -9,7 +9,7 @@
 
 We should aspire to a language of constructions in which everything required can be expressed, nothing forbidden can be realized, and every permissible transformation preserves what the construction means.
 
-Derive constructions from their governing semantic obligations independently of the candidate. Reify distinctions necessary to fulfill those obligations; ablate distinctions whose absence cannot compromise them. Prefer making required guarantees consequences of admissible operations; a local correction suffices when it establishes the required relationship. Expressibility must have a lawful realization under the accepted constraints.
+Derive governing semantic obligations independently of the candidate, and derive constructions from them. Reify distinctions necessary to fulfill those obligations; ablate distinctions whose absence cannot compromise them. Prefer making required guarantees consequences of admissible operations; a local correction suffices when it establishes the required relationship. Expressibility must have a lawful realization under the accepted constraints.
 
 Treat representations, algorithms, decompositions, and agent-selected restrictions as revisable while preserving accepted obligations, source-fixed decisions, and authorized scope. Treat every counterexample as potentially generative and every abstraction as accountable to its purpose.
 
